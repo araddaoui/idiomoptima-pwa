@@ -31,7 +31,8 @@ import {
   BookOpen,
   Briefcase,
   Shield,
-  Tag
+  Tag,
+  Mail
 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun, FootnoteReferenceRun, PageBreak } from "docx";
 import { jsPDF } from "jspdf";
@@ -1361,14 +1362,26 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Footer */}
-      <footer className="max-w-[1600px] mx-auto px-6 py-12 border-t border-[#E5E5E5] mt-12">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-[#999] text-xs uppercase tracking-[0.2em]">
-          <p>© 2026 NativeWrite. Powered by Gemini.</p>
-          <div className="flex items-center gap-8">
-            <a href="#" className="hover:text-[#1A1A1A] transition-colors">Privacy</a>
-            <a href="#" className="hover:text-[#1A1A1A] transition-colors">Terms</a>
-            <a href="#" className="hover:text-[#1A1A1A] transition-colors">Contact</a>
+            {/* Footer */}
+      <footer className="max-w-[1600px] mx-auto px-6 py-10 border-t border-[#E5E5E5] mt-12">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[#888] text-sm">
+          {/* Left: Copyright */}
+          <p className="text-xs md:text-sm">
+            © {new Date().getFullYear()} NativeWrite. All rights reserved.
+          </p>
+
+          {/* Center/Right: Links */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs md:text-sm">
+            <a href="/terms" className="hover:text-[#1A1A1A] transition-colors">
+              Terms of Service
+            </a>
+            <a href="/privacy" className="hover:text-[#1A1A1A] transition-colors">
+              Privacy & Security
+            </a>
+            <a href="mailto:contact@nativewrite.ai" className="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
+              <Mail className="w-3.5 h-3.5" />
+              contact@nativewrite.ai
+            </a>
           </div>
         </div>
       </footer>
