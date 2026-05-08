@@ -157,6 +157,32 @@ export default function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // --- Usage limits ---
+  const DAILY_LIMIT = 4;           // max transforms per day
+  const MAX_WORDS = 800;           // maximum words allowed
+  const [remainingUses, setRemainingUses] = useState<number | null>(null);
+
+  // Load daily usage from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('nativewrite_usage');
+    const today = new Date().toDateString();
+    if (stored) {
+      const data = JSON.parse(stored);
+      if (data.date === today) {
+        const used = data.count;
+        setRemainingUses(DAILY_LIMIT - used);
+      } else {
+        // New day: reset
+        localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: 0 }));
+        setRemainingUses(DAILY_LIMIT);
+      }
+    } else {
+      // First time
+      localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: 0 }));
+      setRemainingUses(DAILY_LIMIT);
+    }
+  }, []);
+
   const htmlToBracketedText = (html: string) => {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
@@ -369,6 +395,18 @@ export default function App() {
       return;
     }
 
+    // Word limit check
+    if (wordCount > MAX_WORDS) {
+      toast.error(`Your text exceeds the maximum allowed length (${MAX_WORDS} words). Please shorten it.`);
+      return;
+    }
+
+    // Daily limit check
+    if (remainingUses !== null && remainingUses <= 0) {
+      toast.error(`You've reached the daily limit of ${DAILY_LIMIT} transformations. Please try again tomorrow.`);
+      return;
+    }
+
     setIsLoading(true);
     setResult(null);
     setSwappedSentenceIndices([]);
@@ -383,14 +421,12 @@ export default function App() {
         setProcessingStatus(status);
       }, forcedDialect, mode);
 
-      // Final synchronization heartbeat
       setProgress(100);
       setProcessingStatus("Polishing final prose...");
       await new Promise(resolve => setTimeout(resolve, 300));
 
       setResult(data);
       
-      // Lock dialect if it was auto-detected
       if (data.detectedDialect) {
         setForcedDialect(data.detectedDialect);
       }
@@ -406,10 +442,32 @@ export default function App() {
       };
       setHistory(prev => [newHistoryItem, ...prev].slice(0, 10));
       toast.success("Text transformed successfully!");
+
+      // Update usage count after successful transformation
+      const today = new Date().toDateString();
+      const stored = localStorage.getItem('nativewrite_usage');
+      let newCount = 1;
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.date === today) {
+          newCount = data.count + 1;
+        }
+      }
+      localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: newCount }));
+      setRemainingUses(DAILY_LIMIT - newCount);
+
     } catch (error: any) {
       console.error("Transformation failed:", error);
-      toast.error(`Transformation failed: ${error.message || "Unknown error"}`);
-    } finally {
+   // Check if it's a 429 quota error
+  if (error.message?.includes("429") || error.message?.includes("quota")) {
+    toast.error(
+      "You've reached your daily free limit. Please come back tomorrow. " +
+      "If you need longer texts or more transformations, check our pricing options."
+    );
+  } else {
+    toast.error(`Transformation failed: ${error.message || "Unknown error"}`);
+  }
+} finally {
       setIsLoading(false);
       setProgress(0);
       setProcessingStatus("");
@@ -918,6 +976,11 @@ export default function App() {
                   <span className="text-[10px] font-medium text-[#BBB] uppercase tracking-widest tabular-nums ml-2">
                     {wordCount} words
                   </span>
+                  {remainingUses !== null && (
+                    <span className="text-[10px] font-medium text-[#666] ml-2">
+                      · {remainingUses} / {DAILY_LIMIT} remaining today
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -1362,15 +1425,12 @@ export default function App() {
         )}
       </AnimatePresence>
 
-            {/* Footer */}
+      {/* Footer */}
       <footer className="max-w-[1600px] mx-auto px-6 py-10 border-t border-[#E5E5E5] mt-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[#888] text-sm">
-          {/* Left: Copyright */}
           <p className="text-xs md:text-sm">
             © {new Date().getFullYear()} NativeWrite. All rights reserved.
           </p>
-
-          {/* Center/Right: Links */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs md:text-sm">
             <a href="/terms" className="hover:text-[#1A1A1A] transition-colors">
               Terms of Service
