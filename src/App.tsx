@@ -156,7 +156,9 @@ export default function App() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [copied, setCopied] = useState(false);
-
+disabled={!consentGiven || isLoading || !inputText.trim()}
+  return localStorage.getItem('nativewrite_consent') === 'true';
+});
   const htmlToBracketedText = (html: string) => {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
@@ -922,12 +924,12 @@ export default function App() {
               </div>
 
               <div className="relative group border-2 border-[#E5E5E5] rounded-3xl overflow-hidden bg-white shadow-sm focus-within:ring-4 focus-within:ring-[#1A1A1A]/5 transition-all p-2">
-                <RichTextEditor 
-                  content={inputHtml}
-                  onChange={handleEditorChange}
-                  placeholder="Paste your academic text here..."
-                  disabled={isLoading}
-                />
+               <RichTextEditor
+  content={inputHtml}
+  onChange={handleEditorChange}
+  placeholder={consentGiven ? "Paste your academic text here..." : "Please accept the Terms & Privacy first (click footer links)."}
+  disabled={!consentGiven || isLoading}
+/>
                 
                 {isReading && (
                   <div className="absolute inset-0 bg-white/80 backdrop-blur-[4px] flex items-center justify-center rounded-lg z-20">
