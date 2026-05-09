@@ -60,5 +60,15 @@
 
     <h2>10. Contact</h2>
     <p>For privacy concerns, email: <a href="mailto:contact@nativewrite.ai">contact@nativewrite.ai</a></p>
+    <script>
+  function acceptTerms() {
+    localStorage.setItem('nativewrite_consent', 'true');
+    alert('Thank you for accepting the Terms. You may now close this tab and refresh the main app page.');
+    window.close();
+  }
+</script>
+<button onclick="acceptTerms()" style="margin-top: 30px; padding: 10px 20px; background: #1a1a1a; color: white; border: none; border-radius: 8px; cursor: pointer;">
+  ✅ I Accept the Terms of Service
+</button>
 </body>
 </html>
