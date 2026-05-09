@@ -1426,18 +1426,21 @@ export default function App() {
       </AnimatePresence>
 
       {/* Footer */}
-      <footer className="max-w-[1600px] mx-auto px-6 py-10 border-t border-[#E5E5E5] mt-12">
+       <footer className="max-w-[1600px] mx-auto px-6 py-10 border-t border-[#E5E5E5] mt-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[#888] text-sm">
           <p className="text-xs md:text-sm">
             © {new Date().getFullYear()} NativeWrite. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs md:text-sm">
-<a href="/terms.html" className="...">
-  Terms of Service
-</a>
-<a href="/privacy.html" className="...">
-  Privacy & Security
-</a>
+            <a href="/terms" className="hover:text-[#1A1A1A] transition-colors">
+              Terms of Service
+            </a>
+            <a href="/privacy" className="hover:text-[#1A1A1A] transition-colors">
+              Privacy & Security
+            </a>
+          </div>
+        </div>
+      </footer>
             <a href="mailto:contact@nativewrite.ai" className="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
               <Mail className="w-3.5 h-3.5" />
               contact@nativewrite.ai
