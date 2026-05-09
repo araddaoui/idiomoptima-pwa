@@ -1432,12 +1432,12 @@ export default function App() {
             © {new Date().getFullYear()} NativeWrite. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs md:text-sm">
-            <a href="/terms" className="hover:text-[#1A1A1A] transition-colors">
-              Terms of Service
-            </a>
-            <a href="/privacy" className="hover:text-[#1A1A1A] transition-colors">
-              Privacy & Security
-            </a>
+<a href="/terms.html" className="...">
+  Terms of Service
+</a>
+<a href="/privacy.html" className="...">
+  Privacy & Security
+</a>
             <a href="mailto:contact@nativewrite.ai" className="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
               <Mail className="w-3.5 h-3.5" />
               contact@nativewrite.ai

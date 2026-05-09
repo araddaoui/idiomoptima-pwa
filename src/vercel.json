@@ -1,0 +1,6 @@
+{
+  "routes": [
+    { "src": "/terms.html", "dest": "/terms.html" },
+    { "src": "/privacy.html", "dest": "/privacy.html" }
+  ]
+}
