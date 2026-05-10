@@ -87,6 +87,34 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputSectionRef = useRef<HTMLDivElement>(null);
 
+  // --- Consent state ---
+  const [consentGiven, setConsentGiven] = useState(() => {
+    return localStorage.getItem('nativewrite_consent') === 'true';
+  });
+
+  // --- Usage limits ---
+  const DAILY_LIMIT = 4;
+  const MAX_WORDS = 800;
+  const [remainingUses, setRemainingUses] = useState<number | null>(null);
+
+  // Load daily usage from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('nativewrite_usage');
+    const today = new Date().toDateString();
+    if (stored) {
+      const data = JSON.parse(stored);
+      if (data.date === today) {
+        setRemainingUses(DAILY_LIMIT - data.count);
+      } else {
+        localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: 0 }));
+        setRemainingUses(DAILY_LIMIT);
+      }
+    } else {
+      localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: 0 }));
+      setRemainingUses(DAILY_LIMIT);
+    }
+  }, []);
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -153,38 +181,9 @@ export default function App() {
   const [mode, setMode] = useState("auto");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<TransformationResult | null>(null);
-const [history, setHistory] = useState<HistoryItem[]>([]);
-const [showHistory, setShowHistory] = useState(false);
-const [copied, setCopied] = useState(false);
-const [consentGiven, setConsentGiven] = useState(() => {
-  return localStorage.getItem('nativewrite_consent') === 'true';
-});
-
-// --- Usage limits ---
-const DAILY_LIMIT = 4;
-const MAX_WORDS = 800;
-const [remainingUses, setRemainingUses] = useState<number | null>(null);
-
-  // Load daily usage from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('nativewrite_usage');
-    const today = new Date().toDateString();
-    if (stored) {
-      const data = JSON.parse(stored);
-      if (data.date === today) {
-        const used = data.count;
-        setRemainingUses(DAILY_LIMIT - used);
-      } else {
-        // New day: reset
-        localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: 0 }));
-        setRemainingUses(DAILY_LIMIT);
-      }
-    } else {
-      // First time
-      localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: 0 }));
-      setRemainingUses(DAILY_LIMIT);
-    }
-  }, []);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const htmlToBracketedText = (html: string) => {
     const tempDiv = document.createElement("div");
@@ -213,6 +212,8 @@ const [remainingUses, setRemainingUses] = useState<number | null>(null);
   };
 
   const [swappedSentenceIndices, setSwappedSentenceIndices] = useState<number[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   const [progress, setProgress] = useState(0);
   const [processingStatus, setProcessingStatus] = useState("");
@@ -424,12 +425,14 @@ const [remainingUses, setRemainingUses] = useState<number | null>(null);
         setProcessingStatus(status);
       }, forcedDialect, mode);
 
+      // Final synchronization heartbeat
       setProgress(100);
       setProcessingStatus("Polishing final prose...");
       await new Promise(resolve => setTimeout(resolve, 300));
 
       setResult(data);
       
+      // Lock dialect if it was auto-detected
       if (data.detectedDialect) {
         setForcedDialect(data.detectedDialect);
       }
@@ -451,9 +454,9 @@ const [remainingUses, setRemainingUses] = useState<number | null>(null);
       const stored = localStorage.getItem('nativewrite_usage');
       let newCount = 1;
       if (stored) {
-        const data = JSON.parse(stored);
-        if (data.date === today) {
-          newCount = data.count + 1;
+        const usage = JSON.parse(stored);
+        if (usage.date === today) {
+          newCount = usage.count + 1;
         }
       }
       localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: newCount }));
@@ -461,16 +464,8 @@ const [remainingUses, setRemainingUses] = useState<number | null>(null);
 
     } catch (error: any) {
       console.error("Transformation failed:", error);
-   // Check if it's a 429 quota error
-  if (error.message?.includes("429") || error.message?.includes("quota")) {
-    toast.error(
-      "You've reached your daily free limit. Please come back tomorrow. " +
-      "If you need longer texts or more transformations, check our pricing options."
-    );
-  } else {
-    toast.error(`Transformation failed: ${error.message || "Unknown error"}`);
-  }
-} finally {
+      toast.error(`Transformation failed: ${error.message || "Unknown error"}`);
+    } finally {
       setIsLoading(false);
       setProgress(0);
       setProcessingStatus("");
@@ -811,6 +806,24 @@ const [remainingUses, setRemainingUses] = useState<number | null>(null);
     inputSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const startEdit = (idx: number, currentText: string) => {
+    setEditingIndex(idx);
+    setEditValue(currentText);
+  };
+  const saveEdit = (idx: number) => {
+    if (!result || !result.sentences) return;
+    const newSentences = [...result.sentences];
+    newSentences[idx] = { ...newSentences[idx], native: editValue };
+    setResult({ ...result, sentences: newSentences });
+    setEditingIndex(null);
+    setEditValue("");
+    toast.success("Sentence updated");
+  };
+  const handleKeyDown = (e: React.KeyboardEvent, idx: number) => {
+    if (e.key === 'Enter') saveEdit(idx);
+    if (e.key === 'Escape') setEditingIndex(null);
+  };
+
   return (
     <div className="min-h-screen bg-[#FDFCFB] text-[#1A1A1A] font-sans selection:bg-[#E6E6E6]">
       <Toaster position="top-center" />
@@ -845,39 +858,6 @@ const [remainingUses, setRemainingUses] = useState<number | null>(null);
       </header>
 
       <main className="max-w-[1600px] mx-auto px-6 py-6">
-        {/* Hero Section */}
-        <div className="mb-8 text-center md:text-left">
-          <div className="max-w-3xl mx-auto md:mx-0">
-            <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-[#1A1A1A] leading-tight mb-3">
-              Elevate your writing without losing your voice
-            </h1>
-            <p className="text-base md:text-lg text-[#444] leading-relaxed mb-6 max-w-2xl">
-              Academic, business, and creative writing, refined for clarity, structure, and natural expression
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
-              <Button 
-                onClick={scrollToInput}
-                className="bg-[#1A1A1A] hover:bg-[#333] text-white px-8 h-11 rounded-full text-sm font-medium transition-all active:scale-[0.98]"
-              >
-                <PenLine className="w-4 h-4 mr-2" />
-                Refine Your Text
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-[#E5E5E5] text-[#1A1A1A] hover:bg-[#F5F5F5] px-6 h-11 rounded-full text-sm font-medium"
-                onClick={() => {}} // non-functional
-              >
-                <Tag className="w-4 h-4 mr-2" />
-                Pricing
-              </Button>
-            </div>
-            <div className="flex items-center justify-center md:justify-start gap-2 mt-6 text-xs text-[#888]">
-              <Shield className="w-3.5 h-3.5" />
-              <span>Your text is processed securely and not stored</span>
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12" ref={inputSectionRef}>
           
           {/* Left Column: Input & Controls */}
@@ -1153,6 +1133,23 @@ const [remainingUses, setRemainingUses] = useState<number | null>(null);
                               
                               if (isFootnoteDef || isReferencesHeading) return;
 
+                              if (editingIndex === idx) {
+                                bodyGroups.push(
+                                  <div key={`edit-${idx}`} className="my-2">
+                                    <input
+                                      type="text"
+                                      value={editValue}
+                                      onChange={(e) => setEditValue(e.target.value)}
+                                      onBlur={() => saveEdit(idx)}
+                                      onKeyDown={(e) => handleKeyDown(e, idx)}
+                                      className="w-full p-2 border border-gray-300 rounded"
+                                      autoFocus
+                                    />
+                                  </div>
+                                );
+                                return;
+                              }
+
                               const content = (
                                 <span
                                   key={idx}
@@ -1161,6 +1158,8 @@ const [remainingUses, setRemainingUses] = useState<number | null>(null);
                                       prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
                                     );
                                   }}
+                                  onDoubleClick={() => startEdit(idx, text)}
+                                  title={`Original: ${sent.original}`}
                                   className={`cursor-pointer transition-all duration-200 relative group inline p-0.5 rounded hover:bg-[#F5F5F5]
                                     ${sent.isNativeMatch ? 'border-b border-blue-200' : ''}
                                     ${isSwapped ? 'text-[#999] bg-[#F9F9F9]' : ''}
@@ -1435,12 +1434,12 @@ const [remainingUses, setRemainingUses] = useState<number | null>(null);
             © {new Date().getFullYear()} NativeWrite. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs md:text-sm">
-<a href="/terms.html" className="hover:text-[#1A1A1A] transition-colors">
-  Terms of Service
-</a>
-<a href="/privacy.html" className="hover:text-[#1A1A1A] transition-colors">
-  Privacy & Security
-</a>
+            <a href="/terms.html" className="hover:text-[#1A1A1A] transition-colors">
+              Terms of Service
+            </a>
+            <a href="/privacy.html" className="hover:text-[#1A1A1A] transition-colors">
+              Privacy & Security
+            </a>
             <a href="mailto:contact@nativewrite.ai" className="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
               <Mail className="w-3.5 h-3.5" />
               contact@nativewrite.ai
