@@ -831,66 +831,54 @@ export default function App() {
       
       {/* Header */}
       <header className="border-b border-[#E5E5E5] bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#1A1A1A] rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#1A1A1A] rounded-xl flex items-center justify-center">
               <Languages className="w-5 h-5 text-white" />
             </div>
-            <h1 className="font-serif text-2xl font-bold tracking-tight text-[#1A1A1A]">NativeWrite</h1>
+            <h1 className="font-serif text-3xl font-bold tracking-tight text-[#1A1A1A]">NativeWrite</h1>
           </div>
-          
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setShowHistory(!showHistory)}
-              className="text-[#666] hover:text-[#1A1A1A]"
-            >
-              <HistoryIcon className="w-4 h-4 mr-2" />
-              History
+            <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="text-[#666] hover:text-[#1A1A1A]">
+              <HistoryIcon className="w-4 h-4 mr-2" /> History
             </Button>
             <Button variant="outline" size="sm" onClick={reset}>
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Reset
+              <RotateCcw className="w-4 h-4 mr-2" /> Reset
             </Button>
+            {/* Placeholder sign in/up */}
+            <Button variant="ghost" size="sm" className="text-[#666] border border-[#E5E5E5] rounded-full">Sign in</Button>
+            <Button size="sm" className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333]">Sign up</Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-[1600px] mx-auto px-6 py-6">
-                {/* Hero Section */}
-        <div className="mb-8 text-center md:text-left">
+      <main className="max-w-[1600px] mx-auto px-8 py-8">
+        {/* Hero Section – enhanced */}
+        <div className="mb-12 text-center md:text-left">
           <div className="max-w-3xl mx-auto md:mx-0">
-            <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-[#1A1A1A] leading-tight mb-3">
+            <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight text-[#1A1A1A] leading-tight mb-3">
               Elevate your writing without losing your voice
             </h1>
-            <p className="text-base md:text-lg text-[#444] leading-relaxed mb-6 max-w-2xl">
+            <p className="text-base md:text-lg text-[#444] leading-relaxed mb-4 max-w-2xl">
               Academic, business, and creative writing, refined for clarity, structure, and natural expression
             </p>
+            <p className="text-gray-500 text-sm mb-5">
+              ✨ Get native‑level English in one click – no sign‑up required.
+            </p>
             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
-              <Button 
-                onClick={scrollToInput}
-                className="bg-[#1A1A1A] hover:bg-[#333] text-white px-8 h-11 rounded-full text-sm font-medium transition-all active:scale-[0.98]"
-              >
-                <PenLine className="w-4 h-4 mr-2" />
-                Refine Your Text
+              <Button onClick={scrollToInput} className="bg-[#1A1A1A] hover:bg-[#333] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-md">
+                <PenLine className="w-4 h-4 mr-2" /> Refine Your Text
               </Button>
-              <Button 
-                variant="outline" 
-                className="border-[#E5E5E5] text-[#1A1A1A] hover:bg-[#F5F5F5] px-6 h-11 rounded-full text-sm font-medium"
-                onClick={() => {}} // non-functional
-              >
-                <Tag className="w-4 h-4 mr-2" />
-                Pricing
-              </Button>
+              <span className="text-xs text-[#999] bg-[#F5F5F5] px-3 py-1.5 rounded-full">Pricing – coming soon</span>
             </div>
-            <div className="flex items-center justify-center md:justify-start gap-2 mt-6 text-xs text-[#888]">
-              <Shield className="w-3.5 h-3.5" />
-              <span>Your text is processed securely and not stored</span>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 mt-6 text-xs text-[#888]">
+              <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /><span>Your text is processed securely and not stored</span></div>
+              <span>•</span>
+              <div><span className="mr-1">⭐</span>Trusted by 100+ early users</div>
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12" ref={inputSectionRef}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10" ref={inputSectionRef}>
           
           {/* Left Column: Input & Controls */}
           <div className="space-y-4">
@@ -1018,26 +1006,15 @@ export default function App() {
               </div>
             </section>
 
-            <Button 
-              className="w-full h-14 text-lg bg-[#1A1A1A] hover:bg-[#333] text-white rounded-xl transition-all active:scale-[0.98]"
+            <Button
+              className="w-full h-14 text-lg bg-gradient-to-r from-[#1A1A1A] to-[#333] hover:from-[#333] hover:to-[#1A1A1A] text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
               onClick={handleTransform}
               disabled={!consentGiven || isLoading || !inputText.trim()}
             >
               {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Sparkles className="w-5 h-5" />
-                  </motion.div>
-                  Refining your writing...
-                </div>
+                <><Sparkles className="w-5 h-5 animate-spin" /> Refining your writing...</>
               ) : (
-                <div className="flex items-center gap-2">
-                  <PenLine className="w-5 h-5" />
-                  Transform to Native English
-                </div>
+                <><PenLine className="w-5 h-5" /> Transform to Native English <ChevronRight className="w-4 h-4" /></>
               )}
             </Button>
           </div>
@@ -1460,25 +1437,24 @@ export default function App() {
       </AnimatePresence>
 
       {/* Footer */}
-      <footer className="max-w-[1600px] mx-auto px-6 py-10 border-t border-[#E5E5E5] mt-12">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[#888] text-sm">
-          <p className="text-xs md:text-sm">
-            © {new Date().getFullYear()} NativeWrite. All rights reserved.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs md:text-sm">
-            <a href="/terms.html" className="hover:text-[#1A1A1A] transition-colors">
-              Terms of Service
-            </a>
-            <a href="/privacy.html" className="hover:text-[#1A1A1A] transition-colors">
-              Privacy & Security
-            </a>
-            <a href="mailto:contact@nativewrite.ai" className="hover:text-[#1A1A1A] transition-colors flex items-center gap-1">
-              <Mail className="w-3.5 h-3.5" />
-              contact@nativewrite.ai
-            </a>
-          </div>
+        <footer className="max-w-[1600px] mx-auto px-8 py-10 border-t border-[#E5E5E5] mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm text-[#888]">
+          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Product</h4><ul className="space-y-2"><li><a href="#" className="hover:text-[#1A1A1A] transition">About</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition">FAQ</a></li><li><span className="text-gray-400">Pricing – coming soon</span></li></ul></div>
+          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Legal</h4><ul className="space-y-2"><li><a href="/terms.html" className="hover:text-[#1A1A1A] transition">Terms of Service</a></li><li><a href="/privacy.html" className="hover:text-[#1A1A1A] transition">Privacy & Security</a></li></ul></div>
+          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Connect</h4><ul className="space-y-2"><li><a href="mailto:contact@nativewrite.ai" className="hover:text-[#1A1A1A] transition flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> contact@nativewrite.ai</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-twitter mr-1"></i> Twitter</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-linkedin mr-1"></i> LinkedIn</a></li></ul></div>
+        </div>
+        <div className="mt-8 text-center text-xs text-gray-400 border-t border-gray-100 pt-6">
+          © 2026 LinguaServices • Free forever during beta • No credit card required
         </div>
       </footer>
+      {/* Floating chat button (simulates Tawk.to) */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <div className="w-14 h-14 bg-[#1A1A1A] rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition cursor-default">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </div>
+      </div>      
     </div>
   );
 }
