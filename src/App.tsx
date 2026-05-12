@@ -1439,7 +1439,11 @@ export default function App() {
       {/* Footer */}
         <footer className="max-w-[1600px] mx-auto px-8 py-10 border-t border-[#E5E5E5] mt-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm text-[#888]">
-          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Product</h4><ul className="space-y-2"><li><a href="#" className="hover:text-[#1A1A1A] transition">About</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition">FAQ</a></li><li><span className="text-gray-400">Pricing – coming soon</span></li></ul></div>
+          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Product</h4><ul className="space-y-2">
+  <li><a href="/about.html" className="hover:text-[#1A1A1A] transition">About</a></li>
+  <li><a href="/faq.html" className="hover:text-[#1A1A1A] transition">FAQ</a></li>
+  <li><span className="text-gray-400">Pricing – coming soon</span></li>
+</ul></div>
           <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Legal</h4><ul className="space-y-2"><li><a href="/terms.html" className="hover:text-[#1A1A1A] transition">Terms of Service</a></li><li><a href="/privacy.html" className="hover:text-[#1A1A1A] transition">Privacy & Security</a></li></ul></div>
           <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Connect</h4><ul className="space-y-2"><li><a href="mailto:contact@nativewrite.ai" className="hover:text-[#1A1A1A] transition flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> contact@nativewrite.ai</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-twitter mr-1"></i> Twitter</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-linkedin mr-1"></i> LinkedIn</a></li></ul></div>
         </div>
