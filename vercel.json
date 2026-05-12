@@ -1,0 +1,13 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://idiomoptima.com/$1",
+      "statusCode": 301
+    }
+  ],
+  "routes": [
+    { "src": "/terms.html", "dest": "/terms.html" },
+    { "src": "/privacy.html", "dest": "/privacy.html" }
+  ]
+}
