@@ -1,4 +1,9 @@
+export const config = {
+  runtime: 'nodejs18',
+};
+
 export default async function handler(req: Request) {
+  // Only allow POST requests
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
   }
@@ -6,8 +11,8 @@ export default async function handler(req: Request) {
   try {
     const { text, domain, tone, dialect } = await req.json();
 
-    // Mock transformation (no API call)
-    const mockTransformed = `[Mock] ${text} (This would be the nativized version using ${dialect} English, ${tone} tone, for ${domain} context.)`;
+    // For now, return a mock response (replace with real API later)
+    const mockTransformed = `[Mock] ${text} (This would be the nativized version using ${dialect || 'US'} English, ${tone} tone, for ${domain} context.)`;
 
     return new Response(
       JSON.stringify({
