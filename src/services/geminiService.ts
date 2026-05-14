@@ -1,6 +1,6 @@
 import { validateLexicalDatabase } from "./validationService";
 
-const WORKER_URL = process.env.WORKER_URL || "https://nativewrite-api.nativewrite-api.workers.dev";
+const WORKER_URL = process.env.WORKER_URL || "/api/transform";
 
 const SYSTEM_PROMPT = `
 # 🧠 NativeWrite: Mode Detection Micro-Engine
@@ -211,13 +211,14 @@ export async function transformText(
     }
   }
 
-  // NEW: Call Cloudflare Worker instead of Gemini directly
+  // NEW: Call Vercel serverless function instead of external worker
   if (onProgress) {
     onProgress(10, 0, 1, "Connecting to server...");
   }
 
   try {
-    const response = await fetch(WORKER_URL, {
+    console.log('Calling API at /api/transform with payload:', { text, domain, tone, forcedDialect, mode: activeMode });
+    const response = await fetch('/api/transform', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -230,6 +231,18 @@ export async function transformText(
         mode: activeMode,
       }),
     });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    // Process data (assuming data has finalVersion, etc.)
+    return data;
+  } catch (error) {
+    console.error("Transformation failed:", error);
+    throw error;
+  }
 
     if (onProgress) {
       onProgress(50, 0, 1, "Processing...");

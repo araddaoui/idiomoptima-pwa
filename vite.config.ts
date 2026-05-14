@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss()],
     define: {
-      'process.env.WORKER_URL': JSON.stringify(env.WORKER_URL || 'https://IdiomOptima-api.IdiomOptima-api.workers.dev'),
+'process.env.WORKER_URL': JSON.stringify(env.WORKER_URL || '/api/transform'),
     },
     resolve: {
       alias: {
