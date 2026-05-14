@@ -89,7 +89,7 @@ export default function App() {
 
   // --- Consent state ---
   const [consentGiven, setConsentGiven] = useState(() => {
-    return localStorage.getItem('nativewrite_consent') === 'true';
+    return localStorage.getItem('IdiomOptima_consent') === 'true';
   });
 
   // --- Usage limits ---
@@ -99,18 +99,18 @@ export default function App() {
 
   // Load daily usage from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('nativewrite_usage');
+    const stored = localStorage.getItem('IdiomOptima_usage');
     const today = new Date().toDateString();
     if (stored) {
       const data = JSON.parse(stored);
       if (data.date === today) {
         setRemainingUses(DAILY_LIMIT - data.count);
       } else {
-        localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: 0 }));
+        localStorage.setItem('IdiomOptima_usage', JSON.stringify({ date: today, count: 0 }));
         setRemainingUses(DAILY_LIMIT);
       }
     } else {
-      localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: 0 }));
+      localStorage.setItem('IdiomOptima_usage', JSON.stringify({ date: today, count: 0 }));
       setRemainingUses(DAILY_LIMIT);
     }
   }, []);
@@ -122,7 +122,7 @@ export default function App() {
     const fileType = file.name.split('.').pop()?.toLowerCase();
     
     if (fileType !== 'docx' && fileType !== 'pdf') {
-      toast.error("NativeWrite currently supports .docx and .pdf files only.");
+      toast.error("IdiomOptima currently supports .docx and .pdf files only.");
       return;
     }
 
@@ -451,7 +451,7 @@ export default function App() {
 
       // Update usage count after successful transformation
       const today = new Date().toDateString();
-      const stored = localStorage.getItem('nativewrite_usage');
+      const stored = localStorage.getItem('IdiomOptima_usage');
       let newCount = 1;
       if (stored) {
         const usage = JSON.parse(stored);
@@ -459,7 +459,7 @@ export default function App() {
           newCount = usage.count + 1;
         }
       }
-      localStorage.setItem('nativewrite_usage', JSON.stringify({ date: today, count: newCount }));
+      localStorage.setItem('IdiomOptima_usage', JSON.stringify({ date: today, count: newCount }));
       setRemainingUses(DAILY_LIMIT - newCount);
 
     } catch (error: any) {
@@ -651,7 +651,7 @@ export default function App() {
 
       const blob = await Packer.toBlob(doc);
       const date = new Date().toISOString().split('T')[0];
-      saveAs(blob, `NativeWrite_Document_${date}.docx`);
+      saveAs(blob, `IdiomOptima_Document_${date}.docx`);
       toast.success("Word document exported!");
     } catch (error) {
       console.error("Docx Export Error:", error);
@@ -762,7 +762,7 @@ export default function App() {
         doc.text(lines, margin, currentY);
       }
       
-      doc.save(`NativeWrite_Document_${date}.pdf`);
+      doc.save(`IdiomOptima_Document_${date}.pdf`);
       toast.success("PDF document exported!");
     } catch (error) {
       console.error(error);
@@ -836,7 +836,7 @@ export default function App() {
             <div className="w-10 h-10 bg-[#1A1A1A] rounded-xl flex items-center justify-center">
               <Languages className="w-5 h-5 text-white" />
             </div>
-            <h1 className="font-serif text-3xl font-bold tracking-tight text-[#1A1A1A]">NativeWrite</h1>
+            <h1 className="font-serif text-3xl font-bold tracking-tight text-[#1A1A1A]">IdiomOptima</h1>
           </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="text-[#666] hover:text-[#1A1A1A]">
@@ -1445,10 +1445,10 @@ export default function App() {
   <li><span className="text-gray-400">Pricing – coming soon</span></li>
 </ul></div>
           <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Legal</h4><ul className="space-y-2"><li><a href="/terms.html" className="hover:text-[#1A1A1A] transition">Terms of Service</a></li><li><a href="/privacy.html" className="hover:text-[#1A1A1A] transition">Privacy & Security</a></li></ul></div>
-          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Connect</h4><ul className="space-y-2"><li><a href="mailto:contact@nativewrite.ai" className="hover:text-[#1A1A1A] transition flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> contact@nativewrite.ai</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-twitter mr-1"></i> Twitter</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-linkedin mr-1"></i> LinkedIn</a></li></ul></div>
+          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Connect</h4><ul className="space-y-2"><li><a href="mailto:contact@IdiomOptima.ai" className="hover:text-[#1A1A1A] transition flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> contact@IdiomOptima.ai</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-twitter mr-1"></i> Twitter</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-linkedin mr-1"></i> LinkedIn</a></li></ul></div>
         </div>
         <div className="mt-8 text-center text-xs text-gray-400 border-t border-gray-100 pt-6">
-          © 2026 LinguaServices • Free forever during beta • No credit card required
+          © 2026 IdiomOptima • Free forever during beta • No credit card required
         </div>
       </footer>
       {/* Floating chat button (simulates Tawk.to) */}

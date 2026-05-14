@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss()],
     define: {
-      'process.env.WORKER_URL': JSON.stringify(env.WORKER_URL || 'https://nativewrite-api.nativewrite-api.workers.dev'),
+      'process.env.WORKER_URL': JSON.stringify(env.WORKER_URL || 'https://IdiomOptima-api.IdiomOptima-api.workers.dev'),
     },
     resolve: {
       alias: {
