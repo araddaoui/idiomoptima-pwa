@@ -1,6 +1,3 @@
-export default async function handler(req: Request) {
-  return new Response(
-    JSON.stringify({ finalVersion: "Test response from serverless function" }),
-    { headers: { 'Content-Type': 'application/json' } }
-  );
+export default async function handler(req: any, res: any) {
+  res.status(200).json({ finalVersion: "Test response from serverless function" });
 }
