@@ -951,20 +951,21 @@ export default function App() {
                     accept=".docx,.pdf"
                     onChange={handleFileUpload}
                   />
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={!consentGiven || isReading || isLoading}
-                    className="h-8 text-[11px] border-dashed border-[#E5E5E5] hover:border-[#1A1A1A] transition-colors"
-                  >
-                    {isReading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
-                    ) : (
-                      <Plus className="w-3.5 h-3.5 mr-2" />
-                    )}
+                  <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={!consentGiven || isReading || isLoading} className="text-xs border-dashed">
+                    {isReading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Plus className="w-3 h-3 mr-1" />}
                     {isReading ? "Reading..." : "Import Document"}
                   </Button>
+                  <button
+                    onClick={() => {
+                      const example = "He explained me the problem very clear, but I didn't understood his point. We need to discuss about this further.";
+                      setInputText(example);
+                      setInputHtml(example);
+                      handleTransform();
+                    }}
+                    className="text-xs text-gray-400 hover:text-gray-600 ml-2"
+                  >
+                    <Lightbulb className="w-3 h-3 inline mr-1" /> Try an example
+                  </button>
                   {inputText && (
                     <Button 
                       variant="ghost" 
@@ -1340,8 +1341,19 @@ export default function App() {
                   </div>
                   <h3 className="font-serif text-xl font-medium mb-2">Ready to refine</h3>
                   <p className="text-sm text-[#999] max-w-[240px]">
-                    Enter your text on the left and select your desired tone to see the transformation.
+                    Try the example below, or paste your own text.
                   </p>
+                  <button
+                    onClick={() => {
+                      const example = "He explained me the problem very clear, but I didn't understood his point. We need to discuss about this further.";
+                      setInputText(example);
+                      setInputHtml(example);
+                      handleTransform();
+                    }}
+                    className="mt-4 text-xs bg-[#1A1A1A] text-white px-3 py-1.5 rounded-full hover:bg-[#333] transition"
+                  >
+                    <Lightbulb className="w-3 h-3 inline mr-1" /> Try an example
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
