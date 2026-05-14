@@ -212,25 +212,27 @@ export async function transformText(
   }
 
   // NEW: Call Vercel serverless function
+   // Mock response (no API call)
   if (onProgress) {
-    onProgress(10, 0, 1, "Connecting to server...");
+    onProgress(50, 0, 1, "Processing...");
   }
 
-  try {
-    console.log('Calling API at /api/transform with payload:', { text, domain, tone, forcedDialect, mode: activeMode });
-    const response = await fetch('/api/transform', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text,
-        domain,
-        tone,
-        forcedDialect,
-        mode: activeMode,
-      }),
-    });
+  const mockResponse: TransformationResult = {
+    finalVersion: `[Mock] ${text}`,
+    originalScore: 45,
+    revisedScore: 98,
+    detectedDialect: forcedDialect || 'US',
+    suggestions: ["Your text now sounds more natural."],
+    explanation: "Improved fluency and word choice.",
+    sentences: [],
+    appliedMode: activeMode,
+  };
+
+  if (onProgress) {
+    onProgress(100, 1, 1, "Complete!");
+  }
+
+  return mockResponse;
 
     if (!response.ok) {
       throw new Error(`Server error: ${response.status}`);
