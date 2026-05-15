@@ -96,6 +96,7 @@ export default function App() {
   const DAILY_LIMIT = 4;
   const MAX_WORDS = 800;
   const [remainingUses, setRemainingUses] = useState<number | null>(null);
+    const [demoShown, setDemoShown] = useState(false);
 
   // Load daily usage from localStorage
   useEffect(() => {
@@ -114,6 +115,22 @@ export default function App() {
       setRemainingUses(DAILY_LIMIT);
     }
   }, []);
+    // Load daily usage from localStorage
+  useEffect(() => {
+    // ... existing code ...
+  }, []);
+
+  // Demo on first load
+  useEffect(() => {
+    if (!demoShown && !inputText.trim()) {
+      const example = "He explained me the problem very clear, but I didn't understood his point. We need to discuss about this further.";
+      setInputText(example);
+      setInputHtml(example);
+      setDemoShown(true);
+      // Optional: auto-transform
+      setTimeout(() => handleTransform(), 100);
+    }
+  }, [demoShown, inputText]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
