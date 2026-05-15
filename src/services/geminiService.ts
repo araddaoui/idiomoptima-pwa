@@ -125,11 +125,11 @@ export async function transformText(
   }
 
   try {
-    const response = await fetch('/api/hello', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, domain, tone, forcedDialect, mode: activeMode }),
-    });
+const response = await fetch('https://nativewrite-api.nativewrite-api.workers.dev', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ text, domain, tone, forcedDialect, mode: activeMode }),
+});
 
     if (!response.ok) {
       const errorText = await response.text();
