@@ -119,31 +119,43 @@ export async function transformText(
     };
   }
 
-  // Mock transformation (no API call)
+  // Real API call via serverless function
   if (onProgress) {
-    onProgress(10, 0, 1, "Starting...");
-    onProgress(50, 0, 1, "Processing...");
-    onProgress(100, 1, 1, "Complete!");
+    onProgress(10, 0, 1, "Connecting to server...");
   }
 
-  const mockResponse: TransformationResult = {
-    finalVersion: `[Mock] ${text}`,
-    sentences: [{
-      original: text,
-      native: `[Mock] ${text}`,
-      isNativeMatch: false,
-      isEndOfParagraph: true,
-      isHeading: false,
-    }],
-    originalScore: 45,
-    revisedScore: 98,
-    detectedDialect: forcedDialect || 'US',
-    suggestions: ["Your text now sounds more natural."],
-    explanation: `Improved fluency and word choice. Mode: ${activeMode}, Reason: ${autoReason}`,
-    appliedMode: activeMode,
-  };
+  try {
+    const response = await fetch('/api/transform', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, domain, tone, forcedDialect, mode: activeMode }),
+    });
 
-  return mockResponse;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Server error (${response.status}): ${errorText}`);
+    }
+
+    if (onProgress) {
+      onProgress(50, 0, 1, "Processing...");
+    }
+
+    const data: TransformationResult = await response.json();
+
+    if (onProgress) {
+      onProgress(100, 1, 1, "Complete!");
+    }
+
+    if (mode === "auto") {
+      data.explanation = (data.explanation || "") + ` \n[Auto-Selected Mode: ${activeMode}] - ${autoReason}`;
+      data.appliedMode = activeMode;
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error("Transformation failed:", error);
+    throw new Error(`Transformation failed: ${error.message}`);
+  }
 }
 
 function mergeResults(results: TransformationResult[]): TransformationResult {
