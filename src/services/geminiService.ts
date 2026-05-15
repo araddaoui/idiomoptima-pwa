@@ -126,41 +126,38 @@ export async function transformText(
     onProgress(100, 1, 1, "Complete!");
   }
 
-  // Real API call via serverless function
-  if (onProgress) {
-    onProgress(10, 0, 1, "Connecting to server...");
+  const mockResponse: TransformationResult = {
+    finalVersion: `[Mock] ${text}`,
+    sentences: [{
+      original: text,
+      native: `[Mock] ${text}`,
+      isNativeMatch: false,
+      isEndOfParagraph: true,
+      isHeading: false,
+    }],
+    originalScore: 45,
+    revisedScore: 98,
+    detectedDialect: forcedDialect || 'US',
+    suggestions: ["Your text now sounds more natural."],
+    explanation: `Improved fluency and word choice. Mode: ${activeMode}, Reason: ${autoReason}`,
+    appliedMode: activeMode,
+  };
+
+  return mockResponse;
+}
+
+function mergeResults(results: TransformationResult[]): TransformationResult {
+  if (results.length === 0) {
+    throw new Error("No results to merge");
   }
 
-  try {
-    const response = await fetch('/api/transform', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, domain, tone, forcedDialect, mode: activeMode }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server error (${response.status}): ${errorText}`);
-    }
-
-    if (onProgress) {
-      onProgress(50, 0, 1, "Processing...");
-    }
-
-    const data: TransformationResult = await response.json();
-
-    if (onProgress) {
-      onProgress(100, 1, 1, "Complete!");
-    }
-
-    // Add auto-mode explanation if applicable
-    if (mode === "auto") {
-      data.explanation = (data.explanation || "") + ` \n[Auto-Selected Mode: ${activeMode}] - ${autoReason}`;
-      data.appliedMode = activeMode;
-    }
-
-    return data;
-  } catch (error: any) {
-    console.error("Transformation failed:", error);
-    throw new Error(`Transformation failed: ${error.message}`);
-  }
+  return {
+    finalVersion: results.map(r => r.finalVersion).join("\n\n"),
+    sentences: results.flatMap(r => r.sentences),
+    suggestions: Array.from(new Set(results.flatMap(r => r.suggestions))).slice(0, 5),
+    explanation: results[0].explanation,
+    originalScore: Math.round(results.reduce((acc, r) => acc + r.originalScore, 0) / results.length),
+    revisedScore: Math.round(results.reduce((acc, r) => acc + r.revisedScore, 0) / results.length),
+    detectedDialect: results[0].detectedDialect || "US",
+  };
+}
