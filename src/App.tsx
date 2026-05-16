@@ -846,23 +846,32 @@ export default function App() {
       <Toaster position="top-center" />
       <Analytics />
       
-      {/* Header */}
+           {/* Header */}
       <header className="border-b border-[#E5E5E5] bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-[1600px] mx-auto px-8 h-16 flex items-center justify-between">
+          {/* Left spacer (empty) – keeps logo/title centered relative to full width */}
+          <div className="w-[120px]"></div>
+          {/* Centered logo + title */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#1A1A1A] rounded-xl flex items-center justify-center">
-              <Languages className="w-5 h-5 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-br from-[#1E3A8A] to-[#0F172A] rounded-2xl flex items-center justify-center shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                <path d="M2 12h20"/>
+              </svg>
             </div>
-            <h1 className="font-serif text-3xl font-bold tracking-tight text-[#1A1A1A]">IdiomOptima</h1>
+            <h1 className="font-serif text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] bg-clip-text text-transparent">
+              IdiomOptima
+            </h1>
           </div>
-          <div className="flex items-center gap-4">
+          {/* Buttons on the right – same width as left spacer to keep center aligned */}
+          <div className="flex items-center gap-4 w-[120px] justify-end">
             <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="text-[#666] hover:text-[#1A1A1A]">
               <HistoryIcon className="w-4 h-4 mr-2" /> History
             </Button>
             <Button variant="outline" size="sm" onClick={reset}>
               <RotateCcw className="w-4 h-4 mr-2" /> Reset
             </Button>
-            {/* Placeholder sign in/up */}
             <Button variant="ghost" size="sm" className="text-[#666] border border-[#E5E5E5] rounded-full">Sign in</Button>
             <Button size="sm" className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333]">Sign up</Button>
           </div>
@@ -871,24 +880,24 @@ export default function App() {
 
       <main className="max-w-[1600px] mx-auto px-8 py-8">
         {/* Hero Section – enhanced */}
-        <div className="mb-12 text-center md:text-left">
-          <div className="max-w-3xl mx-auto md:mx-0">
-            <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight text-[#1A1A1A] leading-tight mb-3">
+        <div className="mb-12 text-center w-full">
+          <div className="max-w-3xl mx-auto">
+            <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-3 bg-gradient-to-r from-[#0F172A] via-[#1E3A8A] to-[#1E293B] bg-clip-text text-transparent whitespace-nowrap text-center mx-auto">
               Elevate your writing without losing your voice
             </h1>
-            <p className="text-base md:text-lg text-[#444] leading-relaxed mb-4 max-w-2xl">
+            <p className="text-base md:text-lg text-[#444] leading-relaxed mb-4 max-w-2xl mx-auto whitespace-nowrap">
               Academic, business, and creative writing, refined for clarity, structure, and natural expression
             </p>
-            <p className="text-gray-500 text-sm mb-5">
+            <p className="text-gray-500 text-sm mb-5 text-center">
               ✨ Get native‑level English in one click – no sign‑up required.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button onClick={scrollToInput} className="bg-[#1A1A1A] hover:bg-[#333] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-md">
                 <PenLine className="w-4 h-4 mr-2" /> Refine Your Text
               </Button>
               <span className="text-xs text-[#999] bg-[#F5F5F5] px-3 py-1.5 rounded-full">Pricing – coming soon</span>
             </div>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-2 mt-6 text-xs text-[#888]">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-6 text-xs text-[#888]">
               <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /><span>Your text is processed securely and not stored</span></div>
               <span>•</span>
               <div><span className="mr-1">⭐</span>Trusted by 100+ early users</div>
@@ -974,7 +983,7 @@ export default function App() {
                   </Button>
                   <button
                     onClick={() => {
-                      const example = "He explained me the problem very clear, but I didn't understood his point. We need to discuss about this further.";
+                      const example = "He explained me the problem very clear, but I didn't understood his point.[1] We need to discuss about this further.";
                       setInputText(example);
                       setInputHtml(example);
                       handleTransform();
@@ -1005,7 +1014,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="relative group border-2 border-[#E5E5E5] rounded-3xl overflow-hidden bg-white shadow-sm focus-within:ring-4 focus-within:ring-[#1A1A1A]/5 transition-all p-2">
+              <div className="relative group border-2 border-[#E5E5E5] rounded-3xl overflow-hidden bg-white shadow-sm focus-within:ring-4 focus-within:ring-[#1A1A1A]/5 transition-all p-2 max-h-[280px] overflow-y-auto">
                 <RichTextEditor 
                   content={inputHtml}
                   onChange={handleEditorChange}
@@ -1347,31 +1356,31 @@ export default function App() {
                   </div>
                 </motion.div>
               ) : (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="h-full flex flex-col items-center justify-center text-center p-12 border-2 border-dashed border-[#E5E5E5] rounded-3xl"
-                >
-                  <div className="w-16 h-16 bg-[#F5F5F5] rounded-full flex items-center justify-center mb-6">
-                    <PenLine className="w-8 h-8 text-[#999]" />
-                  </div>
-                  <h3 className="font-serif text-xl font-medium mb-2">Ready to refine</h3>
-                  <p className="text-sm text-[#999] max-w-[240px]">
-                    Try the example below, or paste your own text.
-                  </p>
-                  <button
-                    onClick={() => {
-                      const example = "He explained me the problem very clear, but I didn't understood his point. We need to discuss about this further.";
-                      setInputText(example);
-                      setInputHtml(example);
-                      handleTransform();
-                    }}
-                    className="mt-4 text-xs bg-[#1A1A1A] text-white px-3 py-1.5 rounded-full hover:bg-[#333] transition"
-                  >
-                    <Lightbulb className="w-3 h-3 inline mr-1" /> Try an example
-                  </button>
-                </motion.div>
+<motion.div
+  key="empty"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  className="flex flex-col items-center text-center py-10 px-6 border-2 border-dashed border-[#E5E5E5] rounded-3xl"
+>
+  <div className="w-20 h-20 bg-[#F5F5F5] rounded-full flex items-center justify-center mb-4">
+    <PenLine className="w-10 h-10 text-[#666]" />
+  </div>
+  <h3 className="font-serif text-3xl font-semibold mb-3">Ready to refine</h3>
+  <p className="text-base text-[#666] max-w-[280px] mb-5">
+    Try the example in the box, or paste your own text.
+  </p>
+  <button
+    onClick={() => {
+      const example = "He explained me the problem very clear, but I didn't understood his point.[1] We need to discuss about this further.";
+      setInputText(example);
+      setInputHtml(example);
+      handleTransform();
+    }}
+    className="mt-2 text-base bg-[#1A1A1A] text-white px-8 py-3 rounded-full hover:bg-[#333] transition shadow-md font-medium"
+  >
+    <Lightbulb className="w-4 h-4 inline mr-2" /> Try an example
+  </button>
+</motion.div>
               )}
             </AnimatePresence>
           </div>
