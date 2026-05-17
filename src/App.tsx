@@ -846,34 +846,32 @@ export default function App() {
       <Toaster position="top-center" />
       <Analytics />
       
-           {/* Header */}
+      {/* Header */}
       <header className="border-b border-[#E5E5E5] bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-8 h-16 flex items-center justify-between">
-          {/* Left spacer (empty) – keeps logo/title centered relative to full width */}
-          <div className="w-[120px]"></div>
-          {/* Centered logo + title */}
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#1E3A8A] to-[#0F172A] rounded-2xl flex items-center justify-center shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          {/* Logo + title – centered on mobile, left on desktop */}
+          <div className="flex items-center justify-center sm:justify-start gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#1E3A8A] to-[#0F172A] rounded-2xl flex items-center justify-center shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white sm:w-6 sm:h-6">
                 <circle cx="12" cy="12" r="10"/>
                 <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
                 <path d="M2 12h20"/>
               </svg>
             </div>
-            <h1 className="font-serif text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-[#0F172A] to-[#2563EB] bg-clip-text text-transparent">
+            <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] bg-clip-text text-transparent">
               IdiomOptima
             </h1>
           </div>
-          {/* Buttons on the right – same width as left spacer to keep center aligned */}
-          <div className="flex items-center gap-4 w-[120px] justify-end">
-            <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="text-[#666] hover:text-[#1A1A1A]">
-              <HistoryIcon className="w-4 h-4 mr-2" /> History
+          {/* Buttons – wrap on mobile, stay on right on desktop */}
+          <div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">
+            <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="text-[#666] hover:text-[#1A1A1A] text-xs sm:text-sm">
+              <HistoryIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> History
             </Button>
-            <Button variant="outline" size="sm" onClick={reset}>
-              <RotateCcw className="w-4 h-4 mr-2" /> Reset
+            <Button variant="outline" size="sm" onClick={reset} className="text-xs sm:text-sm">
+              <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Reset
             </Button>
-            <Button variant="ghost" size="sm" className="text-[#666] border border-[#E5E5E5] rounded-full">Sign in</Button>
-            <Button size="sm" className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333]">Sign up</Button>
+            <Button variant="ghost" size="sm" className="text-[#666] border border-[#E5E5E5] rounded-full text-xs sm:text-sm">Sign in</Button>
+            <Button size="sm" className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333] text-xs sm:text-sm">Sign up</Button>
           </div>
         </div>
       </header>
@@ -1028,53 +1026,28 @@ export default function App() {
             </section>
 
             <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Label htmlFor="input-text" className="text-[10px] font-black text-[#999] uppercase tracking-[0.2em] flex items-center gap-2">
-                    <FileText className="w-3.5 h-3.5" /> Source Text
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <Label htmlFor="input-text" className="text-[10px] font-black text-[#999] uppercase tracking-[0.2em] flex items-center gap-1">
+                    <FileText className="w-3 h-3" /> Source Text
                   </Label>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept=".docx,.pdf"
-                    onChange={handleFileUpload}
-                  />
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <input type="file" ref={fileInputRef} className="hidden" accept=".docx,.pdf" onChange={handleFileUpload} />
                   <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={!consentGiven || isReading || isLoading} className="text-xs border-dashed">
                     {isReading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Plus className="w-3 h-3 mr-1" />}
                     {isReading ? "Reading..." : "Import Document"}
                   </Button>
-                  <button
-                    onClick={() => {
-                      const example = "He explained me the problem very clear, but I didn't understood his point.[1] We need to discuss about this further.";
-                      setInputText(example);
-                      setInputHtml(example);
-                      handleTransform();
-                    }}
-                    className="text-xs text-gray-400 hover:text-gray-600 ml-2"
-                  >
-                    <Lightbulb className="w-3 h-3 inline mr-1" /> Try an example
-                  </button>
                   {inputText && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setInputText("")}
-                      className="text-[#999] hover:text-red-500 hover:bg-red-50 h-8 text-[11px]"
-                    >
-                      <Trash2 className="w-3 h-3 mr-1.5" />
-                      Clear
+                    <Button variant="ghost" size="sm" onClick={() => setInputText("")} className="text-[#999] hover:text-red-500 hover:bg-red-50 h-8 text-[11px]">
+                      <Trash2 className="w-3 h-3 mr-1" /> Clear
                     </Button>
                   )}
-                  <span className="text-[10px] font-medium text-[#BBB] uppercase tracking-widest tabular-nums ml-2">
+                  <span className="text-[10px] font-medium text-[#BBB] uppercase tracking-widest tabular-nums">
                     {wordCount} words
                   </span>
                   {remainingUses !== null && (
-                    <span className="text-[10px] font-medium text-[#666] ml-2">
-                      · {remainingUses} / {DAILY_LIMIT} remaining today
-                    </span>
+                    <span className="text-[10px] font-medium text-[#666]">· {remainingUses} / {DAILY_LIMIT} remaining today</span>
                   )}
                 </div>
               </div>
