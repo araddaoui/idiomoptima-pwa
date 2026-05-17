@@ -860,7 +860,7 @@ export default function App() {
                 <path d="M2 12h20"/>
               </svg>
             </div>
-            <h1 className="font-serif text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] bg-clip-text text-transparent">
+            <h1 className="font-serif text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-[#0F172A] to-[#2563EB] bg-clip-text text-transparent">
               IdiomOptima
             </h1>
           </div>
@@ -885,9 +885,74 @@ export default function App() {
             <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-3 bg-gradient-to-r from-[#0F172A] via-[#1E3A8A] to-[#1E293B] bg-clip-text text-transparent whitespace-nowrap text-center mx-auto">
               Elevate your writing without losing your voice
             </h1>
-            <p className="text-base md:text-lg text-[#444] leading-relaxed mb-4 max-w-2xl mx-auto whitespace-nowrap">
-              Academic, business, and creative writing, refined for clarity, structure, and natural expression
-            </p>
+<div className="flex flex-wrap items-center justify-center gap-2 my-4">
+  <span className="text-xs text-gray-400 uppercase tracking-wider">Try an example:</span>
+  
+  <button
+    title="Essay, thesis, journal article – refine for clarity and formal tone"
+    onClick={() => {
+      const example = "The results of the experiment demonstrates that there is a significant correlation between the variables, however further research is needed to establish causality.[1]";
+      setInputText(example);
+      setInputHtml(example);
+      toast.info("🎓 Academic example loaded – try transforming it!");
+    }}
+    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
+  >
+    <span>🎓</span> Academic
+  </button>
+
+  <button
+    title="Report, proposal, business email – make concise and professional"
+    onClick={() => {
+      const example = "Please find attached the quarterly report. We need to discuss about the budget allocation for next quarter as soon as possible.";
+      setInputText(example);
+      setInputHtml(example);
+      toast.info("💼 Business example loaded – try transforming it!");
+    }}
+    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
+  >
+    <span>💼</span> Business
+  </button>
+
+  <button
+    title="Story, blog post, poem – enhance style without losing your voice"
+    onClick={() => {
+      const example = "The old house stood on the hill, its windows like empty eyes staring at the town bellow. No one had visited in years.";
+      setInputText(example);
+      setInputHtml(example);
+      toast.info("✍️ Creative example loaded – try transforming it!");
+    }}
+    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
+  >
+    <span>✍️</span> Creative
+  </button>
+
+  <button
+    title="Resume, cover letter, LinkedIn summary – polish for impact"
+    onClick={() => {
+      const example = "I am writing to apply for the marketing position. I have 5 years of experience and I think I would be a good fit for your company.";
+      setInputText(example);
+      setInputHtml(example);
+      toast.info("📧 Professional example loaded – try transforming it!");
+    }}
+    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
+  >
+    <span>📧</span> Professional
+  </button>
+
+  <button
+    title="English learners – get native‑level fluency suggestions"
+    onClick={() => {
+      const example = "I have been learning English for two years. Yesterday I go to the store and buy some apples, but I forget my wallet at home.";
+      setInputText(example);
+      setInputHtml(example);
+      toast.info("🌍 ESL example loaded – try transforming it!");
+    }}
+    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
+  >
+    <span>🌍</span> ESL
+  </button>
+</div>
             <p className="text-gray-500 text-sm mb-5 text-center">
               ✨ Get native‑level English in one click – no sign‑up required.
             </p>
@@ -1034,7 +1099,7 @@ export default function App() {
             </section>
 
             <Button
-              className="w-full h-14 text-lg bg-gradient-to-r from-[#1A1A1A] to-[#333] hover:from-[#333] hover:to-[#1A1A1A] text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full h-14 text-lg bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] hover:from-[#333] hover:to-[#1A1A1A] text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
               onClick={handleTransform}
               disabled={!consentGiven || isLoading || !inputText.trim()}
             >
