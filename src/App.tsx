@@ -880,9 +880,9 @@ export default function App() {
         {/* Hero Section – enhanced */}
         <div className="mb-12 text-center w-full">
           <div className="max-w-3xl mx-auto">
-            <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-3 bg-gradient-to-r from-[#0F172A] via-[#1E3A8A] to-[#1E293B] bg-clip-text text-transparent whitespace-nowrap text-center mx-auto">
-              Elevate your writing without losing your voice
-            </h1>
+  <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-3 bg-gradient-to-r from-[#0F172A] via-[#1E3A8A] to-[#1E293B] bg-clip-text text-transparent text-center mx-auto px-2">
+  Elevate your writing without losing your voice
+</h1>
 <div className="flex flex-wrap items-center justify-center gap-2 my-4">
   <span className="text-xs text-gray-400 uppercase tracking-wider">Try an example:</span>
   
