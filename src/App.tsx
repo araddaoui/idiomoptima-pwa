@@ -1331,10 +1331,10 @@ export default function App() {
                   {/* Authenticity Metrics Section */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-white border border-[#E5E5E5] rounded-xl space-y-2">
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#999]">Original Authenticity</span>
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#999]">Source Quality</span>
                        <div className="flex items-end gap-2">
                          <span className="text-2xl font-serif font-bold">{result.originalScore}%</span>
-                         <span className="text-[10px] text-[#999] mb-1">Human-like</span>
+                         <span className="text-[10px] text-[#999] mb-1">Original text</span>
                        </div>
                        <div className="w-full h-1.5 bg-[#F5F5F5] rounded-full overflow-hidden">
                          <motion.div 
@@ -1345,10 +1345,10 @@ export default function App() {
                        </div>
                     </div>
                     <div className="p-4 bg-[#1A1A1A] border border-[#1A1A1A] rounded-xl space-y-2 text-white">
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Improved Authenticity</span>
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Refined Quality</span>
                        <div className="flex items-end gap-2">
                          <span className="text-2xl font-serif font-bold">{result.revisedScore}%</span>
-                         <span className="text-[10px] text-white/50 mb-1">Human-like</span>
+                         <span className="text-[10px] text-white/50 mb-1">After refinement</span>
                        </div>
                        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                          <motion.div 
