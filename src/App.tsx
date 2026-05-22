@@ -1034,7 +1034,7 @@ export default function App() {
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   <input type="file" ref={fileInputRef} className="hidden" accept=".docx,.pdf" onChange={handleFileUpload} />
-                  <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={!consentGiven || isReading || isLoading} className="text-xs border-dashed">
+                  <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isReading || isLoading} className="text-xs border-dashed">
                     {isReading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Plus className="w-3 h-3 mr-1" />}
                     {isReading ? "Reading..." : "Import Document"}
                   </Button>
@@ -1056,8 +1056,8 @@ export default function App() {
                 <RichTextEditor 
                   content={inputHtml}
                   onChange={handleEditorChange}
-                  placeholder={consentGiven ? "Paste your academic text here..." : "Please accept the Terms & Privacy first (click footer links)."}
-                  disabled={!consentGiven || isLoading}
+                  placeholder={"Paste your academic text here..."}
+                  disabled={isLoading}
                 />
                 
                 {isReading && (
@@ -1069,12 +1069,18 @@ export default function App() {
                   </div>
                 )}
               </div>
+
+              {/* Terms notice - added after editor */}
+              <p className="text-xs text-center text-gray-400 mt-2">
+                By using IdiomOptima, you agree to our <a href="/terms.html" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy.html" className="text-blue-600 hover:underline">Privacy Policy</a>.
+              </p>
+
             </section>
 
             <Button
               className="w-full h-14 text-lg bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] hover:from-[#333] hover:to-[#1A1A1A] text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
               onClick={handleTransform}
-              disabled={!consentGiven || isLoading || !inputText.trim()}
+              disabled={isLoading || !inputText.trim()}
             >
               {isLoading ? (
                 <><Sparkles className="w-5 h-5 animate-spin" /> Refining your writing...</>
