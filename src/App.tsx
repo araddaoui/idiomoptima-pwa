@@ -121,16 +121,15 @@ export default function App() {
   }, []);
 
   // Demo on first load
-  useEffect(() => {
-    if (!demoShown && !inputText.trim()) {
-      const example = "He explained me the problem very clear, but I didn't understood his point. We need to discuss about this further.";
-      setInputText(example);
-      setInputHtml(example);
-      setDemoShown(true);
-      // Optional: auto-transform
-      setTimeout(() => handleTransform(), 100);
-    }
-  }, [demoShown, inputText]);
+useEffect(() => {
+  if (!demoShown && !inputText.trim()) {
+    const example = "The results of the experiment demonstrates that there is a significant correlation between the variables, however further research is needed to establish causality.[1]";
+    setInputText(example);
+    setInputHtml(example);
+    setDemoShown(true);
+    setTimeout(() => handleTransform(), 100);
+  }
+}, [demoShown, inputText]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -876,555 +875,342 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-[1600px] mx-auto px-8 py-8">
-        {/* Hero Section – enhanced */}
-        <div className="mb-12 text-center w-full">
-          <div className="mx-auto px-2">
-<h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-3 bg-gradient-to-r from-[#0F172A] via-[#1E3A8A] to-[#1E293B] bg-clip-text text-transparent text-center mx-auto px-2">
-  Elevate your writing without losing your voice
-</h1>
-<div className="flex flex-wrap items-center justify-center gap-2 my-4">
-  <span className="text-xs text-gray-400 uppercase tracking-wider">Try an example:</span>
-  
-  <button
-    title="Essay, thesis, journal article – refine for clarity and formal tone"
-    onClick={() => {
-      const example = "The results of the experiment demonstrates that there is a significant correlation between the variables, however further research is needed to establish causality.[1]";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("🎓 Academic example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>🎓</span> Academic
-  </button>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {/* Hero Section - title only */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-2">
+            Transform your English to <span className="text-blue-600">native level</span>
+          </h1>
+        </div>
 
-  <button
-    title="Report, proposal, business email – make concise and professional"
-    onClick={() => {
-      const example = "Please find attached the quarterly report. We need to discuss about the budget allocation for next quarter as soon as possible.";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("💼 Business example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>💼</span> Business
-  </button>
+        {/* Try a sample chips */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <span className="text-xs text-gray-400">Try a sample:</span>
+          <button onClick={() => {
+            const example = "The results of the experiment demonstrates that there is a significant correlation between the variables, however further research is needed to establish causality.[1]";
+            setInputText(example);
+            setInputHtml(example);
+            toast.info("Academic example loaded");
+          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">🎓 Academic</button>
+          <button onClick={() => {
+            const example = "Please find attached the quarterly report. We need to discuss about the budget allocation for next quarter.";
+            setInputText(example);
+            setInputHtml(example);
+            toast.info("Business example loaded");
+          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">💼 Business</button>
+          <button onClick={() => {
+            const example = "The old house stood on the hill, its windows like empty eyes.";
+            setInputText(example);
+            setInputHtml(example);
+            toast.info("Creative example loaded");
+          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">✍️ Creative</button>
+          <button onClick={() => {
+            const example = "I am writing to apply for the marketing position. I have 5 years of experience.";
+            setInputText(example);
+            setInputHtml(example);
+            toast.info("Professional example loaded");
+          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">📧 Professional</button>
+          <button onClick={() => {
+            const example = "Yesterday I go to the store and buy some apples, but I forget my wallet.";
+            setInputText(example);
+            setInputHtml(example);
+            toast.info("ELL example loaded");
+          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">🌍 ELL</button>
+        </div>
 
-  <button
-    title="Story, blog post, poem – enhance style without losing your voice"
-    onClick={() => {
-      const example = "The old house stood on the hill, its windows like empty eyes staring at the town bellow. No one had visited in years.";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("✍️ Creative example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>✍️</span> Creative
-  </button>
-
-  <button
-    title="Resume, cover letter, LinkedIn summary – polish for impact"
-    onClick={() => {
-      const example = "I am writing to apply for the marketing position. I have 5 years of experience and I think I would be a good fit for your company.";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("📧 Professional example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>📧</span> Professional
-  </button>
-
-  <button
-    title="English learners – get native‑level fluency suggestions"
-    onClick={() => {
-      const example = "I have been learning English for two years. Yesterday I go to the store and buy some apples, but I forget my wallet at home.";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("🌍 ESL example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>🌍</span> ESL
-  </button>
-</div>
-            <p className="text-gray-500 text-sm mb-5 text-center">
-              ✨ Get native‑level English in one click – no sign‑up required.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button onClick={scrollToInput} className="bg-[#1A1A1A] hover:bg-[#333] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-md">
-                <PenLine className="w-4 h-4 mr-2" /> Refine Your Text
-              </Button>
-              <span className="text-xs text-[#999] bg-[#F5F5F5] px-3 py-1.5 rounded-full">Pricing – coming soon</span>
+        {/* Control Row - Dialect, Domain, Tone with message on same line */}
+        <div className="bg-white border-2 border-gray-200 rounded-xl p-4 mb-6 hover:border-blue-400 transition-all duration-200">
+          <div className="flex flex-wrap gap-4 justify-between items-center">
+            <div className="flex gap-6">
+              <div>
+                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Dialect</Label>
+                <Select value={forcedDialect || "auto"} onValueChange={(val) => setForcedDialect(val === "auto" ? undefined : val)}>
+                  <SelectTrigger className="h-8 text-sm w-[90px] hover:bg-blue-50 transition-colors">
+                    <SelectValue placeholder="Auto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Auto</SelectItem>
+                    <SelectItem value="US">US</SelectItem>
+                    <SelectItem value="UK">UK</SelectItem>
+                    <SelectItem value="AU">AU</SelectItem>
+                    <SelectItem value="CA">CA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Domain</Label>
+                <Select value={domain} onValueChange={setDomain}>
+                  <SelectTrigger className="h-8 text-sm w-[100px] hover:bg-blue-50 transition-colors">
+                    <SelectValue placeholder="General" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DOMAINS.map((d) => (<SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tone</Label>
+                <Select value={tone} onValueChange={setTone}>
+                  <SelectTrigger className="h-8 text-sm w-[100px] hover:bg-blue-50 transition-colors">
+                    <SelectValue placeholder="Neutral" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TONES.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-6 text-xs text-[#888]">
-              <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /><span>Your text is processed securely and not stored</span></div>
-              <span>•</span>
-              <div><span className="mr-1">⭐</span>Trusted by 100+ early users</div>
+            <div className="flex flex-wrap items-center gap-2">
+<span className="text-base font-bold text-blue-600">Refine, compare, and approve sentence by sentence</span>              <span className="text-xs text-gray-400">· {wordCount} words · {remainingUses}/{DAILY_LIMIT} remaining</span>
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10" ref={inputSectionRef}>
+
+        {/* Two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           
-          {/* Left Column: Input & Controls */}
-          <div className="space-y-4">
-            
-            {/* Global Refinement Controls - Compact Horizontal Row */}
-            <section className="max-w-2xl mx-auto md:mx-0 p-3 bg-white border border-[#E5E5E5] rounded-2xl shadow-sm">
-              <div className="grid grid-cols-3 gap-6">
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-bold text-[#666] uppercase tracking-[0.15em] pl-0.5">Dialect</Label>
-                  <Select value={forcedDialect || "auto"} onValueChange={(val) => setForcedDialect(val === "auto" ? undefined : val)}>
-                    <SelectTrigger className={`h-8 text-xs border-[#E5E5E5] focus:ring-[#1A1A1A] transition-all duration-300 ${result && result.detectedDialect === forcedDialect ? 'border-green-500 bg-green-50/20' : ''}`}>
-                      <SelectValue placeholder="Auto" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="auto">Auto</SelectItem>
-                      <SelectItem value="US">US</SelectItem>
-                      <SelectItem value="UK">UK</SelectItem>
-                      <SelectItem value="AU">AU</SelectItem>
-                      <SelectItem value="CA">CA</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-bold text-[#666] uppercase tracking-[0.15em] pl-0.5">Domain</Label>
-                  <Select value={domain} onValueChange={setDomain}>
-                    <SelectTrigger className="h-8 text-xs border-[#E5E5E5] focus:ring-[#1A1A1A]">
-                      <SelectValue placeholder="General" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DOMAINS.map((d) => (
-                        <SelectItem key={d.value} value={d.value} className="text-xs">
-                          {d.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-bold text-[#666] uppercase tracking-[0.15em] pl-0.5">Tone</Label>
-                  <Select value={tone} onValueChange={setTone}>
-                    <SelectTrigger className="h-8 text-xs border-[#E5E5E5] focus:ring-[#1A1A1A]">
-                      <SelectValue placeholder="Neutral" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TONES.map((t) => (
-                        <SelectItem key={t.value} value={t.value} className="text-xs">
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </section>
-
-            <section className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <Label htmlFor="input-text" className="text-[10px] font-black text-[#999] uppercase tracking-[0.2em] flex items-center gap-1">
-                    <FileText className="w-3 h-3" /> Source Text
-                  </Label>
-                </div>
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  <input type="file" ref={fileInputRef} className="hidden" accept=".docx,.pdf" onChange={handleFileUpload} />
-                  <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isReading || isLoading} className="text-xs border-dashed">
-                    {isReading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Plus className="w-3 h-3 mr-1" />}
-                    {isReading ? "Reading..." : "Import Document"}
+          {/* Left Column: Source Text */}
+          <div className="space-y-4 h-full flex flex-col">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Source Text</h3>
+              <div className="flex gap-2">
+                <input type="file" ref={fileInputRef} className="hidden" accept=".docx,.pdf" onChange={handleFileUpload} />
+                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isReading || isLoading} className="text-xs h-7">
+                  {isReading ? "Reading..." : "Import Word"}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => document.getElementById('pdfUpload')?.click()} disabled={isReading || isLoading} className="text-xs h-7">
+                  Import PDF
+                </Button>
+                {inputText && (
+                  <Button variant="ghost" size="sm" onClick={() => setInputText("")} className="text-xs h-7 text-gray-400 hover:text-red-500">
+                    Clear
                   </Button>
-                  {inputText && (
-                    <Button variant="ghost" size="sm" onClick={() => setInputText("")} className="text-[#999] hover:text-red-500 hover:bg-red-50 h-8 text-[11px]">
-                      <Trash2 className="w-3 h-3 mr-1" /> Clear
-                    </Button>
-                  )}
-                  <span className="text-[10px] font-medium text-[#BBB] uppercase tracking-widest tabular-nums">
-                    {wordCount} words
-                  </span>
-                  {remainingUses !== null && (
-                    <span className="text-[10px] font-medium text-[#666]">· {remainingUses} / {DAILY_LIMIT} remaining today</span>
-                  )}
-                </div>
+                )}
               </div>
+            </div>
 
-              <div className="relative group border-2 border-[#E5E5E5] rounded-3xl overflow-hidden bg-white shadow-sm focus-within:ring-4 focus-within:ring-[#1A1A1A]/5 transition-all p-2 max-h-[280px] overflow-y-auto">
+            {/* Rich Text Editor with button inside */}
+            <div className="border-2 border-gray-200 rounded-xl overflow-hidden bg-white hover:border-blue-400 transition-all duration-200 flex flex-col" style={{ height: "380px" }}>
+              <div className="flex-1 overflow-auto">
                 <RichTextEditor 
                   content={inputHtml}
                   onChange={handleEditorChange}
-                  placeholder={"Paste your academic text here..."}
+                  placeholder="Paste your text here..."
                   disabled={isLoading}
                 />
-                
-                {isReading && (
-                  <div className="absolute inset-0 bg-white/80 backdrop-blur-[4px] flex items-center justify-center rounded-lg z-20">
-                    <div className="flex flex-col items-center gap-3">
-                      <Loader2 className="w-8 h-8 animate-spin text-[#1A1A1A]" />
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1A1A1A]">Reading Document...</p>
-                    </div>
-                  </div>
-                )}
               </div>
+              <div className="border-t border-gray-100 p-3 bg-gray-50">
+                <Button
+                  className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white rounded-xl py-3 text-base font-bold shadow-2xl transition-all duration-300"
+                  onClick={handleTransform}
+                  disabled={isLoading || !inputText.trim()}
+                >
+                  {isLoading ? (
+                    <><Sparkles className="w-4 h-4 animate-spin inline mr-2" /> Refining...</>
+                  ) : (
+                    <><Sparkles className="w-4 h-4 inline mr-2" /> Transform to Native English →</>
+                  )}
+                </Button>
+              </div>
+            </div>
 
-              {/* Terms notice - added after editor */}
-              <p className="text-xs text-center text-gray-400 mt-2">
-                By using IdiomOptima, you agree to our <a href="/terms.html" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy.html" className="text-blue-600 hover:underline">Privacy Policy</a>.
+            {/* Notices below the editor box */}
+            <div className="space-y-2">
+              <p className="text-xs text-center text-gray-400">
+                🔒 Private by default · No sign-up required
               </p>
-
-            </section>
-
-            <Button
-              className="w-full h-14 text-lg bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] hover:from-[#333] hover:to-[#1A1A1A] text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
-              onClick={handleTransform}
-              disabled={isLoading || !inputText.trim()}
-            >
-              {isLoading ? (
-                <><Sparkles className="w-5 h-5 animate-spin" /> Refining your writing...</>
-              ) : (
-                <><PenLine className="w-5 h-5" /> Transform to Native English <ChevronRight className="w-4 h-4" /></>
-              )}
-            </Button>
+              <p className="text-xs text-center text-gray-400">
+                By pasting text or importing a document, you agree to IdiomOptima's <a href="/terms.html" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy.html" className="text-blue-600 hover:underline">Privacy Policy</a>.
+              </p>
+            </div>
           </div>
 
           {/* Right Column: Results */}
-          <div className="">
-            <AnimatePresence mode="wait">
+          <div className="space-y-4 h-full flex flex-col bg-blue-50/20 border border-blue-100 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Final Version</h3>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="text-xs h-7" onClick={exportToPDF}>Export PDF</Button>
+                <Button variant="outline" size="sm" className="text-xs h-7" onClick={copyToClipboard}>Copy</Button>
+                <Button variant="outline" size="sm" className="text-xs h-7" onClick={exportToWord}>Export Word</Button>
+              </div>
+            </div>
+
+            <AnimatePresence mode="wait" className="flex-1">
               {isLoading ? (
-                <motion.div
-                  key="loading"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-6"
-                >
-                  <Card className="border-[#E5E5E5] shadow-none bg-white">
+                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+                  <Card>
                     <CardHeader>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Skeleton className="h-6 w-1/3" />
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#999]">
-                              {progress}%
-                            </span>
-                          </div>
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-1/3" />
+                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} className="h-full bg-blue-600" />
                         </div>
-                        <div className="w-full h-1.5 bg-[#F5F5F5] rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progress}%` }}
-                            className="h-full bg-[#1A1A1A]"
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-[#999] italic">
-                            {processingStatus}
-                          </p>
-                          {forcedDialect && (
-                            <span className="text-[10px] font-bold text-[#999] uppercase tracking-tighter">
-                              Locked to: {forcedDialect}
-                            </span>
-                          )}
-                        </div>
+                        <p className="text-xs text-gray-400">{processingStatus}</p>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <Skeleton className="h-[200px] w-full" />
-                      <Separator />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-1/4" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-full" />
-                      </div>
+                    <CardContent>
+                      <Skeleton className="h-48 w-full" />
                     </CardContent>
                   </Card>
                 </motion.div>
               ) : result ? (
-                <motion.div
-                  key="result"
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="space-y-6"
-                >
-                  <Card className="border-[#1A1A1A] border-2 shadow-xl bg-white overflow-hidden">
-                    <CardHeader className="bg-[#1A1A1A] text-white py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <CardTitle className="text-sm font-medium uppercase tracking-[0.2em]">Final Version</CardTitle>
-                          {result.detectedDialect && (
-                            <div className="flex items-center gap-2 px-2 py-0.5 bg-white/10 rounded-full text-[10px] uppercase font-bold tracking-widest leading-none">
-                              <Languages className="w-3 h-3" />
-                              {result.detectedDialect} English
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-white hover:bg-white/10"
-                            onClick={exportToWord}
-                            title="Export to Word"
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-white hover:bg-white/10"
-                            onClick={exportToPDF}
-                            title="Export to PDF"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-white hover:bg-white/10"
-                            onClick={copyToClipboard}
-                            title="Copy to Clipboard"
-                          >
-                            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-10">
-                      <div className="text-xl font-serif leading-relaxed text-[#1A1A1A]">
-                        {result.sentences && result.sentences.length > 0 ? (
-                          (() => {
-                            const bodyGroups: any[] = [];
-                            let currentGroup: any[] = [];
-
-                            result.sentences.forEach((sent, idx) => {
-                              const isSwapped = swappedSentenceIndices.includes(idx);
-                              const text = isSwapped ? sent.original : sent.native;
-                              
-                              const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
-                              const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
-                              const isReferencesHeading = sent.isHeading && (
-                                text.toLowerCase() === "references" || 
-                                text.toLowerCase() === "bibliography" || 
-                                text.toLowerCase() === "footnotes"
-                              );
-                              
-                              if (isFootnoteDef || isReferencesHeading) return;
-
-                              if (editingIndex === idx) {
-                                bodyGroups.push(
-                                  <div key={`edit-${idx}`} className="my-2">
-                                    <input
-                                      type="text"
-                                      value={editValue}
-                                      onChange={(e) => setEditValue(e.target.value)}
-                                      onBlur={() => saveEdit(idx)}
-                                      onKeyDown={(e) => handleKeyDown(e, idx)}
-                                      className="w-full p-2 border border-gray-300 rounded"
-                                      autoFocus
-                                    />
-                                  </div>
-                                );
-                                return;
-                              }
-
-                              const content = (
-                                <span
-                                  key={idx}
-                                  onClick={() => {
-                                    setSwappedSentenceIndices(prev => 
-                                      prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
-                                    );
-                                  }}
-                                  onDoubleClick={() => startEdit(idx, text)}
-                                  title={`Original: ${sent.original}`}
-                                  className={`cursor-pointer transition-all duration-200 relative group inline p-0.5 rounded hover:bg-[#F5F5F5]
-                                    ${sent.isNativeMatch ? 'border-b border-blue-200' : ''}
-                                    ${isSwapped ? 'text-[#999] bg-[#F9F9F9]' : ''}
-                                    ${sent.isHeading ? 'font-bold block text-3xl mt-10 mb-6' : ''}
-                                  `}
-                                >
-                                  {/* Ghost Underlay - Tooltip style */}
-                                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1A1A1A] text-white p-3 rounded-xl text-sm italic whitespace-normal pointer-events-none z-[110] shadow-2xl w-72 transform -translate-y-1 leading-snug font-normal">
-                                    {sent.original}
-                                    {/* Tooltip Arrow */}
-                                    <span className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1A1A1A]" />
-                                  </span>
-                                  
-                                  {renderContentWithFootnotes(text)}
-                                  
-                                  {isSwapped && (
-                                    <RotateCcw className="w-3 h-3 text-[#999] inline ml-1 align-middle" />
-                                  )}
-                                  {!sent.isHeading && " "}
-                                </span>
-                              );
-
-                              if (sent.isHeading) {
-                                if (currentGroup.length > 0) {
-                                  bodyGroups.push(
-                                    <div key={`p-${idx}-pre`} className="mb-6 last:mb-0">
-                                      {currentGroup}
-                                    </div>
-                                  );
-                                  currentGroup = [];
-                                }
-                                bodyGroups.push(content);
-                              } else {
-                                currentGroup.push(content);
-                                if (sent.isEndOfParagraph) {
-                                  bodyGroups.push(
-                                    <div key={`p-${idx}`} className="mb-6 last:mb-0">
-                                      {currentGroup}
-                                    </div>
-                                  );
-                                  currentGroup = [];
-                                }
-                              }
-                            });
-
-                            if (currentGroup.length > 0) {
-                              bodyGroups.push(
-                                <div key="p-last" className="mb-0">
-                                  {currentGroup}
-                                </div>
-                              );
-                            }
-
-                            return (
-                              <>
-                                <div className="space-y-6">
-                                  {bodyGroups}
-                                </div>
-                                
-                                {/* References Section in Results Panel */}
-                                {Object.keys(footnoteMap).length > 0 && (
-                                  <div className="mt-16 pt-10 border-t-2 border-dashed border-gray-200">
-                                    <h4 className="text-xs font-black uppercase tracking-[0.4em] text-gray-400 mb-8 flex items-center gap-3">
-                                      <div className="h-[1px] w-8 bg-gray-300" />
-                                      Notes & References
-                                    </h4>
-                                    <div className="space-y-4">
-                                      {Object.entries(footnoteMap)
-                                        .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-                                        .map(([num, content]) => (
-                                          <div 
-                                            key={num} 
-                                            ref={el => { footnoteRefs.current[num] = el; }}
-                                            className="flex gap-4 text-sm font-serif italic text-gray-500 hover:text-gray-900 transition-colors"
-                                          >
-                                            <span className="font-bold text-blue-500/50 min-w-[2rem] text-right">[{num}]</span>
-                                            <div className="leading-relaxed">{content}</div>
-                                          </div>
-                                        ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </>
-                            );
-                          })()
-                        ) : (
-                          <div className="whitespace-pre-wrap leading-relaxed">
-                            {renderContentWithFootnotes(result.finalVersion)}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Authenticity Metrics Section */}
+                <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                  {/* Quality Metrics */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-white border border-[#E5E5E5] rounded-xl space-y-2">
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-[#999]">Source Quality</span>
-                       <div className="flex items-end gap-2">
-                         <span className="text-2xl font-serif font-bold">{result.originalScore}%</span>
-                         <span className="text-[10px] text-[#999] mb-1">Original text</span>
-                       </div>
-                       <div className="w-full h-1.5 bg-[#F5F5F5] rounded-full overflow-hidden">
-                         <motion.div 
-                           initial={{ width: 0 }}
-                           animate={{ width: `${result.originalScore}%` }}
-                           className="h-full bg-[#999]"
-                         />
-                       </div>
+                    <div className="bg-white border border-gray-200 rounded-lg p-3">
+                      <div className="text-xs text-gray-400">Source Quality</div>
+                      <div className="text-2xl font-bold text-gray-900">{result.originalScore}%</div>
+                      <div className="text-xs text-gray-400">Original text</div>
                     </div>
-                    <div className="p-4 bg-[#1A1A1A] border border-[#1A1A1A] rounded-xl space-y-2 text-white">
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Refined Quality</span>
-                       <div className="flex items-end gap-2">
-                         <span className="text-2xl font-serif font-bold">{result.revisedScore}%</span>
-                         <span className="text-[10px] text-white/50 mb-1">After refinement</span>
-                       </div>
-                       <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                         <motion.div 
-                           initial={{ width: 0 }}
-                           animate={{ width: `${result.revisedScore}%` }}
-                           className="h-full bg-white"
-                         />
-                       </div>
+                    <div className="bg-blue-600 rounded-lg p-3 text-white">
+                      <div className="text-xs text-white/70">Refined Quality</div>
+                      <div className="text-2xl font-bold">{result.revisedScore}%</div>
+                      <div className="text-xs text-white/70">After refinement</div>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-[#666]">
-                      <Sparkles className="w-4 h-4" />
-                      <h3 className="text-xs font-bold uppercase tracking-widest">Key Improvements</h3>
+                  {/* Refined Output */}
+        <div className="bg-white border-2 border-gray-200 rounded-xl p-4 mb-6 hover:border-blue-400 transition-all duration-200">                    <div className="text-gray-700 font-serif leading-relaxed text-sm">
+                      {result.sentences && result.sentences.length > 0 ? (
+                        (() => {
+                          const bodyGroups: any[] = [];
+                          let currentGroup: any[] = [];
+
+                          result.sentences.forEach((sent, idx) => {
+                            const isSwapped = swappedSentenceIndices.includes(idx);
+                            const text = isSwapped ? sent.original : sent.native;
+                            
+                            const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
+                            const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
+                            const isReferencesHeading = sent.isHeading && (
+                              text.toLowerCase() === "references" || 
+                              text.toLowerCase() === "bibliography" || 
+                              text.toLowerCase() === "footnotes"
+                            );
+                            
+                            if (isFootnoteDef || isReferencesHeading) return;
+
+                            if (editingIndex === idx) {
+                              bodyGroups.push(
+                                <div key={`edit-${idx}`} className="my-2">
+                                  <input
+                                    type="text"
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    onBlur={() => saveEdit(idx)}
+                                    onKeyDown={(e) => handleKeyDown(e, idx)}
+                                    className="w-full p-1 border border-gray-300 rounded text-sm"
+                                    autoFocus
+                                  />
+                                </div>
+                              );
+                              return;
+                            }
+
+                            const content = (
+                              <span
+                                key={idx}
+                                onClick={() => {
+                                  setSwappedSentenceIndices(prev => 
+                                    prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+                                  );
+                                }}
+                                onDoubleClick={() => startEdit(idx, text)}
+                                title={`Original: ${sent.original}`}
+                                className={`cursor-pointer transition-all duration-200 relative group inline p-0.5 rounded hover:bg-gray-50
+                                  ${sent.isNativeMatch ? 'border-b border-blue-200' : ''}
+                                  ${isSwapped ? 'text-gray-400 bg-gray-50' : ''}
+                                  ${sent.isHeading ? 'font-bold block text-lg mt-4 mb-2' : ''}
+                                `}
+                              >
+                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white p-2 rounded-lg text-xs whitespace-nowrap pointer-events-none z-[110] shadow-lg">
+                                  {sent.original}
+                                  <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                                </span>
+                                {renderContentWithFootnotes(text)}
+                                {isSwapped && <RotateCcw className="w-3 h-3 text-gray-400 inline ml-1 align-middle" />}
+                              </span>
+                            );
+
+                            if (sent.isHeading) {
+                              if (currentGroup.length > 0) {
+                                bodyGroups.push(<div key={`p-${idx}-pre`} className="mb-3 last:mb-0">{currentGroup}</div>);
+                                currentGroup = [];
+                              }
+                              bodyGroups.push(content);
+                            } else {
+                              currentGroup.push(content);
+                              if (sent.isEndOfParagraph) {
+                                bodyGroups.push(<div key={`p-${idx}`} className="mb-3 last:mb-0">{currentGroup}</div>);
+                                currentGroup = [];
+                              }
+                            }
+                          });
+
+                          if (currentGroup.length > 0) {
+                            bodyGroups.push(<div key="p-last" className="mb-0">{currentGroup}</div>);
+                          }
+
+                          return (
+                            <>
+                              <div className="space-y-3">{bodyGroups}</div>
+                              {Object.keys(footnoteMap).length > 0 && (
+                                <div className="mt-6 pt-4 border-t border-dashed border-gray-200">
+                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Notes & References</h4>
+                                  <div className="space-y-1">
+                                    {Object.entries(footnoteMap).sort((a,b) => parseInt(a[0]) - parseInt(b[0])).map(([num, content]) => (
+                                      <div key={num} ref={el => { footnoteRefs.current[num] = el; }} className="flex gap-2 text-xs text-gray-500">
+                                        <span className="font-bold text-blue-500 min-w-[2rem]">[{num}]</span>
+                                        <span>{content}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()
+                      ) : (
+                        <div className="whitespace-pre-wrap">{renderContentWithFootnotes(result.finalVersion)}</div>
+                      )}
                     </div>
-                    <ul className="space-y-3">
+                  </div>
+
+                  {/* Key Improvements */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Key Improvements</h3>
+                    <ul className="space-y-1">
                       {result.suggestions.map((s, i) => (
-                        <motion.li 
-                          key={i}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.1 }}
-                          className="flex items-start gap-3 text-sm text-[#444]"
-                        >
-                          <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#1A1A1A] shrink-0" />
-                          {s}
-                        </motion.li>
+                        <li key={i} className="text-xs text-gray-600 flex gap-2">
+                          <span className="text-blue-500">•</span> {s}
+                        </li>
                       ))}
                     </ul>
                   </div>
 
-                  <Separator className="bg-[#E5E5E5]" />
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[#666]">
-                      <Info className="w-4 h-4" />
-                      <h3 className="text-xs font-bold uppercase tracking-widest">Stylistic Note</h3>
-                    </div>
-                    <p className="text-sm text-[#666] leading-relaxed">
-                      {result.explanation}
-                    </p>
+                  {/* Stylistic Note */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Stylistic Note</h3>
+                    <p className="text-xs text-gray-500">{result.explanation}</p>
                   </div>
                 </motion.div>
               ) : (
-<motion.div
-  key="empty"
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  className="flex flex-col items-center text-center py-10 px-6 border-2 border-dashed border-[#E5E5E5] rounded-3xl"
->
-  <div className="w-20 h-20 bg-[#F5F5F5] rounded-full flex items-center justify-center mb-4">
-    <PenLine className="w-10 h-10 text-[#666]" />
-  </div>
-  <h3 className="font-serif text-3xl font-semibold mb-3">Ready to refine</h3>
-  <p className="text-base text-[#666] max-w-[280px] mb-5">
-    Try the example in the box, or paste your own text.
-  </p>
-  <button
-    onClick={() => {
-      const example = "He explained me the problem very clear, but I didn't understood his point.[1] We need to discuss about this further.";
-      setInputText(example);
-      setInputHtml(example);
-      handleTransform();
-    }}
-    className="mt-2 text-base bg-[#1A1A1A] text-white px-8 py-3 rounded-full hover:bg-[#333] transition shadow-md font-medium"
-  >
-    <Lightbulb className="w-4 h-4 inline mr-2" /> Try an example
-  </button>
-</motion.div>
+                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full">
+                  <div className="bg-transparent border-2 border-blue-200 rounded-lg overflow-hidden" style={{ height: "380px", display: "flex", flexDirection: "column" }}>                    <div className="flex-1 p-4 space-y-3">                      {/* ← Add your text box - light blue */}
+                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 text-left">
+                        <span className="text-2xl text-gray-500 mr-2">←</span>
+                        <span className="text-xl font-medium text-gray-700">Add your text</span>
+                      </div>
+                      {/* Information box - light blue (kept) */}
+                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                        <p className="text-sm text-gray-600">
+                          Footnotes, citations, paragraph breaks, and document layout are preserved in the refined version.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
