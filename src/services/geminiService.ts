@@ -56,7 +56,8 @@ export async function transformText(
   tone: string = "neutral",
   onProgress?: (progress: number, currentChunk: number, totalChunks: number, status?: string) => void,
   forcedDialect?: string,
-  mode: string = "auto"
+  mode: string = "auto",
+  idiomDatabase?: any[]  // 👈 NEW: Accept idiom database as parameter
 ): Promise<TransformationResult> {
   if (!text.trim()) {
     return {
@@ -125,11 +126,21 @@ export async function transformText(
   }
 
   try {
-const response = await fetch('https://nativewrite-api.nativewrite-api.workers.dev', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ text, domain, tone, forcedDialect, mode: activeMode }),
-});
+    // 👇 Prepare request body with idioms if available
+    const requestBody: any = { text, domain, tone, forcedDialect, mode: activeMode };
+    
+    // 👇 If idiom database is provided, send first 100 entries as examples (or all if less)
+    if (idiomDatabase && idiomDatabase.length > 0) {
+      // Send up to 100 idioms to avoid request size limits
+      requestBody.idioms = idiomDatabase.slice(0, 100);
+      console.log(`Sending ${requestBody.idioms.length} idioms to worker`);
+    }
+    
+    const response = await fetch('https://nativewrite-api.nativewrite-api.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();

@@ -130,6 +130,30 @@ useEffect(() => {
     setTimeout(() => handleTransform(), 100);
   }
 }, [demoShown, inputText]);
+  const [idiomDatabase, setIdiomDatabase] = useState<any[]>([]);
+
+  useEffect(() => {
+fetch('/idioms-clunky-native.json')
+      .then(response => response.json())
+      .then(data => {
+        setIdiomDatabase(data);
+        console.log(`Loaded ${data.length} idioms from database`);
+      })
+      .catch(error => console.error('Failed to load idiom database:', error));
+  }, []);
+    // Apply idiom replacements to text
+  const applyIdiomReplacements = (text: string) => {
+    let result = text;
+    if (idiomDatabase && idiomDatabase.length > 0) {
+      idiomDatabase.forEach(entry => {
+        if (entry.clunky && result.toLowerCase().includes(entry.clunky.toLowerCase())) {
+          const regex = new RegExp(entry.clunky, 'gi');
+          result = result.replace(regex, entry.native);
+        }
+      });
+    }
+    return result;
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -434,12 +458,25 @@ useEffect(() => {
     setProcessingStatus("Initializing...");
 
     try {
-      const data = await transformText(inputText, domain, tone, (p, current, total, extraStatus) => {
-        setProgress(p);
-        let status = total > 1 ? `Processing section ${current + 1} of ${total}...` : "Nativizing text...";
-        if (extraStatus) status = extraStatus;
-        setProcessingStatus(status);
-      }, forcedDialect, mode);
+      // Apply idiom replacements before sending to worker
+      const processedText = applyIdiomReplacements(inputText);
+      console.log('Original:', inputText);
+      console.log('After idiom replacement:', processedText);
+
+      const data = await transformText(
+        processedText, 
+        domain, 
+        tone, 
+        (p, current, total, extraStatus) => {
+          setProgress(p);
+          let status = total > 1 ? `Processing section ${current + 1} of ${total}...` : "Nativizing text...";
+          if (extraStatus) status = extraStatus;
+          setProcessingStatus(status);
+        }, 
+        forcedDialect, 
+        mode,
+        idiomDatabase
+      );
 
       // Final synchronization heartbeat
       setProgress(100);
