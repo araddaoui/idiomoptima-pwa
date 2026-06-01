@@ -460,8 +460,6 @@ fetch('/idioms-clunky-native.json')
     try {
       // Apply idiom replacements before sending to worker
       const processedText = applyIdiomReplacements(inputText);
-      console.log('Original:', inputText);
-      console.log('After idiom replacement:', processedText);
 
       const data = await transformText(
         processedText, 
