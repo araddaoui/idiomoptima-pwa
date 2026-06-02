@@ -1,0 +1,6002 @@
+[
+  {
+    "clunky": "however",
+    "native": "but"
+  },
+  {
+    "clunky": "nevertheless",
+    "native": "still"
+  },
+  {
+    "clunky": "nonetheless",
+    "native": "even so"
+  },
+  {
+    "clunky": "consequently",
+    "native": "so"
+  },
+  {
+    "clunky": "therefore",
+    "native": "so"
+  },
+  {
+    "clunky": "accordingly",
+    "native": "so"
+  },
+  {
+    "clunky": "hence",
+    "native": "so"
+  },
+  {
+    "clunky": "thus",
+    "native": "so"
+  },
+  {
+    "clunky": "furthermore",
+    "native": "also"
+  },
+  {
+    "clunky": "moreover",
+    "native": "also"
+  },
+  {
+    "clunky": "in addition",
+    "native": "also"
+  },
+  {
+    "clunky": "plus",
+    "native": "also"
+  },
+  {
+    "clunky": "besides",
+    "native": "also"
+  },
+  {
+    "clunky": "as well",
+    "native": "also"
+  },
+  {
+    "clunky": "as well as",
+    "native": "and"
+  },
+  {
+    "clunky": "similarly",
+    "native": "also"
+  },
+  {
+    "clunky": "likewise",
+    "native": "also"
+  },
+  {
+    "clunky": "by the same token",
+    "native": "also"
+  },
+  {
+    "clunky": "on the other hand",
+    "native": "but"
+  },
+  {
+    "clunky": "on the contrary",
+    "native": "but"
+  },
+  {
+    "clunky": "in contrast",
+    "native": "but"
+  },
+  {
+    "clunky": "at the same time",
+    "native": "still"
+  },
+  {
+    "clunky": "in the meantime",
+    "native": "meanwhile"
+  },
+  {
+    "clunky": "meanwhile",
+    "native": "meanwhile"
+  },
+  {
+    "clunky": "conversely",
+    "native": "instead"
+  },
+  {
+    "clunky": "in comparison",
+    "native": "compared to"
+  },
+  {
+    "clunky": "in the same way",
+    "native": "likewise"
+  },
+  {
+    "clunky": "for example",
+    "native": "for example"
+  },
+  {
+    "clunky": "for instance",
+    "native": "for example"
+  },
+  {
+    "clunky": "to illustrate",
+    "native": "for example"
+  },
+  {
+    "clunky": "in particular",
+    "native": "especially"
+  },
+  {
+    "clunky": "specifically",
+    "native": "especially"
+  },
+  {
+    "clunky": "more specifically",
+    "native": "especially"
+  },
+  {
+    "clunky": "that said",
+    "native": "still"
+  },
+  {
+    "clunky": "having said that",
+    "native": "still"
+  },
+  {
+    "clunky": "even so",
+    "native": "still"
+  },
+  {
+    "clunky": "despite this",
+    "native": "still"
+  },
+  {
+    "clunky": "still",
+    "native": "still"
+  },
+  {
+    "clunky": "ultimately",
+    "native": "in the end"
+  },
+  {
+    "clunky": "in the end",
+    "native": "in the end"
+  },
+  {
+    "clunky": "overall",
+    "native": "overall"
+  },
+  {
+    "clunky": "on balance",
+    "native": "overall"
+  },
+  {
+    "clunky": "all things considered",
+    "native": "overall"
+  },
+  {
+    "clunky": "in summary",
+    "native": "overall"
+  },
+  {
+    "clunky": "in brief",
+    "native": "in short"
+  },
+  {
+    "clunky": "to summarize",
+    "native": "in short"
+  },
+  {
+    "clunky": "to recap",
+    "native": "in short"
+  },
+  {
+    "clunky": "to conclude",
+    "native": "in short"
+  },
+  {
+    "clunky": "in conclusion",
+    "native": "in short"
+  },
+  {
+    "clunky": "as a result",
+    "native": "so"
+  },
+  {
+    "clunky": "as such",
+    "native": "so"
+  },
+  {
+    "clunky": "with respect to",
+    "native": "about"
+  },
+  {
+    "clunky": "with regard to",
+    "native": "about"
+  },
+  {
+    "clunky": "with regard to the",
+    "native": "about the"
+  },
+  {
+    "clunky": "in light of",
+    "native": "because"
+  },
+  {
+    "clunky": "due to",
+    "native": "because"
+  },
+  {
+    "clunky": "because of",
+    "native": "because of"
+  },
+  {
+    "clunky": "thanks to",
+    "native": "because of"
+  },
+  {
+    "clunky": "for this reason",
+    "native": "because"
+  },
+  {
+    "clunky": "for that reason",
+    "native": "because"
+  },
+  {
+    "clunky": "as a consequence",
+    "native": "so"
+  },
+  {
+    "clunky": "as a result of",
+    "native": "because of"
+  },
+  {
+    "clunky": "subsequently",
+    "native": "then"
+  },
+  {
+    "clunky": "then",
+    "native": "then"
+  },
+  {
+    "clunky": "next",
+    "native": "next"
+  },
+  {
+    "clunky": "after that",
+    "native": "after that"
+  },
+  {
+    "clunky": "before that",
+    "native": "before that"
+  },
+  {
+    "clunky": "across the board",
+    "native": "everywhere"
+  },
+  {
+    "clunky": "in turn",
+    "native": "then"
+  },
+  {
+    "clunky": "on the other side",
+    "native": "but"
+  },
+  {
+    "clunky": "more importantly",
+    "native": "importantly"
+  },
+  {
+    "clunky": "perhaps",
+    "native": "perhaps"
+  },
+  {
+    "clunky": "to put it another way",
+    "native": "in other words"
+  },
+  {
+    "clunky": "to be clear",
+    "native": "to be clear"
+  },
+  {
+    "clunky": "in short",
+    "native": "in short"
+  },
+  {
+    "clunky": "in the long run",
+    "native": "in the long run"
+  },
+  {
+    "clunky": "in the short term",
+    "native": "soon"
+  },
+  {
+    "clunky": "for the most part",
+    "native": "mostly"
+  },
+  {
+    "clunky": "by contrast",
+    "native": "by contrast"
+  },
+  {
+    "clunky": "as a final point",
+    "native": ""
+  },
+  {
+    "clunky": "for the record",
+    "native": ""
+  },
+  {
+    "clunky": "as a side note",
+    "native": "by the way"
+  },
+  {
+    "clunky": "in addition to",
+    "native": "and"
+  },
+  {
+    "clunky": "as an aside",
+    "native": "by the way"
+  },
+  {
+    "clunky": "in all likelihood",
+    "native": "likely"
+  },
+  {
+    "clunky": "more often than not",
+    "native": "often"
+  },
+  {
+    "clunky": "at the same time",
+    "native": "also"
+  },
+  {
+    "clunky": "on the positive side",
+    "native": "on the positive side"
+  },
+  {
+    "clunky": "on the negative side",
+    "native": "on the negative side"
+  },
+  {
+    "clunky": "given these points",
+    "native": "given this"
+  },
+  {
+    "clunky": "with that in mind",
+    "native": "remember"
+  },
+  {
+    "clunky": "it is worth noting that",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to understand that",
+    "native": "remember that"
+  },
+  {
+    "clunky": "it is worth mentioning that",
+    "native": ""
+  },
+  {
+    "clunky": "it is interesting to note that",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that",
+    "native": ""
+  },
+  {
+    "clunky": "it is clear that",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is evident that",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is obvious that",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is fair to say that",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that",
+    "native": ""
+  },
+  {
+    "clunky": "it is my belief that",
+    "native": "i believe"
+  },
+  {
+    "clunky": "from my perspective",
+    "native": "i think"
+  },
+  {
+    "clunky": "from my point of view",
+    "native": "i think"
+  },
+  {
+    "clunky": "in my opinion",
+    "native": "i think"
+  },
+  {
+    "clunky": "in my view",
+    "native": "i think"
+  },
+  {
+    "clunky": "as far as i can tell",
+    "native": ""
+  },
+  {
+    "clunky": "one must consider that",
+    "native": "consider that"
+  },
+  {
+    "clunky": "one should keep in mind that",
+    "native": "remember that"
+  },
+  {
+    "clunky": "one should also note that",
+    "native": ""
+  },
+  {
+    "clunky": "it may be helpful to note that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth highlighting that",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that",
+    "native": ""
+  },
+  {
+    "clunky": "it is also important to note that",
+    "native": ""
+  },
+  {
+    "clunky": "it should also be noted that",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to expect that",
+    "native": ""
+  },
+  {
+    "clunky": "it is natural to assume that",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to remember that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth highlighting",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that",
+    "native": ""
+  },
+  {
+    "clunky": "it is necessary to mention that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth clarifying that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that",
+    "native": ""
+  },
+  {
+    "clunky": "it should go without saying that",
+    "native": ""
+  },
+  {
+    "clunky": "it should go without saying",
+    "native": ""
+  },
+  {
+    "clunky": "it should be emphasized that",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to point out",
+    "native": "note"
+  },
+  {
+    "clunky": "it is important to remember",
+    "native": "remember"
+  },
+  {
+    "clunky": "it is crucial to understand that",
+    "native": "remember that"
+  },
+  {
+    "clunky": "it is helpful to recognize that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning",
+    "native": "note"
+  },
+  {
+    "clunky": "it is worth stressing",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth suggesting that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to understand that",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to mention that",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to point out that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth adding that",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth observing that",
+    "native": ""
+  },
+  {
+    "clunky": "it seems that",
+    "native": ""
+  },
+  {
+    "clunky": "it appears that",
+    "native": ""
+  },
+  {
+    "clunky": "it looks like",
+    "native": ""
+  },
+  {
+    "clunky": "it looks as though",
+    "native": ""
+  },
+  {
+    "clunky": "it seems as though",
+    "native": ""
+  },
+  {
+    "clunky": "it appears as if",
+    "native": ""
+  },
+  {
+    "clunky": "it could be argued that",
+    "native": "some might say"
+  },
+  {
+    "clunky": "it can be argued that",
+    "native": "some might say"
+  },
+  {
+    "clunky": "it may be that",
+    "native": ""
+  },
+  {
+    "clunky": "it might be the case that",
+    "native": ""
+  },
+  {
+    "clunky": "it is possible that",
+    "native": ""
+  },
+  {
+    "clunky": "there is a sense that",
+    "native": ""
+  },
+  {
+    "clunky": "there is a feeling that",
+    "native": ""
+  },
+  {
+    "clunky": "there is reason to believe that",
+    "native": ""
+  },
+  {
+    "clunky": "there is evidence that",
+    "native": ""
+  },
+  {
+    "clunky": "there appears to be",
+    "native": ""
+  },
+  {
+    "clunky": "there seems to be",
+    "native": ""
+  },
+  {
+    "clunky": "it seems likely that",
+    "native": "likely"
+  },
+  {
+    "clunky": "it appears likely that",
+    "native": "likely"
+  },
+  {
+    "clunky": "it looks likely that",
+    "native": "likely"
+  },
+  {
+    "clunky": "it may be reasonable to assume that",
+    "native": ""
+  },
+  {
+    "clunky": "it could be suggested that",
+    "native": "perhaps"
+  },
+  {
+    "clunky": "it may be suggested that",
+    "native": "perhaps"
+  },
+  {
+    "clunky": "one could argue that",
+    "native": "some might say"
+  },
+  {
+    "clunky": "one might argue that",
+    "native": "some might say"
+  },
+  {
+    "clunky": "it is often argued that",
+    "native": "some people say"
+  },
+  {
+    "clunky": "it is generally believed that",
+    "native": "people generally believe"
+  },
+  {
+    "clunky": "it is widely believed that",
+    "native": "people generally believe"
+  },
+  {
+    "clunky": "it is commonly said that",
+    "native": "people often say"
+  },
+  {
+    "clunky": "it is often said that",
+    "native": "people often say"
+  },
+  {
+    "clunky": "there is an argument that",
+    "native": "some say"
+  },
+  {
+    "clunky": "there is reason to think that",
+    "native": ""
+  },
+  {
+    "clunky": "it may appear that",
+    "native": ""
+  },
+  {
+    "clunky": "it may look as if",
+    "native": ""
+  },
+  {
+    "clunky": "it may seem that",
+    "native": ""
+  },
+  {
+    "clunky": "it can be seen that",
+    "native": "we see that"
+  },
+  {
+    "clunky": "it was determined that",
+    "native": "we found that"
+  },
+  {
+    "clunky": "it has been shown that",
+    "native": "research shows"
+  },
+  {
+    "clunky": "it was observed that",
+    "native": "we observed that"
+  },
+  {
+    "clunky": "it was found that",
+    "native": "we found that"
+  },
+  {
+    "clunky": "it was established that",
+    "native": "we established that"
+  },
+  {
+    "clunky": "it was reported that",
+    "native": "we reported that"
+  },
+  {
+    "clunky": "it was suggested that",
+    "native": "we suggested that"
+  },
+  {
+    "clunky": "it was noted that",
+    "native": "we noted that"
+  },
+  {
+    "clunky": "it was concluded that",
+    "native": "we concluded that"
+  },
+  {
+    "clunky": "it was confirmed that",
+    "native": "we confirmed that"
+  },
+  {
+    "clunky": "it was believed that",
+    "native": "we believed that"
+  },
+  {
+    "clunky": "it was assumed that",
+    "native": "we assumed that"
+  },
+  {
+    "clunky": "it was expected that",
+    "native": "we expected that"
+  },
+  {
+    "clunky": "it was shown that",
+    "native": "we showed that"
+  },
+  {
+    "clunky": "it was demonstrated that",
+    "native": "we demonstrated that"
+  },
+  {
+    "clunky": "it was explained that",
+    "native": "we explained that"
+  },
+  {
+    "clunky": "it was made clear that",
+    "native": "we made clear that"
+  },
+  {
+    "clunky": "it was made apparent that",
+    "native": "we saw that"
+  },
+  {
+    "clunky": "it was understood that",
+    "native": "we understood that"
+  },
+  {
+    "clunky": "it was agreed that",
+    "native": "we agreed that"
+  },
+  {
+    "clunky": "it is believed that",
+    "native": "we believe that"
+  },
+  {
+    "clunky": "it is assumed that",
+    "native": "we assume that"
+  },
+  {
+    "clunky": "it is generally accepted that",
+    "native": "people generally accept that"
+  },
+  {
+    "clunky": "it is often believed that",
+    "native": "people often believe that"
+  },
+  {
+    "clunky": "it is widely believed that",
+    "native": "people widely believe that"
+  },
+  {
+    "clunky": "it can be seen from",
+    "native": "we can see from"
+  },
+  {
+    "clunky": "it can be inferred that",
+    "native": "we infer that"
+  },
+  {
+    "clunky": "this is a testament to",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this speaks to",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this serves as a reminder that",
+    "native": "remember that"
+  },
+  {
+    "clunky": "this underscores the importance of",
+    "native": "this shows why"
+  },
+  {
+    "clunky": "this demonstrates the need for",
+    "native": "this shows we need"
+  },
+  {
+    "clunky": "this suggests that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this highlights the fact that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this points to the fact that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this helps to illustrate",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this provides evidence that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this makes it clear that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this indicates that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this is an indication that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this emphasizes that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this draws attention to",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this calls attention to",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this is a strong signal that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this serves as evidence that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this serves as proof that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this makes the case that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this reinforces the idea that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this demonstrates that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this confirms that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this reveals that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this is worthy of note",
+    "native": "this is worth noting"
+  },
+  {
+    "clunky": "this raises the question of",
+    "native": "this asks"
+  },
+  {
+    "clunky": "this is evidence that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this suggests why",
+    "native": "this shows why"
+  },
+  {
+    "clunky": "this is a clear example of",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this is a useful reminder that",
+    "native": "remember that"
+  },
+  {
+    "clunky": "this is a simple way to see that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this is a helpful reminder that",
+    "native": "remember that"
+  },
+  {
+    "clunky": "this is a strong indication that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "this is a clear sign that",
+    "native": "this shows"
+  },
+  {
+    "clunky": "not only but also",
+    "native": "and"
+  },
+  {
+    "clunky": "both and",
+    "native": "and"
+  },
+  {
+    "clunky": "so as to",
+    "native": "to"
+  },
+  {
+    "clunky": "in order to",
+    "native": "to"
+  },
+  {
+    "clunky": "in light of the fact that",
+    "native": "because"
+  },
+  {
+    "clunky": "due to the fact that",
+    "native": "because"
+  },
+  {
+    "clunky": "on account of the fact that",
+    "native": "because"
+  },
+  {
+    "clunky": "for the purpose of",
+    "native": "to"
+  },
+  {
+    "clunky": "for the reason that",
+    "native": "because"
+  },
+  {
+    "clunky": "in spite of the fact that",
+    "native": "although"
+  },
+  {
+    "clunky": "in the event that",
+    "native": "if"
+  },
+  {
+    "clunky": "in the event of",
+    "native": "if"
+  },
+  {
+    "clunky": "for the benefit of",
+    "native": "for"
+  },
+  {
+    "clunky": "for the sake of",
+    "native": "for"
+  },
+  {
+    "clunky": "as opposed to",
+    "native": "instead of"
+  },
+  {
+    "clunky": "whether or not",
+    "native": "whether"
+  },
+  {
+    "clunky": "with the aim of",
+    "native": "to"
+  },
+  {
+    "clunky": "with the intention of",
+    "native": "to"
+  },
+  {
+    "clunky": "with the goal of",
+    "native": "to"
+  },
+  {
+    "clunky": "by means of",
+    "native": "by"
+  },
+  {
+    "clunky": "by way of",
+    "native": "by"
+  },
+  {
+    "clunky": "on the basis of",
+    "native": "based on"
+  },
+  {
+    "clunky": "at this point in time",
+    "native": "now"
+  },
+  {
+    "clunky": "at the present time",
+    "native": "now"
+  },
+  {
+    "clunky": "in the very near future",
+    "native": "soon"
+  },
+  {
+    "clunky": "to all intents and purposes",
+    "native": "effectively"
+  },
+  {
+    "clunky": "on a daily basis",
+    "native": "daily"
+  },
+  {
+    "clunky": "in a timely manner",
+    "native": "on time"
+  },
+  {
+    "clunky": "in close collaboration with",
+    "native": "with"
+  },
+  {
+    "clunky": "with a view to",
+    "native": "to"
+  },
+  {
+    "clunky": "with a focus on",
+    "native": "to"
+  },
+  {
+    "clunky": "with the purpose of",
+    "native": "to"
+  },
+  {
+    "clunky": "in keeping with",
+    "native": "in line with"
+  },
+  {
+    "clunky": "in line with",
+    "native": "under"
+  },
+  {
+    "clunky": "in accordance with",
+    "native": "under"
+  },
+  {
+    "clunky": "as part of",
+    "native": "during"
+  },
+  {
+    "clunky": "in the context of",
+    "native": "in"
+  },
+  {
+    "clunky": "in the event you",
+    "native": "if you"
+  },
+  {
+    "clunky": "in the event we",
+    "native": "if we"
+  },
+  {
+    "clunky": "in the event they",
+    "native": "if they"
+  },
+  {
+    "clunky": "there are several reasons why",
+    "native": "why"
+  },
+  {
+    "clunky": "there are many reasons why",
+    "native": "why"
+  },
+  {
+    "clunky": "there are a number of reasons why",
+    "native": "why"
+  },
+  {
+    "clunky": "the following factors contribute to",
+    "native": "this happens because"
+  },
+  {
+    "clunky": "the following reasons explain",
+    "native": "this is why"
+  },
+  {
+    "clunky": "the reasons for this are",
+    "native": "this is why"
+  },
+  {
+    "clunky": "the main reasons are",
+    "native": "this is why"
+  },
+  {
+    "clunky": "there are a few key reasons why",
+    "native": "this is why"
+  },
+  {
+    "clunky": "there are numerous reasons why",
+    "native": "this is why"
+  },
+  {
+    "clunky": "there are several factors that contribute to",
+    "native": "this happens because"
+  },
+  {
+    "clunky": "below are the key factors",
+    "native": "these are the key factors"
+  },
+  {
+    "clunky": "below are the reasons why",
+    "native": "this is why"
+  },
+  {
+    "clunky": "here are some examples of",
+    "native": "examples of"
+  },
+  {
+    "clunky": "here are the reasons why",
+    "native": "this is why"
+  },
+  {
+    "clunky": "here are the main points",
+    "native": "main points"
+  },
+  {
+    "clunky": "here are the steps to",
+    "native": "how to"
+  },
+  {
+    "clunky": "here are the key steps",
+    "native": "key steps"
+  },
+  {
+    "clunky": "here are the ways to",
+    "native": "how to"
+  },
+  {
+    "clunky": "here are the most important reasons",
+    "native": "the most important reasons"
+  },
+  {
+    "clunky": "the following points explain",
+    "native": "this explains"
+  },
+  {
+    "clunky": "the following points show",
+    "native": "this shows"
+  },
+  {
+    "clunky": "there are a number of steps to",
+    "native": "to"
+  },
+  {
+    "clunky": "there are a few points to consider",
+    "native": "consider this"
+  },
+  {
+    "clunky": "there are several steps to",
+    "native": "to"
+  },
+  {
+    "clunky": "there are a few options to",
+    "native": "there are options to"
+  },
+  {
+    "clunky": "the following items show",
+    "native": "these items show"
+  },
+  {
+    "clunky": "the following things explain",
+    "native": "this explains"
+  },
+  {
+    "clunky": "below are examples of",
+    "native": "examples of"
+  },
+  {
+    "clunky": "here are a few reasons why",
+    "native": "this is why"
+  },
+  {
+    "clunky": "here are a few ways to",
+    "native": "how to"
+  },
+  {
+    "clunky": "very important",
+    "native": "important"
+  },
+  {
+    "clunky": "extremely crucial",
+    "native": "critical"
+  },
+  {
+    "clunky": "absolutely essential",
+    "native": "essential"
+  },
+  {
+    "clunky": "truly remarkable",
+    "native": "remarkable"
+  },
+  {
+    "clunky": "deeply meaningful",
+    "native": "meaningful"
+  },
+  {
+    "clunky": "highly significant",
+    "native": "significant"
+  },
+  {
+    "clunky": "particularly noteworthy",
+    "native": "noteworthy"
+  },
+  {
+    "clunky": "especially helpful",
+    "native": "helpful"
+  },
+  {
+    "clunky": "really important",
+    "native": "important"
+  },
+  {
+    "clunky": "very likely",
+    "native": "likely"
+  },
+  {
+    "clunky": "very unlikely",
+    "native": "unlikely"
+  },
+  {
+    "clunky": "extremely valuable",
+    "native": "valuable"
+  },
+  {
+    "clunky": "exceptionally useful",
+    "native": "useful"
+  },
+  {
+    "clunky": "absolutely necessary",
+    "native": "necessary"
+  },
+  {
+    "clunky": "completely clear",
+    "native": "clear"
+  },
+  {
+    "clunky": "totally different",
+    "native": "different"
+  },
+  {
+    "clunky": "highly effective",
+    "native": "effective"
+  },
+  {
+    "clunky": "remarkably clear",
+    "native": "clear"
+  },
+  {
+    "clunky": "surprisingly easy",
+    "native": "easy"
+  },
+  {
+    "clunky": "completely unnecessary",
+    "native": "unnecessary"
+  },
+  {
+    "clunky": "utterly useless",
+    "native": "useless"
+  },
+  {
+    "clunky": "amazingly quick",
+    "native": "quick"
+  },
+  {
+    "clunky": "really useful",
+    "native": "useful"
+  },
+  {
+    "clunky": "very often",
+    "native": "often"
+  },
+  {
+    "clunky": "deeply committed",
+    "native": "committed"
+  },
+  {
+    "clunky": "strictly necessary",
+    "native": "necessary"
+  },
+  {
+    "clunky": "absolutely critical",
+    "native": "critical"
+  },
+  {
+    "clunky": "highly competitive",
+    "native": "competitive"
+  },
+  {
+    "clunky": "deeply personal",
+    "native": "personal"
+  },
+  {
+    "clunky": "very proud",
+    "native": "proud"
+  },
+  {
+    "clunky": "very sad",
+    "native": "sad"
+  },
+  {
+    "clunky": "very excited",
+    "native": "excited"
+  },
+  {
+    "clunky": "really clear",
+    "native": "clear"
+  },
+  {
+    "clunky": "really difficult",
+    "native": "difficult"
+  },
+  {
+    "clunky": "very generous",
+    "native": "generous"
+  },
+  {
+    "clunky": "very strict",
+    "native": "strict"
+  },
+  {
+    "clunky": "very successful",
+    "native": "successful"
+  },
+  {
+    "clunky": "very small",
+    "native": "small"
+  },
+  {
+    "clunky": "very big",
+    "native": "big"
+  },
+  {
+    "clunky": "very fast",
+    "native": "fast"
+  },
+  {
+    "clunky": "very slow",
+    "native": "slow"
+  },
+  {
+    "clunky": "particularly useful",
+    "native": "useful"
+  },
+  {
+    "clunky": "especially valuable",
+    "native": "valuable"
+  },
+  {
+    "clunky": "particularly important",
+    "native": "important"
+  },
+  {
+    "clunky": "highly likely",
+    "native": "likely"
+  },
+  {
+    "clunky": "highly unlikely",
+    "native": "unlikely"
+  },
+  {
+    "clunky": "more than adequate",
+    "native": "adequate"
+  },
+  {
+    "clunky": "wide ranging",
+    "native": "wide-ranging"
+  },
+  {
+    "clunky": "extremely detailed",
+    "native": "detailed"
+  },
+  {
+    "clunky": "highly detailed",
+    "native": "detailed"
+  },
+  {
+    "clunky": "incredibly useful",
+    "native": "useful"
+  },
+  {
+    "clunky": "truly useful",
+    "native": "useful"
+  },
+  {
+    "clunky": "really necessary",
+    "native": "necessary"
+  },
+  {
+    "clunky": "absolutely true",
+    "native": "true"
+  },
+  {
+    "clunky": "completely accurate",
+    "native": "accurate"
+  },
+  {
+    "clunky": "totally accurate",
+    "native": "accurate"
+  },
+  {
+    "clunky": "deeply flawed",
+    "native": "flawed"
+  },
+  {
+    "clunky": "highly capable",
+    "native": "capable"
+  },
+  {
+    "clunky": "highly responsive",
+    "native": "responsive"
+  },
+  {
+    "clunky": "completely reliable",
+    "native": "reliable"
+  },
+  {
+    "clunky": "totally reliable",
+    "native": "reliable"
+  },
+  {
+    "clunky": "extremely affordable",
+    "native": "affordable"
+  },
+  {
+    "clunky": "highly attractive",
+    "native": "attractive"
+  },
+  {
+    "clunky": "especially relevant",
+    "native": "relevant"
+  },
+  {
+    "clunky": "particularly relevant",
+    "native": "relevant"
+  },
+  {
+    "clunky": "especially clear",
+    "native": "clear"
+  },
+  {
+    "clunky": "absolutely certain",
+    "native": "certain"
+  },
+  {
+    "clunky": "really certain",
+    "native": "certain"
+  },
+  {
+    "clunky": "very certain",
+    "native": "certain"
+  },
+  {
+    "clunky": "especially useful",
+    "native": "useful"
+  },
+  {
+    "clunky": "especially meaningful",
+    "native": "meaningful"
+  },
+  {
+    "clunky": "highly meaningful",
+    "native": "meaningful"
+  },
+  {
+    "clunky": "truly meaningful",
+    "native": "meaningful"
+  },
+  {
+    "clunky": "delve into",
+    "native": "explore"
+  },
+  {
+    "clunky": "delve deeper into",
+    "native": "explore"
+  },
+  {
+    "clunky": "navigate",
+    "native": "handle"
+  },
+  {
+    "clunky": "navigate these challenges",
+    "native": "handle these challenges"
+  },
+  {
+    "clunky": "navigate a path",
+    "native": "find a way"
+  },
+  {
+    "clunky": "unlock",
+    "native": "access"
+  },
+  {
+    "clunky": "unlock new opportunities",
+    "native": "access new opportunities"
+  },
+  {
+    "clunky": "unlock the potential",
+    "native": "access the potential"
+  },
+  {
+    "clunky": "leverage",
+    "native": "use"
+  },
+  {
+    "clunky": "leverage the value of",
+    "native": "use"
+  },
+  {
+    "clunky": "leverage the power of",
+    "native": "use"
+  },
+  {
+    "clunky": "optimize",
+    "native": "improve"
+  },
+  {
+    "clunky": "optimize performance",
+    "native": "improve performance"
+  },
+  {
+    "clunky": "optimize the process",
+    "native": "improve the process"
+  },
+  {
+    "clunky": "streamline",
+    "native": "simplify"
+  },
+  {
+    "clunky": "streamline the workflow",
+    "native": "simplify the workflow"
+  },
+  {
+    "clunky": "facilitate",
+    "native": "help"
+  },
+  {
+    "clunky": "facilitate the work",
+    "native": "help the work"
+  },
+  {
+    "clunky": "utilize",
+    "native": "use"
+  },
+  {
+    "clunky": "utilize the system",
+    "native": "use the system"
+  },
+  {
+    "clunky": "implement",
+    "native": "apply"
+  },
+  {
+    "clunky": "execute",
+    "native": "carry out"
+  },
+  {
+    "clunky": "orchestrate",
+    "native": "coordinate"
+  },
+  {
+    "clunky": "align",
+    "native": "match"
+  },
+  {
+    "clunky": "drive",
+    "native": "push"
+  },
+  {
+    "clunky": "scale",
+    "native": "grow"
+  },
+  {
+    "clunky": "enable",
+    "native": "allow"
+  },
+  {
+    "clunky": "mobilize",
+    "native": "use"
+  },
+  {
+    "clunky": "catalyze",
+    "native": "start"
+  },
+  {
+    "clunky": "empower",
+    "native": "help"
+  },
+  {
+    "clunky": "tap into",
+    "native": "use"
+  },
+  {
+    "clunky": "take advantage of",
+    "native": "use"
+  },
+  {
+    "clunky": "build out",
+    "native": "expand"
+  },
+  {
+    "clunky": "roll out",
+    "native": "launch"
+  },
+  {
+    "clunky": "lean into",
+    "native": "focus on"
+  },
+  {
+    "clunky": "double down on",
+    "native": "focus more on"
+  },
+  {
+    "clunky": "surface",
+    "native": "show"
+  },
+  {
+    "clunky": "iterate on",
+    "native": "refine"
+  },
+  {
+    "clunky": "proactively manage",
+    "native": "manage"
+  },
+  {
+    "clunky": "accelerate",
+    "native": "speed up"
+  },
+  {
+    "clunky": "drive growth",
+    "native": "grow"
+  },
+  {
+    "clunky": "deliver value",
+    "native": "provide value"
+  },
+  {
+    "clunky": "enable progress",
+    "native": "help progress"
+  },
+  {
+    "clunky": "unlock value",
+    "native": "access value"
+  },
+  {
+    "clunky": "deliver results",
+    "native": "get results"
+  },
+  {
+    "clunky": "implement changes",
+    "native": "make changes"
+  },
+  {
+    "clunky": "execute the plan",
+    "native": "carry out the plan"
+  },
+  {
+    "clunky": "orchestrate the effort",
+    "native": "coordinate the effort"
+  },
+  {
+    "clunky": "optimize the workflow",
+    "native": "improve the workflow"
+  },
+  {
+    "clunky": "streamline the process",
+    "native": "simplify the process"
+  },
+  {
+    "clunky": "leverage the system",
+    "native": "use the system"
+  },
+  {
+    "clunky": "the evolving landscape of",
+    "native": "the changing world of"
+  },
+  {
+    "clunky": "the changing landscape of",
+    "native": "the changing world of"
+  },
+  {
+    "clunky": "the current landscape",
+    "native": "the current situation"
+  },
+  {
+    "clunky": "the complex tapestry of",
+    "native": "the complexity of"
+  },
+  {
+    "clunky": "a catalyst for",
+    "native": "a cause of"
+  },
+  {
+    "clunky": "a window into",
+    "native": "a view of"
+  },
+  {
+    "clunky": "the broader context",
+    "native": "the bigger picture"
+  },
+  {
+    "clunky": "the wider ecosystem",
+    "native": "the wider environment"
+  },
+  {
+    "clunky": "the current state of",
+    "native": "the current state of"
+  },
+  {
+    "clunky": "the new normal",
+    "native": "what is now normal"
+  },
+  {
+    "clunky": "the high-level view",
+    "native": "the overview"
+  },
+  {
+    "clunky": "the broader perspective",
+    "native": "the broader view"
+  },
+  {
+    "clunky": "the core concept of",
+    "native": "the main idea of"
+  },
+  {
+    "clunky": "the overall concept",
+    "native": "the main idea"
+  },
+  {
+    "clunky": "the deeper meaning of",
+    "native": "the meaning of"
+  },
+  {
+    "clunky": "the basic concept of",
+    "native": "the basic idea of"
+  },
+  {
+    "clunky": "the main takeaway",
+    "native": "the main point"
+  },
+  {
+    "clunky": "the primary goal",
+    "native": "the main goal"
+  },
+  {
+    "clunky": "the central idea",
+    "native": "the main idea"
+  },
+  {
+    "clunky": "the underlying idea",
+    "native": "the main idea"
+  },
+  {
+    "clunky": "the key point",
+    "native": "the main point"
+  },
+  {
+    "clunky": "a source of",
+    "native": "a source of"
+  },
+  {
+    "clunky": "a sign of",
+    "native": "a sign of"
+  },
+  {
+    "clunky": "a view of",
+    "native": "a view of"
+  },
+  {
+    "clunky": "the current moment",
+    "native": "now"
+  },
+  {
+    "clunky": "the big picture",
+    "native": "the whole situation"
+  },
+  {
+    "clunky": "the broader issue",
+    "native": "the main issue"
+  },
+  {
+    "clunky": "the larger issue",
+    "native": "the main issue"
+  },
+  {
+    "clunky": "the wider issue",
+    "native": "the main issue"
+  },
+  {
+    "clunky": "the larger trend",
+    "native": "the main trend"
+  },
+  {
+    "clunky": "the wider trend",
+    "native": "the main trend"
+  },
+  {
+    "clunky": "the broader trend",
+    "native": "the main trend"
+  },
+  {
+    "clunky": "the central theme",
+    "native": "the main theme"
+  },
+  {
+    "clunky": "the main theme",
+    "native": "the main theme"
+  },
+  {
+    "clunky": "the bigger picture",
+    "native": "the whole situation"
+  },
+  {
+    "clunky": "the current debate",
+    "native": "the debate"
+  },
+  {
+    "clunky": "the current discussion",
+    "native": "the discussion"
+  },
+  {
+    "clunky": "the current debate around",
+    "native": "the debate around"
+  },
+  {
+    "clunky": "the current discussion around",
+    "native": "the discussion around"
+  },
+  {
+    "clunky": "the current issues around",
+    "native": "the issues around"
+  },
+  {
+    "clunky": "embark on this journey",
+    "native": "begin"
+  },
+  {
+    "clunky": "begin this journey",
+    "native": "begin"
+  },
+  {
+    "clunky": "start this journey",
+    "native": "start"
+  },
+  {
+    "clunky": "the customer journey",
+    "native": "the customer experience"
+  },
+  {
+    "clunky": "the learning journey",
+    "native": "what we learned"
+  },
+  {
+    "clunky": "the life journey",
+    "native": "life"
+  },
+  {
+    "clunky": "our journey",
+    "native": "our work"
+  },
+  {
+    "clunky": "the product journey",
+    "native": "the product experience"
+  },
+  {
+    "clunky": "the user journey",
+    "native": "the user experience"
+  },
+  {
+    "clunky": "the experience journey",
+    "native": "the experience"
+  },
+  {
+    "clunky": "the journey ahead",
+    "native": "what comes next"
+  },
+  {
+    "clunky": "the journey continues",
+    "native": "this continues"
+  },
+  {
+    "clunky": "the journey begins",
+    "native": "this begins"
+  },
+  {
+    "clunky": "the path forward",
+    "native": "the next steps"
+  },
+  {
+    "clunky": "the path ahead",
+    "native": "what comes next"
+  },
+  {
+    "clunky": "the path to success",
+    "native": "the process to success"
+  },
+  {
+    "clunky": "the path to improvement",
+    "native": "the way to improve"
+  },
+  {
+    "clunky": "the path to growth",
+    "native": "the way to grow"
+  },
+  {
+    "clunky": "the path to change",
+    "native": "the way to change"
+  },
+  {
+    "clunky": "the process ahead",
+    "native": "what comes next"
+  },
+  {
+    "clunky": "the process continues",
+    "native": "this continues"
+  },
+  {
+    "clunky": "the process begins",
+    "native": "this begins"
+  },
+  {
+    "clunky": "the proceeding path",
+    "native": "the next steps"
+  },
+  {
+    "clunky": "the next stage of the journey",
+    "native": "the next stage"
+  },
+  {
+    "clunky": "what comes next on this journey",
+    "native": "what comes next"
+  },
+  {
+    "clunky": "groundbreaking",
+    "native": "important"
+  },
+  {
+    "clunky": "transformative",
+    "native": "meaningful"
+  },
+  {
+    "clunky": "unparalleled",
+    "native": "exceptional"
+  },
+  {
+    "clunky": "seamless",
+    "native": "smooth"
+  },
+  {
+    "clunky": "robust",
+    "native": "strong"
+  },
+  {
+    "clunky": "cutting-edge",
+    "native": "new"
+  },
+  {
+    "clunky": "state-of-the-art",
+    "native": "modern"
+  },
+  {
+    "clunky": "next-generation",
+    "native": "new"
+  },
+  {
+    "clunky": "mission-critical",
+    "native": "important"
+  },
+  {
+    "clunky": "best-in-class",
+    "native": "excellent"
+  },
+  {
+    "clunky": "industry-leading",
+    "native": "leading"
+  },
+  {
+    "clunky": "high-performing",
+    "native": "good"
+  },
+  {
+    "clunky": "scalable",
+    "native": "able to grow"
+  },
+  {
+    "clunky": "innovative",
+    "native": "new"
+  },
+  {
+    "clunky": "holistic",
+    "native": "complete"
+  },
+  {
+    "clunky": "future-proof",
+    "native": "lasting"
+  },
+  {
+    "clunky": "highly optimized",
+    "native": "optimized"
+  },
+  {
+    "clunky": "low-hanging",
+    "native": "easy"
+  },
+  {
+    "clunky": "data-driven",
+    "native": "based on data"
+  },
+  {
+    "clunky": "customer-focused",
+    "native": "customer-focused"
+  },
+  {
+    "clunky": "research-backed",
+    "native": "based on research"
+  },
+  {
+    "clunky": "profit-driven",
+    "native": "focused on profit"
+  },
+  {
+    "clunky": "thought-provoking",
+    "native": "interesting"
+  },
+  {
+    "clunky": "purpose-driven",
+    "native": "purposeful"
+  },
+  {
+    "clunky": "end-to-end",
+    "native": "complete"
+  },
+  {
+    "clunky": "results-oriented",
+    "native": "results-focused"
+  },
+  {
+    "clunky": "high-quality",
+    "native": "good"
+  },
+  {
+    "clunky": "user-friendly",
+    "native": "easy to use"
+  },
+  {
+    "clunky": "highly scalable",
+    "native": "scalable"
+  },
+  {
+    "clunky": "industry-standard",
+    "native": "standard"
+  },
+  {
+    "clunky": "customer-centric",
+    "native": "customer-focused"
+  },
+  {
+    "clunky": "next-level",
+    "native": "better"
+  },
+  {
+    "clunky": "best-practice",
+    "native": "recommended"
+  },
+  {
+    "clunky": "time-saving",
+    "native": "time-saving"
+  },
+  {
+    "clunky": "cost-effective",
+    "native": "efficient"
+  },
+  {
+    "clunky": "high-value",
+    "native": "valuable"
+  },
+  {
+    "clunky": "state of the art",
+    "native": "modern"
+  },
+  {
+    "clunky": "future-ready",
+    "native": "ready for the future"
+  },
+  {
+    "clunky": "market-leading",
+    "native": "leading"
+  },
+  {
+    "clunky": "resource-intensive",
+    "native": "resource-heavy"
+  },
+  {
+    "clunky": "feature-rich",
+    "native": "full-featured"
+  },
+  {
+    "clunky": "full-featured",
+    "native": "complete"
+  },
+  {
+    "clunky": "performance-oriented",
+    "native": "focused on performance"
+  },
+  {
+    "clunky": "operationally efficient",
+    "native": "efficient"
+  },
+  {
+    "clunky": "strategically aligned",
+    "native": "aligned"
+  },
+  {
+    "clunky": "user-oriented",
+    "native": "user-focused"
+  },
+  {
+    "clunky": "brand-new",
+    "native": "new"
+  },
+  {
+    "clunky": "cutting edge",
+    "native": "new"
+  },
+  {
+    "clunky": "in today's world",
+    "native": "nowadays"
+  },
+  {
+    "clunky": "in the modern era",
+    "native": ""
+  },
+  {
+    "clunky": "in the current climate",
+    "native": ""
+  },
+  {
+    "clunky": "as technology advances",
+    "native": ""
+  },
+  {
+    "clunky": "in an era of rapid change",
+    "native": ""
+  },
+  {
+    "clunky": "in the current environment",
+    "native": "now"
+  },
+  {
+    "clunky": "in the modern age",
+    "native": "now"
+  },
+  {
+    "clunky": "in this day and age",
+    "native": "now"
+  },
+  {
+    "clunky": "in today's economy",
+    "native": "today"
+  },
+  {
+    "clunky": "in today's market",
+    "native": "today"
+  },
+  {
+    "clunky": "in the digital age",
+    "native": ""
+  },
+  {
+    "clunky": "in today's digital world",
+    "native": ""
+  },
+  {
+    "clunky": "in the age of data",
+    "native": ""
+  },
+  {
+    "clunky": "in the current era",
+    "native": ""
+  },
+  {
+    "clunky": "as the world changes",
+    "native": ""
+  },
+  {
+    "clunky": "as the market evolves",
+    "native": ""
+  },
+  {
+    "clunky": "with the rise of technology",
+    "native": ""
+  },
+  {
+    "clunky": "in the face of change",
+    "native": ""
+  },
+  {
+    "clunky": "with change happening fast",
+    "native": ""
+  },
+  {
+    "clunky": "as a final note",
+    "native": ""
+  },
+  {
+    "clunky": "as a closing thought",
+    "native": ""
+  },
+  {
+    "clunky": "in closing",
+    "native": ""
+  },
+  {
+    "clunky": "to conclude",
+    "native": ""
+  },
+  {
+    "clunky": "to wrap up",
+    "native": ""
+  },
+  {
+    "clunky": "as we wrap up",
+    "native": ""
+  },
+  {
+    "clunky": "as we conclude",
+    "native": ""
+  },
+  {
+    "clunky": "to finish",
+    "native": ""
+  },
+  {
+    "clunky": "in the final analysis",
+    "native": "in the end"
+  },
+  {
+    "clunky": "when all is said and done",
+    "native": "in the end"
+  },
+  {
+    "clunky": "to bring this together",
+    "native": ""
+  },
+  {
+    "clunky": "to tie this together",
+    "native": ""
+  },
+  {
+    "clunky": "to close",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to understand",
+    "native": "remember"
+  },
+  {
+    "clunky": "as a general rule",
+    "native": "generally"
+  },
+  {
+    "clunky": "in many cases",
+    "native": "often"
+  },
+  {
+    "clunky": "in general",
+    "native": "generally"
+  },
+  {
+    "clunky": "in most cases",
+    "native": "often"
+  },
+  {
+    "clunky": "in many ways",
+    "native": "in many ways"
+  },
+  {
+    "clunky": "in other words",
+    "native": "that is"
+  },
+  {
+    "clunky": "to put it simply",
+    "native": "in short"
+  },
+  {
+    "clunky": "to make a long story short",
+    "native": "in short"
+  },
+  {
+    "clunky": "in the near future",
+    "native": "soon"
+  },
+  {
+    "clunky": "in a timely fashion",
+    "native": "on time"
+  },
+  {
+    "clunky": "at this point",
+    "native": "now"
+  },
+  {
+    "clunky": "as a starting point",
+    "native": "first"
+  },
+  {
+    "clunky": "as a first step",
+    "native": "first"
+  },
+  {
+    "clunky": "as a next step",
+    "native": "next"
+  },
+  {
+    "clunky": "as a final step",
+    "native": "finally"
+  },
+  {
+    "clunky": "in this context",
+    "native": ""
+  },
+  {
+    "clunky": "in this case",
+    "native": ""
+  },
+  {
+    "clunky": "in simple terms",
+    "native": "in short"
+  },
+  {
+    "clunky": "in broad terms",
+    "native": "in general"
+  },
+  {
+    "clunky": "in practice",
+    "native": "in practice"
+  },
+  {
+    "clunky": "in reality",
+    "native": "actually"
+  },
+  {
+    "clunky": "in theory",
+    "native": "theoretically"
+  },
+  {
+    "clunky": "in truth",
+    "native": "actually"
+  },
+  {
+    "clunky": "in effect",
+    "native": "effectively"
+  },
+  {
+    "clunky": "in many respects",
+    "native": "often"
+  },
+  {
+    "clunky": "in every respect",
+    "native": "in every way"
+  },
+  {
+    "clunky": "in the broad sense",
+    "native": "generally"
+  },
+  {
+    "clunky": "in the narrow sense",
+    "native": "strictly"
+  },
+  {
+    "clunky": "in concrete terms",
+    "native": "specifically"
+  },
+  {
+    "clunky": "on a regular basis",
+    "native": "regularly"
+  },
+  {
+    "clunky": "on a frequent basis",
+    "native": "often"
+  },
+  {
+    "clunky": "on an ongoing basis",
+    "native": "continuously"
+  },
+  {
+    "clunky": "on a case-by-case basis",
+    "native": "case by case"
+  },
+  {
+    "clunky": "with this in mind",
+    "native": "remember"
+  },
+  {
+    "clunky": "with this in view",
+    "native": "remember"
+  },
+  {
+    "clunky": "with this in consideration",
+    "native": "remember"
+  },
+  {
+    "clunky": "with the benefit of hindsight",
+    "native": "in hindsight"
+  },
+  {
+    "clunky": "with that said",
+    "native": "still"
+  },
+  {
+    "clunky": "with the support of",
+    "native": "with"
+  },
+  {
+    "clunky": "with the help of",
+    "native": "with"
+  },
+  {
+    "clunky": "with the guidance of",
+    "native": "with"
+  },
+  {
+    "clunky": "with the backing of",
+    "native": "with"
+  },
+  {
+    "clunky": "with the approval of",
+    "native": "with"
+  },
+  {
+    "clunky": "with the use of",
+    "native": "using"
+  },
+  {
+    "clunky": "with the right approach",
+    "native": "with the right approach"
+  },
+  {
+    "clunky": "with the right mindset",
+    "native": "with the right mindset"
+  },
+  {
+    "clunky": "with the right plan",
+    "native": "with the right plan"
+  },
+  {
+    "clunky": "with the right tools",
+    "native": "with the right tools"
+  },
+  {
+    "clunky": "with the right support",
+    "native": "with the right support"
+  },
+  {
+    "clunky": "with the right team",
+    "native": "with the right team"
+  },
+  {
+    "clunky": "with good reason",
+    "native": "for a good reason"
+  },
+  {
+    "clunky": "with the right perspective",
+    "native": "with the right perspective"
+  },
+  {
+    "clunky": "with the right context",
+    "native": "with the right context"
+  },
+  {
+    "clunky": "with the right information",
+    "native": "with the right information"
+  },
+  {
+    "clunky": "it is worth noting that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth noting that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth mentioning that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth pointing out that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it should be noted that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to note that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is useful to note that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is helpful to note that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is fair to say that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is reasonable to say that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is safe to say that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is easy to see that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is clear that the result is positive",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the project is ready",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the data supports this",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the plan will work",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the results are clear",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the change is necessary",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the first step is familiar",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the next phase starts",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the conclusion is valid",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the trend is positive",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is the case",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is true",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is an important point",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is a useful observation",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is a relevant example",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is a common result",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is an expected outcome",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is a reasonable assumption",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is an important factor",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is the main point",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is the main takeaway",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is a strong argument",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is the best option",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is the right answer",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is the best choice",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is the most likely outcome",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is the most important factor",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is a key conclusion",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is the likely result",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that this is a valid example",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the evidence is strong",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the finding is clear",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the statement is accurate",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the point is clear",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the key idea is obvious",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the outcome is expected",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the response is positive",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the outcome is credible",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the pattern is obvious",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the issue is solved",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the process is underway",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the discussion is useful",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the example is helpful",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the conclusion is supported",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is clear that the reason is obvious",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is evident that the result is positive",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the project is ready",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the data supports this",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the plan will work",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the results are clear",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the change is necessary",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the first step is familiar",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the next phase starts",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the conclusion is valid",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the trend is positive",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is the case",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is true",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is an important point",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is a useful observation",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is a relevant example",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is a common result",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is an expected outcome",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is a reasonable assumption",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is an important factor",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is the main point",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is the main takeaway",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is a strong argument",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is the best option",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is the right answer",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is the best choice",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is the most likely outcome",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is the most important factor",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is a key conclusion",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is the likely result",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that this is a valid example",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the evidence is strong",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the finding is clear",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the statement is accurate",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the point is clear",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the key idea is obvious",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the outcome is expected",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the response is positive",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the outcome is credible",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the pattern is obvious",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the issue is solved",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the process is underway",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the discussion is useful",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the example is helpful",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the conclusion is supported",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is evident that the reason is obvious",
+    "native": "evidently"
+  },
+  {
+    "clunky": "it is obvious that the result is positive",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the project is ready",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the data supports this",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the plan will work",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the results are clear",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the change is necessary",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the first step is familiar",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the next phase starts",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the conclusion is valid",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the trend is positive",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is the case",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is true",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is an important point",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is a useful observation",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is a relevant example",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is a common result",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is an expected outcome",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is a reasonable assumption",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is an important factor",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is the main point",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is the main takeaway",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is a strong argument",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is the best option",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is the right answer",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is the best choice",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is the most likely outcome",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is the most important factor",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is a key conclusion",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is the likely result",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that this is a valid example",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the evidence is strong",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the finding is clear",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the statement is accurate",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the point is clear",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the key idea is obvious",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the outcome is expected",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the response is positive",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the outcome is credible",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the pattern is obvious",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the issue is solved",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the process is underway",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the discussion is useful",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the example is helpful",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the conclusion is supported",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is obvious that the reason is obvious",
+    "native": "clearly"
+  },
+  {
+    "clunky": "it is worth emphasizing that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth emphasizing that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth underlining that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth stressing that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is worth explaining that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the results are clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the change is necessary",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the first step is familiar",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the next phase starts",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the conclusion is valid",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the trend is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is the case",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is true",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is an important point",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is a useful observation",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is a relevant example",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is a common result",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is an expected outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is a reasonable assumption",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is an important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is the main point",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is the main takeaway",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is a strong argument",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is the best option",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is the right answer",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is the best choice",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is the most likely outcome",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is the most important factor",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is a key conclusion",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is the likely result",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that this is a valid example",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the evidence is strong",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the finding is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the statement is accurate",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the point is clear",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the key idea is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the outcome is expected",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the response is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the outcome is credible",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the pattern is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the issue is solved",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the process is underway",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the discussion is useful",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the example is helpful",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the conclusion is supported",
+    "native": ""
+  },
+  {
+    "clunky": "it is important to emphasize that the reason is obvious",
+    "native": ""
+  },
+  {
+    "clunky": "it should be emphasized that the result is positive",
+    "native": ""
+  },
+  {
+    "clunky": "it should be emphasized that the project is ready",
+    "native": ""
+  },
+  {
+    "clunky": "it should be emphasized that the data supports this",
+    "native": ""
+  },
+  {
+    "clunky": "it should be emphasized that the plan will work",
+    "native": ""
+  },
+  {
+    "clunky": "it should be emphasized that the results are clear",
+    "native": ""
+  }
+]

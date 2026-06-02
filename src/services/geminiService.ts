@@ -142,10 +142,16 @@ export async function transformText(
       body: JSON.stringify(requestBody),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server error (${response.status}): ${errorText}`);
-    }
+if (!response.ok) {
+  const errorText = await response.text();
+  
+  // Check for quota exceeded (429)
+  if (response.status === 429 || errorText.includes('429') || errorText.includes('quota exceeded')) {
+    throw new Error('Daily transformation limit reached. Please try again tomorrow or upgrade for higher limits.');
+  }
+  
+  throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
+}
 
     if (onProgress) {
       onProgress(50, 0, 1, "Processing...");

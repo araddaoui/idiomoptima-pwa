@@ -523,16 +523,14 @@ fetch('/idioms-clunky-native.json')
     }
   };
 
-  const copyToClipboard = () => {
-    if (!result) return;
-    
-    const textToCopy = getVisibleText();
-
-    navigator.clipboard.writeText(textToCopy);
-    setCopied(true);
-    toast.success("Copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
-  };
+const copyToClipboard = () => {
+  if (!result) return;
+  const textToCopy = result.finalVersion;
+  navigator.clipboard.writeText(textToCopy);
+  setCopied(true);
+  toast.success("Copied to clipboard!");
+  setTimeout(() => setCopied(false), 2000);
+};
 
   const getVisibleText = () => {
     if (!result) return "";
