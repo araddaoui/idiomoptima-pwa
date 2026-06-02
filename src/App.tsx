@@ -880,41 +880,44 @@ const copyToClipboard = () => {
       
       {/* Header */}
       <header className="border-b border-[#E5E5E5] bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          {/* Logo + title – centered on mobile, left on desktop */}
-          <div className="flex items-center justify-center sm:justify-start gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#1E3A8A] to-[#0F172A] rounded-2xl flex items-center justify-center shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white sm:w-6 sm:h-6">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
-                <path d="M2 12h20"/>
-              </svg>
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-3">
+          {/* Top row: Logo (left) + Buttons (right) */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#1E3A8A] to-[#0F172A] rounded-2xl flex items-center justify-center shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white sm:w-6 sm:h-6">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                  <path d="M2 12h20"/>
+                </svg>
+              </div>
+              <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] bg-clip-text text-transparent">
+                IdiomOptima
+              </h1>
             </div>
-            <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] bg-clip-text text-transparent">
-              IdiomOptima
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="text-[#666] hover:text-[#1A1A1A] text-xs sm:text-sm">
+                <HistoryIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> History
+              </Button>
+              <Button variant="outline" size="sm" onClick={reset} className="text-xs sm:text-sm">
+                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Reset
+              </Button>
+              <Button variant="ghost" size="sm" className="text-[#666] border border-[#E5E5E5] rounded-full text-xs sm:text-sm">Sign in</Button>
+              <Button size="sm" className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333] text-xs sm:text-sm">Sign up</Button>
+            </div>
           </div>
-          {/* Buttons – wrap on mobile, stay on right on desktop */}
-          <div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">
-            <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="text-[#666] hover:text-[#1A1A1A] text-xs sm:text-sm">
-              <HistoryIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> History
-            </Button>
-            <Button variant="outline" size="sm" onClick={reset} className="text-xs sm:text-sm">
-              <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Reset
-            </Button>
-            <Button variant="ghost" size="sm" className="text-[#666] border border-[#E5E5E5] rounded-full text-xs sm:text-sm">Sign in</Button>
-            <Button size="sm" className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333] text-xs sm:text-sm">Sign up</Button>
+          {/* Three words - CENTERED under logo */}
+          <div className="flex justify-center mt-6">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-wide">
+              <span style={{ color: "#3B82F6" }}>Edit.</span>{' '}
+              <span style={{ color: "#10B981" }}>Nativize.</span>{' '}
+              <span style={{ color: "#F59E0B" }}>Humanize.</span>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Hero Section - title only */}
-        <div className="text-center mb-6">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-2">
-            Transform your English to <span className="text-blue-600">native level</span>
-          </h1>
-        </div>
 
         {/* Try a sample chips */}
         <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -1004,23 +1007,23 @@ const copyToClipboard = () => {
           
           {/* Left Column: Source Text */}
           <div className="space-y-4 h-full flex flex-col">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Source Text</h3>
-              <div className="flex gap-2">
-                <input type="file" ref={fileInputRef} className="hidden" accept=".docx,.pdf" onChange={handleFileUpload} />
-                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isReading || isLoading} className="text-xs h-7">
-                  {isReading ? "Reading..." : "Import Word"}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => document.getElementById('pdfUpload')?.click()} disabled={isReading || isLoading} className="text-xs h-7">
-                  Import PDF
-                </Button>
-                {inputText && (
-                  <Button variant="ghost" size="sm" onClick={() => setInputText("")} className="text-xs h-7 text-gray-400 hover:text-red-500">
-                    Clear
-                  </Button>
-                )}
-              </div>
-            </div>
+<div className="flex items-center justify-between">
+  <div>
+    <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Source Text</h3>
+    <p className="text-xs text-gray-400 mt-1">Paste your text here or import a Word document</p>
+  </div>
+  <div className="flex gap-2">
+    <input type="file" ref={fileInputRef} className="hidden" accept=".docx" onChange={handleFileUpload} />
+    <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isReading || isLoading} className="text-xs h-7">
+      {isReading ? "Reading..." : "Import Word"}
+    </Button>
+    {inputText && (
+      <Button variant="ghost" size="sm" onClick={() => setInputText("")} className="text-xs h-7 text-gray-400 hover:text-red-500">
+        Clear
+      </Button>
+    )}
+  </div>
+</div>
 
             {/* Rich Text Editor with button inside */}
             <div className="border-2 border-gray-200 rounded-xl overflow-hidden bg-white hover:border-blue-400 transition-all duration-200 flex flex-col" style={{ height: "380px" }}>
