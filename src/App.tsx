@@ -161,10 +161,10 @@ fetch('/idioms-clunky-native.json')
 
     const fileType = file.name.split('.').pop()?.toLowerCase();
     
-    if (fileType !== 'docx' && fileType !== 'pdf') {
-      toast.error("IdiomOptima currently supports .docx and .pdf files only.");
-      return;
-    }
+if (fileType !== 'docx') {
+  toast.error("IdiomOptima currently supports Word documents only. For PDFs, copy and paste the text directly.");
+  return;
+}
 
     setIsReading(true);
     try {
@@ -1349,8 +1349,39 @@ const copyToClipboard = () => {
   <li><span className="text-gray-400">Pricing – coming soon</span></li>
 </ul></div>
           <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Legal</h4><ul className="space-y-2"><li><a href="/terms.html" className="hover:text-[#1A1A1A] transition">Terms of Service</a></li><li><a href="/privacy.html" className="hover:text-[#1A1A1A] transition">Privacy & Security</a></li></ul></div>
-          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Connect</h4><ul className="space-y-2"><li><a href="mailto:contact@idiomoptima.com" className="hover:text-[#1A1A1A] transition flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> contact@idiomoptima.com</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-twitter mr-1"></i> Twitter</a></li><li><a href="#" className="hover:text-[#1A1A1A] transition"><i className="fab fa-linkedin mr-1"></i> LinkedIn</a></li></ul></div>
-        </div>
+<div>
+  <h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Connect</h4>
+  <ul className="space-y-2">
+    <li>
+      <a
+        href="mailto:contact@idiomoptima.com"
+        className="hover:text-[#1A1A1A] transition flex items-center gap-1"
+      >
+        <Mail className="w-3.5 h-3.5" /> contact@idiomoptima.com
+      </a>
+    </li>
+    <li>
+      <a
+        href="https://x.com/araddaoui"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:text-[#1A1A1A] transition"
+      >
+        X / Twitter
+      </a>
+    </li>
+    <li>
+      <a
+        href="https://www.linkedin.com/in/araddaoui/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:text-[#1A1A1A] transition"
+      >
+        LinkedIn
+      </a>
+    </li>
+  </ul>
+</div>        </div>
         <div className="mt-8 text-center text-xs text-gray-400 border-t border-gray-100 pt-6">
           © 2026 IdiomOptima • Free forever during beta • No credit card required
         </div>
