@@ -47,7 +47,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { transformText, TransformationResult } from "@/src/services/geminiService";
-import { diff_match_patch } from "diff-match-patch";
+import DiffMatchPatch from "diff-match-patch";
 import { RichTextEditor } from "./components/RichTextEditor";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -371,7 +371,7 @@ if (fileType !== 'docx') {
 
   const renderContentWithFootnotes = (text: string) => {
     const renderDiff = (original: string, native: string) => {
-  const dmp = new diff_match_patch();
+const dmp = new DiffMatchPatch();
   const diffs = dmp.diff_main(original, native);
   dmp.diff_cleanupSemantic(diffs);
   
