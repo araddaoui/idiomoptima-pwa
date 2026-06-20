@@ -1168,7 +1168,8 @@ const copyToClipboard = () => {
                   </div>
 
                   {/* Refined Output */}
-        <div className="bg-white border-2 border-gray-200 rounded-xl p-4 mb-6 hover:border-blue-400 transition-all duration-200">                    <div className="text-gray-700 font-serif leading-relaxed text-sm">
+        <div className="bg-white border-2 border-gray-200 rounded-xl p-4 mb-6 hover:border-blue-400 transition-all duration-200">                    
+<div className="text-gray-700 font-serif leading-relaxed text-base">
                       {result.sentences && result.sentences.length > 0 ? (
                         (() => {
                           const bodyGroups: any[] = [];
