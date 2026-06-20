@@ -368,21 +368,16 @@ if (fileType !== 'docx') {
     }
   };
 
-  const renderContentWithFootnotes = (text: string) => {
 const renderDiff = (original: string, native: string) => {
   try {
     const originalWords = original.split(/(\s+)/);
     const nativeWords = native.split(/(\s+)/);
-    
     const result: JSX.Element[] = [];
-    
     let i = 0;
     let j = 0;
-    
     while (i < originalWords.length || j < nativeWords.length) {
       const origWord = originalWords[i] || "";
       const nativeWord = nativeWords[j] || "";
-      
       if (origWord === nativeWord) {
         result.push(<span key={`same-${i}`}>{nativeWord}</span>);
         i++;
@@ -402,7 +397,6 @@ const renderDiff = (original: string, native: string) => {
         j++;
       }
     }
-    
     return <span>{result}</span>;
   } catch (err) {
     console.error("Diff error:", err);
@@ -410,7 +404,8 @@ const renderDiff = (original: string, native: string) => {
   }
 };
 
-if (!text) return null;
+const renderContentWithFootnotes = (text: string) => {
+  if (!text) return null;
     
     // Quick check: if no markers, just render text or markdown if needed
     const markerRegex = new RegExp(FOOTNOTE_MARKER_REGEX.source, 'gu');
