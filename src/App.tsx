@@ -47,7 +47,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { transformText, TransformationResult } from "@/src/services/geminiService";
-import DiffMatchPatch from "diff-match-patch";
 import { RichTextEditor } from "./components/RichTextEditor";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -370,27 +369,48 @@ if (fileType !== 'docx') {
   };
 
   const renderContentWithFootnotes = (text: string) => {
-    const renderDiff = (original: string, native: string) => {
-const dmp = new DiffMatchPatch();
-  const diffs = dmp.diff_main(original, native);
-  dmp.diff_cleanupSemantic(diffs);
-  
-  return (
-    <span>
-      {diffs.map(([ op, text ], i) => {
-        if (op === 0) return <span key={i}>{text}</span>;
-        if (op === -1) return (
-          <span key={i} className="bg-red-100 text-red-700 line-through rounded px-0.5">{text}</span>
-        );
-        if (op === 1) return (
-          <span key={i} className="bg-green-100 text-green-700 font-medium rounded px-0.5">{text}</span>
-        );
-        return null;
-      })}
-    </span>
-  );
+const renderDiff = (original: string, native: string) => {
+  try {
+    const originalWords = original.split(/(\s+)/);
+    const nativeWords = native.split(/(\s+)/);
+    
+    const result: JSX.Element[] = [];
+    
+    let i = 0;
+    let j = 0;
+    
+    while (i < originalWords.length || j < nativeWords.length) {
+      const origWord = originalWords[i] || "";
+      const nativeWord = nativeWords[j] || "";
+      
+      if (origWord === nativeWord) {
+        result.push(<span key={`same-${i}`}>{nativeWord}</span>);
+        i++;
+        j++;
+      } else {
+        if (origWord && origWord.trim()) {
+          result.push(
+            <span key={`del-${i}`} className="bg-red-100 text-red-700 line-through rounded px-0.5 mx-0.5">{origWord}</span>
+          );
+        }
+        if (nativeWord && nativeWord.trim()) {
+          result.push(
+            <span key={`add-${j}`} className="bg-green-100 text-green-700 font-medium rounded px-0.5 mx-0.5">{nativeWord}</span>
+          );
+        }
+        i++;
+        j++;
+      }
+    }
+    
+    return <span>{result}</span>;
+  } catch (err) {
+    console.error("Diff error:", err);
+    return <span>{native}</span>;
+  }
 };
-    if (!text) return null;
+
+if (!text) return null;
     
     // Quick check: if no markers, just render text or markdown if needed
     const markerRegex = new RegExp(FOOTNOTE_MARKER_REGEX.source, 'gu');
