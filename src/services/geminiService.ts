@@ -20,6 +20,36 @@ export interface TransformationResult {
   appliedMode?: string;
 }
 
+export interface PhrasePair {
+  ai: string;
+  natural: string;
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function naturalizeAIPhrases(text: string, phraseMap: PhrasePair[]): string {
+  if (!phraseMap || phraseMap.length === 0) return text;
+  
+  let result = text;
+  
+  // Sort by length (longest first) to avoid partial replacements
+  const sortedPhrases = [...phraseMap].sort((a, b) => b.ai.length - a.ai.length);
+  
+  for (const { ai, natural } of sortedPhrases) {
+    // Case-insensitive replacement with word boundaries
+    const regex = new RegExp(`\\b${escapeRegex(ai)}\\b`, 'gi');
+    const replacement = natural || '';
+    result = result.replace(regex, replacement);
+  }
+  
+  // Clean up artifacts
+  result = result.replace(/\s+/g, ' ').replace(/ ,/g, ',').replace(/ \./g, '.');
+  
+  return result;
+}
+
 export function detectBestMode(text: string): { mode: string; reason: string } {
   const t = text.toLowerCase();
   
@@ -57,7 +87,8 @@ export async function transformText(
   onProgress?: (progress: number, currentChunk: number, totalChunks: number, status?: string) => void,
   forcedDialect?: string,
   mode: string = "auto",
-  idiomDatabase?: any[]  // 👈 NEW: Accept idiom database as parameter
+  idiomDatabase?: any[],
+  phraseMap?: PhrasePair[]
 ): Promise<TransformationResult> {
   if (!text.trim()) {
     return {
@@ -126,38 +157,56 @@ export async function transformText(
   }
 
   try {
-    // 👇 Prepare request body with idioms if available
     const requestBody: any = { text, domain, tone, forcedDialect, mode: activeMode };
-    
-    // 👇 If idiom database is provided, send first 100 entries as examples (or all if less)
-    if (idiomDatabase && idiomDatabase.length > 0) {
-      // Send up to 100 idioms to avoid request size limits
-      requestBody.idioms = idiomDatabase.slice(0, 100);
-      console.log(`Sending ${requestBody.idioms.length} idioms to worker`);
-    }
-    
-    const response = await fetch('https://nativewrite-api.nativewrite-api.workers.dev', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000);
 
-if (!response.ok) {
-  const errorText = await response.text();
-  
-  // Check for quota exceeded (429)
-  if (response.status === 429 || errorText.includes('429') || errorText.includes('quota exceeded')) {
-    throw new Error('Daily transformation limit reached. Please try again tomorrow or upgrade for higher limits.');
-  }
-  
-  throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
-}
+    let response;
+    try {
+      response = await fetch('https://nativewrite-api.nativewrite-api.workers.dev', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        throw new Error('Request timeout after 90 seconds. The server is taking too long to respond.');
+      }
+      throw fetchError;
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      
+      if (response.status === 429 || errorText.includes('429') || errorText.includes('quota exceeded')) {
+        throw new Error('Daily transformation limit reached. Please try again tomorrow or upgrade for higher limits.');
+      }
+      
+      throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
+    }
 
     if (onProgress) {
       onProgress(50, 0, 1, "Processing...");
     }
 
     const data: TransformationResult = await response.json();
+
+    // Apply AI phrase filter to the response
+    if (phraseMap && phraseMap.length > 0) {
+      if (data.finalVersion) {
+        data.finalVersion = naturalizeAIPhrases(data.finalVersion, phraseMap);
+      }
+      
+      if (data.sentences && data.sentences.length > 0) {
+        data.sentences = data.sentences.map(sentence => ({
+          ...sentence,
+          native: naturalizeAIPhrases(sentence.native, phraseMap)
+        }));
+      }
+    }
 
     if (onProgress) {
       onProgress(100, 1, 1, "Complete!");

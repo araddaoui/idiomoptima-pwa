@@ -47,6 +47,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { transformText, TransformationResult } from "@/src/services/geminiService";
+import { diff_match_patch } from "diff-match-patch";
 import { RichTextEditor } from "./components/RichTextEditor";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -141,6 +142,17 @@ fetch('/idioms-clunky-native.json')
       })
       .catch(error => console.error('Failed to load idiom database:', error));
   }, []);
+  const [aiPhraseMap, setAiPhraseMap] = useState<any[]>([]);
+
+useEffect(() => {
+  fetch('/ai-natural-database.json')
+    .then(response => response.json())
+    .then(data => {
+      setAiPhraseMap(data);
+      console.log(`Loaded ${data.length} AI phrases from database`);
+    })
+    .catch(error => console.error('Failed to load AI phrase database:', error));
+}, []);
     // Apply idiom replacements to text
   const applyIdiomReplacements = (text: string) => {
     let result = text;
@@ -258,6 +270,7 @@ if (fileType !== 'docx') {
   const [progress, setProgress] = useState(0);
   const [processingStatus, setProcessingStatus] = useState("");
   const [forcedDialect, setForcedDialect] = useState<string | undefined>(undefined);
+  const [showDiff, setShowDiff] = useState(false);
 
   const footnoteRefs = useRef<Record<string, HTMLSpanElement | null>>({});
 
@@ -357,6 +370,26 @@ if (fileType !== 'docx') {
   };
 
   const renderContentWithFootnotes = (text: string) => {
+    const renderDiff = (original: string, native: string) => {
+  const dmp = new diff_match_patch();
+  const diffs = dmp.diff_main(original, native);
+  dmp.diff_cleanupSemantic(diffs);
+  
+  return (
+    <span>
+      {diffs.map(([ op, text ], i) => {
+        if (op === 0) return <span key={i}>{text}</span>;
+        if (op === -1) return (
+          <span key={i} className="bg-red-100 text-red-700 line-through rounded px-0.5">{text}</span>
+        );
+        if (op === 1) return (
+          <span key={i} className="bg-green-100 text-green-700 font-medium rounded px-0.5">{text}</span>
+        );
+        return null;
+      })}
+    </span>
+  );
+};
     if (!text) return null;
     
     // Quick check: if no markers, just render text or markdown if needed
@@ -461,20 +494,21 @@ if (fileType !== 'docx') {
       // Apply idiom replacements before sending to worker
       const processedText = applyIdiomReplacements(inputText);
 
-      const data = await transformText(
-        processedText, 
-        domain, 
-        tone, 
-        (p, current, total, extraStatus) => {
-          setProgress(p);
-          let status = total > 1 ? `Processing section ${current + 1} of ${total}...` : "Nativizing text...";
-          if (extraStatus) status = extraStatus;
-          setProcessingStatus(status);
-        }, 
-        forcedDialect, 
-        mode,
-        idiomDatabase
-      );
+const data = await transformText(
+  processedText, 
+  domain, 
+  tone, 
+  (p, current, total, extraStatus) => {
+    setProgress(p);
+    let status = total > 1 ? `Processing section ${current + 1} of ${total}...` : "Nativizing text...";
+    if (extraStatus) status = extraStatus;
+    setProcessingStatus(status);
+  }, 
+  forcedDialect, 
+  mode,
+  idiomDatabase,
+  aiPhraseMap
+);
 
       // Final synchronization heartbeat
       setProgress(100);
@@ -1064,12 +1098,24 @@ const copyToClipboard = () => {
           {/* Right Column: Results */}
           <div className="space-y-4 h-full flex flex-col bg-blue-50/20 border border-blue-100 rounded-xl p-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Final Version</h3>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="text-xs h-7" onClick={exportToPDF}>Export PDF</Button>
-                <Button variant="outline" size="sm" className="text-xs h-7" onClick={copyToClipboard}>Copy</Button>
-                <Button variant="outline" size="sm" className="text-xs h-7" onClick={exportToWord}>Export Word</Button>
-              </div>
+<h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Final Version</h3>              
+<div className="flex gap-2">
+  {result && (
+    <button
+      onClick={() => setShowDiff(!showDiff)}
+      className={`text-xs px-2 py-1 rounded-full border transition-all ${
+        showDiff 
+          ? 'bg-blue-600 text-white border-blue-600' 
+          : 'bg-white text-gray-500 border-gray-300 hover:border-blue-400'
+      }`}
+    >
+      {showDiff ? '● Diff On' : '○ Show Diff'}
+    </button>
+  )}
+  <Button variant="outline" size="sm" className="text-xs h-7" onClick={exportToPDF}>Export PDF</Button>
+  <Button variant="outline" size="sm" className="text-xs h-7" onClick={copyToClipboard}>Copy</Button>
+  <Button variant="outline" size="sm" className="text-xs h-7" onClick={exportToWord}>Export Word</Button>
+</div>
             </div>
 
             <AnimatePresence mode="wait" className="flex-1">
@@ -1144,30 +1190,33 @@ const copyToClipboard = () => {
                               return;
                             }
 
-                            const content = (
-                              <span
-                                key={idx}
-                                onClick={() => {
-                                  setSwappedSentenceIndices(prev => 
-                                    prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
-                                  );
-                                }}
-                                onDoubleClick={() => startEdit(idx, text)}
-                                title={`Original: ${sent.original}`}
-                                className={`cursor-pointer transition-all duration-200 relative group inline p-0.5 rounded hover:bg-gray-50
-                                  ${sent.isNativeMatch ? 'border-b border-blue-200' : ''}
-                                  ${isSwapped ? 'text-gray-400 bg-gray-50' : ''}
-                                  ${sent.isHeading ? 'font-bold block text-lg mt-4 mb-2' : ''}
-                                `}
-                              >
-                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white p-2 rounded-lg text-xs whitespace-nowrap pointer-events-none z-[110] shadow-lg">
-                                  {sent.original}
-                                  <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-                                </span>
-                                {renderContentWithFootnotes(text)}
-                                {isSwapped && <RotateCcw className="w-3 h-3 text-gray-400 inline ml-1 align-middle" />}
-                              </span>
-                            );
+const content = (
+  <span
+    key={idx}
+    onClick={() => {
+      setSwappedSentenceIndices(prev => 
+        prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+      );
+    }}
+    onDoubleClick={() => startEdit(idx, text)}
+    title={`Original: ${sent.original}`}
+    className={`cursor-pointer transition-all duration-200 relative group inline p-0.5 rounded hover:bg-gray-50
+      ${sent.isNativeMatch ? 'border-b border-blue-200' : ''}
+      ${isSwapped ? 'text-gray-400 bg-gray-50' : ''}
+      ${sent.isHeading ? 'font-bold block text-lg mt-4 mb-2' : ''}
+    `}
+  >
+    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white p-2 rounded-lg text-xs whitespace-nowrap pointer-events-none z-[110] shadow-lg">
+      {sent.original}
+      <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+    </span>
+    {showDiff && !isSwapped && !sent.isNativeMatch 
+      ? renderDiff(sent.original, sent.native)
+      : renderContentWithFootnotes(text)
+    }
+    {isSwapped && <RotateCcw className="w-3 h-3 text-gray-400 inline ml-1 align-middle" />}
+  </span>
+);
 
                             if (sent.isHeading) {
                               if (currentGroup.length > 0) {
