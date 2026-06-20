@@ -155,6 +155,27 @@ export async function transformText(
   if (onProgress) {
     onProgress(10, 0, 1, "Connecting to server...");
   }
+ let simulatedProgress = 10;
+const ticker = setInterval(() => {
+  if (simulatedProgress < 85) {
+    simulatedProgress += Math.random() * 8;
+    const messages = [
+      "Analysing your text...",
+      "Detecting dialect and domain...",
+      "Applying nativization rules...",
+      "Checking collocations...",
+      "Preserving your voice...",
+      "Polishing the output...",
+    ];
+    const msgIndex = Math.min(
+      Math.floor((simulatedProgress / 85) * messages.length),
+      messages.length - 1
+    );
+    if (onProgress) {
+      onProgress(Math.min(Math.round(simulatedProgress), 85), 0, 1, messages[msgIndex]);
+    }
+  }
+}, 1500); 
 
   try {
     const requestBody: any = { text, domain, tone, forcedDialect, mode: activeMode };
@@ -188,10 +209,6 @@ export async function transformText(
       throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
     }
 
-    if (onProgress) {
-      onProgress(50, 0, 1, "Processing...");
-    }
-
     const data: TransformationResult = await response.json();
 
     // Apply AI phrase filter to the response
@@ -208,9 +225,10 @@ export async function transformText(
       }
     }
 
-    if (onProgress) {
-      onProgress(100, 1, 1, "Complete!");
-    }
+clearInterval(ticker);
+if (onProgress) {
+  onProgress(100, 1, 1, "Complete!");
+}
 
     if (mode === "auto") {
       data.explanation = (data.explanation || "") + ` \n[Auto-Selected Mode: ${activeMode}] - ${autoReason}`;
@@ -218,10 +236,11 @@ export async function transformText(
     }
 
     return data;
-  } catch (error: any) {
-    console.error("Transformation failed:", error);
-    throw new Error(`Transformation failed: ${error.message}`);
-  }
+} catch (error: any) {
+  clearInterval(ticker);
+  console.error("Transformation failed:", error);
+  throw new Error(`Transformation failed: ${error.message}`);
+}
 }
 
 function mergeResults(results: TransformationResult[]): TransformationResult {
