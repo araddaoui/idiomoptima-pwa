@@ -1086,29 +1086,16 @@ const copyToClipboard = () => {
               </div>
               <div className="border-t border-gray-100 p-3 bg-gray-50">
                 <Button
-<div className="flex gap-2">
-  <Button
-    className="flex-1 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white rounded-xl py-3 text-base font-bold shadow-2xl transition-all duration-300"
-    onClick={handleTransform}
-    disabled={isLoading || !inputText.trim()}
-  >
-    {isLoading ? (
-      <><Sparkles className="w-4 h-4 animate-spin inline mr-2" /> Refining...</>
-    ) : (
-      <><Sparkles className="w-4 h-4 inline mr-2" /> Transform to Native English →</>
-    )}
-  </Button>
-  {result && !isLoading && (
-    <Button
-      variant="outline"
-      className="rounded-xl py-3 px-4 text-sm font-semibold border-2 border-blue-300 text-blue-600 hover:bg-blue-50 transition-all"
-      onClick={handleTransform}
-      title="Not happy with the result? Try again for a different output."
-    >
-      ↺ Retry
-    </Button>
-  )}
-</div>
+                  className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white rounded-xl py-3 text-base font-bold shadow-2xl transition-all duration-300"
+                  onClick={handleTransform}
+                  disabled={isLoading || !inputText.trim()}
+                >
+                  {isLoading ? (
+                    <><Sparkles className="w-4 h-4 animate-spin inline mr-2" /> Refining...</>
+                  ) : (
+                    <><Sparkles className="w-4 h-4 inline mr-2" /> Transform to Native English →</>
+                  )}
+                </Button>
               </div>
             </div>
 
