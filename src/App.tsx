@@ -1096,6 +1096,16 @@ const copyToClipboard = () => {
                     <><Sparkles className="w-4 h-4 inline mr-2" /> Transform to Native English →</>
                   )}
                 </Button>
+                {result && !isLoading && (
+                  <Button
+                    variant="outline"
+                    className="mt-2 w-full rounded-xl py-2 px-4 text-sm font-semibold border-2 border-blue-300 text-blue-600 hover:bg-blue-50 transition-all"
+                    onClick={handleTransform}
+                    title="Not happy with the result? Try again for a different output."
+                  >
+                    ↺ Retry with different output
+                  </Button>
+                )}
               </div>
             </div>
 
