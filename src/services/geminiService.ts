@@ -140,18 +140,32 @@ export async function transformText(
 
     const responseText = await response.text();
     if (!response.ok) {
-      const normalizedError = responseText.toLowerCase();
-      const isQuotaError = response.status === 429
-        || normalizedError.includes("daily transformation")
-        || normalizedError.includes("quota exceeded")
-        || normalizedError.includes("rate limit")
-        || normalizedError.includes("too many requests");
+      let providerError: { error?: string; message?: string; quotaExceeded?: boolean } = {};
+      try {
+        providerError = JSON.parse(responseText);
+      } catch {
+        // Keep the raw response for non-JSON Worker errors.
+      }
+
+      const errorMessage = providerError.message || providerError.error || responseText;
+      const normalizedError = errorMessage.toLowerCase();
+      // Only a real 429 or an explicit structured quota flag is authoritative.
+      // Do not infer quota exhaustion from arbitrary text returned with a 4xx/5xx,
+      // because invalid/expired provider keys are commonly reported that way.
+      const isQuotaError = response.status === 429 || providerError.quotaExceeded === true;
 
       if (isQuotaError) {
         throw new Error("Daily transformation limit reached. Please try again tomorrow or upgrade for higher limits.");
       }
 
-      throw new Error(`Server error (${response.status}): ${responseText.slice(0, 200)}`);
+      if (response.status === 401 || response.status === 403
+        || normalizedError.includes("api key")
+        || normalizedError.includes("api_key")
+        || normalizedError.includes("unauthorized")) {
+        throw new Error("The transformation API is not authorized. The server API key may be missing, expired, or invalid.");
+      }
+
+      throw new Error(`Server error (${response.status}): ${errorMessage.slice(0, 200)}`);
     }
 
     if (onProgress) {
