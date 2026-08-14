@@ -119,28 +119,46 @@ export async function transformText(
     };
   }
 
-  // Real API call via serverless function
+  // The endpoint is configurable so production can use a healthy Worker/API
+  // without requiring a new frontend build whenever the provider changes.
+  const workerUrl = process.env.WORKER_URL || "https://nativewrite-api.nativewrite-api.workers.dev";
+
   if (onProgress) {
     onProgress(10, 0, 1, "Connecting to server...");
   }
 
-  try {
-const response = await fetch('https://nativewrite-api.nativewrite-api.workers.dev', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ text, domain, tone, forcedDialect, mode: activeMode }),
-});
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 90_000);
 
+  try {
+    const response = await fetch(workerUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, domain, tone, forcedDialect, mode: activeMode }),
+      signal: controller.signal,
+    });
+
+    const responseText = await response.text();
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server error (${response.status}): ${errorText}`);
+      const normalizedError = responseText.toLowerCase();
+      const isQuotaError = response.status === 429
+        || normalizedError.includes("daily transformation")
+        || normalizedError.includes("quota exceeded")
+        || normalizedError.includes("rate limit")
+        || normalizedError.includes("too many requests");
+
+      if (isQuotaError) {
+        throw new Error("Daily transformation limit reached. Please try again tomorrow or upgrade for higher limits.");
+      }
+
+      throw new Error(`Server error (${response.status}): ${responseText.slice(0, 200)}`);
     }
 
     if (onProgress) {
       onProgress(50, 0, 1, "Processing...");
     }
 
-    const data: TransformationResult = await response.json();
+    const data: TransformationResult = JSON.parse(responseText);
 
     if (onProgress) {
       onProgress(100, 1, 1, "Complete!");
@@ -153,8 +171,13 @@ const response = await fetch('https://nativewrite-api.nativewrite-api.workers.de
 
     return data;
   } catch (error: any) {
+    if (error?.name === "AbortError") {
+      throw new Error("The transformation server timed out. Please try again.");
+    }
     console.error("Transformation failed:", error);
-    throw new Error(`Transformation failed: ${error.message}`);
+    throw new Error(`Transformation failed: ${error?.message || "Unknown server error"}`);
+  } finally {
+    window.clearTimeout(timeoutId);
   }
 }
 

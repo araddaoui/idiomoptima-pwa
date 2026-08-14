@@ -411,6 +411,9 @@ export default function App() {
   };
 
   const handleTransform = async () => {
+    // Ignore rapid repeat clicks while a request is already in flight.
+    if (isLoading) return;
+
     if (!inputText.trim()) {
       toast.error("Please enter some text to transform.");
       return;
