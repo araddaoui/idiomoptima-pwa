@@ -925,95 +925,30 @@ export default function App() {
         </section>
 
         {/* Hero Section – editor entry */}
-        <div className="mb-12 text-center w-full">
-          <div className="mx-auto px-2">
-<h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-3 bg-gradient-to-r from-[#0F172A] via-[#1E3A8A] to-[#1E293B] bg-clip-text text-transparent text-center mx-auto px-2">
-              Your words in. Your voice, refined.
-</h1>
-<div className="flex flex-wrap items-center justify-center gap-2 my-4">
-  <span className="text-xs text-gray-400 uppercase tracking-wider">Try an example:</span>
-  
-  <button
-    title="Essay, thesis, journal article – refine for clarity and formal tone"
-    onClick={() => {
-      const example = "The results of the experiment demonstrates that there is a significant correlation between the variables, however further research is needed to establish causality.[1]";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("🎓 Academic example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>🎓</span> Academic
-  </button>
-
-  <button
-    title="Report, proposal, business email – make concise and professional"
-    onClick={() => {
-      const example = "Please find attached the quarterly report. We need to discuss about the budget allocation for next quarter as soon as possible.";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("💼 Business example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>💼</span> Business
-  </button>
-
-  <button
-    title="Story, blog post, poem – enhance style without losing your voice"
-    onClick={() => {
-      const example = "The old house stood on the hill, its windows like empty eyes staring at the town bellow. No one had visited in years.";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("✍️ Creative example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>✍️</span> Creative
-  </button>
-
-  <button
-    title="Resume, cover letter, LinkedIn summary – polish for impact"
-    onClick={() => {
-      const example = "I am writing to apply for the marketing position. I have 5 years of experience and I think I would be a good fit for your company.";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("📧 Professional example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>📧</span> Professional
-  </button>
-
-  <button
-    title="English learners – get native‑level fluency suggestions"
-    onClick={() => {
-      const example = "I have been learning English for two years. Yesterday I go to the store and buy some apples, but I forget my wallet at home.";
-      setInputText(example);
-      setInputHtml(example);
-      toast.info("🌍 ESL example loaded – try transforming it!");
-    }}
-    className="px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
-  >
-    <span>🌍</span> ESL
-  </button>
-</div>
-            <p className="text-gray-500 text-sm mb-5 text-center">
-              ✨ Get native‑level English in one click – no sign‑up required.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button onClick={scrollToInput} className="bg-[#1A1A1A] hover:bg-[#333] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-md">
-                <PenLine className="w-4 h-4 mr-2" /> Refine Your Text
-              </Button>
-              <span className="text-xs text-[#999] bg-[#F5F5F5] px-3 py-1.5 rounded-full">Pricing – coming soon</span>
+        <section className="mb-6 rounded-3xl border border-[#E7E1D8] bg-white px-5 py-5 shadow-[0_12px_35px_rgba(28,25,23,0.05)] sm:px-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-xl">
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#1E3A8A]"><PenLine className="h-3.5 w-3.5" /> The studio</div>
+              <h1 className="mt-2 font-serif text-2xl font-bold tracking-tight text-[#171717] sm:text-3xl">Refine the language. Keep the thinking.</h1>
+              <p className="mt-1.5 text-sm leading-6 text-[#746D64]">Start with a draft, choose the context, and let IdiomOptima make the expression feel native without flattening your voice.</p>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-6 text-xs text-[#888]">
-              <div className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /><span>Your text is processed securely and not stored</span></div>
-              <span>•</span>
-              <div><span className="mr-1">⭐</span>Trusted by 100+ early users</div>
+            <div className="flex flex-col gap-2 lg:items-end">
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#A39B91]">Start with a model draft</span>
+              <div className="flex flex-wrap gap-1.5 lg:justify-end">
+                <button title="Essay, thesis, journal article – refine for clarity and formal tone" onClick={() => { const example = "The results of the experiment demonstrates that there is a significant correlation between the variables, however further research is needed to establish causality.[1]"; setInputText(example); setInputHtml(example); toast.info("🎓 Academic example loaded – try transforming it!"); }} className="rounded-full border border-[#D9E2F4] bg-[#F5F8FE] px-3 py-1.5 text-xs font-medium text-[#1E3A8A] transition hover:border-[#1E3A8A] hover:bg-[#EAF0FC]"><span>🎓</span> Academic</button>
+                <button title="Report, proposal, business email – make concise and professional" onClick={() => { const example = "Please find attached the quarterly report. We need to discuss about the budget allocation for next quarter as soon as possible."; setInputText(example); setInputHtml(example); toast.info("💼 Business example loaded – try transforming it!"); }} className="rounded-full border border-[#D9E2F4] bg-[#F5F8FE] px-3 py-1.5 text-xs font-medium text-[#1E3A8A] transition hover:border-[#1E3A8A] hover:bg-[#EAF0FC]"><span>💼</span> Business</button>
+                <button title="Story, blog post, poem – enhance style without losing your voice" onClick={() => { const example = "The old house stood on the hill, its windows like empty eyes staring at the town bellow. No one had visited in years."; setInputText(example); setInputHtml(example); toast.info("✍️ Creative example loaded – try transforming it!"); }} className="rounded-full border border-[#D9E2F4] bg-[#F5F8FE] px-3 py-1.5 text-xs font-medium text-[#1E3A8A] transition hover:border-[#1E3A8A] hover:bg-[#EAF0FC]"><span>✍️</span> Creative</button>
+                <button title="Resume, cover letter, LinkedIn summary – polish for impact" onClick={() => { const example = "I am writing to apply for the marketing position. I have 5 years of experience and I think I would be a good fit for your company."; setInputText(example); setInputHtml(example); toast.info("📧 Professional example loaded – try transforming it!"); }} className="rounded-full border border-[#D9E2F4] bg-[#F5F8FE] px-3 py-1.5 text-xs font-medium text-[#1E3A8A] transition hover:border-[#1E3A8A] hover:bg-[#EAF0FC]"><span>📧</span> Professional</button>
+                <button title="English learners – get native-level fluency suggestions" onClick={() => { const example = "I have been learning English for two years. Yesterday I go to the store and buy some apples, but I forget my wallet at home."; setInputText(example); setInputHtml(example); toast.info("🌍 ESL example loaded – try transforming it!"); }} className="rounded-full border border-[#D9E2F4] bg-[#F5F8FE] px-3 py-1.5 text-xs font-medium text-[#1E3A8A] transition hover:border-[#1E3A8A] hover:bg-[#EAF0FC]"><span>🌍</span> ESL</button>
+              </div>
             </div>
           </div>
-        </div>
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#F0ECE6] pt-3 text-xs text-[#8A8278]">
+            <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-[#1E3A8A]" /> Your text is processed securely and not stored</span>
+            <span className="hidden text-[#D2CBC1] sm:inline">•</span>
+            <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-[#D9A441]" /> Free public beta · no sign-up required</span>
+          </div>
+        </section>
         <div id="workspace" className="grid grid-cols-1 lg:grid-cols-2 gap-10" ref={inputSectionRef}>
           
           {/* Left Column: Input & Controls */}
