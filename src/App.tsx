@@ -907,9 +907,9 @@ export default function App() {
                 <div><p className="font-serif text-xl font-bold text-[#171717]">03</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Return with confidence</p></div>
               </div>
             </div>
-            <div className="relative">
-              <div className="absolute -right-3 -top-4 rounded-full bg-[#1E3A8A] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-lg">Voice, preserved</div>
-              <div className="rotate-[-1.5deg] rounded-[1.75rem] border border-[#E4DED4] bg-white p-5 shadow-[0_28px_60px_rgba(28,25,23,0.16)] sm:p-7">
+            <div className="relative pt-3 sm:pt-2">
+              <div className="absolute right-4 top-0 z-10 rounded-full bg-[#1E3A8A] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-lg">Voice, preserved</div>
+              <div className="rounded-[1.75rem] border border-[#E4DED4] bg-white p-5 shadow-[0_28px_60px_rgba(28,25,23,0.16)] sm:rotate-[-1.5deg] sm:p-7">
                 <div className="flex items-center justify-between border-b border-[#EEEAE4] pb-4">
                   <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#D9A441]" /><span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9A9288]">Live refinement</span></div>
                   <span className="text-[10px] text-[#B0A99F]">general · neutral</span>
