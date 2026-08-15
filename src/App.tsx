@@ -484,7 +484,8 @@ export default function App() {
 
     } catch (error: any) {
       console.error("Transformation failed:", error);
-      toast.error(`Transformation failed: ${error.message || "Unknown error"}`);
+      const message = error?.message || "Unknown transformation error";
+      toast.error(message.startsWith("Transformation failed:") ? message : `Transformation failed: ${message}`);
     } finally {
       setIsLoading(false);
       setProgress(0);

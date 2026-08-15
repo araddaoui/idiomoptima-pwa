@@ -152,10 +152,14 @@ export async function transformText(
       // Only a real 429 or an explicit structured quota flag is authoritative.
       // Do not infer quota exhaustion from arbitrary text returned with a 4xx/5xx,
       // because invalid/expired provider keys are commonly reported that way.
-      const isQuotaError = response.status === 429 || providerError.quotaExceeded === true;
+      const isExplicitQuotaError = providerError.quotaExceeded === true;
 
-      if (isQuotaError) {
-        throw new Error("Daily transformation limit reached. Please try again tomorrow or upgrade for higher limits.");
+      if (isExplicitQuotaError) {
+        throw new Error("The transformation provider has reached its configured quota. This is separate from your IdiomOptima browser limit.");
+      }
+
+      if (response.status === 429) {
+        throw new Error(`The transformation provider is temporarily rate-limited or unavailable. ${errorMessage.slice(0, 180)}`);
       }
 
       if (response.status === 401 || response.status === 403
