@@ -873,14 +873,58 @@ export default function App() {
             <Button variant="outline" size="sm" onClick={reset} className="text-xs sm:text-sm">
               <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Reset
             </Button>
-            <Button variant="ghost" size="sm" className="text-[#666] border border-[#E5E5E5] rounded-full text-xs sm:text-sm">Sign in</Button>
-            <Button size="sm" className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333] text-xs sm:text-sm">Sign up</Button>
+            <Button variant="ghost" size="sm" onClick={() => toast.info("Sign-in is coming with the public beta account rollout.")} className="text-[#666] border border-[#E5E5E5] rounded-full text-xs sm:text-sm">Sign in</Button>
+            <Button size="sm" onClick={() => toast.info("Early access accounts are coming next.")} className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333] text-xs sm:text-sm">Sign up</Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-[1600px] mx-auto px-8 py-8">
-        {/* Hero Section – enhanced */}
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8">
+        {/* Public-beta landing hero: the workspace remains directly below for a low-friction trial. */}
+        <section className="relative overflow-hidden rounded-[2rem] border border-[#DCE5F5] bg-gradient-to-br from-[#F7FAFF] via-white to-[#EEF4FF] px-6 py-10 sm:px-12 sm:py-14 mb-10 shadow-sm">
+          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-100/60 blur-3xl" />
+          <div className="absolute -left-24 -bottom-32 h-72 w-72 rounded-full bg-indigo-100/50 blur-3xl" />
+          <div className="relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-800">
+                <Sparkles className="h-3.5 w-3.5" /> Public beta
+              </div>
+              <h2 className="mt-5 max-w-3xl font-serif text-4xl font-bold leading-[1.05] tracking-tight text-[#0F172A] sm:text-6xl">
+                Make every sentence sound like you meant it.
+              </h2>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+                IdiomOptima refines grammar, phrasing, and tone while preserving your voice, structure, and intent. Built for academic writing, professional communication, and everyday English.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button onClick={scrollToInput} className="rounded-full bg-[#1E3A8A] px-6 py-3 text-white shadow-lg shadow-blue-900/15 hover:bg-[#172E6D]">
+                  <PenLine className="mr-2 h-4 w-4" /> Try the editor
+                </Button>
+                <span className="text-sm text-slate-500">Free public beta · no payment required to try</span>
+              </div>
+              <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
+                <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-blue-700" /> Voice-preserving edits</span>
+                <span className="inline-flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5 text-blue-700" /> Academic-aware</span>
+                <span className="inline-flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-blue-700" /> Fast feedback</span>
+              </div>
+            </div>
+            <div className="relative rounded-3xl border border-white/80 bg-white/85 p-5 shadow-xl shadow-slate-900/10 backdrop-blur sm:p-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Before</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">He explained me the problem very clear.</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-slate-300" />
+              </div>
+              <div className="pt-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-700">Natural version</p>
+                <p className="mt-2 text-base font-medium leading-7 text-[#0F172A]">He explained the problem to me very clearly.</p>
+                <div className="mt-4 flex items-center gap-2 text-xs text-emerald-700"><Check className="h-3.5 w-3.5" /> Meaning preserved · clarity improved</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Hero Section – editor entry */}
         <div className="mb-12 text-center w-full">
           <div className="mx-auto px-2">
 <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-3 bg-gradient-to-r from-[#0F172A] via-[#1E3A8A] to-[#1E293B] bg-clip-text text-transparent text-center mx-auto px-2">
@@ -970,7 +1014,7 @@ export default function App() {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10" ref={inputSectionRef}>
+        <div id="workspace" className="grid grid-cols-1 lg:grid-cols-2 gap-10" ref={inputSectionRef}>
           
           {/* Left Column: Input & Controls */}
           <div className="space-y-4">
