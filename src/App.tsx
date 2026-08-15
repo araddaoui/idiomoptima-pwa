@@ -880,45 +880,45 @@ export default function App() {
       </header>
 
       <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8">
-        {/* Public-beta landing hero: the workspace remains directly below for a low-friction trial. */}
-        <section className="relative overflow-hidden rounded-[2rem] border border-[#DCE5F5] bg-gradient-to-br from-[#F7FAFF] via-white to-[#EEF4FF] px-6 py-10 sm:px-12 sm:py-14 mb-10 shadow-sm">
-          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-100/60 blur-3xl" />
-          <div className="absolute -left-24 -bottom-32 h-72 w-72 rounded-full bg-indigo-100/50 blur-3xl" />
-          <div className="relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        {/* Editorial-studio landing hero: the promise is memorable, specific, and directly connected to the editor. */}
+        <section className="relative overflow-hidden rounded-[2rem] border border-[#D7D0C4] bg-[#F3EFE7] px-6 py-10 sm:px-12 sm:py-14 mb-10 shadow-[0_24px_80px_rgba(28,25,23,0.08)]">
+          <div className="absolute -right-28 -top-32 h-96 w-96 rounded-full bg-[#D9E4F7]/70 blur-3xl" />
+          <div className="absolute -left-24 -bottom-40 h-96 w-96 rounded-full bg-[#E8DCCB]/80 blur-3xl" />
+          <div className="relative grid gap-12 lg:grid-cols-[1fr_0.92fr] lg:items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-800">
-                <Sparkles className="h-3.5 w-3.5" /> Public beta
+              <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#1E3A8A]">
+                <span className="h-px w-8 bg-[#1E3A8A]" /> The writing refinement studio
               </div>
-              <h2 className="mt-5 max-w-3xl font-serif text-4xl font-bold leading-[1.05] tracking-tight text-[#0F172A] sm:text-6xl">
-                Make every sentence sound like you meant it.
+              <h2 className="mt-6 max-w-3xl font-serif text-5xl font-bold leading-[0.98] tracking-[-0.04em] text-[#171717] sm:text-7xl">
+                Edit.<br /><span className="text-[#1E3A8A]">Nativize.</span><br />Humanize.
               </h2>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                IdiomOptima refines grammar, phrasing, and tone while preserving your voice, structure, and intent. Built for academic writing, professional communication, and everyday English.
+              <p className="mt-6 max-w-xl text-base leading-7 text-[#5B554E] sm:text-lg">
+                Clearer grammar. More natural phrasing. Still unmistakably yours. IdiomOptima helps your ideas arrive with confidence, whether you are writing a thesis, an email, or the first line of something new.
               </p>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button onClick={scrollToInput} className="rounded-full bg-[#1E3A8A] px-6 py-3 text-white shadow-lg shadow-blue-900/15 hover:bg-[#172E6D]">
-                  <PenLine className="mr-2 h-4 w-4" /> Try the editor
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button onClick={scrollToInput} className="rounded-full bg-[#171717] px-7 py-3 text-white shadow-lg shadow-black/15 hover:bg-[#303030]">
+                  <PenLine className="mr-2 h-4 w-4" /> Open the studio
                 </Button>
-                <span className="text-sm text-slate-500">Free public beta · no payment required to try</span>
+                <span className="text-sm text-[#746D64]">Try the public beta free</span>
               </div>
-              <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
-                <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-blue-700" /> Voice-preserving edits</span>
-                <span className="inline-flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5 text-blue-700" /> Academic-aware</span>
-                <span className="inline-flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-blue-700" /> Fast feedback</span>
+              <div className="mt-9 grid max-w-xl grid-cols-3 gap-4 border-t border-[#D7D0C4] pt-5">
+                <div><p className="font-serif text-xl font-bold text-[#171717]">01</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Preserve your voice</p></div>
+                <div><p className="font-serif text-xl font-bold text-[#171717]">02</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Refine the language</p></div>
+                <div><p className="font-serif text-xl font-bold text-[#171717]">03</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Return with confidence</p></div>
               </div>
             </div>
-            <div className="relative rounded-3xl border border-white/80 bg-white/85 p-5 shadow-xl shadow-slate-900/10 backdrop-blur sm:p-6">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Before</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">He explained me the problem very clear.</p>
+            <div className="relative">
+              <div className="absolute -right-3 -top-4 rounded-full bg-[#1E3A8A] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-lg">Voice, preserved</div>
+              <div className="rotate-[-1.5deg] rounded-[1.75rem] border border-[#E4DED4] bg-white p-5 shadow-[0_28px_60px_rgba(28,25,23,0.16)] sm:p-7">
+                <div className="flex items-center justify-between border-b border-[#EEEAE4] pb-4">
+                  <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#D9A441]" /><span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9A9288]">Live refinement</span></div>
+                  <span className="text-[10px] text-[#B0A99F]">general · neutral</span>
                 </div>
-                <ChevronRight className="h-5 w-5 text-slate-300" />
-              </div>
-              <div className="pt-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-700">Natural version</p>
-                <p className="mt-2 text-base font-medium leading-7 text-[#0F172A]">He explained the problem to me very clearly.</p>
-                <div className="mt-4 flex items-center gap-2 text-xs text-emerald-700"><Check className="h-3.5 w-3.5" /> Meaning preserved · clarity improved</div>
+                <div className="space-y-6 pt-6">
+                  <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A39B91]">Your sentence</p><p className="mt-2 text-sm leading-7 text-[#756E66]">He explained me the problem very clear.</p></div>
+                  <div className="flex items-center gap-3"><div className="h-px flex-1 bg-[#E9E4DC]" /><ChevronRight className="h-4 w-4 text-[#1E3A8A]" /><div className="h-px flex-1 bg-[#E9E4DC]" /></div>
+                  <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#1E3A8A]">IdiomOptima</p><p className="mt-2 text-lg font-medium leading-8 text-[#171717]">He explained the problem to me very clearly.</p><div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#EEF6EE] px-3 py-1.5 text-xs font-medium text-[#3D7545]"><Check className="h-3.5 w-3.5" /> Meaning intact, expression improved</div></div>
+                </div>
               </div>
             </div>
           </div>
@@ -928,7 +928,7 @@ export default function App() {
         <div className="mb-12 text-center w-full">
           <div className="mx-auto px-2">
 <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-3 bg-gradient-to-r from-[#0F172A] via-[#1E3A8A] to-[#1E293B] bg-clip-text text-transparent text-center mx-auto px-2">
-  Elevate your writing without losing your voice
+              Your words in. Your voice, refined.
 </h1>
 <div className="flex flex-wrap items-center justify-center gap-2 my-4">
   <span className="text-xs text-gray-400 uppercase tracking-wider">Try an example:</span>
