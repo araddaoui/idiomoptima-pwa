@@ -709,7 +709,7 @@ export default function App() {
               })()
             : [
                 new Paragraph({
-                  children: [new TextRun({ text: result.finalVersion, font: "Arial", size: 24 })],
+                  children: [new TextRun({ text: getVisibleText(), font: "Arial", size: 24 })],
                   spacing: { line: 276 },
                 }),
               ],
@@ -821,7 +821,7 @@ export default function App() {
           });
         }
       } else {
-        const lines = doc.splitTextToSize(result.finalVersion, maxWidth);
+        const lines = doc.splitTextToSize(getVisibleText(), maxWidth);
         doc.text(lines, margin, currentY);
       }
       
@@ -1351,7 +1351,7 @@ export default function App() {
                           })()
                         ) : (
                           <div className="whitespace-pre-wrap leading-relaxed">
-                            {renderContentWithFootnotes(result.finalVersion)}
+                            {renderContentWithFootnotes(getVisibleText())}
                           </div>
                         )}
                       </div>
