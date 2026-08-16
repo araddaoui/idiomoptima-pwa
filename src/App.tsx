@@ -898,27 +898,27 @@ export default function App() {
 
       <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8">
         {/* Editorial-studio landing hero: the promise is memorable, specific, and directly connected to the editor. */}
-        <section className="relative overflow-hidden rounded-[2rem] border border-[#D7D0C4] bg-[#F3EFE7] px-5 py-6 sm:px-8 sm:py-8 mb-6 shadow-[0_20px_55px_rgba(28,25,23,0.08)]">
+        <section className="relative overflow-hidden rounded-[2rem] border border-[#D7D0C4] bg-[#F3EFE7] px-5 py-4 sm:px-8 sm:py-5 mb-5 shadow-[0_18px_48px_rgba(28,25,23,0.08)]">
           <div className="absolute -right-28 -top-32 h-96 w-96 rounded-full bg-[#D9E4F7]/70 blur-3xl" />
           <div className="absolute -left-24 -bottom-40 h-96 w-96 rounded-full bg-[#E8DCCB]/80 blur-3xl" />
-          <div className="relative grid gap-6 lg:grid-cols-[0.92fr_1fr] lg:items-center">
+          <div className="relative grid gap-5 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
             <div>
               <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#1E3A8A]">
                 <span className="h-px w-8 bg-[#1E3A8A]" /> The writing refinement studio
               </div>
-              <h2 className="mt-3 max-w-3xl font-serif text-4xl font-bold leading-[0.92] tracking-[-0.04em] text-[#171717] sm:text-5xl lg:text-6xl">
-                Edit.<br /><span className="text-[#1E3A8A]">Nativize.</span><br />Humanize.
+              <h2 className="mt-2 max-w-none whitespace-nowrap font-serif text-3xl font-bold leading-none tracking-[-0.045em] text-[#171717] sm:text-4xl lg:text-5xl">
+                Edit.<br className="lg:hidden" /> <span className="text-[#1E3A8A]">Nativize.</span><br className="lg:hidden" /> Humanize.
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-[#5B554E] sm:text-base">
+              <p className="mt-2 max-w-xl text-xs leading-5 text-[#5B554E] sm:text-sm">
                 Clearer grammar. More natural phrasing. Still unmistakably yours. IdiomOptima helps your ideas arrive with confidence, whether you are writing a thesis, an email, or the first line of something new.
               </p>
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Button onClick={scrollToInput} className="rounded-full bg-[#171717] px-7 py-3 text-white shadow-lg shadow-black/15 hover:bg-[#303030]">
                   <PenLine className="mr-2 h-4 w-4" /> Open the studio
                 </Button>
                 <span className="text-sm text-[#746D64]">Try the public beta free</span>
               </div>
-              <div className="mt-5 grid max-w-xl grid-cols-3 gap-3 border-t border-[#D7D0C4] pt-3">
+              <div className="mt-3 grid max-w-xl grid-cols-3 gap-2 border-t border-[#D7D0C4] pt-2">
                 <div><p className="font-serif text-xl font-bold text-[#171717]">01</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Preserve your voice</p></div>
                 <div><p className="font-serif text-xl font-bold text-[#171717]">02</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Refine the language</p></div>
                 <div><p className="font-serif text-xl font-bold text-[#171717]">03</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Return with confidence</p></div>
