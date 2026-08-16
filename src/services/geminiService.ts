@@ -190,7 +190,8 @@ export async function transformText(
     }
     const response = await fetch(workerUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
       body: JSON.stringify(requestBody),
       signal: controller.signal,
     });
