@@ -28,7 +28,7 @@ export interface TransformationResult {
 
 function clampScore(value: unknown, fallback: number): number {
   const numeric = typeof value === "number" && Number.isFinite(value) ? Math.round(value) : fallback;
-  return Math.max(0, Math.min(100, numeric));
+  return Math.max(0, Math.min(97, numeric));
 }
 
 function surfaceQualityScore(text: string): number {
@@ -58,16 +58,25 @@ function normalizeClientResult(data: TransformationResult, sourceText: string): 
   const stalePrefix = firstWords && firstWordsPosition > 120;
   const missingMarker = protectedMarkers(source).some((marker) => !candidate.includes(marker));
   const safeFinalVersion = stalePrefix || missingMarker ? source : candidate;
-  const originalScore = clampScore(data.originalScore, surfaceQualityScore(source));
-  const revisedScore = clampScore(data.revisedScore, surfaceQualityScore(safeFinalVersion));
+  const sourcePreserved = safeFinalVersion.trim() === source.trim();
+  const originalScore = sourcePreserved
+    ? clampScore(surfaceQualityScore(source), surfaceQualityScore(source))
+    : clampScore(data.originalScore, surfaceQualityScore(source));
+  const revisedScore = sourcePreserved
+    ? originalScore
+    : clampScore(data.revisedScore, surfaceQualityScore(safeFinalVersion));
   const suggestions = Array.isArray(data.suggestions) ? data.suggestions.filter((item) => typeof item === "string" && item.trim()).slice(0, 5) : [];
   if (!suggestions.length) {
-    if (safeFinalVersion === source) suggestions.push("No substantive changes were retained; the source structure and protected markers were preserved.");
+    if (sourcePreserved) suggestions.push("No substantive changes were retained; the source structure and protected markers were preserved.");
     else suggestions.push("Refined grammar and collocation while preserving the source meaning and structure.");
   }
-  const explanation = typeof data.explanation === "string" && data.explanation.trim() && data.explanation.trim().toLowerCase() !== "stylistic note"
-    ? data.explanation.trim()
-    : (safeFinalVersion === source ? "The source was preserved because the returned transformation was incomplete or unsafe." : "Grammar and collocation were refined while preserving the author’s meaning and structure.");
+  const rawExplanation = typeof data.explanation === "string" ? data.explanation.trim() : "";
+  const genericExplanation = /^(?:the text is written in|refined wording while preserving|grammar and collocation were refined|stylistic note)/i.test(rawExplanation);
+  const explanation = sourcePreserved
+    ? "The source was preserved because the returned transformation was incomplete or unsafe."
+    : (rawExplanation && !genericExplanation
+      ? rawExplanation
+      : "The accepted result differs from the source; wording was refined while preserving the author’s meaning, structure, and protected details.");
   return { ...data, finalVersion: safeFinalVersion, originalScore, revisedScore, suggestions, explanation };
 }
 

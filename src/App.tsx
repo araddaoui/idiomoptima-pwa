@@ -256,6 +256,7 @@ export default function App() {
 
   const FOOTNOTE_DEF_REGEX = /^\s*(?:\[?(\d{1,3})\]?[\s.:)\-|]{1,3}|Footnote\s*(\d{1,3}))[\s.:)\-|]*\s*(.+)/i;
   const FOOTNOTE_MARKER_REGEX = /\[(\d{1,3})\]|\((\d{1,3})\)|([¹²³⁴⁵⁶⁷⁸⁹⁰])/gu;
+  const isReferenceHeadingText = (value: string) => /^(?:references|bibliography|footnotes|notes\s*&\s*references|references\s*&\s*footnotes)$/i.test(value.trim());
 
   const SUPER_TO_NUM: Record<string, string> = {
     '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5',
@@ -324,6 +325,45 @@ export default function App() {
     return map;
   }, [inputText, result, swappedSentenceIndices]);
 
+  const referenceBlockIndices = useMemo(() => {
+    const indices = new Set<number>();
+    const referenceDefinitions = Object.values(footnoteMap).map((value) => value.replace(/\s+/g, " ").trim().toLowerCase());
+    const seenDefinitions = new Map<string, number>();
+    const tokens = (value: string) => new Set((value.match(/[a-z0-9]{4,}/gi) || []).map((token) => token.toLowerCase()));
+    const matchingReference = (value: string) => {
+      const candidate = tokens(value);
+      let best: { key: string; overlap: number } | null = null;
+      for (const definition of referenceDefinitions) {
+        const reference = tokens(definition);
+        if (!candidate.size || !reference.size) continue;
+        let shared = 0;
+        for (const token of reference) if (candidate.has(token)) shared++;
+        const overlap = shared / Math.min(candidate.size, reference.size);
+        if (!best || overlap > best.overlap) best = { key: definition, overlap };
+      }
+      return best && best.overlap >= 0.82 ? best.key : null;
+    };
+    let inReferenceBlock = false;
+
+    result?.sentences?.forEach((sent, idx) => {
+      const text = swappedSentenceIndices.includes(idx) ? sent.original : sent.native;
+      if (isReferenceHeadingText(text)) {
+        inReferenceBlock = true;
+        indices.add(idx);
+      } else if (inReferenceBlock) {
+        indices.add(idx);
+      } else {
+        const match = matchingReference(text);
+        if (match) {
+          const occurrence = seenDefinitions.get(match) || 0;
+          if (occurrence > 0) indices.add(idx);
+          seenDefinitions.set(match, occurrence + 1);
+        }
+      }
+    });
+    return indices;
+  }, [footnoteMap, result, swappedSentenceIndices]);
+
   const footnoteStats = useMemo(() => {
     if (!inputText) return { markerCount: 0, defCount: 0 };
     // Use a fresh regex to avoid state issues
@@ -386,7 +426,10 @@ export default function App() {
             {num}
           </button>
           {content && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/marker:opacity-100 transition-all bg-white border-2 border-blue-600 p-4 rounded-xl text-xs shadow-2xl w-80 z-[200] pointer-events-none transform translate-y-1 group-hover/marker:translate-y-0 text-left">
+            <div
+              aria-hidden="true"
+              className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/marker:opacity-100 transition-all bg-white border-2 border-blue-600 p-4 rounded-xl text-xs shadow-2xl w-80 z-[200] pointer-events-none select-none transform translate-y-1 group-hover/marker:translate-y-0 text-left"
+            >
               <div className="font-bold text-blue-600 border-b border-blue-50 pb-2 mb-2 flex items-center gap-2">
                 <Info className="w-4 h-4" /> REFERENCE {num}
               </div>
@@ -531,13 +574,9 @@ export default function App() {
         
         const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
         const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
-        const isReferencesHeading = sent.isHeading && (
-          text.toLowerCase() === "references" || 
-          text.toLowerCase() === "bibliography" || 
-          text.toLowerCase() === "footnotes"
-        );
+        const isReferencesHeading = isReferenceHeadingText(text);
         
-        if (isFootnoteDef || isReferencesHeading) return;
+        if (referenceBlockIndices.has(idx) || isFootnoteDef || isReferencesHeading) return;
 
         if (sent.isHeading) {
           if (currentPara.length > 0) {
@@ -560,13 +599,8 @@ export default function App() {
 
       let final = bodyParts.join("").trim();
       
-      const footnoteItems = Object.entries(footnoteMap).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
-      if (footnoteItems.length > 0) {
-        final += "\n\n" + "=".repeat(30) + "\nREFERENCES & FOOTNOTES\n" + "-".repeat(30) + "\n\n";
-        footnoteItems.forEach(([num, content]) => {
-          final += `[${num}] ${content}\n\n`;
-        });
-      }
+      // Copy only the canonical prose. Reference details remain available through
+      // the visible reference panel and dedicated Word/PDF export paths.
       return final;
     }
     return result.finalVersion;
@@ -613,13 +647,9 @@ export default function App() {
                   
                   const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
                   const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
-                  const isReferencesHeading = sent.isHeading && (
-                    text.toLowerCase() === "references" || 
-                    text.toLowerCase() === "bibliography" || 
-                    text.toLowerCase() === "footnotes"
-                  );
+                  const isReferencesHeading = isReferenceHeadingText(text);
                   
-                  if (isFootnoteDef || isReferencesHeading) return;
+                  if (referenceBlockIndices.has(idx) || isFootnoteDef || isReferencesHeading) return;
 
                   if (sent.isHeading) {
                     if (currentParagraphChildren.length > 0) {
@@ -718,13 +748,9 @@ export default function App() {
           
           const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
           const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
-          const isReferencesHeading = sent.isHeading && (
-            text.toLowerCase() === "references" || 
-            text.toLowerCase() === "bibliography" || 
-            text.toLowerCase() === "footnotes"
-          );
+          const isReferencesHeading = isReferenceHeadingText(text);
           
-          if (isFootnoteDef || isReferencesHeading) {
+          if (referenceBlockIndices.has(idx) || isFootnoteDef || isReferencesHeading) {
             // Flush current paragraph first
             if (currentParaText.trim()) {
               const lines = doc.splitTextToSize(currentParaText.trim(), maxWidth);
@@ -1204,13 +1230,9 @@ export default function App() {
                               
                               const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
                               const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
-                              const isReferencesHeading = sent.isHeading && (
-                                text.toLowerCase() === "references" || 
-                                text.toLowerCase() === "bibliography" || 
-                                text.toLowerCase() === "footnotes"
-                              );
+                              const isReferencesHeading = isReferenceHeadingText(text);
                               
-                              if (isFootnoteDef || isReferencesHeading) return;
+                              if (referenceBlockIndices.has(idx) || isFootnoteDef || isReferencesHeading) return;
 
                               if (editingIndex === idx) {
                                 bodyGroups.push(
