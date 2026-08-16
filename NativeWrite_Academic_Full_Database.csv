@@ -1,0 +1,491 @@
+﻿Category,Clunky Input,Native Output,Type
+Establishing_Gap,No one looked at this population.,This cohort has been systematically excluded from existing studies.,Verb Phrase
+Establishing_Gap,Not much is known about this.,Knowledge of this phenomenon remains fragmentary.,Noun Phrase
+Establishing_Gap,Research is missing here.,There is a conspicuous paucity of literature regarding...,Noun Phrase
+Establishing_Gap,Past studies didn't find this.,Previous inquiries have failed to account for...,Verb Phrase
+Establishing_Gap,People haven't checked this yet.,This dimension has hitherto escaped empirical scrutiny.,Verb Phrase
+Establishing_Gap,We need to know more about X.,A more granular understanding of X is urgently required.,Noun Phrase
+Establishing_Gap,This topic is ignored.,This area has suffered from relative scholarly neglect.,Verb Phrase
+Establishing_Gap,There is a big hole in the research.,This represents a significant lacuna in the current body of work.,Noun Phrase
+Establishing_Gap,It’s still a secret how this works.,The underlying mechanisms remain poorly understood.,Noun Phrase
+Establishing_Gap,No one agrees on this.,Scholarly consensus on this matter remains elusive.,Noun Phrase
+Establishing_Gap,They only looked at small groups.,Existing studies have been limited by small sample sizes.,Verb Phrase
+Establishing_Gap,The old theory is wrong now.,Current theoretical frameworks are ill-equipped to explain...,Noun Phrase
+Establishing_Gap,We don't have enough data.,Empirical evidence for this claim is currently thin.,Adverbial Phrase
+Establishing_Gap,Nobody has tried this method.,This methodological approach has yet to be applied to...,Verb Phrase
+Establishing_Gap,It’s a new problem.,This emergent issue warrants immediate investigation.,Noun Phrase
+Establishing_Gap,People forgot about this part.,This specific facet has been largely overlooked in the discourse.,Verb Phrase
+Establishing_Gap,We don't know the long-term effect.,The longitudinal implications remain a matter of conjecture.,Noun Phrase
+Establishing_Gap,Most studies are just about the US.,There is a distinct Western-centric bias in the extant literature.,Noun Phrase
+Establishing_Gap,It's not clear if this is true.,The veracity of this assumption remains to be empirically tested.,Verb Phrase
+Establishing_Gap,We need to update this.,The prevailing model requires significant refinement.,Verb Phrase
+Establishing_Gap,This is a big question.,This remains one of the most contentious issues in the field.,Noun Phrase
+Establishing_Gap,We need to look closer.,A more nuanced examination of these variables is necessary.,Noun Phrase
+Establishing_Gap,It’s hard to say what happens.,The precise nature of this interaction remains obscured.,Verb Phrase
+Establishing_Gap,No one has asked why.,The drivers of this trend have yet to be interrogated.,Verb Phrase
+Establishing_Gap,There is no proof for this.,Empirical validation for this hypothesis is currently lacking.,Noun Phrase
+Establishing_Gap,We need to bridge the gap.,This study seeks to reconcile the disparity between...,Verb Phrase
+Establishing_Gap,This is a blind spot.,This oversight constitutes a critical blind spot in the field.,Noun Phrase
+Establishing_Gap,It's been ignored for 20 years.,This issue has lain dormant in the literature for decades.,Verb Phrase
+Establishing_Gap,We don't know the cause.,The etiology of this condition remains a subject of debate.,Noun Phrase
+Establishing_Gap,We need better tools.,Existing analytical tools are insufficient for capturing...,Noun Phrase
+Establishing_Gap,It's a mystery.,The provenance of these findings remains enigmatic.,Noun Phrase
+Establishing_Gap,This hasn't been tested in real life.,Ecological validity has yet to be established for this model.,Noun Phrase
+Establishing_Gap,We only have old data.,Our current understanding is predicated on outdated metrics.,Verb Phrase
+Establishing_Gap,This doesn't fit the theory.,These observations are dissonant with established paradigms.,Adverbial Phrase
+Establishing_Gap,We need to find the link.,The nexus between these two variables remains unexplored.,Noun Phrase
+Establishing_Gap,It's just a guess right now.,This remains a purely speculative proposition.,Noun Phrase
+Establishing_Gap,No one looked at the side effects.,The collateral implications have been largely disregarded.,Verb Phrase
+Establishing_Gap,We need to re-evaluate this.,A critical reappraisal of this doctrine is long overdue.,Noun Phrase
+Establishing_Gap,It’s a missing link.,This provides the missing link in our understanding of...,Noun Phrase
+Establishing_Gap,People only look at the surface.,Most accounts provide only a superficial treatment of...,Verb Phrase
+Establishing_Gap,We need to go deeper.,A more profound investigation into the roots of X is required.,Noun Phrase
+Establishing_Gap,This is a new area.,This represents a nascent field of inquiry.,Noun Phrase
+Establishing_Gap,We don't know how it starts.,The inception of this process remains shrouded in uncertainty.,Noun Phrase
+Establishing_Gap,This is an old debate.,This study revisits a long-standing controversy regarding...,Verb Phrase
+Establishing_Gap,We need more proof.,Further corroboration is required to substantiate these claims.,Noun Phrase
+Establishing_Gap,It’s a neglected topic.,This subject has been relegated to the periphery of research.,Verb Phrase
+Establishing_Gap,We don't know the impact.,The ramifications of this shift are yet to be fully realized.,Noun Phrase
+Establishing_Gap,This is a weak point.,This represents a vulnerability in the current theoretical architecture.,Noun Phrase
+Establishing_Gap,No one has used this data.,This dataset has remained untapped by previous researchers.,Verb Phrase
+Establishing_Gap,It’s time to look at this.,The time is ripe for a comprehensive re-examination of...,Noun Phrase
+Hedging_Claims,This is probably the truth.,The balance of evidence would suggest...,Noun Phrase
+Hedging_Claims,I am sure that...,It is reasonable to contend that...,Sentence Starter
+Hedging_Claims,This proves that...,These findings lend support to the notion that...,Verb Phrase
+Hedging_Claims,It will definitely happen.,It is highly probable that...,Adverbial Phrase
+Hedging_Claims,This means X.,This can be tentatively interpreted as...,Verb Phrase
+Hedging_Claims,Everyone knows that...,It is widely accepted that...,Sentence Starter
+Hedging_Claims,This is because...,"This may be attributable, at least in part, to...",Verb Phrase
+Hedging_Claims,I think X is right.,There are grounds for suggesting that X is...,Noun Phrase
+Hedging_Claims,This is a fact.,This appears to be a robust phenomenon.,Noun Phrase
+Hedging_Claims,It is always like this.,This tendency is frequently observed in...,Adverbial Phrase
+Hedging_Claims,This is the only reason.,"This may be a primary, though not exclusive, driver of...",Noun Phrase
+Hedging_Claims,We can say that...,It might be argued that...,Sentence Starter
+Hedging_Claims,This shows why.,This offers a plausible explanation for...,Verb Phrase
+Hedging_Claims,It's clear.,It is discernible that...,Adverbial Phrase
+Hedging_Claims,This is a big deal.,This may have significant implications for...,Noun Phrase
+Hedging_Claims,I believe.,It is the author's contention that...,Sentence Starter
+Hedging_Claims,It looks like.,It would appear that...,Verb Phrase
+Hedging_Claims,This is likely.,There is a strong likelihood that...,Noun Phrase
+Hedging_Claims,Maybe this is true.,This remains a distinct possibility.,Noun Phrase
+Hedging_Claims,It shows.,It points toward a potential...,Verb Phrase
+Hedging_Claims,Usually.,In the majority of instances...,Adverbial Phrase
+Hedging_Claims,We think.,It is hypothesized that...,Sentence Starter
+Hedging_Claims,This is why.,This could potentially account for...,Verb Phrase
+Hedging_Claims,It’s almost certain.,"It is highly likely, bordering on certain, that...",Adverbial Phrase
+Hedging_Claims,It seems.,It is ostensibly the case that...,Adverbial Phrase
+Hedging_Claims,This suggests.,These results are indicative of...,Verb Phrase
+Hedging_Claims,It could be.,It is conceivable that...,Adverbial Phrase
+Hedging_Claims,This is a result of.,This is ostensibly linked to...,Verb Phrase
+Hedging_Claims,I guess.,One might speculate that...,Sentence Starter
+Hedging_Claims,It is true.,It is arguably the case that...,Adverbial Phrase
+Hedging_Claims,This is the cause.,This appears to be a salient factor in...,Noun Phrase
+Hedging_Claims,It leads to.,This may predispose the system to...,Verb Phrase
+Hedging_Claims,It is possible.,The possibility cannot be ruled out that...,Sentence Starter
+Hedging_Claims,This is the way.,This represents a plausible pathway for...,Noun Phrase
+Hedging_Claims,It is known.,It is generally understood that...,Sentence Starter
+Hedging_Claims,It is likely.,It is predisposed to...,Verb Phrase
+Hedging_Claims,It’s a sign.,This may serve as a proxy for...,Noun Phrase
+Hedging_Claims,It’s a fact.,This is consistent with the view that...,Adverbial Phrase
+Hedging_Claims,We can see.,It is evident from the data that...,Sentence Starter
+Hedging_Claims,It might.,It has the potential to...,Verb Phrase
+Hedging_Claims,It is common.,It is a prevalent feature of...,Noun Phrase
+Hedging_Claims,It is expected.,It is anticipated that...,Verb Phrase
+Hedging_Claims,It is clear that.,It is manifest that...,Adverbial Phrase
+Hedging_Claims,It is likely.,It stands to reason that...,Sentence Starter
+Hedging_Claims,It is a result.,This is potentially a function of...,Noun Phrase
+Hedging_Claims,It is possible.,It is within the realm of possibility that...,Noun Phrase
+Hedging_Claims,It is because.,This may be contingent upon...,Verb Phrase
+Hedging_Claims,It is likely.,There is a high probability of...,Noun Phrase
+Hedging_Claims,It is true.,It is ostensibly valid that...,Adverbial Phrase
+Hedging_Claims,It is the reason.,This may be the underlying cause of...,Noun Phrase
+Causal_Linkage,A changed because of B.,A underwent transformation in response to B.,Verb Phrase
+Causal_Linkage,X makes Y happen.,X precipitates Y.,Verb Phrase
+Causal_Linkage,A is the reason for B.,B is a direct consequence of A.,Noun Phrase
+Causal_Linkage,X causes Y.,X exerts a profound influence on Y.,Verb Phrase
+Causal_Linkage,This leads to that.,This culminates in...,Verb Phrase
+Causal_Linkage,Because of this.,By virtue of this...,Adverbial Phrase
+Causal_Linkage,X helps Y.,X facilitates the development of Y.,Verb Phrase
+Causal_Linkage,Y is from X.,Y is derived from...,Verb Phrase
+Causal_Linkage,X starts Y.,X triggers a cascade of...,Verb Phrase
+Causal_Linkage,X and Y are linked.,X and Y are inextricably linked.,Adverbial Phrase
+Causal_Linkage,X makes Y worse.,X exacerbates Y.,Verb Phrase
+Causal_Linkage,X makes Y better.,X ameliorates Y.,Verb Phrase
+Causal_Linkage,X stops Y.,X inhibits the progression of Y.,Verb Phrase
+Causal_Linkage,X changes Y.,X modulates the expression of Y.,Verb Phrase
+Causal_Linkage,X is why Y is like this.,X is the primary determinant of Y.,Noun Phrase
+Causal_Linkage,X makes Y move.,X drives the shift in Y.,Verb Phrase
+Causal_Linkage,X is the cause.,X serves as the catalyst for...,Noun Phrase
+Causal_Linkage,X and Y go together.,X is frequently accompanied by Y.,Verb Phrase
+Causal_Linkage,X is the source of Y.,Y originates from X.,Verb Phrase
+Causal_Linkage,X results in Y.,X yields a significant increase in Y.,Verb Phrase
+Causal_Linkage,X is the reason.,The rationale behind Y is rooted in X.,Noun Phrase
+Causal_Linkage,X affects Y.,X has a measurable impact on Y.,Verb Phrase
+Causal_Linkage,X is related to Y.,X is closely correlated with Y.,Verb Phrase
+Causal_Linkage,X makes Y possible.,X provides the necessary conditions for Y.,Noun Phrase
+Causal_Linkage,X forces Y.,X necessitates the adoption of Y.,Verb Phrase
+Causal_Linkage,X creates Y.,X engenders a sense of...,Verb Phrase
+Causal_Linkage,X is the root.,X lies at the heart of...,Noun Phrase
+Causal_Linkage,X depends on Y.,X is contingent upon Y.,Verb Phrase
+Causal_Linkage,X follows Y.,X is a byproduct of Y.,Noun Phrase
+Causal_Linkage,X is the trigger.,X acts as a stimulus for...,Noun Phrase
+Causal_Linkage,X makes Y stay.,X sustains the presence of Y.,Verb Phrase
+Causal_Linkage,X is the key.,X is pivotal to the success of Y.,Noun Phrase
+Causal_Linkage,X is the factor.,X is a contributing factor to...,Noun Phrase
+Causal_Linkage,X is the base.,X forms the foundation of Y.,Noun Phrase
+Causal_Linkage,X is the reason.,The genesis of Y can be traced to X.,Noun Phrase
+Causal_Linkage,X is the start.,X marks the onset of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the impetus for...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the driver of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the bedrock of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the focal point of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the mainspring of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the underpinning of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the progenitor of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the antecedent of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the precursor to...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the cornerstone of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the hallmark of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the signature of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the essence of...,Noun Phrase
+Causal_Linkage,X is the reason.,X is the embodiment of...,Noun Phrase
+Synthesizing_Sources,These two studies say different things.,These accounts are irreconcilable on the question of...,Adverbial Phrase
+Synthesizing_Sources,Many authors agree.,There is broad consensus among scholars that...,Sentence Starter
+Synthesizing_Sources,Smith says X but Jones says Y.,Smith’s findings stand in stark contrast to those of Jones.,Verb Phrase
+Synthesizing_Sources,Some people think X.,A school of thought maintains that X...,Noun Phrase
+Synthesizing_Sources,This is a popular idea.,This notion has gained considerable traction in recent years.,Noun Phrase
+Synthesizing_Sources,They both say the same.,Their findings are mutually reinforcing.,Adverbial Phrase
+Synthesizing_Sources,Research shows this is true.,A growing body of evidence corroborates the view that...,Noun Phrase
+Synthesizing_Sources,It’s a big debate.,This issue remains a subject of intense scholarly debate.,Noun Phrase
+Synthesizing_Sources,Author A supports Author B.,Author A’s work lends further weight to the arguments of Author B.,Verb Phrase
+Synthesizing_Sources,There are two sides.,The literature is polarized on this issue.,Adverbial Phrase
+Synthesizing_Sources,They disagree on the details.,"While they agree on the premise, they diverge on the specifics.",Sentence Starter
+Synthesizing_Sources,This is a common theme.,This theme resonates throughout the extant literature.,Verb Phrase
+Synthesizing_Sources,This study is like that one.,This study echoes the findings of...,Verb Phrase
+Synthesizing_Sources,They have different views.,Their perspectives are fundamentally at odds.,Adverbial Phrase
+Synthesizing_Sources,Most people think.,The prevailing view in the field is that...,Sentence Starter
+Synthesizing_Sources,It’s a controversial idea.,This proposition has met with significant skepticism.,Noun Phrase
+Synthesizing_Sources,They use different words for it.,"Although terminologies vary, the underlying concept is...",Sentence Starter
+Synthesizing_Sources,This is a new way of thinking.,This represents a paradigm shift in the way we view...,Noun Phrase
+Synthesizing_Sources,They all say X is important.,There is a unanimous recognition of the importance of X.,Noun Phrase
+Synthesizing_Sources,It’s not just one person.,This view is shared by a plurality of researchers.,Noun Phrase
+Synthesizing_Sources,They found different results.,Discrepancies in the findings can be attributed to...,Noun Phrase
+Synthesizing_Sources,This is a classic study.,This seminal work laid the foundation for...,Noun Phrase
+Synthesizing_Sources,They agree about X.,There is a convergence of opinion regarding X.,Noun Phrase
+Synthesizing_Sources,This is a well-known fact.,It is an established tenet of the field that...,Sentence Starter
+Synthesizing_Sources,They disagree about why.,"While the effect is noted, its origin is disputed.",Sentence Starter
+Synthesizing_Sources,This is a minor view.,This remains a minority position within the discourse.,Noun Phrase
+Synthesizing_Sources,They look at it differently.,They adopt divergent analytical lenses.,Verb Phrase
+Synthesizing_Sources,This is a big part of the field.,This concept is central to the discourse on...,Noun Phrase
+Synthesizing_Sources,They say X is the cause.,X is widely cited as the primary cause of...,Verb Phrase
+Synthesizing_Sources,This is a common mistake.,A common fallacy in the literature is...,Noun Phrase
+Synthesizing_Sources,They agree on the need for X.,There is a collective call for X among researchers.,Noun Phrase
+Synthesizing_Sources,This is a new trend.,This reflects a burgeoning interest in...,Noun Phrase
+Synthesizing_Sources,They have the same goal.,Their research agendas are closely aligned.,Adverbial Phrase
+Synthesizing_Sources,This is a key debate.,This debate is at the forefront of...,Noun Phrase
+Synthesizing_Sources,They disagree on the impact.,The magnitude of this effect is a point of contention.,Noun Phrase
+Synthesizing_Sources,This is a standard view.,This has become the orthodox view in...,Noun Phrase
+Synthesizing_Sources,They agree on the value of X.,The utility of X is widely acknowledged.,Verb Phrase
+Synthesizing_Sources,This is a complex issue.,This issue is multifaceted and subject to various interpretations.,Adverbial Phrase
+Synthesizing_Sources,They agree on the problem.,There is a shared understanding of the problem.,Noun Phrase
+Synthesizing_Sources,This is a major theme.,This theme is recurrent in the work of...,Adverbial Phrase
+Synthesizing_Sources,They disagree on the solution.,"While the problem is clear, the remedy remains disputed.",Sentence Starter
+Synthesizing_Sources,This is a strong argument.,This argument is supported by a wealth of empirical data.,Noun Phrase
+Synthesizing_Sources,They agree on the timing.,There is a consensus regarding the temporal aspects of...,Noun Phrase
+Synthesizing_Sources,This is a weak argument.,This argument lacks sufficient empirical support.,Noun Phrase
+Synthesizing_Sources,They agree on the scope.,The boundaries of the field are generally agreed upon.,Verb Phrase
+Synthesizing_Sources,This is a new finding.,This finding challenges the long-held belief that...,Verb Phrase
+Synthesizing_Sources,They agree on the method.,The methodological rigor of this study is widely praised.,Noun Phrase
+Synthesizing_Sources,This is a common finding.,This finding is consistent with previous research.,Adverbial Phrase
+Synthesizing_Sources,They agree on the importance.,The significance of this study is widely recognized.,Verb Phrase
+Synthesizing_Sources,This is a key study.,This study is a cornerstone of the literature on...,Noun Phrase
+Methodological_Rigor,We did a check on the data.,Data were cross-verified against...,Verb Phrase
+Methodological_Rigor,We used a computer for this.,Computational analysis was performed using...,Noun Phrase
+Methodological_Rigor,We picked people randomly.,Participants were recruited via a randomized sampling protocol.,Verb Phrase
+Methodological_Rigor,We looked at it many times.,A longitudinal approach was adopted to ensure...,Noun Phrase
+Methodological_Rigor,We were very careful.,Stringent measures were implemented to minimize bias.,Adverbial Phrase
+Methodological_Rigor,We used a standard test.,A validated instrument was employed to measure...,Noun Phrase
+Methodological_Rigor,We cleaned the data.,The dataset underwent rigorous preprocessing.,Verb Phrase
+Methodological_Rigor,We followed the rules.,Procedures were conducted in strict accordance with...,Adverbial Phrase
+Methodological_Rigor,We made sure it was fair.,"To ensure impartiality, a double-blind protocol was used.",Sentence Starter
+Methodological_Rigor,We used a new way.,An innovative methodological framework was devised.,Noun Phrase
+Methodological_Rigor,We checked for mistakes.,Error-correction mechanisms were systematically applied.,Verb Phrase
+Methodological_Rigor,We used a lot of data.,A substantial corpus of data was analyzed.,Noun Phrase
+Methodological_Rigor,We did it in a lab.,The experiment was conducted in a controlled laboratory environment.,Adverbial Phrase
+Methodological_Rigor,We asked people questions.,Data were elicited through semi-structured interviews.,Verb Phrase
+Methodological_Rigor,We watched them closely.,Systematic observation was carried out over a period of...,Noun Phrase
+Methodological_Rigor,We used a math model.,A mathematical model was constructed to simulate...,Noun Phrase
+Methodological_Rigor,We compared the groups.,Inter-group comparisons were statistically evaluated.,Verb Phrase
+Methodological_Rigor,We looked at the numbers.,Quantitative analysis was prioritized to ensure objectivity.,Adverbial Phrase
+Methodological_Rigor,We used a survey.,A comprehensive survey was administered to...,Noun Phrase
+Methodological_Rigor,We checked if it worked.,The efficacy of the intervention was rigorously tested.,Verb Phrase
+Methodological_Rigor,We used a pilot study.,A preliminary pilot study was conducted to refine...,Noun Phrase
+Methodological_Rigor,We chose the best one.,The optimal parameters were selected based on...,Verb Phrase
+Methodological_Rigor,We kept the same conditions.,Environmental variables were held constant throughout.,Adverbial Phrase
+Methodological_Rigor,We used a focus group.,Insights were gathered from a series of focus groups.,Noun Phrase
+Methodological_Rigor,We recorded everything.,All interactions were meticulously documented.,Verb Phrase
+Methodological_Rigor,We used a software.,The data were processed using [Software Name] version X.,Verb Phrase
+Methodological_Rigor,We checked the quality.,Quality assurance protocols were strictly adhered to.,Noun Phrase
+Methodological_Rigor,We used a case study.,An in-depth case study approach was utilized.,Noun Phrase
+Methodological_Rigor,We looked at the history.,A retrospective analysis was performed on...,Noun Phrase
+Methodological_Rigor,We used a scale.,Responses were measured on a five-point Likert scale.,Noun Phrase
+Methodological_Rigor,We made it simple.,The model was parsimoniously designed to...,Adverbial Phrase
+Methodological_Rigor,We used a expert.,Expert validation was sought to ensure...,Noun Phrase
+Methodological_Rigor,We did it many times.,Iterative testing was conducted to achieve...,Noun Phrase
+Methodological_Rigor,We checked the source.,The provenance of the data was thoroughly vetted.,Verb Phrase
+Methodological_Rigor,We used a sample.,A representative sample was drawn from...,Noun Phrase
+Methodological_Rigor,We looked at the context.,Contextual factors were integrated into the analysis.,Verb Phrase
+Methodological_Rigor,We used a filter.,Data were filtered to exclude outliers.,Verb Phrase
+Methodological_Rigor,We checked the ethics.,Ethical approval was granted by the Institutional Review Board.,Noun Phrase
+Methodological_Rigor,We used a proxy.,X was utilized as a proxy for Y.,Verb Phrase
+Methodological_Rigor,We looked at the trend.,Trend analysis was performed to identify...,Noun Phrase
+Methodological_Rigor,We used a control group.,A control group was established to provide a baseline.,Noun Phrase
+Methodological_Rigor,We checked for bias.,Potential sources of bias were systematically identified.,Verb Phrase
+Methodological_Rigor,We used a questionnaire.,A structured questionnaire was distributed to...,Noun Phrase
+Methodological_Rigor,We looked at the results.,The results were subjected to statistical scrutiny.,Verb Phrase
+Methodological_Rigor,We used a technique.,A specialized technique was employed to...,Noun Phrase
+Methodological_Rigor,We checked the reliability.,The reliability of the scale was assessed using...,Noun Phrase
+Methodological_Rigor,We used a framework.,The study was situated within a [Name] framework.,Noun Phrase
+Methodological_Rigor,We looked at the details.,A granular analysis of the data was conducted.,Noun Phrase
+Methodological_Rigor,We used a method.,A robust methodological approach was adopted.,Noun Phrase
+Methodological_Rigor,We checked the validity.,The internal validity of the study was ensured by...,Noun Phrase
+Acknowledging_Limitations,My study was too small.,The modest sample size may limit the generalizability of these findings.,Sentence Starter
+Acknowledging_Limitations,I didn't have enough time.,Temporal constraints precluded a more longitudinal investigation.,Noun Phrase
+Acknowledging_Limitations,The data is old.,The reliance on historical data may not reflect current market dynamics.,Adverbial Phrase
+Acknowledging_Limitations,I only looked at one city.,The geographical scope of this study was restricted to...,Verb Phrase
+Acknowledging_Limitations,Some people lied.,The potential for social desirability bias cannot be entirely discounted.,Noun Phrase
+Acknowledging_Limitations,This might be wrong.,These results should be interpreted with a degree of caution.,Sentence Starter
+Acknowledging_Limitations,I missed some factors.,Several confounding variables were beyond the scope of this analysis.,Noun Phrase
+Acknowledging_Limitations,The method is not perfect.,"While robust, the methodology is not without its limitations.",Adverbial Phrase
+Acknowledging_Limitations,I couldn't check everything.,A comprehensive evaluation was hampered by...,Verb Phrase
+Acknowledging_Limitations,It only works for some people.,The findings may not be applicable to diverse populations.,Adverbial Phrase
+Acknowledging_Limitations,The data is not very good.,The granularity of the data was somewhat constrained by...,Noun Phrase
+Acknowledging_Limitations,I had to guess.,Certain assumptions were necessary in the absence of...,Verb Phrase
+Acknowledging_Limitations,It's just a snapshot.,"This study provides a cross-sectional view, rather than...",Noun Phrase
+Acknowledging_Limitations,I didn't use a control group.,The absence of a control group necessitates cautious interpretation.,Sentence Starter
+Acknowledging_Limitations,The survey was too short.,The brevity of the instrument may have overlooked...,Noun Phrase
+Acknowledging_Limitations,People might forget.,Recall bias may have influenced the accuracy of...,Noun Phrase
+Acknowledging_Limitations,I only used one tool.,The reliance on a single metric may provide an incomplete picture.,Adverbial Phrase
+Acknowledging_Limitations,The results are not final.,These findings are preliminary and require further validation.,Verb Phrase
+Acknowledging_Limitations,I couldn't get more people.,Recruitment challenges resulted in a smaller than anticipated cohort.,Noun Phrase
+Acknowledging_Limitations,The environment was fake.,The artificial nature of the laboratory setting may...,Noun Phrase
+Acknowledging_Limitations,I didn't look at the future.,Future research is needed to determine the long-term...,Sentence Starter
+Acknowledging_Limitations,The data was self-reported.,The use of self-reported data introduces potential subjectivity.,Noun Phrase
+Acknowledging_Limitations,I ignored the culture.,Cultural nuances were not explicitly addressed in this study.,Verb Phrase
+Acknowledging_Limitations,The results are specific.,These findings are context-dependent and may vary in...,Adverbial Phrase
+Acknowledging_Limitations,I couldn't control everything.,Uncontrolled external factors may have influenced...,Noun Phrase
+Acknowledging_Limitations,The study is just a start.,This study represents an initial foray into...,Noun Phrase
+Acknowledging_Limitations,I used a proxy.,The use of X as a proxy for Y is a known limitation.,Noun Phrase
+Acknowledging_Limitations,The sample is biased.,The sample may be subject to selection bias.,Noun Phrase
+Acknowledging_Limitations,I didn't measure X.,The lack of a direct measure for X is a notable constraint.,Noun Phrase
+Acknowledging_Limitations,The theory is limited.,The theoretical framework may not fully capture...,Verb Phrase
+Acknowledging_Limitations,I only looked at the surface.,This study provides only a cursory examination of...,Noun Phrase
+Acknowledging_Limitations,The results are mixed.,The heterogeneity of the results suggests...,Noun Phrase
+Acknowledging_Limitations,I had limited resources.,Resource constraints restricted the depth of the analysis.,Noun Phrase
+Acknowledging_Limitations,The data is noisy.,The presence of significant noise in the data may...,Noun Phrase
+Acknowledging_Limitations,I didn't consider Y.,Y was not factored into the initial research design.,Verb Phrase
+Acknowledging_Limitations,The study is descriptive.,This study is primarily descriptive in nature and does not...,Adverbial Phrase
+Acknowledging_Limitations,I used a small group.,The small sample size precludes definitive conclusions.,Sentence Starter
+Acknowledging_Limitations,The results are not universal.,The universal applicability of these findings remains to be seen.,Noun Phrase
+Acknowledging_Limitations,I didn't look at the mechanism.,The underlying mechanism remains to be elucidated.,Verb Phrase
+Acknowledging_Limitations,The data is skewed.,The data exhibit a significant...,Adverbial Phrase
+Presenting_Results,The numbers went up.,A marked upward trend is discernible in the data.,Noun Phrase
+Presenting_Results,We found a big difference.,A statistically significant discrepancy was observed.,Noun Phrase
+Presenting_Results,The table shows...,The data presented in Table X illustrate...,Verb Phrase
+Presenting_Results,This result is the same as...,These findings are concordant with...,Adverbial Phrase
+Presenting_Results,The numbers didn't change.,The variables remained remarkably stable throughout.,Verb Phrase
+Presenting_Results,Most people said yes.,A clear majority of respondents indicated...,Noun Phrase
+Presenting_Results,This proves our idea.,The empirical evidence validates the hypothesis.,Verb Phrase
+Presenting_Results,This result was a surprise.,This finding was counterintuitive and warrants...,Adverbial Phrase
+Presenting_Results,The effect is small.,The observed effect size was negligible.,Adverbial Phrase
+Presenting_Results,We see a pattern here.,A distinct recurring pattern emerges from the data.,Noun Phrase
+Presenting_Results,The graph goes down fast.,A precipitous decline is evident in Figure X.,Noun Phrase
+Presenting_Results,It happens more in Group A.,Group A exhibits a higher propensity for...,Verb Phrase
+Presenting_Results,The data is clear.,The results offer a compelling illustration of...,Noun Phrase
+Presenting_Results,These two go together.,A strong positive correlation was identified between...,Noun Phrase
+Presenting_Results,This is the most important result.,The most salient finding of this analysis is...,Noun Phrase
+Presenting_Results,It didn't work.,The intervention failed to yield the anticipated results.,Verb Phrase
+Presenting_Results,The change is slow.,The data indicate a gradual transition toward...,Noun Phrase
+Presenting_Results,We can see the link now.,The results elucidate the relationship between...,Verb Phrase
+Presenting_Results,This confirms the theory.,These results lend empirical weight to the theory of...,Verb Phrase
+Presenting_Results,The result is always different.,The findings were characterized by high variability.,Adverbial Phrase
+Presenting_Results,A few cases were different.,Several outliers were identified within the dataset.,Noun Phrase
+Presenting_Results,This is exactly what we thought.,The results are entirely consistent with expectations.,Adverbial Phrase
+Presenting_Results,The gap is getting bigger.,The disparity appears to be widening over time.,Verb Phrase
+Presenting_Results,We see a connection.,An associative link was established between...,Noun Phrase
+Presenting_Results,This result stands out.,This finding is particularly noteworthy given...,Adverbial Phrase
+Presenting_Results,The results are all over the place.,The data exhibit a high degree of heterogeneity.,Noun Phrase
+Presenting_Results,We found a new thing.,This study uncovered a previously unidentified...,Verb Phrase
+Presenting_Results,The average is...,The mean value was found to be...,Noun Phrase
+Presenting_Results,This happens every time.,This phenomenon was consistently observed across...,Adverbial Phrase
+Presenting_Results,The result is good.,The outcome was favorable and suggests...,Adverbial Phrase
+Presenting_Results,There is a small link.,A modest but significant correlation exists.,Noun Phrase
+Presenting_Results,This didn't change anything.,No discernible impact was recorded following...,Adverbial Phrase
+Presenting_Results,It peaked in 2020.,The trend reached its zenith in the year 2020.,Verb Phrase
+Presenting_Results,The data supports this.,The evidentiary base reinforces the claim that...,Verb Phrase
+Presenting_Results,This is the main outcome.,The primary outcome measure revealed...,Noun Phrase
+Presenting_Results,We can group them.,The participants were categorized based on...,Verb Phrase
+Presenting_Results,It was a small increase.,An incremental rise was documented in...,Noun Phrase
+Presenting_Results,This proves it's true.,This provides conclusive evidence for...,Noun Phrase
+Presenting_Results,The results are similar.,The findings mirror those reported in...,Verb Phrase
+Presenting_Results,It happened because of X.,The results are primarily attributable to X.,Adverbial Phrase
+Presenting_Results,We didn't find much.,The results were largely inconclusive regarding...,Adverbial Phrase
+Presenting_Results,It's a huge shift.,This represents a profound shift in...,Noun Phrase
+Presenting_Results,We noticed X.,X was particularly prominent in the early stages.,Adverbial Phrase
+Presenting_Results,This supports our goal.,These findings are in alignment with the objectives of...,Adverbial Phrase
+Presenting_Results,We compared X and Y.,A comparative analysis of X and Y reveals...,Noun Phrase
+Presenting_Results,The effect is gone.,The observed effect was largely dissipated by...,Verb Phrase
+Presenting_Results,This is a real effect.,This result is statistically robust.,Adverbial Phrase
+Presenting_Results,We saw it clearly.,A transparent correlation is evident between...,Noun Phrase
+Presenting_Results,The results were positive.,The data yielded a positive result concerning...,Verb Phrase
+Presenting_Results,This is the final result.,The ultimate finding of this study is...,Noun Phrase
+Signposting_Logic,"First, I will talk about...",The analysis commences with an exploration of...,Sentence Starter
+Signposting_Logic,Another point is...,"Furthermore, it is imperative to consider...",Transition
+Signposting_Logic,I will now show...,Turning now to the evidence regarding...,Sentence Starter
+Signposting_Logic,Like I said before...,As previously elucidated in Section X...,Transition
+Signposting_Logic,In short...,To synthesize the preceding arguments...,Transition
+Signposting_Logic,For example...,This is exemplified by the case of...,Transition
+Signposting_Logic,But on the other hand...,"Conversely, an alternative perspective suggests...",Transition
+Signposting_Logic,This is why...,This line of reasoning leads to the conclusion that...,Sentence Starter
+Signposting_Logic,"Next, we look at...",Subsequent analysis focuses on...,Sentence Starter
+Signposting_Logic,I will focus on...,Particular attention will be devoted to...,Sentence Starter
+Signposting_Logic,Let's look at this part.,Central to this discussion is the issue of...,Sentence Starter
+Signposting_Logic,I will finish with...,The discussion concludes with a summary of...,Sentence Starter
+Signposting_Logic,It is important to note.,Of particular significance is the fact that...,Transition
+Signposting_Logic,To start...,"By way of introduction, it is useful to...",Transition
+Signposting_Logic,This leads to...,This transition warrants a closer look at...,Verb Phrase
+Signposting_Logic,As shown here...,As is evident from the foregoing discussion...,Transition
+Signposting_Logic,I want to say...,It is worth noting in this context that...,Sentence Starter
+Signposting_Logic,To be more specific...,"More specifically, this pertains to...",Transition
+Signposting_Logic,Because of this...,"Consequently, it follows that...",Transition
+Signposting_Logic,In the same way...,"Analogously, one might argue that...",Transition
+Signposting_Logic,Looking at the history...,"From a historical perspective, it is clear that... ",Transition
+Signposting_Logic,To explain this...,This phenomenon can be best understood by...,Sentence Starter
+Signposting_Logic,In my view...,From the standpoint of this analysis...,Sentence Starter
+Signposting_Logic,For this reason...,"On this basis, it can be argued that...",Transition
+Signposting_Logic,To repeat...,"At the risk of redundancy, it must be stated...",Transition
+Signposting_Logic,Let's move on.,"Having established X, we may now turn to...",Sentence Starter
+Signposting_Logic,I have three points.,Three distinct themes emerge from this inquiry.,Noun Phrase
+Signposting_Logic,One last thing...,A final point of consideration is...,Transition
+Signposting_Logic,Before I go on...,"Before proceeding further, it is necessary to...",Sentence Starter
+Signposting_Logic,To simplify...,For the sake of analytical clarity...,Transition
+Signposting_Logic,Look at the data.,A cursory glance at the data suggests...,Sentence Starter
+Signposting_Logic,It is clear that.,It is manifest from the evidence that...,Transition
+Signposting_Logic,In fact...,"Indeed, the evidence points toward...",Transition
+Signposting_Logic,To clarify...,To further refine this point...,Transition
+Signposting_Logic,On a big scale...,"On a macro level, it appears that...",Transition
+Signposting_Logic,I will compare them.,A comparison will be drawn between...,Verb Phrase
+Signposting_Logic,This is my main point.,The central thesis of this work is...,Noun Phrase
+Signposting_Logic,At the same time...,"Simultaneously, it must be recognized that...",Transition
+Signposting_Logic,It is not just about X.,Beyond the immediate concerns of X...,Transition
+Signposting_Logic,Following this logic...,Consistent with this rationale...,Transition
+Signposting_Logic,I'll be brief.,To provide a succinct overview...,Transition
+Signposting_Logic,To conclude this part...,This section has attempted to demonstrate...,Sentence Starter
+Signposting_Logic,This is common.,This is a recurring motif in the literature.,Noun Phrase
+Signposting_Logic,Let's examine X.,X warrants a more detailed investigation.,Sentence Starter
+Signposting_Logic,This is my goal.,The primary objective of this chapter is...,Noun Phrase
+Signposting_Logic,In this paper...,The present inquiry is situated within...,Sentence Starter
+Signposting_Logic,"Not only X, but Y.","While X is important, Y is equally pivotal.",Transition
+Signposting_Logic,To summarize...,"In summary, the evidence suggests...",Transition
+Signposting_Logic,This is why I say...,This provides the rationale for the claim that...,Sentence Starter
+Signposting_Logic,Let's look at Figure 1.,Reference to Figure 1 reveals that...,Sentence Starter
+Defining_Scope,This is only about...,The parameters of this study are limited to...,Sentence Starter
+Defining_Scope,I won't look at X.,X falls outside the remit of this investigation.,Verb Phrase
+Defining_Scope,We focus on the US.,This inquiry is geographically confined to...,Adverbial Phrase
+Defining_Scope,This is for now.,The temporal scope is restricted to the period of...,Noun Phrase
+Defining_Scope,I only mean...,This term is used here in its narrowest sense.,Adverbial Phrase
+Defining_Scope,We ignore small things.,Negligible variables have been excluded from the analysis.,Verb Phrase
+Defining_Scope,This is a specific look.,This study adopts a highly focused lens on...,Noun Phrase
+Defining_Scope,I only look at one group.,The cohort is specifically restricted to...,Verb Phrase
+Defining_Scope,This is the start point.,This analysis serves as an initial exploration of...,Noun Phrase
+Defining_Scope,It's not about everything.,This study does not purport to be exhaustive.,Verb Phrase
+Defining_Scope,I look at the main part.,The focal point of this research is...,Noun Phrase
+Defining_Scope,We focus on the theory.,This is a primarily theoretical endeavor.,Adverbial Phrase
+Defining_Scope,This is about the law.,The legal dimensions constitute the core of this study.,Noun Phrase
+Defining_Scope,I am only looking at A.,A serves as the primary unit of analysis.,Noun Phrase
+Defining_Scope,It's just a case study.,This is a singular case-based inquiry.,Noun Phrase
+Defining_Scope,I stop in 2020.,The dataset terminates at the close of 2020.,Verb Phrase
+Defining_Scope,We didn't look at Y.,Y was deemed peripheral to the central argument.,Adverbial Phrase
+Defining_Scope,I focus on the basics.,This study is concerned with the foundational aspects of...,Sentence Starter
+Defining_Scope,It is a micro look.,A micro-level perspective is prioritized here.,Noun Phrase
+Defining_Scope,I am not a doctor.,This is not intended as a clinical assessment.,Sentence Starter
+Defining_Scope,We use a broad view.,A holistic approach is adopted for this inquiry.,Noun Phrase
+Defining_Scope,It's about the future.,This is an inherently forward-looking analysis.,Adverbial Phrase
+Defining_Scope,I only look at the data.,This is a strictly empirical investigation.,Adverbial Phrase
+Defining_Scope,It's just one side.,This analysis is confined to the supply-side factors.,Verb Phrase
+Defining_Scope,This is a pilot look.,This represents a preliminary feasibility study.,Noun Phrase
+Defining_Scope,I ignore the costs.,Financial considerations are beyond the current scope.,Adverbial Phrase
+Defining_Scope,It's for students.,This is tailored to the needs of...,Verb Phrase
+Defining_Scope,I look at the trend.,The focus is strictly on long-term macro trends.,Noun Phrase
+Defining_Scope,We define X as...,"For the purposes of this study, X is defined as...",Sentence Starter
+Defining_Scope,It's not for profit.,"This is a strictly academic, non-commercial inquiry.",Adverbial Phrase
+Defining_Scope,I look at the big city.,The urban context is the primary setting for...,Noun Phrase
+Defining_Scope,We look at people.,Human agency is the central variable of interest.,Noun Phrase
+Defining_Scope,It's a short look.,"This is a brief, focused commentary on...",Noun Phrase
+Defining_Scope,I only use this tool.,This analysis relies exclusively on X.,Verb Phrase
+Defining_Scope,We look at the past.,This is a retrospective study covering...,Noun Phrase
+Defining_Scope,I look at the rules.,Regulatory frameworks are the main subject of...,Noun Phrase
+Defining_Scope,It's about how it works.,The operational mechanics are the focus of...,Noun Phrase
+Defining_Scope,I look at the results.,The outcomes are the primary concern here.,Adverbial Phrase
+Defining_Scope,It's about the why.,The causal drivers are the subject of this study.,Noun Phrase
+Defining_Scope,I look at the where.,Spatial dynamics are central to this research.,Noun Phrase
+Defining_Scope,It's about the who.,The demographic profile is the focus of...,Noun Phrase
+Defining_Scope,I look at the when.,Temporal sequencing is the primary interest.,Noun Phrase
+Defining_Scope,It's about the what.,The nature of the phenomenon is the focus.,Noun Phrase
+Defining_Scope,I look at the how much.,Quantitative magnitude is the subject of...,Noun Phrase
+Defining_Scope,I look at the impact.,The ramifications are the central concern.,Noun Phrase
+Defining_Scope,I look at the source.,The origin of the data is the main focus.,Noun Phrase
+Defining_Scope,I look at the change.,The process of transformation is the focus.,Noun Phrase
+Defining_Scope,I look at the goal.,The final objectives are the focus of...,Noun Phrase
+Defining_Scope,I look at the logic.,The internal consistency is the subject of...,Noun Phrase
+Defining_Scope,I look at the system.,The systemic structure is the primary focus.,Noun Phrase
+Concluding_Implications,This shows we must change X.,These findings necessitate a re-evaluation of...,Verb Phrase
+Concluding_Implications,To wrap up...,"In light of the evidence presented, it is clear that...",Sentence Starter
+Concluding_Implications,We should do more research.,Further inquiry is warranted to elucidate...,Verb Phrase
+Concluding_Implications,This helps the field.,This study contributes to the burgeoning body of work on...,Noun Phrase
+Concluding_Implications,In conclusion...,"Taken together, these results suggest...",Transition
+Concluding_Implications,It means X is good.,The utility of X has been effectively demonstrated.,Verb Phrase
+Concluding_Implications,This is a big lesson.,This study offers profound insights into...,Noun Phrase
+Concluding_Implications,We should change the law.,These findings have clear policy implications.,Noun Phrase
+Concluding_Implications,This is the final word.,This represents a definitive account of...,Noun Phrase
+Concluding_Implications,We found the answer.,This study provides a resolution to the question of...,Noun Phrase
+Concluding_Implications,This makes us think.,This prompts a critical reconsideration of...,Verb Phrase
+Concluding_Implications,It's a new start.,This opens up new avenues for research into...,Noun Phrase
+Concluding_Implications,This is for the future.,These findings lay the groundwork for future...,Noun Phrase
+Concluding_Implications,We did our job.,The research objectives have been successfully met.,Verb Phrase
+Concluding_Implications,This is important.,The significance of these findings cannot be overstated.,Adverbial Phrase
+Concluding_Implications,It's a key takeaway.,A central takeaway from this study is...,Noun Phrase
+Concluding_Implications,We should be careful.,Caution is advised when applying these findings to...,Sentence Starter
+Concluding_Implications,This helps people.,The practical applications of this research include...,Noun Phrase
+Concluding_Implications,It's a big discovery.,This constitutes a major breakthrough in...,Noun Phrase
+Concluding_Implications,We need more data.,Future longitudinal studies are required to...,Noun Phrase
+Concluding_Implications,This is the end.,"In closing, the evidence points toward...",Transition
+Concluding_Implications,It's a good result.,The findings provide a robust basis for...,Noun Phrase
+Concluding_Implications,This is the truth.,The evidence is consistent with the view that...,Adverbial Phrase
+Concluding_Implications,We found X.,The results identify X as a critical factor.,Verb Phrase
+Concluding_Implications,This is a new lens.,This study provides a novel framework for...,Noun Phrase
+Concluding_Implications,We should update X.,X should be revised to reflect these findings.,Verb Phrase
+Concluding_Implications,This is the path forward.,This study delineates a clear trajectory for...,Noun Phrase
+Concluding_Implications,It's a solid study.,The findings are methodologically sound and...,Adverbial Phrase
+Concluding_Implications,This is for scholars.,This work is of particular interest to...,Verb Phrase
+Concluding_Implications,We found the link.,The nexus between X and Y is now clear.,Noun Phrase
+Concluding_Implications,This is the main point.,The overarching conclusion of this study is...,Noun Phrase
+Concluding_Implications,We should stop doing X.,These findings argue against the continued use of...,Verb Phrase
+Concluding_Implications,This is a new tool.,This provides an essential tool for...,Noun Phrase
+Concluding_Implications,We should look at Y.,Y emerges as a key area for subsequent research.,Verb Phrase
+Concluding_Implications,This is a success.,The study has successfully demonstrated that...,Verb Phrase
+Concluding_Implications,We found the gap.,The previously noted gap has been addressed.,Verb Phrase
+Concluding_Implications,This is a clear sign.,This serves as a definitive indicator of...,Noun Phrase
+Concluding_Implications,We should listen.,Stakeholders should take heed of these findings.,Verb Phrase
+Concluding_Implications,This is the result.,The resultant model provides a...,Noun Phrase
+Concluding_Implications,We found the cause.,The causal relationship has been established.,Verb Phrase
+Concluding_Implications,This is the proof.,This serves as empirical verification of...,Noun Phrase
+Concluding_Implications,We should keep going.,There is a clear need for ongoing research into...,Noun Phrase
+Concluding_Implications,This is the value.,The inherent value of this approach is...,Noun Phrase
+Concluding_Implications,We found the trend.,The long-term trend has been identified.,Verb Phrase
+Concluding_Implications,This is the impact.,The broader ramifications of this work include...,Noun Phrase
+Concluding_Implications,We should use this. ,This model should be adopted by...,Verb Phrase
+Concluding_Implications,This is the key.,This finding is key to understanding...,Noun Phrase
+Concluding_Implications,We found the way.,This study charts a new course for...,Noun Phrase
+Concluding_Implications,This is the finish.,"To conclude, the evidence strongly suggests...",Transition
+Concluding_Implications,This is for all.,These findings have universal relevance for...,Adverbial Phrase

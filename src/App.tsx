@@ -84,6 +84,7 @@ export default function App() {
   const [inputText, setInputText] = useState("");
   const [inputHtml, setInputHtml] = useState("");
   const [isReading, setIsReading] = useState(false);
+  const [idiomDatabase, setIdiomDatabase] = useState<Array<{ clunky: string; native: string }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputSectionRef = useRef<HTMLDivElement>(null);
 
@@ -115,9 +116,24 @@ export default function App() {
       setRemainingUses(DAILY_LIMIT);
     }
   }, []);
-    // Load daily usage from localStorage
+
+  // Restore the original populated idiom database used by the transformation engine.
   useEffect(() => {
-    // ... existing code ...
+    let cancelled = false;
+    fetch("/idioms-clunky-native.json")
+      .then((response) => {
+        if (!response.ok) throw new Error(`Idiom database request failed (${response.status})`);
+        return response.json();
+      })
+      .then((data) => {
+        if (!cancelled && Array.isArray(data)) {
+          setIdiomDatabase(data.filter((entry) =>
+            entry && typeof entry.clunky === "string" && typeof entry.native === "string"
+          ));
+        }
+      })
+      .catch((error) => console.error("Failed to load idiom database:", error));
+    return () => { cancelled = true; };
   }, []);
 
   // Demo on first load
@@ -443,7 +459,7 @@ export default function App() {
         let status = total > 1 ? `Processing section ${current + 1} of ${total}...` : "Nativizing text...";
         if (extraStatus) status = extraStatus;
         setProcessingStatus(status);
-      }, forcedDialect, mode);
+      }, forcedDialect, mode, idiomDatabase);
 
       // Final synchronization heartbeat
       setProgress(100);
@@ -926,12 +942,12 @@ export default function App() {
         </section>
 
         {/* Hero Section – editor entry */}
-        <section className="mb-6 rounded-3xl border border-[#E7E1D8] bg-white px-5 py-5 shadow-[0_12px_35px_rgba(28,25,23,0.05)] sm:px-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <section className="mb-5 rounded-3xl border border-[#E7E1D8] bg-white px-5 py-4 shadow-[0_12px_35px_rgba(28,25,23,0.05)] sm:px-7 sm:py-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl">
               <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#1E3A8A]"><PenLine className="h-3.5 w-3.5" /> The studio</div>
-              <h1 className="mt-2 font-serif text-2xl font-bold tracking-tight text-[#171717] sm:text-3xl">Refine the language. Keep the thinking.</h1>
-              <p className="mt-1.5 text-sm leading-6 text-[#746D64]">Start with a draft, choose the context, and let IdiomOptima make the expression feel native without flattening your voice.</p>
+              <h1 className="mt-1.5 font-serif text-2xl font-bold tracking-tight text-[#171717] sm:text-3xl">Refine the language. Keep the thinking.</h1>
+              <p className="mt-1 text-sm leading-5 text-[#746D64]">Start with a draft, choose the context, and let IdiomOptima make the expression feel native without flattening your voice.</p>
             </div>
             <div className="flex flex-col gap-2 lg:items-end">
               <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#A39B91]">Start with a model draft</span>
@@ -944,13 +960,13 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#F0ECE6] pt-3 text-xs text-[#8A8278]">
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-[#F0ECE6] pt-2.5 text-xs text-[#8A8278]">
             <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-[#1E3A8A]" /> Your text is processed securely and not stored</span>
             <span className="hidden text-[#D2CBC1] sm:inline">•</span>
             <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-[#D9A441]" /> Free public beta · no sign-up required</span>
           </div>
         </section>
-        <div id="workspace" className="grid grid-cols-1 lg:grid-cols-2 gap-10" ref={inputSectionRef}>
+        <div id="workspace" className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-6 lg:gap-8" ref={inputSectionRef}>
           
           {/* Left Column: Input & Controls */}
           <div className="space-y-4">
@@ -1022,7 +1038,7 @@ export default function App() {
                     {isReading ? "Reading..." : "Import Document"}
                   </Button>
                   {inputText && (
-                    <Button variant="ghost" size="sm" onClick={() => setInputText("")} className="text-[#999] hover:text-red-500 hover:bg-red-50 h-8 text-[11px]">
+                    <Button variant="ghost" size="sm" onClick={() => { setInputText(""); setInputHtml(""); }} className="text-[#999] hover:text-red-500 hover:bg-red-50 h-8 text-[11px]">
                       <Trash2 className="w-3 h-3 mr-1" /> Clear
                     </Button>
                   )}

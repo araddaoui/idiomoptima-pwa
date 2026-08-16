@@ -1,0 +1,2502 @@
+[
+  {
+    "clunky": "We need to talk about this later.",
+    "native": "Let's circle back on this.",
+    "type": "Idiom"
+  },
+  {
+    "clunky": "I am very busy with many projects.",
+    "native": "I have a lot of bandwidth issues right now.",
+    "type": "Idiom"
+  },
+  {
+    "clunky": "This is a very good idea for the company.",
+    "native": "This is a value-add for the organization.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "We should start the meeting now.",
+    "native": "Let's get this show on the road.",
+    "type": "Idiom"
+  },
+  {
+    "clunky": "I will tell you the details.",
+    "native": "I'll give you the lowdown.",
+    "type": "Phrasal Verb"
+  },
+  {
+    "clunky": "We need to work harder to finish.",
+    "native": "We need to ramp up our efforts.",
+    "type": "Phrasal Verb"
+  },
+  {
+    "clunky": "Think of new and creative ideas.",
+    "native": "Think outside the box.",
+    "type": "Idiom"
+  },
+  {
+    "clunky": "I will help you with that task.",
+    "native": "I'll assist you with that item.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "We are making a lot of money.",
+    "native": "We are seeing significant revenue growth.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "This is the most important part.",
+    "native": "The bottom line is...",
+    "type": "Idiom"
+  },
+  {
+    "clunky": "I don't think we can do that.",
+    "native": "That's not feasible within our current scope.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "We should look at the results again.",
+    "native": "Let's revisit the metrics.",
+    "type": "Phrasal Verb"
+  },
+  {
+    "clunky": "Tell me what you think.",
+    "native": "I'd love your input on this.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "We are better than the other companies.",
+    "native": "We have a competitive edge.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "We need to reach our goals.",
+    "native": "We need to hit our targets.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "I am waiting for your answer.",
+    "native": "I'm looking forward to your feedback.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "It is time to change the plan.",
+    "native": "It's time to pivot our strategy.",
+    "type": "Verb"
+  },
+  {
+    "clunky": "We should work together.",
+    "native": "Let's collaborate on this initiative.",
+    "type": "Verb"
+  },
+  {
+    "clunky": "I will manage the project.",
+    "native": "I'll spearhead the project.",
+    "type": "Verb"
+  },
+  {
+    "clunky": "This is a small problem.",
+    "native": "This is a minor hiccup.",
+    "type": "Noun"
+  },
+  {
+    "clunky": "We need to spend less money.",
+    "native": "We need to trim the budget.",
+    "type": "Verb"
+  },
+  {
+    "clunky": "This will make customers happy.",
+    "native": "This will enhance the customer experience.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "I am in charge of this team.",
+    "native": "I lead this department.",
+    "type": "Verb"
+  },
+  {
+    "clunky": "We need to find a solution.",
+    "native": "We need to address this challenge.",
+    "type": "Verb"
+  },
+  {
+    "clunky": "This is a very big market.",
+    "native": "There is a massive total addressable market.",
+    "type": "Collocation"
+  },
+  {
+    "clunky": "We need to coordinate the strategic workflows.",
+    "native": "Our objective is to coordinate the strategic workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative KPIs.",
+    "native": "Our objective is to optimize the innovative KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the strategic margins.",
+    "native": "Our objective is to coordinate the strategic margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the disruptive stakeholders.",
+    "native": "Our objective is to optimize the disruptive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the proactive stakeholders.",
+    "native": "Our objective is to align the proactive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the scalable milestones.",
+    "native": "Our objective is to align the scalable milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the strategic workflows.",
+    "native": "Our objective is to leverage the strategic workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the seamless milestones.",
+    "native": "Our objective is to implement the seamless milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the seamless workflows.",
+    "native": "Our objective is to streamline the seamless workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the scalable resources.",
+    "native": "Our objective is to facilitate the scalable resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the strategic resources.",
+    "native": "Our objective is to leverage the strategic resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the agile objectives.",
+    "native": "Our objective is to implement the agile objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the scalable resources.",
+    "native": "Our objective is to deploy the scalable resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the robust stakeholders.",
+    "native": "Our objective is to synergize the robust stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the proactive assets.",
+    "native": "Our objective is to leverage the proactive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the seamless processes.",
+    "native": "Our objective is to leverage the seamless processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the robust KPIs.",
+    "native": "Our objective is to leverage the robust KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the proactive margins.",
+    "native": "Our objective is to facilitate the proactive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated milestones.",
+    "native": "Our objective is to optimize the integrated milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the innovative stakeholders.",
+    "native": "Our objective is to implement the innovative stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the cost-effective milestones.",
+    "native": "Our objective is to streamline the cost-effective milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the agile deliverables.",
+    "native": "Our objective is to execute the agile deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the robust objectives.",
+    "native": "Our objective is to synergize the robust objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the proactive milestones.",
+    "native": "Our objective is to execute the proactive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the agile processes.",
+    "native": "Our objective is to deploy the agile processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the cost-effective objectives.",
+    "native": "Our objective is to optimize the cost-effective objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the seamless stakeholders.",
+    "native": "Our objective is to coordinate the seamless stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the integrated stakeholders.",
+    "native": "Our objective is to streamline the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated objectives.",
+    "native": "Our objective is to coordinate the integrated objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the integrated processes.",
+    "native": "Our objective is to synergize the integrated processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative margins.",
+    "native": "Our objective is to optimize the innovative margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the integrated objectives.",
+    "native": "Our objective is to streamline the integrated objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the innovative assets.",
+    "native": "Our objective is to execute the innovative assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the seamless stakeholders.",
+    "native": "Our objective is to optimize the seamless stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the agile margins.",
+    "native": "Our objective is to optimize the agile margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the robust milestones.",
+    "native": "Our objective is to align the robust milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the seamless milestones.",
+    "native": "Our objective is to optimize the seamless milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the proactive processes.",
+    "native": "Our objective is to optimize the proactive processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the strategic resources.",
+    "native": "Our objective is to coordinate the strategic resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the innovative workflows.",
+    "native": "Our objective is to leverage the innovative workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the disruptive margins.",
+    "native": "Our objective is to execute the disruptive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the cost-effective resources.",
+    "native": "Our objective is to coordinate the cost-effective resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic KPIs.",
+    "native": "Our objective is to implement the strategic KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the disruptive resources.",
+    "native": "Our objective is to align the disruptive resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the proactive margins.",
+    "native": "Our objective is to optimize the proactive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the seamless resources.",
+    "native": "Our objective is to optimize the seamless resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the innovative processes.",
+    "native": "Our objective is to synergize the innovative processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated stakeholders.",
+    "native": "Our objective is to coordinate the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the cost-effective stakeholders.",
+    "native": "Our objective is to coordinate the cost-effective stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the strategic workflows.",
+    "native": "Our objective is to leverage the strategic workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the innovative margins.",
+    "native": "Our objective is to facilitate the innovative margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the strategic objectives.",
+    "native": "Our objective is to coordinate the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the scalable resources.",
+    "native": "Our objective is to optimize the scalable resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the innovative stakeholders.",
+    "native": "Our objective is to synergize the innovative stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the innovative processes.",
+    "native": "Our objective is to coordinate the innovative processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the innovative margins.",
+    "native": "Our objective is to leverage the innovative margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the disruptive processes.",
+    "native": "Our objective is to facilitate the disruptive processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the proactive stakeholders.",
+    "native": "Our objective is to leverage the proactive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the disruptive workflows.",
+    "native": "Our objective is to leverage the disruptive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the scalable KPIs.",
+    "native": "Our objective is to optimize the scalable KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the strategic workflows.",
+    "native": "Our objective is to deploy the strategic workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the proactive margins.",
+    "native": "Our objective is to execute the proactive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the integrated margins.",
+    "native": "Our objective is to streamline the integrated margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the proactive assets.",
+    "native": "Our objective is to deploy the proactive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the robust milestones.",
+    "native": "Our objective is to deploy the robust milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the proactive milestones.",
+    "native": "Our objective is to facilitate the proactive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the robust workflows.",
+    "native": "Our objective is to coordinate the robust workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the strategic assets.",
+    "native": "Our objective is to coordinate the strategic assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the disruptive workflows.",
+    "native": "Our objective is to synergize the disruptive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the robust processes.",
+    "native": "Our objective is to synergize the robust processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the cost-effective resources.",
+    "native": "Our objective is to coordinate the cost-effective resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the scalable objectives.",
+    "native": "Our objective is to facilitate the scalable objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the integrated stakeholders.",
+    "native": "Our objective is to execute the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the strategic milestones.",
+    "native": "Our objective is to facilitate the strategic milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the integrated processes.",
+    "native": "Our objective is to implement the integrated processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the integrated deliverables.",
+    "native": "Our objective is to align the integrated deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the strategic KPIs.",
+    "native": "Our objective is to coordinate the strategic KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the cost-effective KPIs.",
+    "native": "Our objective is to execute the cost-effective KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the integrated workflows.",
+    "native": "Our objective is to streamline the integrated workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the scalable resources.",
+    "native": "Our objective is to align the scalable resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated margins.",
+    "native": "Our objective is to optimize the integrated margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the strategic milestones.",
+    "native": "Our objective is to align the strategic milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic resources.",
+    "native": "Our objective is to implement the strategic resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the agile milestones.",
+    "native": "Our objective is to leverage the agile milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative stakeholders.",
+    "native": "Our objective is to optimize the innovative stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the agile margins.",
+    "native": "Our objective is to leverage the agile margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the integrated deliverables.",
+    "native": "Our objective is to deploy the integrated deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the robust KPIs.",
+    "native": "Our objective is to facilitate the robust KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the cost-effective margins.",
+    "native": "Our objective is to coordinate the cost-effective margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the disruptive KPIs.",
+    "native": "Our objective is to coordinate the disruptive KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the robust processes.",
+    "native": "Our objective is to deploy the robust processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated assets.",
+    "native": "Our objective is to coordinate the integrated assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the agile objectives.",
+    "native": "Our objective is to facilitate the agile objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated milestones.",
+    "native": "Our objective is to coordinate the integrated milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the disruptive assets.",
+    "native": "Our objective is to synergize the disruptive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the cost-effective deliverables.",
+    "native": "Our objective is to deploy the cost-effective deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the strategic processes.",
+    "native": "Our objective is to deploy the strategic processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the disruptive stakeholders.",
+    "native": "Our objective is to align the disruptive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the strategic assets.",
+    "native": "Our objective is to streamline the strategic assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the strategic deliverables.",
+    "native": "Our objective is to deploy the strategic deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the robust margins.",
+    "native": "Our objective is to leverage the robust margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the disruptive milestones.",
+    "native": "Our objective is to synergize the disruptive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the disruptive assets.",
+    "native": "Our objective is to facilitate the disruptive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the agile workflows.",
+    "native": "Our objective is to deploy the agile workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative assets.",
+    "native": "Our objective is to optimize the innovative assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the strategic stakeholders.",
+    "native": "Our objective is to coordinate the strategic stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the seamless objectives.",
+    "native": "Our objective is to coordinate the seamless objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic objectives.",
+    "native": "Our objective is to implement the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the proactive milestones.",
+    "native": "Our objective is to facilitate the proactive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the proactive margins.",
+    "native": "Our objective is to coordinate the proactive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the agile objectives.",
+    "native": "Our objective is to streamline the agile objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the robust KPIs.",
+    "native": "Our objective is to streamline the robust KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the integrated objectives.",
+    "native": "Our objective is to align the integrated objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the proactive stakeholders.",
+    "native": "Our objective is to streamline the proactive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic stakeholders.",
+    "native": "Our objective is to implement the strategic stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the disruptive processes.",
+    "native": "Our objective is to implement the disruptive processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the robust objectives.",
+    "native": "Our objective is to optimize the robust objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated KPIs.",
+    "native": "Our objective is to coordinate the integrated KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the robust milestones.",
+    "native": "Our objective is to facilitate the robust milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the seamless stakeholders.",
+    "native": "Our objective is to streamline the seamless stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the proactive resources.",
+    "native": "Our objective is to streamline the proactive resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the robust objectives.",
+    "native": "Our objective is to facilitate the robust objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated workflows.",
+    "native": "Our objective is to coordinate the integrated workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the proactive milestones.",
+    "native": "Our objective is to deploy the proactive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the proactive workflows.",
+    "native": "Our objective is to align the proactive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the scalable objectives.",
+    "native": "Our objective is to leverage the scalable objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the scalable resources.",
+    "native": "Our objective is to align the scalable resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the seamless workflows.",
+    "native": "Our objective is to coordinate the seamless workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the scalable assets.",
+    "native": "Our objective is to deploy the scalable assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the robust resources.",
+    "native": "Our objective is to synergize the robust resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the innovative workflows.",
+    "native": "Our objective is to facilitate the innovative workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the strategic processes.",
+    "native": "Our objective is to synergize the strategic processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the disruptive resources.",
+    "native": "Our objective is to coordinate the disruptive resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the innovative stakeholders.",
+    "native": "Our objective is to streamline the innovative stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the strategic objectives.",
+    "native": "Our objective is to leverage the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the disruptive workflows.",
+    "native": "Our objective is to facilitate the disruptive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the innovative workflows.",
+    "native": "Our objective is to execute the innovative workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the cost-effective stakeholders.",
+    "native": "Our objective is to deploy the cost-effective stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the scalable margins.",
+    "native": "Our objective is to execute the scalable margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the proactive processes.",
+    "native": "Our objective is to streamline the proactive processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the disruptive KPIs.",
+    "native": "Our objective is to deploy the disruptive KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the proactive assets.",
+    "native": "Our objective is to facilitate the proactive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the seamless processes.",
+    "native": "Our objective is to synergize the seamless processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the strategic workflows.",
+    "native": "Our objective is to synergize the strategic workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the disruptive stakeholders.",
+    "native": "Our objective is to optimize the disruptive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the scalable stakeholders.",
+    "native": "Our objective is to leverage the scalable stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the disruptive workflows.",
+    "native": "Our objective is to streamline the disruptive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the cost-effective assets.",
+    "native": "Our objective is to coordinate the cost-effective assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the strategic workflows.",
+    "native": "Our objective is to optimize the strategic workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the proactive objectives.",
+    "native": "Our objective is to align the proactive objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the disruptive milestones.",
+    "native": "Our objective is to align the disruptive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the scalable stakeholders.",
+    "native": "Our objective is to optimize the scalable stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the integrated assets.",
+    "native": "Our objective is to implement the integrated assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the robust margins.",
+    "native": "Our objective is to implement the robust margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the strategic stakeholders.",
+    "native": "Our objective is to synergize the strategic stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the strategic assets.",
+    "native": "Our objective is to facilitate the strategic assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the innovative resources.",
+    "native": "Our objective is to coordinate the innovative resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the innovative margins.",
+    "native": "Our objective is to synergize the innovative margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative assets.",
+    "native": "Our objective is to optimize the innovative assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the innovative stakeholders.",
+    "native": "Our objective is to align the innovative stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the scalable deliverables.",
+    "native": "Our objective is to facilitate the scalable deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the integrated resources.",
+    "native": "Our objective is to execute the integrated resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the proactive objectives.",
+    "native": "Our objective is to leverage the proactive objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the disruptive stakeholders.",
+    "native": "Our objective is to deploy the disruptive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the scalable KPIs.",
+    "native": "Our objective is to deploy the scalable KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic KPIs.",
+    "native": "Our objective is to implement the strategic KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated stakeholders.",
+    "native": "Our objective is to coordinate the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the proactive processes.",
+    "native": "Our objective is to synergize the proactive processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the cost-effective assets.",
+    "native": "Our objective is to streamline the cost-effective assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the robust KPIs.",
+    "native": "Our objective is to synergize the robust KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile objectives.",
+    "native": "Our objective is to coordinate the agile objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the proactive KPIs.",
+    "native": "Our objective is to implement the proactive KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile workflows.",
+    "native": "Our objective is to coordinate the agile workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the disruptive KPIs.",
+    "native": "Our objective is to execute the disruptive KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the cost-effective assets.",
+    "native": "Our objective is to optimize the cost-effective assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the seamless workflows.",
+    "native": "Our objective is to synergize the seamless workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the proactive deliverables.",
+    "native": "Our objective is to coordinate the proactive deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated margins.",
+    "native": "Our objective is to optimize the integrated margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the agile resources.",
+    "native": "Our objective is to deploy the agile resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the scalable workflows.",
+    "native": "Our objective is to streamline the scalable workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the integrated assets.",
+    "native": "Our objective is to synergize the integrated assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the robust workflows.",
+    "native": "Our objective is to execute the robust workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the innovative processes.",
+    "native": "Our objective is to implement the innovative processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative stakeholders.",
+    "native": "Our objective is to optimize the innovative stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the disruptive assets.",
+    "native": "Our objective is to facilitate the disruptive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the proactive stakeholders.",
+    "native": "Our objective is to align the proactive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the proactive milestones.",
+    "native": "Our objective is to align the proactive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the robust objectives.",
+    "native": "Our objective is to streamline the robust objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the robust processes.",
+    "native": "Our objective is to execute the robust processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the disruptive deliverables.",
+    "native": "Our objective is to execute the disruptive deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the cost-effective resources.",
+    "native": "Our objective is to coordinate the cost-effective resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the disruptive processes.",
+    "native": "Our objective is to coordinate the disruptive processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the seamless resources.",
+    "native": "Our objective is to execute the seamless resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated stakeholders.",
+    "native": "Our objective is to optimize the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the integrated KPIs.",
+    "native": "Our objective is to deploy the integrated KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the innovative milestones.",
+    "native": "Our objective is to align the innovative milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the innovative assets.",
+    "native": "Our objective is to align the innovative assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the cost-effective processes.",
+    "native": "Our objective is to optimize the cost-effective processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the agile processes.",
+    "native": "Our objective is to align the agile processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the integrated resources.",
+    "native": "Our objective is to deploy the integrated resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative milestones.",
+    "native": "Our objective is to optimize the innovative milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the scalable KPIs.",
+    "native": "Our objective is to coordinate the scalable KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the strategic resources.",
+    "native": "Our objective is to optimize the strategic resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the seamless margins.",
+    "native": "Our objective is to synergize the seamless margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the innovative assets.",
+    "native": "Our objective is to deploy the innovative assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the cost-effective resources.",
+    "native": "Our objective is to align the cost-effective resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the strategic deliverables.",
+    "native": "Our objective is to align the strategic deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the proactive stakeholders.",
+    "native": "Our objective is to execute the proactive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the integrated margins.",
+    "native": "Our objective is to implement the integrated margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the robust objectives.",
+    "native": "Our objective is to leverage the robust objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the disruptive objectives.",
+    "native": "Our objective is to optimize the disruptive objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile KPIs.",
+    "native": "Our objective is to coordinate the agile KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the seamless milestones.",
+    "native": "Our objective is to facilitate the seamless milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the innovative deliverables.",
+    "native": "Our objective is to align the innovative deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative objectives.",
+    "native": "Our objective is to optimize the innovative objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the seamless margins.",
+    "native": "Our objective is to leverage the seamless margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated processes.",
+    "native": "Our objective is to optimize the integrated processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the innovative resources.",
+    "native": "Our objective is to facilitate the innovative resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic processes.",
+    "native": "Our objective is to implement the strategic processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the disruptive assets.",
+    "native": "Our objective is to streamline the disruptive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the disruptive milestones.",
+    "native": "Our objective is to implement the disruptive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the seamless assets.",
+    "native": "Our objective is to leverage the seamless assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the agile workflows.",
+    "native": "Our objective is to streamline the agile workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the strategic objectives.",
+    "native": "Our objective is to synergize the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the scalable deliverables.",
+    "native": "Our objective is to streamline the scalable deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the innovative deliverables.",
+    "native": "Our objective is to execute the innovative deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the proactive objectives.",
+    "native": "Our objective is to synergize the proactive objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the seamless workflows.",
+    "native": "Our objective is to deploy the seamless workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the agile milestones.",
+    "native": "Our objective is to streamline the agile milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the cost-effective deliverables.",
+    "native": "Our objective is to implement the cost-effective deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the robust margins.",
+    "native": "Our objective is to facilitate the robust margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the cost-effective KPIs.",
+    "native": "Our objective is to implement the cost-effective KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the robust resources.",
+    "native": "Our objective is to deploy the robust resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the cost-effective stakeholders.",
+    "native": "Our objective is to leverage the cost-effective stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the strategic milestones.",
+    "native": "Our objective is to streamline the strategic milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the seamless stakeholders.",
+    "native": "Our objective is to optimize the seamless stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the proactive KPIs.",
+    "native": "Our objective is to coordinate the proactive KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the strategic objectives.",
+    "native": "Our objective is to synergize the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the integrated stakeholders.",
+    "native": "Our objective is to leverage the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the integrated margins.",
+    "native": "Our objective is to synergize the integrated margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the integrated processes.",
+    "native": "Our objective is to deploy the integrated processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the agile milestones.",
+    "native": "Our objective is to execute the agile milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the proactive stakeholders.",
+    "native": "Our objective is to coordinate the proactive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the robust stakeholders.",
+    "native": "Our objective is to leverage the robust stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the disruptive assets.",
+    "native": "Our objective is to synergize the disruptive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the disruptive margins.",
+    "native": "Our objective is to implement the disruptive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the proactive deliverables.",
+    "native": "Our objective is to execute the proactive deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the disruptive margins.",
+    "native": "Our objective is to optimize the disruptive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the scalable milestones.",
+    "native": "Our objective is to align the scalable milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the robust assets.",
+    "native": "Our objective is to align the robust assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the seamless stakeholders.",
+    "native": "Our objective is to align the seamless stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the cost-effective resources.",
+    "native": "Our objective is to streamline the cost-effective resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the strategic margins.",
+    "native": "Our objective is to deploy the strategic margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the scalable deliverables.",
+    "native": "Our objective is to implement the scalable deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the innovative milestones.",
+    "native": "Our objective is to streamline the innovative milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the strategic objectives.",
+    "native": "Our objective is to deploy the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the cost-effective objectives.",
+    "native": "Our objective is to leverage the cost-effective objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the proactive deliverables.",
+    "native": "Our objective is to execute the proactive deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the scalable stakeholders.",
+    "native": "Our objective is to coordinate the scalable stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the cost-effective deliverables.",
+    "native": "Our objective is to execute the cost-effective deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated stakeholders.",
+    "native": "Our objective is to coordinate the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the cost-effective milestones.",
+    "native": "Our objective is to implement the cost-effective milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the seamless processes.",
+    "native": "Our objective is to deploy the seamless processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated workflows.",
+    "native": "Our objective is to coordinate the integrated workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the innovative milestones.",
+    "native": "Our objective is to align the innovative milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the seamless stakeholders.",
+    "native": "Our objective is to deploy the seamless stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the integrated processes.",
+    "native": "Our objective is to implement the integrated processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the strategic processes.",
+    "native": "Our objective is to optimize the strategic processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the cost-effective milestones.",
+    "native": "Our objective is to deploy the cost-effective milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the proactive resources.",
+    "native": "Our objective is to implement the proactive resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the cost-effective stakeholders.",
+    "native": "Our objective is to optimize the cost-effective stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the scalable margins.",
+    "native": "Our objective is to facilitate the scalable margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the integrated assets.",
+    "native": "Our objective is to execute the integrated assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the seamless resources.",
+    "native": "Our objective is to coordinate the seamless resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the integrated resources.",
+    "native": "Our objective is to execute the integrated resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the agile stakeholders.",
+    "native": "Our objective is to align the agile stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the robust assets.",
+    "native": "Our objective is to leverage the robust assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the seamless resources.",
+    "native": "Our objective is to leverage the seamless resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the scalable assets.",
+    "native": "Our objective is to optimize the scalable assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the scalable milestones.",
+    "native": "Our objective is to streamline the scalable milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the proactive KPIs.",
+    "native": "Our objective is to facilitate the proactive KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the strategic objectives.",
+    "native": "Our objective is to align the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the cost-effective margins.",
+    "native": "Our objective is to leverage the cost-effective margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the cost-effective milestones.",
+    "native": "Our objective is to facilitate the cost-effective milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the scalable workflows.",
+    "native": "Our objective is to implement the scalable workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the scalable resources.",
+    "native": "Our objective is to optimize the scalable resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the seamless deliverables.",
+    "native": "Our objective is to execute the seamless deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the integrated resources.",
+    "native": "Our objective is to implement the integrated resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the cost-effective objectives.",
+    "native": "Our objective is to align the cost-effective objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the proactive KPIs.",
+    "native": "Our objective is to execute the proactive KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the cost-effective stakeholders.",
+    "native": "Our objective is to deploy the cost-effective stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the robust stakeholders.",
+    "native": "Our objective is to deploy the robust stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the agile margins.",
+    "native": "Our objective is to streamline the agile margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the proactive assets.",
+    "native": "Our objective is to facilitate the proactive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the scalable resources.",
+    "native": "Our objective is to streamline the scalable resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the robust stakeholders.",
+    "native": "Our objective is to optimize the robust stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the proactive workflows.",
+    "native": "Our objective is to facilitate the proactive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic objectives.",
+    "native": "Our objective is to implement the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the robust milestones.",
+    "native": "Our objective is to coordinate the robust milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the disruptive milestones.",
+    "native": "Our objective is to leverage the disruptive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative milestones.",
+    "native": "Our objective is to optimize the innovative milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the cost-effective workflows.",
+    "native": "Our objective is to synergize the cost-effective workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the scalable processes.",
+    "native": "Our objective is to coordinate the scalable processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the innovative KPIs.",
+    "native": "Our objective is to leverage the innovative KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the integrated objectives.",
+    "native": "Our objective is to facilitate the integrated objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the integrated resources.",
+    "native": "Our objective is to synergize the integrated resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the robust stakeholders.",
+    "native": "Our objective is to leverage the robust stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the agile margins.",
+    "native": "Our objective is to execute the agile margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the strategic stakeholders.",
+    "native": "Our objective is to coordinate the strategic stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the robust KPIs.",
+    "native": "Our objective is to optimize the robust KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the seamless milestones.",
+    "native": "Our objective is to streamline the seamless milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic milestones.",
+    "native": "Our objective is to implement the strategic milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the proactive workflows.",
+    "native": "Our objective is to implement the proactive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the seamless assets.",
+    "native": "Our objective is to implement the seamless assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the disruptive milestones.",
+    "native": "Our objective is to implement the disruptive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile milestones.",
+    "native": "Our objective is to coordinate the agile milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the cost-effective assets.",
+    "native": "Our objective is to deploy the cost-effective assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the innovative deliverables.",
+    "native": "Our objective is to coordinate the innovative deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the cost-effective objectives.",
+    "native": "Our objective is to deploy the cost-effective objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the strategic objectives.",
+    "native": "Our objective is to coordinate the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the cost-effective milestones.",
+    "native": "Our objective is to coordinate the cost-effective milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the strategic margins.",
+    "native": "Our objective is to execute the strategic margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the scalable margins.",
+    "native": "Our objective is to synergize the scalable margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated stakeholders.",
+    "native": "Our objective is to optimize the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the strategic processes.",
+    "native": "Our objective is to optimize the strategic processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the agile KPIs.",
+    "native": "Our objective is to execute the agile KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the seamless margins.",
+    "native": "Our objective is to streamline the seamless margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile objectives.",
+    "native": "Our objective is to coordinate the agile objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the innovative processes.",
+    "native": "Our objective is to execute the innovative processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the strategic assets.",
+    "native": "Our objective is to facilitate the strategic assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the innovative margins.",
+    "native": "Our objective is to leverage the innovative margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the strategic milestones.",
+    "native": "Our objective is to streamline the strategic milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the proactive workflows.",
+    "native": "Our objective is to synergize the proactive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the scalable assets.",
+    "native": "Our objective is to streamline the scalable assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the strategic resources.",
+    "native": "Our objective is to streamline the strategic resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the disruptive deliverables.",
+    "native": "Our objective is to leverage the disruptive deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated milestones.",
+    "native": "Our objective is to coordinate the integrated milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the agile resources.",
+    "native": "Our objective is to leverage the agile resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile objectives.",
+    "native": "Our objective is to coordinate the agile objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated deliverables.",
+    "native": "Our objective is to optimize the integrated deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the scalable stakeholders.",
+    "native": "Our objective is to implement the scalable stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the strategic stakeholders.",
+    "native": "Our objective is to optimize the strategic stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the proactive assets.",
+    "native": "Our objective is to deploy the proactive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the disruptive milestones.",
+    "native": "Our objective is to execute the disruptive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the seamless KPIs.",
+    "native": "Our objective is to deploy the seamless KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the cost-effective KPIs.",
+    "native": "Our objective is to coordinate the cost-effective KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated deliverables.",
+    "native": "Our objective is to coordinate the integrated deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the seamless margins.",
+    "native": "Our objective is to coordinate the seamless margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the cost-effective deliverables.",
+    "native": "Our objective is to align the cost-effective deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the disruptive workflows.",
+    "native": "Our objective is to implement the disruptive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the disruptive assets.",
+    "native": "Our objective is to synergize the disruptive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the integrated workflows.",
+    "native": "Our objective is to deploy the integrated workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated workflows.",
+    "native": "Our objective is to optimize the integrated workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the cost-effective milestones.",
+    "native": "Our objective is to implement the cost-effective milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile margins.",
+    "native": "Our objective is to coordinate the agile margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the integrated objectives.",
+    "native": "Our objective is to coordinate the integrated objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the integrated stakeholders.",
+    "native": "Our objective is to leverage the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the disruptive deliverables.",
+    "native": "Our objective is to streamline the disruptive deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile resources.",
+    "native": "Our objective is to coordinate the agile resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the robust processes.",
+    "native": "Our objective is to leverage the robust processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative processes.",
+    "native": "Our objective is to optimize the innovative processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the innovative margins.",
+    "native": "Our objective is to implement the innovative margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the seamless workflows.",
+    "native": "Our objective is to implement the seamless workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the integrated assets.",
+    "native": "Our objective is to execute the integrated assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile workflows.",
+    "native": "Our objective is to coordinate the agile workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the innovative milestones.",
+    "native": "Our objective is to leverage the innovative milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the robust milestones.",
+    "native": "Our objective is to optimize the robust milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the agile objectives.",
+    "native": "Our objective is to streamline the agile objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the proactive margins.",
+    "native": "Our objective is to synergize the proactive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the proactive processes.",
+    "native": "Our objective is to synergize the proactive processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the scalable KPIs.",
+    "native": "Our objective is to synergize the scalable KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the innovative processes.",
+    "native": "Our objective is to implement the innovative processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the innovative KPIs.",
+    "native": "Our objective is to deploy the innovative KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the disruptive workflows.",
+    "native": "Our objective is to streamline the disruptive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the agile milestones.",
+    "native": "Our objective is to leverage the agile milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated assets.",
+    "native": "Our objective is to optimize the integrated assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the scalable processes.",
+    "native": "Our objective is to execute the scalable processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the disruptive objectives.",
+    "native": "Our objective is to optimize the disruptive objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the cost-effective processes.",
+    "native": "Our objective is to facilitate the cost-effective processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the agile workflows.",
+    "native": "Our objective is to execute the agile workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the robust stakeholders.",
+    "native": "Our objective is to deploy the robust stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the proactive resources.",
+    "native": "Our objective is to align the proactive resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the disruptive resources.",
+    "native": "Our objective is to execute the disruptive resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the seamless objectives.",
+    "native": "Our objective is to coordinate the seamless objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated processes.",
+    "native": "Our objective is to optimize the integrated processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the innovative assets.",
+    "native": "Our objective is to execute the innovative assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the agile stakeholders.",
+    "native": "Our objective is to deploy the agile stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic KPIs.",
+    "native": "Our objective is to implement the strategic KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the robust stakeholders.",
+    "native": "Our objective is to implement the robust stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the integrated workflows.",
+    "native": "Our objective is to deploy the integrated workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the robust stakeholders.",
+    "native": "Our objective is to facilitate the robust stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the scalable deliverables.",
+    "native": "Our objective is to deploy the scalable deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the seamless resources.",
+    "native": "Our objective is to implement the seamless resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the innovative workflows.",
+    "native": "Our objective is to implement the innovative workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the robust assets.",
+    "native": "Our objective is to align the robust assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the cost-effective milestones.",
+    "native": "Our objective is to leverage the cost-effective milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the integrated assets.",
+    "native": "Our objective is to synergize the integrated assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the seamless KPIs.",
+    "native": "Our objective is to leverage the seamless KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the disruptive stakeholders.",
+    "native": "Our objective is to synergize the disruptive stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the disruptive milestones.",
+    "native": "Our objective is to leverage the disruptive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the seamless deliverables.",
+    "native": "Our objective is to align the seamless deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the disruptive deliverables.",
+    "native": "Our objective is to leverage the disruptive deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the proactive assets.",
+    "native": "Our objective is to coordinate the proactive assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the innovative processes.",
+    "native": "Our objective is to align the innovative processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the strategic stakeholders.",
+    "native": "Our objective is to execute the strategic stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the scalable processes.",
+    "native": "Our objective is to execute the scalable processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the scalable resources.",
+    "native": "Our objective is to synergize the scalable resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the cost-effective margins.",
+    "native": "Our objective is to execute the cost-effective margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the seamless milestones.",
+    "native": "Our objective is to leverage the seamless milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the agile deliverables.",
+    "native": "Our objective is to align the agile deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the innovative workflows.",
+    "native": "Our objective is to synergize the innovative workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the integrated workflows.",
+    "native": "Our objective is to execute the integrated workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the disruptive milestones.",
+    "native": "Our objective is to leverage the disruptive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the robust processes.",
+    "native": "Our objective is to implement the robust processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the strategic milestones.",
+    "native": "Our objective is to facilitate the strategic milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the proactive processes.",
+    "native": "Our objective is to execute the proactive processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the cost-effective assets.",
+    "native": "Our objective is to implement the cost-effective assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the proactive workflows.",
+    "native": "Our objective is to leverage the proactive workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the strategic stakeholders.",
+    "native": "Our objective is to deploy the strategic stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the integrated resources.",
+    "native": "Our objective is to facilitate the integrated resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the integrated workflows.",
+    "native": "Our objective is to synergize the integrated workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the disruptive margins.",
+    "native": "Our objective is to align the disruptive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the scalable workflows.",
+    "native": "Our objective is to deploy the scalable workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the strategic objectives.",
+    "native": "Our objective is to deploy the strategic objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the agile resources.",
+    "native": "Our objective is to facilitate the agile resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the scalable milestones.",
+    "native": "Our objective is to align the scalable milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the integrated KPIs.",
+    "native": "Our objective is to streamline the integrated KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the scalable KPIs.",
+    "native": "Our objective is to execute the scalable KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the agile margins.",
+    "native": "Our objective is to streamline the agile margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the disruptive margins.",
+    "native": "Our objective is to facilitate the disruptive margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the cost-effective KPIs.",
+    "native": "Our objective is to facilitate the cost-effective KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the integrated margins.",
+    "native": "Our objective is to facilitate the integrated margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic resources.",
+    "native": "Our objective is to implement the strategic resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the seamless workflows.",
+    "native": "Our objective is to align the seamless workflows to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the seamless resources.",
+    "native": "Our objective is to implement the seamless resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the seamless deliverables.",
+    "native": "Our objective is to deploy the seamless deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the scalable resources.",
+    "native": "Our objective is to execute the scalable resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the disruptive KPIs.",
+    "native": "Our objective is to optimize the disruptive KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the integrated assets.",
+    "native": "Our objective is to facilitate the integrated assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the innovative milestones.",
+    "native": "Our objective is to implement the innovative milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the scalable milestones.",
+    "native": "Our objective is to streamline the scalable milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the disruptive processes.",
+    "native": "Our objective is to synergize the disruptive processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the seamless KPIs.",
+    "native": "Our objective is to align the seamless KPIs to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the scalable stakeholders.",
+    "native": "Our objective is to implement the scalable stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to execute the proactive resources.",
+    "native": "Our objective is to execute the proactive resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to facilitate the agile margins.",
+    "native": "Our objective is to facilitate the agile margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the robust milestones.",
+    "native": "Our objective is to implement the robust milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the cost-effective margins.",
+    "native": "Our objective is to streamline the cost-effective margins to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the scalable processes.",
+    "native": "Our objective is to align the scalable processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the integrated stakeholders.",
+    "native": "Our objective is to optimize the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the innovative deliverables.",
+    "native": "Our objective is to implement the innovative deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the seamless assets.",
+    "native": "Our objective is to leverage the seamless assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the cost-effective deliverables.",
+    "native": "Our objective is to align the cost-effective deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the agile processes.",
+    "native": "Our objective is to leverage the agile processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the disruptive deliverables.",
+    "native": "Our objective is to coordinate the disruptive deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to optimize the innovative processes.",
+    "native": "Our objective is to optimize the innovative processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the scalable deliverables.",
+    "native": "Our objective is to leverage the scalable deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to implement the strategic milestones.",
+    "native": "Our objective is to implement the strategic milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the proactive milestones.",
+    "native": "Our objective is to coordinate the proactive milestones to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the innovative stakeholders.",
+    "native": "Our objective is to deploy the innovative stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the proactive deliverables.",
+    "native": "Our objective is to coordinate the proactive deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the innovative deliverables.",
+    "native": "Our objective is to coordinate the innovative deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the scalable assets.",
+    "native": "Our objective is to streamline the scalable assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the seamless deliverables.",
+    "native": "Our objective is to streamline the seamless deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the strategic assets.",
+    "native": "Our objective is to synergize the strategic assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the seamless assets.",
+    "native": "Our objective is to align the seamless assets to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the innovative objectives.",
+    "native": "Our objective is to coordinate the innovative objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the integrated objectives.",
+    "native": "Our objective is to synergize the integrated objectives to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to deploy the scalable stakeholders.",
+    "native": "Our objective is to deploy the scalable stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to streamline the integrated stakeholders.",
+    "native": "Our objective is to streamline the integrated stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the cost-effective resources.",
+    "native": "Our objective is to synergize the cost-effective resources to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to coordinate the agile stakeholders.",
+    "native": "Our objective is to coordinate the agile stakeholders to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to synergize the agile processes.",
+    "native": "Our objective is to synergize the agile processes to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to align the strategic deliverables.",
+    "native": "Our objective is to align the strategic deliverables to drive growth.",
+    "type": "Professional Phrase"
+  },
+  {
+    "clunky": "We need to leverage the seamless milestones.",
+    "native": "Our objective is to leverage the seamless milestones to drive growth.",
+    "type": "Professional Phrase"
+  }
+]

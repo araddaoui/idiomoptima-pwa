@@ -1,0 +1,2502 @@
+[
+  {
+    "clunky": "The city was busy.",
+    "native": "The metropolis thrummed with a restless, electric energy.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "The room was very cold.",
+    "native": "A biting chill permeated every corner of the drafty chamber.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "The forest was quiet.",
+    "native": "A heavy, expectant silence hung beneath the ancient canopy.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "The sun was hot.",
+    "native": "The sun beat down with a relentless, sweltering intensity.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "The street was crowded.",
+    "native": "The thoroughfare was choked with a surging tide of humanity.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "The house was old and scary.",
+    "native": "The manor stood in a state of elegant decay, cloaked in shadows.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The air smelled like rain.",
+    "native": "The earthy scent of petrichor rose from the parched pavement.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The mountains were big.",
+    "native": "Jagged peaks pierced the horizon like the teeth of a sleeping giant.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "The night was dark.",
+    "native": "An ink-black darkness swallowed the landscape whole.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "He looked angry.",
+    "native": "A storm of indignation brewed behind his narrowed eyes.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "She was very beautiful.",
+    "native": "She possessed a luminous grace that seemed to command the very air around her.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "He moved quickly.",
+    "native": "He vanished into the shadows with the fluid ease of a predator.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The ocean was loud.",
+    "native": "The rhythmic roar of the surf battered the shoreline with tireless fury.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "She felt sad.",
+    "native": "A hollow ache took up residence in the center of her chest.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "The fire was bright.",
+    "native": "Amber flames danced and spat, casting long, flickering shadows against the hearth.",
+    "type": "Sentence"
+  },
+  {
+    "clunky": "The crescendo looked radiant.",
+    "native": "The crescendo whispered through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked visceral.",
+    "native": "The void echoed through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked timeless.",
+    "native": "The silhouette shimmered through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked vivid.",
+    "native": "The silhouette dissolved through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked melancholy.",
+    "native": "The horizon cascaded through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked timeless.",
+    "native": "The mirage ignited through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry shimmered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked radiant.",
+    "native": "The crescendo loomed through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked vivid.",
+    "native": "The silhouette dissolved through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked timeless.",
+    "native": "The horizon entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked haunting.",
+    "native": "The silhouette echoed through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked sublime.",
+    "native": "The labyrinth pulsated through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked timeless.",
+    "native": "The legacy shimmered through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked ominous.",
+    "native": "The crescendo entwined through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked melancholy.",
+    "native": "The mirage pulsated through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked timeless.",
+    "native": "The crescendo loomed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked radiant.",
+    "native": "The sanctuary cascaded through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked timeless.",
+    "native": "The crescendo cascaded through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked melancholy.",
+    "native": "The void dissolved through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void dissolved through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked ominous.",
+    "native": "The mirage ignited through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked vivid.",
+    "native": "The legacy echoed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked ethereal.",
+    "native": "The abyss loomed through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked melancholy.",
+    "native": "The silhouette entwined through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked ominous.",
+    "native": "The crescendo dissolved through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked vivid.",
+    "native": "The mirage fractured through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked timeless.",
+    "native": "The legacy loomed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void cascaded through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ominous.",
+    "native": "The tapestry echoed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked melancholy.",
+    "native": "The sanctuary ignited through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked haunting.",
+    "native": "The void pulsated through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked fragmented.",
+    "native": "The mirage loomed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked fragmented.",
+    "native": "The crescendo echoed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ominous.",
+    "native": "The labyrinth whispered through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked haunting.",
+    "native": "The silhouette echoed through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked ethereal.",
+    "native": "The mirage shimmered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked sublime.",
+    "native": "The mirage pulsated through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked haunting.",
+    "native": "The void entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked haunting.",
+    "native": "The crescendo entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked sublime.",
+    "native": "The void fractured through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ominous.",
+    "native": "The tapestry whispered through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked visceral.",
+    "native": "The labyrinth entwined through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked sublime.",
+    "native": "The crescendo whispered through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked vivid.",
+    "native": "The void entwined through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked haunting.",
+    "native": "The void fractured through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked timeless.",
+    "native": "The labyrinth cascaded through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked sublime.",
+    "native": "The void shimmered through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked vivid.",
+    "native": "The mirage pulsated through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked vivid.",
+    "native": "The sanctuary cascaded through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked vivid.",
+    "native": "The horizon cascaded through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked melancholy.",
+    "native": "The crescendo echoed through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked haunting.",
+    "native": "The mirage pulsated through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked vivid.",
+    "native": "The horizon entwined through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked timeless.",
+    "native": "The silhouette shimmered through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked fragmented.",
+    "native": "The horizon entwined through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ominous.",
+    "native": "The sanctuary loomed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked melancholy.",
+    "native": "The silhouette echoed through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked fragmented.",
+    "native": "The abyss shimmered through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked radiant.",
+    "native": "The legacy whispered through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked timeless.",
+    "native": "The abyss pulsated through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked visceral.",
+    "native": "The horizon dissolved through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked melancholy.",
+    "native": "The sanctuary pulsated through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked vivid.",
+    "native": "The legacy whispered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked sublime.",
+    "native": "The sanctuary whispered through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked radiant.",
+    "native": "The horizon echoed through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked fragmented.",
+    "native": "The sanctuary dissolved through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked ethereal.",
+    "native": "The abyss echoed through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked fragmented.",
+    "native": "The abyss ignited through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ominous.",
+    "native": "The legacy echoed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked radiant.",
+    "native": "The silhouette entwined through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked radiant.",
+    "native": "The horizon whispered through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked visceral.",
+    "native": "The abyss ignited through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked fragmented.",
+    "native": "The horizon loomed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked ominous.",
+    "native": "The mirage echoed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked vivid.",
+    "native": "The mirage pulsated through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked timeless.",
+    "native": "The labyrinth entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked visceral.",
+    "native": "The sanctuary loomed through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked sublime.",
+    "native": "The mirage pulsated through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry echoed through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked melancholy.",
+    "native": "The horizon pulsated through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked visceral.",
+    "native": "The void entwined through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked sublime.",
+    "native": "The crescendo ignited through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked fragmented.",
+    "native": "The legacy cascaded through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked haunting.",
+    "native": "The crescendo pulsated through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked fragmented.",
+    "native": "The sanctuary fractured through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked visceral.",
+    "native": "The mirage ignited through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ethereal.",
+    "native": "The legacy cascaded through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked ominous.",
+    "native": "The horizon cascaded through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked haunting.",
+    "native": "The labyrinth dissolved through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked melancholy.",
+    "native": "The void cascaded through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void ignited through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked visceral.",
+    "native": "The tapestry entwined through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked vivid.",
+    "native": "The labyrinth fractured through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ominous.",
+    "native": "The tapestry pulsated through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ethereal.",
+    "native": "The sanctuary echoed through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked vivid.",
+    "native": "The sanctuary shimmered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked melancholy.",
+    "native": "The tapestry loomed through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void cascaded through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked melancholy.",
+    "native": "The silhouette whispered through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked vivid.",
+    "native": "The legacy shimmered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked timeless.",
+    "native": "The horizon ignited through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked sublime.",
+    "native": "The labyrinth pulsated through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked visceral.",
+    "native": "The mirage ignited through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked melancholy.",
+    "native": "The silhouette shimmered through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void dissolved through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked vivid.",
+    "native": "The legacy dissolved through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked vivid.",
+    "native": "The silhouette shimmered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked ominous.",
+    "native": "The abyss echoed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked ethereal.",
+    "native": "The horizon entwined through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked sublime.",
+    "native": "The abyss loomed through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked haunting.",
+    "native": "The crescendo whispered through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked sublime.",
+    "native": "The void loomed through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked radiant.",
+    "native": "The labyrinth ignited through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked visceral.",
+    "native": "The legacy dissolved through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked melancholy.",
+    "native": "The tapestry entwined through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked ethereal.",
+    "native": "The silhouette whispered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked timeless.",
+    "native": "The tapestry echoed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked visceral.",
+    "native": "The abyss ignited through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked timeless.",
+    "native": "The horizon loomed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked fragmented.",
+    "native": "The mirage entwined through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked radiant.",
+    "native": "The mirage ignited through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked melancholy.",
+    "native": "The labyrinth ignited through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked haunting.",
+    "native": "The mirage cascaded through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked ethereal.",
+    "native": "The horizon ignited through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked fragmented.",
+    "native": "The abyss cascaded through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked radiant.",
+    "native": "The void cascaded through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ethereal.",
+    "native": "The sanctuary shimmered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked sublime.",
+    "native": "The horizon pulsated through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked timeless.",
+    "native": "The crescendo entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void loomed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked melancholy.",
+    "native": "The sanctuary pulsated through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked vivid.",
+    "native": "The abyss loomed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked visceral.",
+    "native": "The void pulsated through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked haunting.",
+    "native": "The sanctuary ignited through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked vivid.",
+    "native": "The void ignited through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked ominous.",
+    "native": "The crescendo loomed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked sublime.",
+    "native": "The silhouette entwined through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked vivid.",
+    "native": "The mirage whispered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked haunting.",
+    "native": "The abyss dissolved through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked vivid.",
+    "native": "The labyrinth cascaded through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked fragmented.",
+    "native": "The abyss fractured through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked haunting.",
+    "native": "The horizon whispered through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked visceral.",
+    "native": "The legacy shimmered through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked visceral.",
+    "native": "The labyrinth shimmered through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked ominous.",
+    "native": "The abyss entwined through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked sublime.",
+    "native": "The crescendo cascaded through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked timeless.",
+    "native": "The labyrinth entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked vivid.",
+    "native": "The labyrinth ignited through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked radiant.",
+    "native": "The horizon entwined through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked melancholy.",
+    "native": "The legacy cascaded through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ominous.",
+    "native": "The legacy loomed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked vivid.",
+    "native": "The abyss dissolved through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked haunting.",
+    "native": "The mirage pulsated through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked visceral.",
+    "native": "The silhouette cascaded through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ethereal.",
+    "native": "The sanctuary pulsated through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked haunting.",
+    "native": "The void cascaded through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked visceral.",
+    "native": "The mirage cascaded through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked radiant.",
+    "native": "The silhouette echoed through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked radiant.",
+    "native": "The tapestry fractured through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked vivid.",
+    "native": "The horizon echoed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked vivid.",
+    "native": "The horizon dissolved through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked ominous.",
+    "native": "The horizon cascaded through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked timeless.",
+    "native": "The mirage entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void fractured through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked sublime.",
+    "native": "The sanctuary entwined through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void ignited through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked sublime.",
+    "native": "The mirage cascaded through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ominous.",
+    "native": "The labyrinth fractured through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked visceral.",
+    "native": "The sanctuary echoed through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked haunting.",
+    "native": "The crescendo echoed through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked vivid.",
+    "native": "The mirage ignited through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked fragmented.",
+    "native": "The crescendo loomed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ethereal.",
+    "native": "The sanctuary ignited through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked sublime.",
+    "native": "The horizon fractured through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked haunting.",
+    "native": "The silhouette fractured through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked vivid.",
+    "native": "The horizon shimmered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked radiant.",
+    "native": "The mirage dissolved through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked fragmented.",
+    "native": "The legacy entwined through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked vivid.",
+    "native": "The abyss cascaded through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked melancholy.",
+    "native": "The labyrinth dissolved through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked haunting.",
+    "native": "The mirage shimmered through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ominous.",
+    "native": "The tapestry echoed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked ethereal.",
+    "native": "The mirage cascaded through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked melancholy.",
+    "native": "The crescendo shimmered through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked timeless.",
+    "native": "The labyrinth loomed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked melancholy.",
+    "native": "The crescendo pulsated through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked haunting.",
+    "native": "The sanctuary entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked visceral.",
+    "native": "The silhouette entwined through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked radiant.",
+    "native": "The horizon cascaded through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked visceral.",
+    "native": "The labyrinth ignited through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked sublime.",
+    "native": "The mirage loomed through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ominous.",
+    "native": "The sanctuary cascaded through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked vivid.",
+    "native": "The legacy whispered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ethereal.",
+    "native": "The legacy dissolved through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked visceral.",
+    "native": "The sanctuary loomed through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry dissolved through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked vivid.",
+    "native": "The silhouette dissolved through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ominous.",
+    "native": "The labyrinth shimmered through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked sublime.",
+    "native": "The sanctuary loomed through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked vivid.",
+    "native": "The sanctuary shimmered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked visceral.",
+    "native": "The void pulsated through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked ominous.",
+    "native": "The silhouette whispered through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked fragmented.",
+    "native": "The abyss entwined through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked fragmented.",
+    "native": "The labyrinth echoed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked sublime.",
+    "native": "The labyrinth pulsated through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked fragmented.",
+    "native": "The mirage pulsated through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked timeless.",
+    "native": "The sanctuary fractured through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked melancholy.",
+    "native": "The mirage cascaded through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked radiant.",
+    "native": "The labyrinth fractured through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked vivid.",
+    "native": "The legacy whispered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked vivid.",
+    "native": "The crescendo cascaded through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked timeless.",
+    "native": "The silhouette cascaded through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked ethereal.",
+    "native": "The horizon whispered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ominous.",
+    "native": "The tapestry cascaded through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked ominous.",
+    "native": "The abyss entwined through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked vivid.",
+    "native": "The horizon dissolved through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ominous.",
+    "native": "The labyrinth fractured through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked vivid.",
+    "native": "The abyss dissolved through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ominous.",
+    "native": "The legacy dissolved through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked timeless.",
+    "native": "The tapestry ignited through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked visceral.",
+    "native": "The tapestry whispered through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked haunting.",
+    "native": "The mirage pulsated through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked timeless.",
+    "native": "The horizon echoed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked fragmented.",
+    "native": "The horizon cascaded through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ominous.",
+    "native": "The labyrinth whispered through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ethereal.",
+    "native": "The labyrinth pulsated through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ethereal.",
+    "native": "The sanctuary shimmered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked haunting.",
+    "native": "The labyrinth entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked melancholy.",
+    "native": "The tapestry echoed through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked ethereal.",
+    "native": "The silhouette ignited through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked visceral.",
+    "native": "The abyss loomed through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked ominous.",
+    "native": "The void dissolved through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked radiant.",
+    "native": "The horizon dissolved through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked fragmented.",
+    "native": "The void echoed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked fragmented.",
+    "native": "The labyrinth shimmered through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked sublime.",
+    "native": "The horizon pulsated through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked ominous.",
+    "native": "The abyss loomed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked haunting.",
+    "native": "The void loomed through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked timeless.",
+    "native": "The crescendo echoed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked ominous.",
+    "native": "The mirage ignited through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked fragmented.",
+    "native": "The abyss cascaded through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked melancholy.",
+    "native": "The crescendo loomed through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked melancholy.",
+    "native": "The sanctuary dissolved through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked visceral.",
+    "native": "The void entwined through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked visceral.",
+    "native": "The silhouette loomed through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked fragmented.",
+    "native": "The tapestry pulsated through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked vivid.",
+    "native": "The void entwined through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked haunting.",
+    "native": "The tapestry pulsated through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked fragmented.",
+    "native": "The horizon dissolved through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked visceral.",
+    "native": "The abyss entwined through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked fragmented.",
+    "native": "The sanctuary cascaded through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ethereal.",
+    "native": "The sanctuary whispered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked haunting.",
+    "native": "The mirage cascaded through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked timeless.",
+    "native": "The sanctuary fractured through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked haunting.",
+    "native": "The labyrinth pulsated through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked timeless.",
+    "native": "The horizon echoed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked sublime.",
+    "native": "The mirage shimmered through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked sublime.",
+    "native": "The sanctuary fractured through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked visceral.",
+    "native": "The horizon echoed through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked haunting.",
+    "native": "The silhouette entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked vivid.",
+    "native": "The horizon echoed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked ominous.",
+    "native": "The crescendo fractured through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked visceral.",
+    "native": "The mirage shimmered through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked ethereal.",
+    "native": "The abyss dissolved through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked fragmented.",
+    "native": "The mirage ignited through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked haunting.",
+    "native": "The legacy echoed through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked melancholy.",
+    "native": "The silhouette shimmered through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry pulsated through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked timeless.",
+    "native": "The tapestry loomed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked visceral.",
+    "native": "The silhouette fractured through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked melancholy.",
+    "native": "The mirage pulsated through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked timeless.",
+    "native": "The tapestry fractured through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked vivid.",
+    "native": "The horizon echoed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked ethereal.",
+    "native": "The crescendo fractured through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked vivid.",
+    "native": "The mirage echoed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked haunting.",
+    "native": "The void echoed through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ominous.",
+    "native": "The tapestry dissolved through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked melancholy.",
+    "native": "The crescendo cascaded through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ethereal.",
+    "native": "The labyrinth whispered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked timeless.",
+    "native": "The horizon pulsated through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked visceral.",
+    "native": "The abyss whispered through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked melancholy.",
+    "native": "The crescendo pulsated through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked melancholy.",
+    "native": "The mirage fractured through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked ominous.",
+    "native": "The void whispered through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked haunting.",
+    "native": "The crescendo entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked sublime.",
+    "native": "The mirage pulsated through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked melancholy.",
+    "native": "The labyrinth whispered through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked haunting.",
+    "native": "The sanctuary shimmered through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked melancholy.",
+    "native": "The tapestry dissolved through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked sublime.",
+    "native": "The horizon dissolved through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked visceral.",
+    "native": "The sanctuary ignited through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked sublime.",
+    "native": "The abyss fractured through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked fragmented.",
+    "native": "The abyss loomed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked ominous.",
+    "native": "The horizon cascaded through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked fragmented.",
+    "native": "The silhouette ignited through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked haunting.",
+    "native": "The horizon cascaded through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked timeless.",
+    "native": "The sanctuary entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked timeless.",
+    "native": "The legacy pulsated through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked fragmented.",
+    "native": "The void pulsated through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked melancholy.",
+    "native": "The sanctuary loomed through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ominous.",
+    "native": "The tapestry whispered through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked sublime.",
+    "native": "The crescendo dissolved through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked sublime.",
+    "native": "The horizon shimmered through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked melancholy.",
+    "native": "The horizon loomed through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked ethereal.",
+    "native": "The horizon whispered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked timeless.",
+    "native": "The abyss shimmered through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ethereal.",
+    "native": "The sanctuary loomed through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked radiant.",
+    "native": "The tapestry pulsated through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked sublime.",
+    "native": "The sanctuary ignited through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked visceral.",
+    "native": "The tapestry fractured through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked ominous.",
+    "native": "The crescendo entwined through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked melancholy.",
+    "native": "The mirage echoed through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry dissolved through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ominous.",
+    "native": "The labyrinth cascaded through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked haunting.",
+    "native": "The void fractured through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked radiant.",
+    "native": "The crescendo loomed through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked sublime.",
+    "native": "The horizon cascaded through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked fragmented.",
+    "native": "The crescendo cascaded through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked vivid.",
+    "native": "The silhouette shimmered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry pulsated through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ominous.",
+    "native": "The legacy dissolved through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked haunting.",
+    "native": "The abyss whispered through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ominous.",
+    "native": "The legacy dissolved through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked fragmented.",
+    "native": "The void dissolved through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked visceral.",
+    "native": "The crescendo pulsated through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ethereal.",
+    "native": "The sanctuary entwined through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked melancholy.",
+    "native": "The silhouette ignited through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked radiant.",
+    "native": "The abyss ignited through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked melancholy.",
+    "native": "The horizon whispered through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked vivid.",
+    "native": "The mirage whispered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked fragmented.",
+    "native": "The crescendo fractured through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked fragmented.",
+    "native": "The sanctuary fractured through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked fragmented.",
+    "native": "The legacy cascaded through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked sublime.",
+    "native": "The void cascaded through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked fragmented.",
+    "native": "The crescendo entwined through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked timeless.",
+    "native": "The tapestry shimmered through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked haunting.",
+    "native": "The legacy loomed through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked visceral.",
+    "native": "The silhouette echoed through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked melancholy.",
+    "native": "The sanctuary ignited through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked ethereal.",
+    "native": "The void whispered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked visceral.",
+    "native": "The silhouette loomed through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked visceral.",
+    "native": "The labyrinth whispered through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked timeless.",
+    "native": "The silhouette whispered through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked vivid.",
+    "native": "The abyss echoed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked timeless.",
+    "native": "The abyss ignited through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked vivid.",
+    "native": "The tapestry shimmered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked visceral.",
+    "native": "The tapestry ignited through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked timeless.",
+    "native": "The silhouette echoed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked radiant.",
+    "native": "The mirage loomed through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked ethereal.",
+    "native": "The silhouette shimmered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ethereal.",
+    "native": "The labyrinth loomed through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked haunting.",
+    "native": "The legacy dissolved through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked radiant.",
+    "native": "The silhouette loomed through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked fragmented.",
+    "native": "The mirage ignited through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked vivid.",
+    "native": "The mirage cascaded through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked timeless.",
+    "native": "The mirage whispered through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ominous.",
+    "native": "The sanctuary pulsated through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked radiant.",
+    "native": "The void loomed through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked vivid.",
+    "native": "The tapestry ignited through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked sublime.",
+    "native": "The crescendo entwined through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked haunting.",
+    "native": "The crescendo echoed through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked visceral.",
+    "native": "The crescendo pulsated through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked melancholy.",
+    "native": "The legacy fractured through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked timeless.",
+    "native": "The horizon entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked radiant.",
+    "native": "The tapestry cascaded through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked ethereal.",
+    "native": "The horizon loomed through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked fragmented.",
+    "native": "The legacy fractured through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry dissolved through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked sublime.",
+    "native": "The legacy ignited through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked radiant.",
+    "native": "The labyrinth whispered through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked visceral.",
+    "native": "The crescendo pulsated through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked timeless.",
+    "native": "The tapestry fractured through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked melancholy.",
+    "native": "The legacy entwined through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked fragmented.",
+    "native": "The void echoed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked sublime.",
+    "native": "The labyrinth entwined through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked ominous.",
+    "native": "The silhouette cascaded through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked ethereal.",
+    "native": "The abyss whispered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked radiant.",
+    "native": "The labyrinth ignited through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked fragmented.",
+    "native": "The tapestry echoed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked haunting.",
+    "native": "The labyrinth entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked fragmented.",
+    "native": "The sanctuary dissolved through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void ignited through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked melancholy.",
+    "native": "The abyss ignited through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked sublime.",
+    "native": "The mirage dissolved through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked fragmented.",
+    "native": "The void echoed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked vivid.",
+    "native": "The horizon loomed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked sublime.",
+    "native": "The legacy whispered through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked sublime.",
+    "native": "The silhouette pulsated through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked radiant.",
+    "native": "The mirage dissolved through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked timeless.",
+    "native": "The labyrinth echoed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry whispered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked ominous.",
+    "native": "The silhouette whispered through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked radiant.",
+    "native": "The abyss fractured through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked sublime.",
+    "native": "The abyss whispered through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked sublime.",
+    "native": "The tapestry fractured through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked ethereal.",
+    "native": "The abyss whispered through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked vivid.",
+    "native": "The tapestry ignited through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked haunting.",
+    "native": "The tapestry whispered through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked melancholy.",
+    "native": "The legacy fractured through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked radiant.",
+    "native": "The mirage echoed through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked radiant.",
+    "native": "The abyss pulsated through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked vivid.",
+    "native": "The sanctuary fractured through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked haunting.",
+    "native": "The abyss whispered through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked vivid.",
+    "native": "The silhouette ignited through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked fragmented.",
+    "native": "The labyrinth echoed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked sublime.",
+    "native": "The void fractured through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked sublime.",
+    "native": "The legacy loomed through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked fragmented.",
+    "native": "The void cascaded through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ominous.",
+    "native": "The tapestry pulsated through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked ethereal.",
+    "native": "The crescendo ignited through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked timeless.",
+    "native": "The legacy dissolved through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked melancholy.",
+    "native": "The silhouette whispered through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry ignited through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked melancholy.",
+    "native": "The silhouette pulsated through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked visceral.",
+    "native": "The labyrinth cascaded through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked sublime.",
+    "native": "The tapestry cascaded through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked ethereal.",
+    "native": "The void echoed through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void pulsated through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked fragmented.",
+    "native": "The void entwined through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked melancholy.",
+    "native": "The silhouette shimmered through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked melancholy.",
+    "native": "The mirage dissolved through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked sublime.",
+    "native": "The void fractured through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ominous.",
+    "native": "The sanctuary shimmered through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked ethereal.",
+    "native": "The horizon ignited through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked ominous.",
+    "native": "The sanctuary loomed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked vivid.",
+    "native": "The silhouette loomed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked vivid.",
+    "native": "The sanctuary pulsated through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked fragmented.",
+    "native": "The mirage dissolved through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked fragmented.",
+    "native": "The abyss loomed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ominous.",
+    "native": "The legacy pulsated through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked vivid.",
+    "native": "The labyrinth pulsated through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked radiant.",
+    "native": "The silhouette whispered through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked haunting.",
+    "native": "The void entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked fragmented.",
+    "native": "The silhouette pulsated through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked radiant.",
+    "native": "The void entwined through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked fragmented.",
+    "native": "The mirage echoed through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked sublime.",
+    "native": "The abyss shimmered through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked haunting.",
+    "native": "The crescendo entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked visceral.",
+    "native": "The sanctuary ignited through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked radiant.",
+    "native": "The mirage pulsated through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked haunting.",
+    "native": "The labyrinth fractured through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked haunting.",
+    "native": "The labyrinth entwined through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked timeless.",
+    "native": "The mirage pulsated through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked visceral.",
+    "native": "The silhouette whispered through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked visceral.",
+    "native": "The legacy shimmered through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ominous.",
+    "native": "The tapestry fractured through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked timeless.",
+    "native": "The labyrinth shimmered through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked radiant.",
+    "native": "The crescendo cascaded through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked sublime.",
+    "native": "The tapestry ignited through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked melancholy.",
+    "native": "The horizon entwined through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked ominous.",
+    "native": "The crescendo dissolved through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked timeless.",
+    "native": "The legacy whispered through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked vivid.",
+    "native": "The mirage echoed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked timeless.",
+    "native": "The tapestry loomed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked radiant.",
+    "native": "The silhouette pulsated through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void loomed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked radiant.",
+    "native": "The silhouette dissolved through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked ethereal.",
+    "native": "The tapestry fractured through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The abyss looked vivid.",
+    "native": "The abyss whispered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked visceral.",
+    "native": "The sanctuary pulsated through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked sublime.",
+    "native": "The legacy shimmered through the air, cloaked in a sublime light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked radiant.",
+    "native": "The crescendo entwined through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked vivid.",
+    "native": "The labyrinth loomed through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked ominous.",
+    "native": "The mirage pulsated through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked melancholy.",
+    "native": "The tapestry dissolved through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked radiant.",
+    "native": "The sanctuary fractured through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The silhouette looked visceral.",
+    "native": "The silhouette fractured through the air, cloaked in a visceral light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ominous.",
+    "native": "The legacy dissolved through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The sanctuary looked timeless.",
+    "native": "The sanctuary loomed through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked radiant.",
+    "native": "The crescendo pulsated through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The labyrinth looked ominous.",
+    "native": "The labyrinth loomed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked radiant.",
+    "native": "The void dissolved through the air, cloaked in a radiant light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked vivid.",
+    "native": "The void dissolved through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked melancholy.",
+    "native": "The legacy fractured through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked vivid.",
+    "native": "The crescendo whispered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked timeless.",
+    "native": "The void entwined through the air, cloaked in a timeless light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The crescendo looked ominous.",
+    "native": "The crescendo cascaded through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The mirage looked ominous.",
+    "native": "The mirage loomed through the air, cloaked in a ominous light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The horizon looked melancholy.",
+    "native": "The horizon loomed through the air, cloaked in a melancholy light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The tapestry looked haunting.",
+    "native": "The tapestry pulsated through the air, cloaked in a haunting light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The void looked fragmented.",
+    "native": "The void cascaded through the air, cloaked in a fragmented light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked vivid.",
+    "native": "The legacy whispered through the air, cloaked in a vivid light.",
+    "type": "Creative Prose"
+  },
+  {
+    "clunky": "The legacy looked ethereal.",
+    "native": "The legacy fractured through the air, cloaked in a ethereal light.",
+    "type": "Creative Prose"
+  }
+]

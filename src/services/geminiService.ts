@@ -18,6 +18,57 @@ export interface TransformationResult {
   revisedScore: number;
   detectedDialect?: string;
   appliedMode?: string;
+  databaseUsage?: {
+    corpusCounts: Record<string, number>;
+    matchedSources: string[];
+    exactMatches: Array<{ source: string; clunky: string; native: string }>;
+    promptExamples: Array<{ source: string; clunky: string; native: string }>;
+  };
+}
+
+function clampScore(value: unknown, fallback: number): number {
+  const numeric = typeof value === "number" && Number.isFinite(value) ? Math.round(value) : fallback;
+  return Math.max(0, Math.min(100, numeric));
+}
+
+function surfaceQualityScore(text: string): number {
+  let score = 100;
+  const penalties = [
+    /\bexplained me\b/i,
+    /\bvery clear\b/i,
+    /\bdiscuss about\b/i,
+    /\b(?:did not|didn't)\s+\w+ed\b/i,
+    /\b(memory)\s+\1\b/i,
+    /\b(?:suggests?|seems?)\s+to\s+\w+\s+have\b/i,
+  ];
+  for (const pattern of penalties) if (pattern.test(text)) score -= 10;
+  return Math.max(0, Math.min(100, score));
+}
+
+function protectedMarkers(text: string): string[] {
+  return text.match(/\[\d+\]|\(\d{4}\)|\b(?:Ibid|ibid)\.?\b/g) || [];
+}
+
+function normalizeClientResult(data: TransformationResult, sourceText: string): TransformationResult {
+  const source = sourceText.trim();
+  const candidate = typeof data.finalVersion === "string" && data.finalVersion.trim() ? data.finalVersion.trim() : source;
+  const firstWords = source.replace(/[^\p{L}\p{N}\s]/gu, " ").trim().split(/\s+/).slice(0, 3).join(" ").toLowerCase();
+  const candidatePlain = candidate.replace(/[^\p{L}\p{N}\s]/gu, " ").trim().toLowerCase();
+  const firstWordsPosition = firstWords ? candidatePlain.indexOf(firstWords) : 0;
+  const stalePrefix = firstWords && firstWordsPosition > 120;
+  const missingMarker = protectedMarkers(source).some((marker) => !candidate.includes(marker));
+  const safeFinalVersion = stalePrefix || missingMarker ? source : candidate;
+  const originalScore = clampScore(data.originalScore, surfaceQualityScore(source));
+  const revisedScore = clampScore(data.revisedScore, surfaceQualityScore(safeFinalVersion));
+  const suggestions = Array.isArray(data.suggestions) ? data.suggestions.filter((item) => typeof item === "string" && item.trim()).slice(0, 5) : [];
+  if (!suggestions.length) {
+    if (safeFinalVersion === source) suggestions.push("No substantive changes were retained; the source structure and protected markers were preserved.");
+    else suggestions.push("Refined grammar and collocation while preserving the source meaning and structure.");
+  }
+  const explanation = typeof data.explanation === "string" && data.explanation.trim() && data.explanation.trim().toLowerCase() !== "stylistic note"
+    ? data.explanation.trim()
+    : (safeFinalVersion === source ? "The source was preserved because the returned transformation was incomplete or unsafe." : "Grammar and collocation were refined while preserving the author’s meaning and structure.");
+  return { ...data, finalVersion: safeFinalVersion, originalScore, revisedScore, suggestions, explanation };
 }
 
 export function detectBestMode(text: string): { mode: string; reason: string } {
@@ -56,7 +107,8 @@ export async function transformText(
   tone: string = "neutral",
   onProgress?: (progress: number, currentChunk: number, totalChunks: number, status?: string) => void,
   forcedDialect?: string,
-  mode: string = "auto"
+  mode: string = "auto",
+  idiomDatabase?: Array<{ clunky: string; native: string }>
 ): Promise<TransformationResult> {
   if (!text.trim()) {
     return {
@@ -131,10 +183,15 @@ export async function transformText(
   const timeoutId = window.setTimeout(() => controller.abort(), 90_000);
 
   try {
+    const requestBody: Record<string, unknown> = { text, domain, tone, forcedDialect, mode: activeMode, requestId: `${Date.now()}-${Math.random().toString(36).slice(2)}` };
+    if (idiomDatabase && idiomDatabase.length > 0) {
+      // Preserve the historical request contract while keeping the payload bounded.
+      requestBody.idioms = idiomDatabase.slice(0, 100);
+    }
     const response = await fetch(workerUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, domain, tone, forcedDialect, mode: activeMode }),
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+      body: JSON.stringify(requestBody),
       signal: controller.signal,
     });
 
@@ -176,7 +233,7 @@ export async function transformText(
       onProgress(50, 0, 1, "Processing...");
     }
 
-    const data: TransformationResult = JSON.parse(responseText);
+    const data: TransformationResult = normalizeClientResult(JSON.parse(responseText) as TransformationResult, text);
 
     if (onProgress) {
       onProgress(100, 1, 1, "Complete!");
