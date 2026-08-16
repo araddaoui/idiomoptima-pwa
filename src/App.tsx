@@ -898,43 +898,43 @@ export default function App() {
 
       <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8">
         {/* Editorial-studio landing hero: the promise is memorable, specific, and directly connected to the editor. */}
-        <section className="relative overflow-hidden rounded-[2rem] border border-[#D7D0C4] bg-[#F3EFE7] px-6 py-10 sm:px-12 sm:py-14 mb-10 shadow-[0_24px_80px_rgba(28,25,23,0.08)]">
+        <section className="relative overflow-hidden rounded-[2rem] border border-[#D7D0C4] bg-[#F3EFE7] px-5 py-6 sm:px-8 sm:py-8 mb-6 shadow-[0_20px_55px_rgba(28,25,23,0.08)]">
           <div className="absolute -right-28 -top-32 h-96 w-96 rounded-full bg-[#D9E4F7]/70 blur-3xl" />
           <div className="absolute -left-24 -bottom-40 h-96 w-96 rounded-full bg-[#E8DCCB]/80 blur-3xl" />
-          <div className="relative grid gap-12 lg:grid-cols-[1fr_0.92fr] lg:items-center">
+          <div className="relative grid gap-6 lg:grid-cols-[0.92fr_1fr] lg:items-center">
             <div>
               <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#1E3A8A]">
                 <span className="h-px w-8 bg-[#1E3A8A]" /> The writing refinement studio
               </div>
-              <h2 className="mt-6 max-w-3xl font-serif text-5xl font-bold leading-[0.98] tracking-[-0.04em] text-[#171717] sm:text-7xl">
+              <h2 className="mt-3 max-w-3xl font-serif text-4xl font-bold leading-[0.92] tracking-[-0.04em] text-[#171717] sm:text-5xl lg:text-6xl">
                 Edit.<br /><span className="text-[#1E3A8A]">Nativize.</span><br />Humanize.
               </h2>
-              <p className="mt-6 max-w-xl text-base leading-7 text-[#5B554E] sm:text-lg">
+              <p className="mt-3 max-w-xl text-sm leading-6 text-[#5B554E] sm:text-base">
                 Clearer grammar. More natural phrasing. Still unmistakably yours. IdiomOptima helps your ideas arrive with confidence, whether you are writing a thesis, an email, or the first line of something new.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Button onClick={scrollToInput} className="rounded-full bg-[#171717] px-7 py-3 text-white shadow-lg shadow-black/15 hover:bg-[#303030]">
                   <PenLine className="mr-2 h-4 w-4" /> Open the studio
                 </Button>
                 <span className="text-sm text-[#746D64]">Try the public beta free</span>
               </div>
-              <div className="mt-9 grid max-w-xl grid-cols-3 gap-4 border-t border-[#D7D0C4] pt-5">
+              <div className="mt-5 grid max-w-xl grid-cols-3 gap-3 border-t border-[#D7D0C4] pt-3">
                 <div><p className="font-serif text-xl font-bold text-[#171717]">01</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Preserve your voice</p></div>
                 <div><p className="font-serif text-xl font-bold text-[#171717]">02</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Refine the language</p></div>
                 <div><p className="font-serif text-xl font-bold text-[#171717]">03</p><p className="mt-1 text-xs leading-5 text-[#746D64]">Return with confidence</p></div>
               </div>
             </div>
             <div className="relative">
-              <div className="mb-3 flex justify-end pr-2"><span className="rounded-full bg-[#1E3A8A] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-lg">Voice, preserved</span></div>
-              <div className="rounded-[1.75rem] border border-[#E4DED4] bg-white p-5 shadow-[0_28px_60px_rgba(28,25,23,0.16)] sm:rotate-[-1.5deg] sm:p-7">
+              <div className="mb-2 flex justify-end pr-2"><span className="rounded-full bg-[#1E3A8A] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-lg">Voice, preserved</span></div>
+              <div className="rounded-[1.5rem] border border-[#E4DED4] bg-white p-4 shadow-[0_22px_50px_rgba(28,25,23,0.14)] sm:rotate-[-1deg] sm:p-5">
                 <div className="flex items-center justify-between border-b border-[#EEEAE4] pb-4">
                   <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-[#D9A441]" /><span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#9A9288]">Academic refinement</span></div>
                   <span className="text-[10px] text-[#B0A99F]">academic · precise</span>
                 </div>
-                <div className="space-y-6 pt-6">
-                  <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A39B91]">Your draft</p><p className="mt-2 text-sm leading-7 text-[#756E66]">The findings suggests that the intervention have a significant effect on student engagement. However, the results should be interpreted with caution due to the small sample size.</p></div>
+                <div className="space-y-3 pt-4">
+                  <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A39B91]">Your draft</p><p className="mt-1.5 text-xs leading-5 text-[#756E66]">The findings suggests that the intervention have a significant effect on student engagement. However, the results should be interpreted with caution due to the small sample size.</p></div>
                   <div className="flex items-center gap-3"><div className="h-px flex-1 bg-[#E9E4DC]" /><ChevronRight className="h-4 w-4 text-[#1E3A8A]" /><div className="h-px flex-1 bg-[#E9E4DC]" /></div>
-                  <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#1E3A8A]">IdiomOptima</p><p className="mt-2 text-lg font-medium leading-8 text-[#171717]">The findings suggest that the intervention significantly affects student engagement. However, the results should be interpreted with caution given the small sample size.</p><div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#EEF6EE] px-3 py-1.5 text-xs font-medium text-[#3D7545]"><Check className="h-3.5 w-3.5" /> Grammar corrected · academic tone preserved</div></div>
+                  <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#1E3A8A]">IdiomOptima</p><p className="mt-1.5 text-sm font-medium leading-6 text-[#171717]">The findings suggest that the intervention significantly affects student engagement. However, the results should be interpreted with caution given the small sample size.</p><div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#EEF6EE] px-2.5 py-1 text-[11px] font-medium text-[#3D7545]"><Check className="h-3.5 w-3.5" /> Grammar corrected · academic tone preserved</div></div>
                 </div>
               </div>
             </div>
