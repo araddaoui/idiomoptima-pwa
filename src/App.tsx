@@ -1246,7 +1246,10 @@ export default function App() {
                                   `}
                                 >
                                   {/* Ghost Underlay - Tooltip style */}
-                                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1A1A1A] text-white p-3 rounded-xl text-sm italic whitespace-normal pointer-events-none z-[110] shadow-2xl w-72 transform -translate-y-1 leading-snug font-normal">
+                                  <span
+                                    aria-hidden="true"
+                                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1A1A1A] text-white p-3 rounded-xl text-sm italic whitespace-normal pointer-events-none select-none z-[110] shadow-2xl w-72 transform -translate-y-1 leading-snug font-normal"
+                                  >
                                     {sent.original}
                                     {/* Tooltip Arrow */}
                                     <span className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#1A1A1A]" />
