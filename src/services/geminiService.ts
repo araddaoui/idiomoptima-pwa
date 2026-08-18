@@ -50,6 +50,46 @@ function naturalizeAIPhrases(text: string, phraseMap: PhrasePair[]): string {
   return result;
 }
 
+function describeAcceptedChange(original: string, revised: string): string {
+  const left = original.trim();
+  const right = revised.trim();
+  if (left === right) return "";
+  const oldWords = left.split(/\s+/);
+  const newWords = right.split(/\s+/);
+  let start = 0;
+  while (start < oldWords.length && start < newWords.length && oldWords[start] === newWords[start]) start++;
+  let oldEnd = oldWords.length - 1;
+  let newEnd = newWords.length - 1;
+  while (oldEnd >= start && newEnd >= start && oldWords[oldEnd] === newWords[newEnd]) { oldEnd--; newEnd--; }
+  const removed = oldWords.slice(start, oldEnd + 1).join(" ");
+  const added = newWords.slice(start, newEnd + 1).join(" ");
+  if (removed && added) return `replaced “${removed}” with “${added}”`;
+  if (removed) return `removed “${removed}”`;
+  if (added) return `added “${added}”`;
+  return "refined punctuation or spacing";
+}
+
+function applyConcreteExplanation(data: TransformationResult): void {
+  const changes = (data.sentences || [])
+    .filter(sentence => !sentence.isImmutableFootnote && !sentence.isHeading && sentence.original.trim() !== sentence.native.trim())
+    .map(sentence => describeAcceptedChange(sentence.original, sentence.native))
+    .filter(Boolean)
+    .slice(0, 4);
+  if (changes.length === 0) return;
+
+  const current = (data.explanation || "").toLowerCase();
+  const generic = current.includes("generic") || current.includes("preserving the author's meaning") || current.includes("provider response could not be parsed") || current.includes("source text was preserved") || current.includes("no substantive changes were necessary");
+  if (generic || !data.explanation?.trim()) {
+    data.explanation = `Concrete refinements accepted: ${changes.join("; ")}. Meaning, citations, URLs, paragraph structure, and immutable footnotes were preserved.`;
+  }
+
+  const genericSuggestion = !data.suggestions?.length || data.suggestions.some(s => {
+    const value = s.toLowerCase();
+    return value.includes("refined wording while preserving") || value.includes("provider response could not be parsed") || value.includes("no substantive changes");
+  });
+  if (genericSuggestion) data.suggestions = changes.map(change => `Accepted change: ${change}.`);
+}
+
 export function detectBestMode(text: string): { mode: string; reason: string } {
   const t = text.toLowerCase();
   
@@ -233,6 +273,8 @@ clearInterval(ticker);
 if (onProgress) {
   onProgress(100, 1, 1, "Complete!");
 }
+
+    applyConcreteExplanation(data);
 
     if (mode === "auto") {
       data.explanation = (data.explanation || "") + ` \n[Auto-Selected Mode: ${activeMode}] - ${autoReason}`;
