@@ -211,17 +211,21 @@ const ticker = setInterval(() => {
 
     const data: TransformationResult = await response.json();
 
-    // Apply AI phrase filter to the response
+    // Apply AI phrase filter only to mutable narrative content. The Worker’s
+    // immutable bibliography records and finalVersion remain byte-preserved.
     if (phraseMap && phraseMap.length > 0) {
-      if (data.finalVersion) {
+      const hasImmutableRecords = !!data.sentences?.some(sentence => sentence.isImmutableFootnote);
+      if (data.finalVersion && !hasImmutableRecords) {
         data.finalVersion = naturalizeAIPhrases(data.finalVersion, phraseMap);
       }
       
       if (data.sentences && data.sentences.length > 0) {
-        data.sentences = data.sentences.map(sentence => ({
-          ...sentence,
-          native: naturalizeAIPhrases(sentence.native, phraseMap)
-        }));
+        data.sentences = data.sentences.map(sentence => sentence.isImmutableFootnote
+          ? sentence
+          : {
+              ...sentence,
+              native: naturalizeAIPhrases(sentence.native, phraseMap)
+            });
       }
     }
 

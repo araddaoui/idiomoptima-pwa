@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import type { ReactElement } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import { 
@@ -332,10 +333,16 @@ if (fileType !== 'docx') {
             }
           }
         } else if (sent.isImmutableFootnote) {
-          // If the AI explicitly marked it as immutable footnote but doesn't match our regex,
-          // it might be a bibliography entry or multi-line continuation.
-          // We don't necessarily map these to numeric IDs unless they match the regex,
-          // but we will use the flag to hide them from the body.
+          // Immutable Worker records are authoritative bibliography entries. Merge them
+          // into the visible map instead of hiding them without rendering their content.
+          const immutableMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
+          if (immutableMatch) {
+            const num = immutableMatch[1] || immutableMatch[2];
+            const content = immutableMatch[3]?.trim();
+            if (num && content && (!map[num] || map[num].length < content.length)) {
+              map[num] = content;
+            }
+          }
         }
       });
     }
@@ -372,7 +379,7 @@ const renderDiff = (original: string, native: string) => {
   try {
     const originalWords = original.split(/(\s+)/);
     const nativeWords = native.split(/(\s+)/);
-    const result: JSX.Element[] = [];
+    const result: ReactElement[] = [];
     let i = 0;
     let j = 0;
     while (i < originalWords.length || j < nativeWords.length) {
@@ -572,10 +579,13 @@ const data = await transformText(
     }
   };
 
-const copyToClipboard = () => {
+  const copyToClipboard = () => {
   if (!result) return;
-  const textToCopy = result.finalVersion;
+  // Copy the clean accepted text plus its resolved Notes & References section,
+  // never the interactive diff/tooltip markup rendered on screen.
+  const textToCopy = getVisibleText();
   navigator.clipboard.writeText(textToCopy);
+
   setCopied(true);
   toast.success("Copied to clipboard!");
   setTimeout(() => setCopied(false), 2000);
@@ -649,7 +659,7 @@ const copyToClipboard = () => {
             acc[id] = {
               children: [new Paragraph({
                 children: [
-                  new TextRun({ text: content, font: "Arial", size: 20 })
+                  new TextRun({ text: String(content), font: "Arial", size: 20 })
                 ],
                 spacing: { after: 120 },
                 indent: { start: 720, hanging: 360 },
@@ -1143,7 +1153,7 @@ const copyToClipboard = () => {
 </div>
             </div>
 
-            <AnimatePresence mode="wait" className="flex-1">
+            <div className="flex-1"><AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <Card>
@@ -1273,7 +1283,7 @@ const content = (
                                     {Object.entries(footnoteMap).sort((a,b) => parseInt(a[0]) - parseInt(b[0])).map(([num, content]) => (
                                       <div key={num} ref={el => { footnoteRefs.current[num] = el; }} className="flex gap-2 text-xs text-gray-500">
                                         <span className="font-bold text-blue-500 min-w-[2rem]">[{num}]</span>
-                                        <span>{content}</span>
+                                        <span>{String(content)}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -1323,7 +1333,7 @@ const content = (
                   </div>
                 </motion.div>
               )}
-            </AnimatePresence>
+            </AnimatePresence></div>
           </div>
         </div>
       </main>
