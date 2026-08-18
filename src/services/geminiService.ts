@@ -78,14 +78,14 @@ function applyConcreteExplanation(data: TransformationResult): void {
   if (changes.length === 0) return;
 
   const current = (data.explanation || "").toLowerCase();
-  const generic = current.includes("generic") || current.includes("preserving the author's meaning") || current.includes("provider response could not be parsed") || current.includes("source text was preserved") || current.includes("no substantive changes were necessary");
+  const generic = current.includes("generic") || current.includes("preserving the author's meaning") || current.includes("provider response could not be parsed") || current.includes("source text was preserved") || current.includes("no substantive changes were necessary") || current.includes("cloudflare fallback") || current.includes("protected citations") || current.includes("auto-selected mode");
   if (generic || !data.explanation?.trim()) {
     data.explanation = `Concrete refinements accepted: ${changes.join("; ")}. Meaning, citations, URLs, paragraph structure, and immutable footnotes were preserved.`;
   }
 
   const genericSuggestion = !data.suggestions?.length || data.suggestions.some(s => {
     const value = s.toLowerCase();
-    return value.includes("refined wording while preserving") || value.includes("provider response could not be parsed") || value.includes("no substantive changes");
+    return value.includes("refined wording while preserving") || value.includes("provider response could not be parsed") || value.includes("no substantive changes") || value.includes("cloudflare fallback") || value.includes("protected details") || value.includes("protected citations");
   });
   if (genericSuggestion) data.suggestions = changes.map(change => `Accepted change: ${change}.`);
 }

@@ -1310,11 +1310,6 @@ const content = (
                     </ul>
                   </div>
 
-                  {/* Stylistic Note */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Stylistic Note</h3>
-                    <p className="text-xs text-gray-500">{result.explanation}</p>
-                  </div>
                 </motion.div>
               ) : (
                 <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full">
