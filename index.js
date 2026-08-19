@@ -133,12 +133,13 @@ async function callCloudflareAI(text, options, ai) {
     "Domain: " + options.domain + "\n" +
     "Tone: " + options.tone + "\n\n" +
     "RULES:\n" +
-    "- Preserve the exact meaning, claims, citations, footnote markers like [1][2][3], numbers, names, and paragraph breaks.\n" +
+    "- CRITICAL: Keep inline citation markers EXACTLY where they appear in the original. If the original has 'text [1] more text', your rewrite must have 'rewritten text [1] more rewritten text' in the same position.\n" +
+    "- Preserve the exact meaning, claims, numbers, names, and paragraph breaks.\n" +
+    "- Do NOT move citations to the end. Do NOT remove inline citations. Do NOT invent new ones.\n" +
     "- Do NOT invent facts, citations, quotations, sources, or references.\n" +
     "- Improve grammar, idiom, collocation, word choice, clarity, and native flow.\n" +
     "- Make the text sound like a fluent native speaker wrote it naturally.\n" +
     "- For academic text: keep precision, improve hedging and phrasing.\n" +
-    "- For business text: keep it concise and professional.\n" +
     "- Fix wordiness, awkward phrasing, and unnatural constructions.\n" +
     "- Return ONLY the rewritten text. No explanations. No JSON. No markdown fences. No headers.\n\n" +
     "Text to rewrite:\n" +
@@ -242,7 +243,8 @@ function normalizeGeminiResult(rawText, originalText, options, provider) {
 }
 
 function buildResultFromRewrite(originalText, rewrittenText, options, provider) {
-  const finalVersion = cleanText(rewrittenText);
+  const cleaned = cleanText(rewrittenText);
+  const finalVersion = restoreInlineCitations(originalText, cleaned);
   const detectedDialect = options.forcedDialect || detectDialect(originalText);
   const originalScore = estimateScore(originalText);
   const revisedScore = estimateScore(finalVersion);
@@ -260,6 +262,45 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
     detectedDialect,
     provider,
   };
+}
+
+function restoreInlineCitations(original, rewritten) {
+  const citRegex = /\[(\d{1,3})\]/g;
+  const inlineCits = [];
+  let m;
+  while ((m = citRegex.exec(original)) !== null) {
+    const before = original.substring(0, m.index).trim();
+    const isDefLine = /^\s*\[\d{1,3}\]\s/.test(original.substring(m.index).split("\n")[0]);
+    if (!isDefLine) {
+      const prevText = before.split(/\n/).pop() || "";
+      if (prevText.length > 5) {
+        inlineCits.push({ num: m[1], contextBefore: prevText.slice(-60) });
+      }
+    }
+  }
+
+  if (inlineCits.length === 0) return rewritten;
+
+  const rewrittenLower = rewritten.toLowerCase();
+  let result = rewritten;
+  for (const cit of inlineCits) {
+    const marker = "[" + cit.num + "]";
+    if (rewritten.includes(marker)) continue;
+
+    const lastWords = cit.contextBefore.split(/\s+/).filter(Boolean).slice(-5);
+    if (lastWords.length === 0) continue;
+
+    const searchPattern = lastWords[lastWords.length - 1].toLowerCase().replace(/[^a-z]/g, "");
+    const idx = rewrittenLower.indexOf(searchPattern);
+    if (idx >= 0) {
+      const endIdx = idx + searchPattern.length;
+      const nextChar = result[endIdx] || "";
+      const insertAfter = nextChar === "," || nextChar === "." || nextChar === ";" ? endIdx + 1 : endIdx;
+      result = result.substring(0, insertAfter) + " " + marker + result.substring(insertAfter);
+    }
+  }
+
+  return result;
 }
 
 function buildAnalysis(original, rewritten, options) {
