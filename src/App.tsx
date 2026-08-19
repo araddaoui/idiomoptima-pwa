@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import { 
@@ -372,7 +373,7 @@ const renderDiff = (original: string, native: string) => {
   try {
     const originalWords = original.split(/(\s+)/);
     const nativeWords = native.split(/(\s+)/);
-    const result: JSX.Element[] = [];
+    const result: ReactNode[] = [];
     let i = 0;
     let j = 0;
     while (i < originalWords.length || j < nativeWords.length) {
@@ -468,7 +469,7 @@ const renderContentWithFootnotes = (text: string) => {
     return parts;
   };
 
-  const sharedInputStyles: React.CSSProperties = {
+  const sharedInputStyles: CSSProperties = {
     lineHeight: '1.75',
     fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
     fontVariantNumeric: 'tabular-nums',
@@ -1143,7 +1144,8 @@ const copyToClipboard = () => {
 </div>
             </div>
 
-            <AnimatePresence mode="wait" className="flex-1">
+            <div className="flex-1">
+            <AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <Card>
@@ -1324,6 +1326,7 @@ const content = (
                 </motion.div>
               )}
             </AnimatePresence>
+            </div>
           </div>
         </div>
       </main>
