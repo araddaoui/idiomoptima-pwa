@@ -25,77 +25,136 @@ export interface PhrasePair {
   natural: string;
 }
 
+export interface LexicalEntry {
+  clunky: string;
+  native: string;
+  type?: string;
+}
+
+export interface UnifiedPhrase {
+  source: string;
+  target: string;
+}
+
+export interface PipelineStats {
+  idiomReplacements: number;
+  lexicalPreReplacements: number;
+  aiPhraseReplacements: number;
+  lexicalPostReplacements: number;
+  totalReplacements: number;
+}
+
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function naturalizeAIPhrases(text: string, phraseMap: PhrasePair[]): string {
-  if (!phraseMap || phraseMap.length === 0) return text;
-  
+function normalizeToUnified(data: any[]): UnifiedPhrase[] {
+  if (!data || !Array.isArray(data)) return [];
+  return data
+    .filter((e: any) => (e.ai || e.clunky) && (e.natural || e.native))
+    .map((e: any) => ({
+      source: (e.ai || e.clunky || '').trim(),
+      target: (e.natural || e.native || '').trim(),
+    }))
+    .filter((e: UnifiedPhrase) => e.source.length > 0 && e.target.length > 0);
+}
+
+function applyUnifiedReplacements(text: string, phrases: UnifiedPhrase[], label: string): { text: string; count: number } {
+  if (!phrases || phrases.length === 0) return { text, count: 0 };
+
   let result = text;
-  
-  // Sort by length (longest first) to avoid partial replacements
-  const sortedPhrases = [...phraseMap].sort((a, b) => b.ai.length - a.ai.length);
-  
-  for (const { ai, natural } of sortedPhrases) {
-    // Case-insensitive replacement with word boundaries
-    const regex = new RegExp(`\\b${escapeRegex(ai)}\\b`, 'gi');
-    const replacement = natural || '';
-    result = result.replace(regex, replacement);
+  let count = 0;
+
+  const sorted = [...phrases].sort((a, b) => b.source.length - a.source.length);
+
+  for (const { source, target } of sorted) {
+    try {
+      const regex = new RegExp(`\\b${escapeRegex(source)}\\b`, 'gi');
+      if (regex.test(result)) {
+        result = result.replace(regex, target);
+        count++;
+      }
+    } catch {
+      // Skip invalid regex
+    }
   }
-  
-  // Clean up artifacts
+
   result = result.replace(/\s+/g, ' ').replace(/ ,/g, ',').replace(/ \./g, '.');
-  
+
+  if (count > 0) {
+    console.log(`[${label}] Applied ${count} replacements`);
+  }
+
+  return { text: result, count };
+}
+
+function fixGrammar(text: string): string {
+  let result = text;
+
+  // Fix double spaces
+  result = result.replace(/\s{2,}/g, ' ');
+
+  // Fix space before punctuation
+  result = result.replace(/ ([,;:!?.])/g, '$1');
+
+  // Fix space after opening parenthesis
+  result = result.replace(/\(\s+/g, '(');
+
+  // Fix space before closing parenthesis
+  result = result.replace(/\s+\)/g, ')');
+
+  // Fix double commas
+  result = result.replace(/,,+/g, ',');
+
+  // Fix sentence spacing (period + space + capital)
+  result = result.replace(/([.!?])\s*([A-Z])/g, '$1 $2');
+
+  // Fix "a" vs "an" before vowel sounds
+  result = result.replace(/\ba ([aeiou])/gi, (match, letter) => {
+    return 'an ' + letter;
+  });
+  result = result.replace(/\ban ([^aeiou\s])/gi, (match, letter) => {
+    return 'a ' + letter;
+  });
+
+  // Fix common doubled words
+  result = result.replace(/\b(the|a|an|is|are|was|were|has|have|had|will|would|could|should|can|may|might|shall|must)\s+\1\b/gi, '$1');
+
+  // Fix "a" before consonant sounds that start with vowel letters
+  result = result.replace(/\b(a)\s+(un)/gi, 'an $2');
+
   return result;
 }
 
-function describeAcceptedChange(original: string, revised: string): string {
-  const left = original.trim();
-  const right = revised.trim();
-  if (left === right) return "";
-  const oldWords = left.split(/\s+/);
-  const newWords = right.split(/\s+/);
-  let start = 0;
-  while (start < oldWords.length && start < newWords.length && oldWords[start] === newWords[start]) start++;
-  let oldEnd = oldWords.length - 1;
-  let newEnd = newWords.length - 1;
-  while (oldEnd >= start && newEnd >= start && oldWords[oldEnd] === newWords[newEnd]) { oldEnd--; newEnd--; }
-  const removed = oldWords.slice(start, oldEnd + 1).join(" ");
-  const added = newWords.slice(start, newEnd + 1).join(" ");
-  if (removed && added) return `replaced “${removed}” with “${added}”`;
-  if (removed) return `removed “${removed}”`;
-  if (added) return `added “${added}”`;
-  return "refined punctuation or spacing";
-}
+function applyIdiomReplacementsLocal(text: string, idiomDatabase?: any[]): { text: string; count: number } {
+  if (!idiomDatabase || idiomDatabase.length === 0) return { text, count: 0 };
 
-function applyConcreteExplanation(data: TransformationResult): void {
-  const changes = (data.sentences || [])
-    .filter(sentence => !sentence.isImmutableFootnote && !sentence.isHeading && sentence.original.trim() !== sentence.native.trim())
-    .map(sentence => describeAcceptedChange(sentence.original, sentence.native))
-    .filter(Boolean)
-    .slice(0, 4);
-  if (changes.length === 0) return;
+  let result = text;
+  let count = 0;
 
-  const current = (data.explanation || "").toLowerCase();
-  const generic = current.includes("generic") || current.includes("preserving the author's meaning") || current.includes("provider response could not be parsed") || current.includes("source text was preserved") || current.includes("no substantive changes were necessary") || current.includes("cloudflare fallback") || current.includes("protected citations") || current.includes("auto-selected mode");
-  if (generic || !data.explanation?.trim()) {
-    data.explanation = `Concrete refinements accepted: ${changes.join("; ")}. Meaning, citations, URLs, paragraph structure, and immutable footnotes were preserved.`;
-  }
-
-  const genericSuggestion = !data.suggestions?.length || data.suggestions.some(s => {
-    const value = s.toLowerCase();
-    return value.includes("refined wording while preserving") || value.includes("provider response could not be parsed") || value.includes("no substantive changes") || value.includes("cloudflare fallback") || value.includes("protected details") || value.includes("protected citations");
+  idiomDatabase.forEach((entry: any) => {
+    if (entry.clunky && result.toLowerCase().includes(entry.clunky.toLowerCase())) {
+      try {
+        const regex = new RegExp(entry.clunky, 'gi');
+        if (regex.test(result)) {
+          result = result.replace(regex, entry.native);
+          count++;
+        }
+      } catch {
+        // Skip invalid regex
+      }
+    }
   });
-  if (genericSuggestion) data.suggestions = changes.map(change => `Accepted change: ${change}.`);
+
+  return { text: result, count };
 }
 
 export function detectBestMode(text: string): { mode: string; reason: string } {
   const t = text.toLowerCase();
-  
+
   const academicTriggers = ["theory", "framework", "analysis", "literature suggests", "empirical", "hypothesis", "methodology"];
   const citationMarkers = [/\[\d+\]/g, /\(\d{4}\)/g, /\([A-Z][a-z]+, \d{4}\)/g, /\bet al\./i, /DOI:/i];
-  
+
   const hasAcademicVocab = academicTriggers.some(word => t.includes(word));
   const hasCitations = citationMarkers.some(regex => regex.test(text));
 
@@ -105,14 +164,14 @@ export function detectBestMode(text: string): { mode: string; reason: string } {
 
   const businessTriggers = ["stakeholders", "rollout", "alignment", "execution", "timeline", "budget", "operations", "coordination", "strategy"];
   const hasBusinessVocab = businessTriggers.some(word => t.includes(word));
-  
+
   if (hasBusinessVocab) {
     return { mode: "business", reason: "Business triggers detected." };
   }
 
   const creativeTriggers = [/\bI \w+/i, /\bme\b/i, /\bmy\b/i, /feeling/i, /breath/i, /silence/i, /whisper/i, /shadow/i, /metaphor/i];
   const hasCreativeVocab = creativeTriggers.some(regex => typeof regex === 'string' ? t.includes(regex) : regex.test(text));
-  
+
   if (hasCreativeVocab) {
     return { mode: "creative", reason: "Creative triggers detected." };
   }
@@ -128,7 +187,8 @@ export async function transformText(
   forcedDialect?: string,
   mode: string = "auto",
   idiomDatabase?: any[],
-  phraseMap?: PhrasePair[]
+  phraseMap?: PhrasePair[],
+  lexicalDatabases?: Record<string, LexicalEntry[]>
 ): Promise<TransformationResult> {
   if (!text.trim()) {
     return {
@@ -191,6 +251,14 @@ export async function transformText(
     };
   }
 
+  const stats: PipelineStats = {
+    idiomReplacements: 0,
+    lexicalPreReplacements: 0,
+    aiPhraseReplacements: 0,
+    lexicalPostReplacements: 0,
+    totalReplacements: 0,
+  };
+
   // Real API call via serverless function
   if (onProgress) {
     onProgress(10, 0, 1, "Connecting to server...");
@@ -215,10 +283,30 @@ const ticker = setInterval(() => {
       onProgress(Math.min(Math.round(simulatedProgress), 85), 0, 1, messages[msgIndex]);
     }
   }
-}, 1500); 
+}, 1500);
 
   try {
-    const requestBody: any = { text, domain, tone, forcedDialect, mode: activeMode };
+    // Layer 1: Apply idiom replacements (pre-processing)
+    const idiomResult = applyIdiomReplacementsLocal(text, idiomDatabase);
+    stats.idiomReplacements = idiomResult.count;
+    let processedText = idiomResult.text;
+
+    // Layer 2: Apply domain-specific lexical replacements (pre-processing)
+    const lexicalDomainEntries = lexicalDatabases?.[domain] || [];
+    const lexicalGeneralEntries = lexicalDatabases?.['general'] || [];
+    const allLexicalEntries = [...lexicalDomainEntries, ...lexicalGeneralEntries];
+    const lexicalResult = applyUnifiedReplacements(processedText, normalizeToUnified(allLexicalEntries), `lexical-${domain}+general`);
+    stats.lexicalPreReplacements = lexicalResult.count;
+    processedText = lexicalResult.text;
+
+    console.log(`[Pipeline] Layer 1-2 (pre-processing): ${stats.idiomReplacements} idiom + ${stats.lexicalPreReplacements} lexical replacements`);
+
+    if (onProgress) {
+      onProgress(25, 0, 1, `Applied ${stats.idiomReplacements + stats.lexicalPreReplacements} pre-processing replacements...`);
+    }
+
+    // Layer 3: AI transformation via Worker
+    const requestBody: any = { text: processedText, domain, tone, forcedDialect, mode: activeMode };
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000);
 
@@ -241,45 +329,71 @@ const ticker = setInterval(() => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      
+
       if (response.status === 429 || errorText.includes('429') || errorText.includes('quota exceeded')) {
         throw new Error('Daily transformation limit reached. Please try again tomorrow or upgrade for higher limits.');
       }
-      
+
       throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
     }
 
     const data: TransformationResult = await response.json();
 
-    // Apply AI phrase filter only to mutable narrative content. The Worker’s
-    // immutable bibliography records and finalVersion remain byte-preserved.
+    // Layer 4: Apply AI phrase filter (post-processing)
     if (phraseMap && phraseMap.length > 0) {
-      const hasImmutableRecords = !!data.sentences?.some(sentence => sentence.isImmutableFootnote);
-      if (data.finalVersion && !hasImmutableRecords) {
-        data.finalVersion = naturalizeAIPhrases(data.finalVersion, phraseMap);
-      }
-      
+      const aiPhrases = normalizeToUnified(phraseMap);
+      const aiResult = applyUnifiedReplacements(data.finalVersion, aiPhrases, 'ai-natural');
+      stats.aiPhraseReplacements = aiResult.count;
+      data.finalVersion = aiResult.text;
+
       if (data.sentences && data.sentences.length > 0) {
-        data.sentences = data.sentences.map(sentence => sentence.isImmutableFootnote
-          ? sentence
-          : {
-              ...sentence,
-              native: naturalizeAIPhrases(sentence.native, phraseMap)
-            });
+        data.sentences = data.sentences.map(sentence => {
+          const sentenceResult = applyUnifiedReplacements(sentence.native, aiPhrases, 'ai-natural-sentence');
+          return { ...sentence, native: sentenceResult.text };
+        });
       }
     }
 
-clearInterval(ticker);
-if (onProgress) {
-  onProgress(100, 1, 1, "Complete!");
-}
+    // Layer 5: Apply domain-specific lexical replacements (post-processing)
+    if (lexicalDatabases && allLexicalEntries.length > 0) {
+      const lexicalUnified = normalizeToUnified(allLexicalEntries);
+      const lexicalPostResult = applyUnifiedReplacements(data.finalVersion, lexicalUnified, `lexical-post-${domain}`);
+      stats.lexicalPostReplacements = lexicalPostResult.count;
+      data.finalVersion = lexicalPostResult.text;
 
-    applyConcreteExplanation(data);
+      if (data.sentences && data.sentences.length > 0) {
+        data.sentences = data.sentences.map(sentence => {
+          const sentenceResult = applyUnifiedReplacements(sentence.native, lexicalUnified, 'lexical-post-sentence');
+          return { ...sentence, native: sentenceResult.text };
+        });
+      }
+    }
+
+    // Layer 6: Grammar correction
+    data.finalVersion = fixGrammar(data.finalVersion);
+    if (data.sentences && data.sentences.length > 0) {
+      data.sentences = data.sentences.map(sentence => ({
+        ...sentence,
+        native: fixGrammar(sentence.native)
+      }));
+    }
+
+    stats.totalReplacements = stats.idiomReplacements + stats.lexicalPreReplacements + stats.aiPhraseReplacements + stats.lexicalPostReplacements;
+    console.log(`[Pipeline] Layer 3-6 (post-processing): AI rewrite + ${stats.aiPhraseReplacements} AI phrase + ${stats.lexicalPostReplacements} lexical post + grammar fix`);
+    console.log(`[Pipeline] TOTAL: ${stats.totalReplacements} database-driven replacements applied`);
+
+    clearInterval(ticker);
+    if (onProgress) {
+      onProgress(100, 1, 1, `Complete! ${stats.totalReplacements} improvements applied.`);
+    }
 
     if (mode === "auto") {
       data.explanation = (data.explanation || "") + ` \n[Auto-Selected Mode: ${activeMode}] - ${autoReason}`;
       data.appliedMode = activeMode;
     }
+
+    // Add pipeline stats to explanation
+    data.explanation = (data.explanation || "") + ` \n[Databases: ${stats.totalReplacements} rule-based improvements applied across 6 layers]`;
 
     return data;
 } catch (error: any) {
