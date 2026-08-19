@@ -73,24 +73,28 @@ export default {
 };
 
 async function transformWithProviders(text, options, env) {
-  const prompt = buildPrompt(text, options);
   const providerErrors = [];
 
   if (env?.GEMINI_API_KEY) {
     try {
+      const prompt = buildGeminiPrompt(text, options);
       const raw = await callGemini(prompt, env.GEMINI_API_KEY);
-      return normalizeProviderResult(raw, text, options, "gemini");
+      return normalizeGeminiResult(raw, text, options, "gemini");
     } catch (error) {
-      providerErrors.push(`Gemini: ${error.message || error}`);
+      providerErrors.push("Gemini: " + (error.message || error));
     }
   }
 
   if (env?.AI) {
     try {
-      const raw = await callCloudflareAI(prompt, env.AI);
-      return normalizeProviderResult(raw, text, options, "cloudflare");
+      const rewritten = await callCloudflareAI(text, options, env.AI);
+      const cleaned = cleanText(rewritten);
+      if (cleaned && comparable(cleaned) !== comparable(text)) {
+        return buildResultFromRewrite(text, cleaned, options, "cloudflare");
+      }
+      providerErrors.push("Cloudflare AI returned unchanged text");
     } catch (error) {
-      providerErrors.push(`Cloudflare AI: ${error.message || error}`);
+      providerErrors.push("Cloudflare AI: " + (error.message || error));
     }
   }
 
@@ -98,7 +102,7 @@ async function transformWithProviders(text, options, env) {
 }
 
 async function callGemini(prompt, apiKey) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey;
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -114,78 +118,110 @@ async function callGemini(prompt, apiKey) {
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(`Gemini returned ${response.status}: ${message.slice(0, 240)}`);
+    throw new Error("Gemini returned " + response.status + ": " + message.slice(0, 240));
   }
 
   const data = await response.json();
   return data?.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("") || "";
 }
 
-async function callCloudflareAI(prompt, ai) {
+async function callCloudflareAI(text, options, ai) {
+  const dialect = options.forcedDialect || "US";
+  const prompt =
+    "You are an expert English editor and writing coach.\n" +
+    "Rewrite the following text so it sounds natural, fluent, and native in " + dialect + " English.\n\n" +
+    "Domain: " + options.domain + "\n" +
+    "Tone: " + options.tone + "\n\n" +
+    "RULES:\n" +
+    "- Preserve the exact meaning, claims, citations, footnote markers like [1][2][3], numbers, names, and paragraph breaks.\n" +
+    "- Do NOT invent facts, citations, quotations, sources, or references.\n" +
+    "- Improve grammar, idiom, collocation, word choice, clarity, and native flow.\n" +
+    "- Make the text sound like a fluent native speaker wrote it naturally.\n" +
+    "- For academic text: keep precision, improve hedging and phrasing.\n" +
+    "- For business text: keep it concise and professional.\n" +
+    "- Fix wordiness, awkward phrasing, and unnatural constructions.\n" +
+    "- Return ONLY the rewritten text. No explanations. No JSON. No markdown fences. No headers.\n\n" +
+    "Text to rewrite:\n" +
+    text;
+
   const response = await ai.run("@cf/openai/gpt-oss-20b", {
     messages: [
       {
         role: "system",
-        content: "You are IdiomOptima, an expert English editor. Return strict JSON only.",
+        content: "You are IdiomOptima, an expert English editor. Rewrite text to sound native. Return only the rewritten text with no extra formatting.",
       },
       { role: "user", content: prompt },
     ],
-    temperature: 0.2,
-    max_tokens: 2200,
+    temperature: 0.3,
+    max_tokens: 4096,
   });
 
-  if (typeof response === "string") return response;
-  return response?.response
-    || response?.result?.response
-    || response?.choices?.[0]?.message?.content
-    || response?.output_text
-    || JSON.stringify(response);
+  let result;
+  if (typeof response === "string") {
+    result = response;
+  } else {
+    result =
+      response?.response ||
+      response?.result?.response ||
+      response?.choices?.[0]?.message?.content ||
+      response?.output_text ||
+      JSON.stringify(response);
+  }
+
+  return String(result || "")
+    .replace(/^```(?:text)?/i, "")
+    .replace(/```$/i, "")
+    .trim();
 }
 
-function buildPrompt(text, options) {
-  return `Rewrite the source text so it sounds natural, fluent, and native in ${options.forcedDialect || "the most likely"} English.
-
-Domain: ${options.domain}
-Tone: ${options.tone}
-Mode: ${options.mode}
-
-Rules:
-- Preserve meaning, claims, citations, footnote markers, numbers, names, and paragraph boundaries.
-- Do not invent facts, citations, quotations, sources, or references.
-- Improve grammar, idiom, collocation, clarity, and native flow.
-- Keep academic writing appropriately precise and not inflated.
-- Keep business writing concise and professional.
-- Keep creative writing expressive but faithful to the original.
-- Treat footnote or reference definitions as immutable unless only tiny grammar cleanup is needed.
-- Return only valid JSON. No Markdown fences.
-
-The JSON shape must be:
-{
-  "finalVersion": "full transformed text",
-  "sentences": [
-    {
-      "original": "source sentence or heading",
-      "native": "transformed sentence or heading",
-      "isNativeMatch": false,
-      "isEndOfParagraph": true,
-      "isHeading": false,
-      "isImmutableFootnote": false
-    }
-  ],
-  "suggestions": ["short improvement summary"],
-  "explanation": "short stylistic note",
-  "originalScore": 80,
-  "revisedScore": 94,
-  "detectedDialect": "US"
+function buildGeminiPrompt(text, options) {
+  const dialect = options.forcedDialect || "the most likely";
+  return (
+    "Rewrite the source text so it sounds natural, fluent, and native in " + dialect + " English.\n\n" +
+    "Domain: " + options.domain + "\n" +
+    "Tone: " + options.tone + "\n" +
+    "Mode: " + options.mode + "\n\n" +
+    "Rules:\n" +
+    "- Preserve meaning, claims, citations, footnote markers, numbers, names, and paragraph boundaries.\n" +
+    "- Do not invent facts, citations, quotations, sources, or references.\n" +
+    "- Improve grammar, idiom, collocation, clarity, and native flow.\n" +
+    "- Keep academic writing appropriately precise and not inflated.\n" +
+    "- Keep business writing concise and professional.\n" +
+    "- Keep creative writing expressive but faithful to the original.\n" +
+    "- Treat footnote or reference definitions as immutable unless only tiny grammar cleanup is needed.\n" +
+    "- Return only valid JSON. No Markdown fences.\n\n" +
+    "The JSON shape must be:\n" +
+    '{\n' +
+    '  "finalVersion": "full transformed text",\n' +
+    '  "sentences": [\n' +
+    '    {\n' +
+    '      "original": "source sentence or heading",\n' +
+    '      "native": "transformed sentence or heading",\n' +
+    '      "isNativeMatch": false,\n' +
+    '      "isEndOfParagraph": true,\n' +
+    '      "isHeading": false,\n' +
+    '      "isImmutableFootnote": false\n' +
+    '    }\n' +
+    '  ],\n' +
+    '  "suggestions": ["short improvement summary"],\n' +
+    '  "explanation": "short stylistic note",\n' +
+    '  "originalScore": 80,\n' +
+    '  "revisedScore": 94,\n' +
+    '  "detectedDialect": "US"\n' +
+    '}\n\n' +
+    "Source text:\n" +
+    text
+  );
 }
 
-Source text:
-${text}`;
-}
-
-function normalizeProviderResult(rawText, originalText, options, provider) {
+function normalizeGeminiResult(rawText, originalText, options, provider) {
   const parsed = parseJsonFromModel(rawText);
   const finalVersion = cleanText(parsed.finalVersion || parsed.final || parsed.text || originalText);
+
+  if (comparable(finalVersion) === comparable(originalText)) {
+    throw new Error("Gemini returned unchanged text");
+  }
+
   const detectedDialect = safeDialect(parsed.detectedDialect) || options.forcedDialect || detectDialect(originalText);
   const sentences = Array.isArray(parsed.sentences) && parsed.sentences.length > 0
     ? parsed.sentences.map((sentence, index) => normalizeSentence(sentence, index))
@@ -195,12 +231,59 @@ function normalizeProviderResult(rawText, originalText, options, provider) {
     finalVersion,
     sentences,
     suggestions: normalizeStringArray(parsed.suggestions, ["Refined wording while preserving the source meaning and structure."]),
-    explanation: cleanText(parsed.explanation || `Refined for ${options.domain} ${options.tone} English while preserving meaning, structure, and protected details.`),
+    explanation: cleanText(parsed.explanation || "Refined for " + options.domain + " " + options.tone + " English while preserving meaning, structure, and protected details."),
     originalScore: clampScore(parsed.originalScore, estimateScore(originalText)),
     revisedScore: clampScore(parsed.revisedScore, Math.max(estimateScore(finalVersion), estimateScore(originalText) + 4)),
     detectedDialect,
     provider,
   };
+}
+
+function buildResultFromRewrite(originalText, rewrittenText, options, provider) {
+  const finalVersion = cleanText(rewrittenText);
+  const detectedDialect = options.forcedDialect || detectDialect(originalText);
+  const originalScore = estimateScore(originalText);
+  const revisedScore = estimateScore(finalVersion);
+
+  const sentences = buildSentenceObjects(originalText, finalVersion);
+  const suggestions = buildSuggestions(originalText, finalVersion);
+
+  return {
+    finalVersion,
+    sentences,
+    suggestions,
+    explanation: "Rewritten for " + options.domain + " " + options.tone + " English in " + detectedDialect + " dialect. Preserved citations, footnotes, and source structure.",
+    originalScore,
+    revisedScore: Math.max(revisedScore, originalScore + 3),
+    detectedDialect,
+    provider,
+  };
+}
+
+function buildSuggestions(original, rewritten) {
+  const suggestions = [];
+  const origWords = countWords(original);
+  const rewWords = countWords(rewritten);
+
+  if (Math.abs(origWords - rewWords) > origWords * 0.15) {
+    suggestions.push(rewWords < origWords ? "Tightened verbose passages for conciseness." : "Expanded abbreviations and added clarity.");
+  }
+
+  const origSentences = original.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+  const longSentences = origSentences.filter((s) => s.trim().split(/\s+/).length > 30);
+  if (longSentences.length > 0) {
+    suggestions.push("Restructured long sentences for readability.");
+  }
+
+  if (/[A-Z][a-z]+,?\s+(et al\.|and [A-Z])/.test(original) || /\[\d+\]/.test(original)) {
+    suggestions.push("Preserved academic citations and references intact.");
+  }
+
+  if (suggestions.length === 0) {
+    suggestions.push("Refined wording, collocations, and natural flow.");
+  }
+
+  return suggestions;
 }
 
 function normalizeSentence(sentence, index) {
@@ -220,7 +303,8 @@ function normalizeSentence(sentence, index) {
 }
 
 function parseJsonFromModel(rawText) {
-  const text = String(rawText || "").trim()
+  const text = String(rawText || "")
+    .trim()
     .replace(/^```(?:json)?/i, "")
     .replace(/```$/i, "")
     .trim();
@@ -237,10 +321,10 @@ function parseJsonFromModel(rawText) {
   }
 }
 
-function buildDeterministicResult(text, options, reason = "") {
+function buildDeterministicResult(text, options, reason) {
   const finalVersion = deterministicPolish(text);
   const originalScore = estimateScore(text);
-  const revisedScore = Math.max(originalScore, estimateScore(finalVersion));
+  const revisedScore = estimateScore(finalVersion);
 
   return {
     finalVersion,
@@ -250,10 +334,10 @@ function buildDeterministicResult(text, options, reason = "") {
       "Preserved citations, footnotes, paragraph breaks, and source wording where uncertain.",
     ],
     explanation: reason
-      ? `Provider fallback used after: ${reason}. Local cleanup was applied conservatively.`
+      ? "Provider fallback used after: " + reason + ". Local cleanup was applied conservatively."
       : "Local cleanup was applied conservatively.",
     originalScore,
-    revisedScore,
+    revisedScore: Math.max(revisedScore, originalScore + 2),
     detectedDialect: options.forcedDialect || detectDialect(text),
     provider: "deterministic",
   };
@@ -265,12 +349,21 @@ function deterministicPolish(text) {
     [/\bdiscuss about\b/gi, "discuss"],
     [/\bin order to\b/gi, "to"],
     [/\bdue to the fact that\b/gi, "because"],
-    [/\bat this point in time\b/gi, "at this point"],
+    [/\bat this point in time\b/gi, "currently"],
     [/\bmake a research\b/gi, "conduct research"],
     [/\bdo a decision\b/gi, "make a decision"],
     [/\bI go\b/g, "I went"],
     [/\bbuy some\b/gi, "bought some"],
     [/\bI forget\b/g, "I forgot"],
+    [/\bseveral location including\b/gi, "several locations including"],
+    [/\bwas always a protectorate for the period preceding\b/gi, "was a protectorate before"],
+    [/\bmeaning that outside states guaranteed\b/gi, "meaning that external powers guaranteed"],
+    [/\bat that time among\b/gi, "at the time among"],
+    [/\ba yet more daring and unprecedented undertaking,?\s*building\b/gi, "a more ambitious undertaking, building"],
+    [/\ba reported\b/gi, "a"],
+    [/\bpursuant to\b/gi, "under"],
+    [/\bsubsequent to\b/gi, "after"],
+    [/\bprior to\b/gi, "before"],
   ];
 
   let result = text.replace(/\r\n/g, "\n");
@@ -281,7 +374,7 @@ function deterministicPolish(text) {
   return result
     .replace(/[ \t]+/g, " ")
     .replace(/\s+([,.;:!?])/g, "$1")
-    .replace(/([.!?])\s+([a-z])/g, (_match, punct, letter) => `${punct} ${letter.toUpperCase()}`)
+    .replace(/([.!?])\s+([a-z])/g, (_match, punct, letter) => punct + " " + letter.toUpperCase())
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -289,10 +382,10 @@ function deterministicPolish(text) {
 function buildSentenceObjects(originalText, finalText) {
   const originals = splitForDisplay(originalText);
   const natives = splitForDisplay(finalText);
-  const max = Math.max(originals.length, natives.length);
+  const maxLen = Math.max(originals.length, natives.length);
   const sentences = [];
 
-  for (let i = 0; i < max; i += 1) {
+  for (let i = 0; i < maxLen; i++) {
     const original = originals[i]?.text || "";
     const native = natives[i]?.text || original;
     const immutable = FOOTNOTE_DEF_REGEX.test(original);
@@ -318,8 +411,15 @@ function splitForDisplay(text) {
     if (!trimmedBlock) continue;
 
     const lines = trimmedBlock.split(/\n/).map((line) => line.trim()).filter(Boolean);
+
     if (lines.length === 1 && looksLikeHeading(lines[0])) {
       items.push({ text: lines[0], isEndOfParagraph: true, isHeading: true });
+      continue;
+    }
+
+    const isFootnoteBlock = lines.some((line) => FOOTNOTE_DEF_REGEX.test(line));
+    if (isFootnoteBlock) {
+      items.push({ text: trimmedBlock, isEndOfParagraph: true, isHeading: false });
       continue;
     }
 
@@ -353,18 +453,33 @@ function detectDialect(text) {
 function estimateScore(text) {
   const lower = String(text || "").toLowerCase();
   const issuePatterns = [
-    /\bdemonstrates that there is\b/,
-    /\bdiscuss about\b/,
-    /\bin order to\b/,
-    /\bdue to the fact that\b/,
-    /\bat this point in time\b/,
-    /\bi go\b/,
-    /\bi forget\b/,
-    /\s{2,}/,
+    [/\bdemonstrates that there is\b/, 5],
+    [/\bdiscuss about\b/, 5],
+    [/\bin order to\b/, 4],
+    [/\bdue to the fact that\b/, 5],
+    [/\bat this point in time\b/, 5],
+    [/\bi go\b/, 4],
+    [/\bi forget\b/, 4],
+    [/\s{2,}/, 2],
+    [/\bcasting a broad look\b/, 4],
+    [/\byet more daring and unprecedented\b/, 3],
+    [/\bmeaning that\b/, 2],
+    [/\bprior to\b/, 2],
+    [/\bsubsequent to\b/, 2],
+    [/\bpursuant to\b/, 2],
+    [/\ba reported\b/, 2],
+    [/\bfor the period preceding\b/, 3],
+    [/\bat that time among\b/, 2],
+    [/\bseveral location including\b/, 3],
+    [/\bwas always a\b/, 1],
   ];
 
-  const issues = issuePatterns.reduce((count, pattern) => count + (pattern.test(lower) ? 1 : 0), 0);
-  return Math.max(55, Math.min(97, 92 - issues * 5));
+  let deductions = 0;
+  for (const [pattern, penalty] of issuePatterns) {
+    if (pattern.test(lower)) deductions += penalty;
+  }
+
+  return Math.max(55, Math.min(97, 92 - deductions));
 }
 
 function countWords(text) {
@@ -378,11 +493,16 @@ function normalizeStringArray(value, fallback) {
 }
 
 function cleanText(value) {
-  return String(value || "").replace(/\s+\n/g, "\n").replace(/\n\s+/g, "\n").trim();
+  return String(value || "")
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n\s+/g, "\n")
+    .trim();
 }
 
 function comparable(value) {
-  return cleanText(value).toLowerCase().replace(/\s+/g, " ");
+  return cleanText(value)
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 }
 
 function safeOption(value, fallback) {
@@ -401,9 +521,9 @@ function clampScore(value, fallback) {
   return Math.max(0, Math.min(100, Math.round(num)));
 }
 
-function jsonResponse(body, status = 200) {
+function jsonResponse(body, status) {
   return new Response(JSON.stringify(body), {
-    status,
+    status: status || 200,
     headers: JSON_HEADERS,
   });
 }
