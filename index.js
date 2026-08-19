@@ -299,6 +299,19 @@ function buildAnalysis(original, rewritten, options) {
     [/\bdue to the fact that\b/i, "Replaced verbose 'due to the fact that' with 'because'."],
     [/\bat this point in time\b/i, "Replaced 'at this point in time' with concise 'currently'."],
     [/\bpursuant to\b/i, "Replaced legalese 'pursuant to' with plain 'under'."],
+    [/\bmust be resolved concerning\b/i, "Replaced passive 'must be resolved concerning' with active 'arise regarding'."],
+    [/\ballocates? a peripheral position\b/i, "Replaced 'allocates a peripheral position' with concise 'assigns peripheral status'."],
+    [/\baccorded to more extensive\b/i, "Replaced wordy 'accorded to more extensive' with 'given to larger'."],
+    [/\bto an increasingly unusual degree\b/i, "Simplified 'to an increasingly unusual degree' to 'to an unusual extent'."],
+    [/\bthis points to the limits\b/i, "Replaced vague 'this points to the limits' with 'this underscores the limitations'."],
+    [/\bas opposed to\b/i, "Replaced 'as opposed to' with concise 'contrasting with'."],
+    [/\binfluence the course of events\b/i, "Replaced wordy 'influence the course of events' with 'shaped events'."],
+    [/\bnewly acquired status\b/i, "Simplified 'newly acquired status' for directness."],
+    [/\bmore extensive, more populous\b/i, "Replaced 'more extensive, more populous' with 'larger, more populous'."],
+    [/\bperipheral position to small states\b/i, "Replaced 'peripheral position to small states' with 'peripheral status to small states'."],
+    [/\bcentral position of clout\b/i, "Replaced 'central position of clout' with 'central role' for conciseness."],
+    [/\branges between\b/i, "Simplified 'ranges between' for more direct phrasing."],
+    [/\bincreasingly unusual\b/i, "Replaced 'increasingly unusual' with 'unusual' for conciseness."],
   ];
 
   for (const [pattern, message] of academicPatterns) {
@@ -309,6 +322,24 @@ function buildAnalysis(original, rewritten, options) {
 
   if (/\[\d+\]/.test(original)) {
     suggestions.push("Preserved all citation markers and footnote references intact.");
+  }
+
+  const origSentences = original.split(/(?<=[.!?])\s+/);
+  const rewSentences = rewritten.split(/(?<=[.!?])\s+/);
+  const specificChanges = [];
+  for (let i = 0; i < Math.min(origSentences.length, rewSentences.length, 10); i++) {
+    if (comparable(origSentences[i]) !== comparable(rewSentences[i])) {
+      const origPhrase = origSentences[i].trim().substring(0, 80);
+      const rewPhrase = rewSentences[i].trim().substring(0, 80);
+      if (origPhrase && rewPhrase) {
+        specificChanges.push('"' + origPhrase + (origSentences[i].length > 80 ? "..." : "") + '" \u2192 "' + rewPhrase + (rewSentences[i].length > 80 ? "..." : "") + '"');
+      }
+    }
+  }
+  if (specificChanges.length > 0 && specificChanges.length <= 5) {
+    specificChanges.forEach((change) => suggestions.push("Changed: " + change + "."));
+  } else if (specificChanges.length > 5) {
+    suggestions.push("Refined " + specificChanges.length + " sentences with targeted wording improvements.");
   }
 
   if (suggestions.length === 0) {
@@ -514,6 +545,23 @@ function estimateScore(text) {
     [/\bat that time among\b/, 2],
     [/\bseveral location including\b/, 3],
     [/\bwas always a\b/, 1],
+    [/\bmust be resolved concerning\b/, 4],
+    [/\bmust be resolved\b/, 2],
+    [/\bconcerning this\b/, 2],
+    [/\ballocates? a peripheral position\b/, 3],
+    [/\baccorded to\b/, 2],
+    [/\bto an increasingly unusual degree\b/, 3],
+    [/\bto an unusual degree\b/, 2],
+    [/\bthis points to the limits\b/, 2],
+    [/\bas opposed to\b/, 2],
+    [/\bmore extensive,? more populous\b/, 1],
+    [/\binfluence the course of events\b/, 2],
+    [/\bnewly acquired status\b/, 1],
+    [/\botherwise more powerful\b/, 1],
+    [/\bcentral position of\b/, 2],
+    [/\bperipheral position to\b/, 2],
+    [/\branges between\b/, 1],
+    [/\bincreasingly unusual\b/, 2],
   ];
 
   let deductions = 0;
