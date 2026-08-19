@@ -143,6 +143,7 @@ fetch('/idioms-clunky-native.json')
       .catch(error => console.error('Failed to load idiom database:', error));
   }, []);
   const [aiPhraseMap, setAiPhraseMap] = useState<any[]>([]);
+  const [lexicalDatabases, setLexicalDatabases] = useState<Record<string, any[]>>({});
 
 useEffect(() => {
   fetch('/ai-natural-database.json')
@@ -152,6 +153,19 @@ useEffect(() => {
       console.log(`Loaded ${data.length} AI phrases from database`);
     })
     .catch(error => console.error('Failed to load AI phrase database:', error));
+}, []);
+
+useEffect(() => {
+  const domains = ['academic', 'business', 'creative', 'general'];
+  const loaded: Record<string, any[]> = {};
+  Promise.all(
+    domains.map(d =>
+      fetch(`/lexical-${d}.json`)
+        .then(r => r.json())
+        .then(data => { loaded[d] = data; console.log(`Loaded ${data.length} lexical entries for ${d}`); })
+        .catch(e => console.error(`Failed to load lexical-${d}.json:`, e))
+    )
+  ).then(() => setLexicalDatabases(loaded));
 }, []);
     // Apply idiom replacements to text
   const applyIdiomReplacements = (text: string) => {
@@ -523,7 +537,8 @@ const data = await transformText(
   forcedDialect, 
   mode,
   idiomDatabase,
-  aiPhraseMap
+  aiPhraseMap,
+  lexicalDatabases
 );
 
       // Final synchronization heartbeat

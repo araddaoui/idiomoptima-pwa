@@ -50,6 +50,38 @@ function naturalizeAIPhrases(text: string, phraseMap: PhrasePair[]): string {
   return result;
 }
 
+function applyLexicalReplacements(text: string, domain: string, lexicalDatabases?: Record<string, LexicalEntry[]>): string {
+  if (!lexicalDatabases) return text;
+  
+  const domainEntries = lexicalDatabases[domain] || [];
+  const generalEntries = lexicalDatabases['general'] || [];
+  const allEntries = [...domainEntries, ...generalEntries];
+  
+  if (allEntries.length === 0) return text;
+  
+  let result = text;
+  
+  // Sort by length (longest first) to avoid partial replacements
+  const sorted = [...allEntries].sort((a, b) => b.clunky.length - a.clunky.length);
+  
+  for (const entry of sorted) {
+    if (!entry.clunky || !entry.native) continue;
+    try {
+      const regex = new RegExp(escapeRegex(entry.clunky), 'gi');
+      if (regex.test(result)) {
+        result = result.replace(regex, entry.native);
+      }
+    } catch {
+      // Skip invalid regex
+    }
+  }
+  
+  // Clean up artifacts
+  result = result.replace(/\s+/g, ' ').replace(/ ,/g, ',').replace(/ \./g, '.');
+  
+  return result;
+}
+
 export function detectBestMode(text: string): { mode: string; reason: string } {
   const t = text.toLowerCase();
   
@@ -80,6 +112,12 @@ export function detectBestMode(text: string): { mode: string; reason: string } {
   return { mode: "hybrid", reason: "Hybrid or default signals detected." };
 }
 
+export interface LexicalEntry {
+  clunky: string;
+  native: string;
+  type?: string;
+}
+
 export async function transformText(
   text: string,
   domain: string = "general",
@@ -88,7 +126,8 @@ export async function transformText(
   forcedDialect?: string,
   mode: string = "auto",
   idiomDatabase?: any[],
-  phraseMap?: PhrasePair[]
+  phraseMap?: PhrasePair[],
+  lexicalDatabases?: Record<string, LexicalEntry[]>
 ): Promise<TransformationResult> {
   if (!text.trim()) {
     return {
@@ -178,7 +217,10 @@ const ticker = setInterval(() => {
 }, 1500); 
 
   try {
-    const requestBody: any = { text, domain, tone, forcedDialect, mode: activeMode };
+    // Apply domain-specific lexical replacements as pre-processing
+    const lexicalProcessedText = applyLexicalReplacements(text, domain, lexicalDatabases);
+    
+    const requestBody: any = { text: lexicalProcessedText, domain, tone, forcedDialect, mode: activeMode };
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000);
 
@@ -221,6 +263,19 @@ const ticker = setInterval(() => {
         data.sentences = data.sentences.map(sentence => ({
           ...sentence,
           native: naturalizeAIPhrases(sentence.native, phraseMap)
+        }));
+      }
+    }
+
+    // Apply domain-specific lexical replacements as post-processing
+    if (lexicalDatabases) {
+      if (data.finalVersion) {
+        data.finalVersion = applyLexicalReplacements(data.finalVersion, domain, lexicalDatabases);
+      }
+      if (data.sentences && data.sentences.length > 0) {
+        data.sentences = data.sentences.map(sentence => ({
+          ...sentence,
+          native: applyLexicalReplacements(sentence.native, domain, lexicalDatabases)
         }));
       }
     }
