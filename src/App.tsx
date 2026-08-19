@@ -146,13 +146,37 @@ fetch('/idioms-clunky-native.json')
   const [lexicalDatabases, setLexicalDatabases] = useState<Record<string, any[]>>({});
 
 useEffect(() => {
-  fetch('/ai-natural-database.json')
-    .then(response => response.json())
-    .then(data => {
-      setAiPhraseMap(data);
-      console.log(`Loaded ${data.length} AI phrases from database`);
-    })
-    .catch(error => console.error('Failed to load AI phrase database:', error));
+  // Load all AI phrase databases and merge them
+  Promise.all([
+    fetch('/ai-natural-database.json').then(r => r.json()).catch(() => []),
+    fetch('/ai-natural-database-1500.json').then(r => r.json()).catch(() => []),
+    fetch('/ai-natural-database-1000.json').then(r => r.json()).catch(() => []),
+  ]).then(([main, db1500, db1000]) => {
+    // Normalize all to {ai, natural} format
+    const normalize = (data: any[]) => data
+      .filter(e => (e.ai || e.clunky) && (e.natural || e.native))
+      .map(e => ({ ai: e.ai || e.clunky, natural: e.natural || e.native }));
+    
+    const allPhrases = [
+      ...normalize(main),
+      ...normalize(db1500),
+      ...normalize(db1000),
+    ];
+    
+    // Deduplicate by source phrase (keep longest target)
+    const seen = new Map<string, { ai: string; natural: string }>();
+    for (const p of allPhrases) {
+      const key = p.ai.toLowerCase();
+      const existing = seen.get(key);
+      if (!existing || p.natural.length > existing.natural.length) {
+        seen.set(key, p);
+      }
+    }
+    
+    const merged = Array.from(seen.values());
+    setAiPhraseMap(merged);
+    console.log(`Loaded ${merged.length} unique AI phrases from 3 databases (main: ${main.length}, 1500: ${db1500.length}, 1000: ${db1000.length})`);
+  });
 }, []);
 
 useEffect(() => {
