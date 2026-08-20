@@ -109,22 +109,23 @@ function fixGrammar(text: string): string {
   // Fix sentence spacing (period + space + capital)
   result = result.replace(/([.!?])\s*([A-Z])/g, '$1 $2');
 
-  // Fix "a" vs "an" before vowel sounds
-  result = result.replace(/\ba ([aeiou])/gi, (match, letter) => {
-    return 'an ' + letter;
-  });
-  result = result.replace(/\ban ([^aeiou\s])/gi, (match, letter) => {
-    return 'a ' + letter;
-  });
-
   // Fix common doubled words
   result = result.replace(/\b(the|a|an|is|are|was|were|has|have|had|will|would|could|should|can|may|might|shall|must)\s+\1\b/gi, '$1');
 
-  // Fix "a" before consonant sounds that start with vowel letters
-  result = result.replace(/\b(a)\s+(un)/gi, 'an $2');
-
-  // Fix corrupted Unicode characters (e.g., "War?II" from non-breaking space)
+  // Fix corrupted Unicode whitespace (non-breaking spaces, etc.)
+  result = result.replace(/(\S)[\u00A0\u2007\u202F\uFEFF]+(\S)/g, '$1 $2');
+  // Fix corruption like "T.?Minh" → "T. Minh" (period + corruption + capital)
+  result = result.replace(/(\.)[\?\u00A0\u2007\u202F\uFEFF]+([A-Z])/g, '$1 $2');
+  // Fix corruption like "War?II" → "War II" (letter + corruption + capital)
   result = result.replace(/([a-zA-Z])[\?\u00A0\u2007\u202F\uFEFF]+([A-Z])/g, '$1 $2');
+
+  // Fix AI dropping words from proper nouns
+  result = result.replace(/\bWorld II\b/g, 'World War II');
+
+  // Fix lowercase sentence starters after period
+  result = result.replace(/([.!?])\s+([a-z])/g, (match, punct, letter) => {
+    return punct + ' ' + letter.toUpperCase();
+  });
 
   return result;
 }

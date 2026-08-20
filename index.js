@@ -134,7 +134,7 @@ async function callCloudflareAI(text, options, ai) {
     "Tone: " + options.tone + "\n\n" +
     "RULES:\n" +
     "- CRITICAL: Keep inline citation markers EXACTLY where they appear in the original. If the original has 'text [1] more text', your rewrite must have 'rewritten text [1] more rewritten text' in the same position.\n" +
-    "- CRITICAL: Do NOT repeat or duplicate any footnotes, endnotes, or reference lists. Include each footnote exactly ONCE at the very end. Do NOT add footnotes after every sentence. Do NOT truncate, abbreviate, or omit any footnote.\n" +
+    "- CRITICAL: Footnotes and reference lists must appear EXACTLY ONCE in the output, at the very end. NEVER repeat the same footnote after different paragraphs or sentences. NEVER write the same footnote block more than once. If the input has one footnote, the output must have exactly one footnote.\n" +
     "- Preserve the exact meaning, claims, numbers, names, and paragraph breaks.\n" +
     "- Do NOT move citations to the end. Do NOT remove inline citations. Do NOT invent new ones.\n" +
     "- Do NOT invent facts, citations, quotations, sources, or references.\n" +
@@ -252,7 +252,7 @@ function deduplicateFootnotes(text) {
     const trimmed = line.trim();
     const isFootnoteLine = /^\s*\[?\d{1,3}\]?\s/.test(trimmed) ||
                            /^REFERENCE\s+\d+/i.test(trimmed) ||
-                           /^Footnote\s+\d+/i.test(trimmed) ||
+                           /^Footnote\s*\d*/i.test(trimmed) ||
                            /^Key\s*words?:/i.test(trimmed);
 
     if (isFootnoteLine) {
@@ -270,20 +270,43 @@ function deduplicateFootnotes(text) {
   return result.join('\n');
 }
 
+function extractFingerprint(text) {
+  return text.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length > 3)
+    .slice(0, 15)
+    .join(' ');
+}
+
 function deduplicateFootnoteBlocks(text) {
   const blocks = text.split(/\n{2,}/);
-  const seen = new Set();
+  const seen = [];
   const result = [];
 
   for (const block of blocks) {
     const trimmed = block.trim();
-    const key = trimmed.toLowerCase().replace(/\s+/g, ' ').substring(0, 80);
+    const fp = extractFingerprint(trimmed);
+    if (!fp) {
+      result.push(block);
+      continue;
+    }
 
-    if (seen.has(key)) {
+    const isDuplicate = seen.some(seenFp => {
+      const seenWords = seenFp.split(' ');
+      const curWords = fp.split(' ');
+      let overlap = 0;
+      for (const w of curWords) {
+        if (seenWords.includes(w)) overlap++;
+      }
+      return overlap / Math.max(1, curWords.length) > 0.7;
+    });
+
+    if (isDuplicate) {
       console.log('[deduplicateFootnoteBlocks] Removing duplicate block: ' + trimmed.substring(0, 60));
       continue;
     }
-    seen.add(key);
+    seen.push(fp);
     result.push(block);
   }
 
@@ -294,7 +317,7 @@ function restoreTruncatedFootnotes(original, rewritten) {
   let result = deduplicateFootnotes(rewritten);
   result = deduplicateFootnoteBlocks(result);
 
-  const footnoteRegex = /^\s*\[?\d{1,3}\]?[\s.:)\-|]{1,3}\s*(.+)/i;
+  const footnoteRegex = /^\s*(?:\[?\d{1,3}\]?\s|REFERENCE\s+\d+|Footnote\s*:)/i;
   const origLines = original.split('\n');
   const footnoteTexts = [];
 
@@ -310,7 +333,7 @@ function restoreTruncatedFootnotes(original, rewritten) {
   const missing = [];
 
   for (const fn of footnoteTexts) {
-    const firstChars = fn.replace(/^\s*\[?\d{1,3}\]?[\s.:)\-|]*/, '').trim().substring(0, 30).toLowerCase();
+    const firstChars = fn.replace(/^\s*(?:\[?\d{1,3}\]?[\s.:)\-|]*|Footnote\s*:|REFERENCE\s+\d+[\s.:)\-|]*)/i, '').trim().substring(0, 30).toLowerCase();
     if (firstChars.length > 5 && !resultLower.includes(firstChars)) {
       missing.push(fn);
     }
@@ -743,8 +766,20 @@ function cleanText(value) {
     .replace(/\n\s+/g, "\n")
     .trim();
 
-  // Fix corrupted Unicode characters (e.g., "War?II" from non-breaking space)
+  // Fix corrupted Unicode whitespace (non-breaking spaces, etc.)
+  result = result.replace(/(\S)[\u00A0\u2007\u202F\uFEFF]+(\S)/g, '$1 $2');
+  // Fix corruption like "T.?Minh" → "T. Minh" (period + corruption + capital)
+  result = result.replace(/(\.)[\?\u00A0\u2007\u202F\uFEFF]+([A-Z])/g, '$1 $2');
+  // Fix corruption like "War?II" → "War II" (letter + corruption + capital)
   result = result.replace(/([a-zA-Z])[\?\u00A0\u2007\u202F\uFEFF]+([A-Z])/g, '$1 $2');
+
+  // Fix AI dropping words from proper nouns
+  result = result.replace(/\bWorld II\b/g, 'World War II');
+
+  // Fix lowercase sentence starters after period
+  result = result.replace(/([.!?])\s+([a-z])/g, (match, punct, letter) => {
+    return punct + ' ' + letter.toUpperCase();
+  });
 
   // Fix double spaces
   result = result.replace(/\s{2,}/g, ' ');
