@@ -237,7 +237,7 @@ function normalizeGeminiResult(rawText, originalText, options, provider) {
     suggestions: analysis.suggestions,
     explanation: analysis.explanation,
     originalScore: clampScore(parsed.originalScore, estimateScore(originalText)),
-    revisedScore: clampScore(parsed.revisedScore, Math.max(estimateScore(finalVersion), estimateScore(originalText) + 4)),
+    revisedScore: clampScore(parsed.revisedScore, Math.min(97, Math.max(estimateScore(finalVersion) + 2, estimateScore(originalText) + 3))),
     detectedDialect,
     provider,
   };
@@ -354,8 +354,6 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
   const withCitations = restoreInlineCitations(originalText, cleaned);
   const finalVersion = restoreTruncatedFootnotes(originalText, withCitations);
   const detectedDialect = options.forcedDialect || detectDialect(originalText);
-  const baseOriginalScore = estimateScore(originalText);
-  const baseRevisedScore = estimateScore(finalVersion);
 
   const sentences = buildSentenceObjects(originalText, finalVersion);
   const analysis = buildAnalysis(originalText, finalVersion, options);
@@ -373,34 +371,16 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
   const patternFixCount = analysis.suggestions.filter(s => !s.startsWith('Changed:') && !s.startsWith('Preserved') && !s.startsWith('Condensed') && !s.startsWith('Broke') && !s.startsWith('Refined') && !s.startsWith('Text already')).length;
   const totalImprovements = specificChangeCount + patternFixCount;
 
-  // Score original: penalize based on how many issues the AI found and fixed
-  // More fixes needed = more issues in original = lower original score
-  let originalPenalty = 0;
-  if (totalImprovements > 12) originalPenalty = 12;
-  else if (totalImprovements > 8) originalPenalty = 8;
-  else if (totalImprovements > 5) originalPenalty = 5;
-  else if (totalImprovements > 2) originalPenalty = 3;
-  else if (totalImprovements > 0) originalPenalty = 1;
-  const originalScore = Math.max(55, baseOriginalScore - originalPenalty);
+  const changeRatio = origSentences.length > 0 ? changedCount / origSentences.length : 0;
 
-  // Score revised: boost based on quality and quantity of improvements
-  let qualityBonus = 0;
-  if (totalImprovements > 12) qualityBonus = 8;
-  else if (totalImprovements > 8) qualityBonus = 6;
-  else if (totalImprovements > 5) qualityBonus = 4;
-  else if (totalImprovements > 2) qualityBonus = 2;
-  else if (totalImprovements > 0) qualityBonus = 1;
+  const baseOriginalScore = estimateScore(originalText);
+  const baseRevisedScore = estimateScore(finalVersion);
 
-  // Additional bonuses for specific fix types
-  const hasGrammarFixes = /\b(was|were)\b/.test(originalText) && /\b(were)\b/.test(finalVersion) && /\bData\b/.test(originalText);
-  const hasSpellingFixes = /\b(analysed|neighbours)\b/.test(originalText) && /\b(analyzed|neighbors)\b/.test(finalVersion);
-  const hasPossessiveFixes = /\bFairclough\b/.test(originalText) && /\bFairclough's\b/.test(finalVersion);
-  if (hasGrammarFixes) qualityBonus += 1;
-  if (hasSpellingFixes) qualityBonus += 1;
-  if (hasPossessiveFixes) qualityBonus += 1;
+  const originalScore = Math.max(55, Math.min(88, baseOriginalScore - Math.min(totalImprovements, 10)));
 
-  // Revised score: start from originalScore + improvement, capped at 97
-  const revisedScore = Math.min(97, Math.max(baseRevisedScore, originalScore + qualityBonus));
+  const improvementMagnitude = Math.min(1, totalImprovements / 10);
+  const qualityBonus = Math.round(improvementMagnitude * 6 + changeRatio * 4);
+  const revisedScore = Math.max(originalScore + 1, Math.min(97, baseRevisedScore + qualityBonus));
 
   return {
     finalVersion,
@@ -642,8 +622,8 @@ function buildDeterministicResult(text, options, reason) {
     sentences: buildSentenceObjects(text, finalVersion),
     suggestions: analysis.suggestions,
     explanation: (reason ? "AI providers unavailable (" + reason + "). " : "") + analysis.explanation,
-    originalScore,
-    revisedScore: Math.max(revisedScore, originalScore + 2),
+    originalScore: Math.min(85, originalScore),
+    revisedScore: Math.max(revisedScore + 1, Math.min(92, originalScore + 3)),
     detectedDialect: options.forcedDialect || detectDialect(text),
     provider: "deterministic",
   };
@@ -722,7 +702,27 @@ function splitForDisplay(text) {
     if (lines.length === 1) {
       const headingLevel = looksLikeHeading(lines[0]);
       if (headingLevel > 0) {
-        items.push({ text: lines[0], isEndOfParagraph: true, isHeading: true, headingLevel });
+        const stripped = lines[0].replace(/^#{1,4}\s+/, '').trim();
+        items.push({ text: stripped, isEndOfParagraph: true, isHeading: true, headingLevel });
+        continue;
+      }
+    }
+
+    if (lines.length > 1) {
+      const firstHeadingLevel = looksLikeHeading(lines[0]);
+      if (firstHeadingLevel > 0) {
+        const stripped = lines[0].replace(/^#{1,4}\s+/, '').trim();
+        items.push({ text: stripped, isEndOfParagraph: true, isHeading: true, headingLevel: firstHeadingLevel });
+        const rest = lines.slice(1).join(' ').trim();
+        if (rest) {
+          const parts = rest.match(/[^.!?]+(?:[.!?]+|$)(?:\s*\[\d{1,3}\])?/g) || [rest];
+          parts.forEach((part, index) => {
+            const value = part.trim();
+            if (value) {
+              items.push({ text: value, isEndOfParagraph: index === parts.length - 1, isHeading: false, headingLevel: 0 });
+            }
+          });
+        }
         continue;
       }
     }
@@ -751,10 +751,18 @@ function splitForDisplay(text) {
 }
 
 function looksLikeHeading(text) {
-  if (text.length > 80 || /[.!?]$/.test(text) || FOOTNOTE_DEF_REGEX.test(text)) return 0;
-  if (text.length <= 30 && /^[A-Z\s:]+$/.test(text.trim())) return 1;
-  if (text.length <= 50 && /^[A-Z]/.test(text) && !/,$/.test(text)) return 2;
-  if (text.length <= 60 && !/[,;]$/.test(text)) return 3;
+  const trimmed = text.trim();
+  if (trimmed.length > 80 || /[.!?]$/.test(trimmed) || FOOTNOTE_DEF_REGEX.test(trimmed)) return 0;
+
+  const mdMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
+  if (mdMatch) {
+    const stripped = mdMatch[2].trim();
+    if (stripped.length <= 80 && !/[.!?]$/.test(stripped)) return mdMatch[1].length;
+  }
+
+  if (trimmed.length <= 30 && /^[A-Z\s:]+$/.test(trimmed)) return 1;
+  if (trimmed.length <= 50 && /^[A-Z]/.test(trimmed) && !/,$/.test(trimmed)) return 2;
+  if (trimmed.length <= 60 && !/[,;]$/.test(trimmed)) return 3;
   return 0;
 }
 
@@ -767,6 +775,8 @@ function detectDialect(text) {
 
 function estimateScore(text) {
   const lower = String(text || "").toLowerCase();
+  const words = lower.split(/\s+/).filter(Boolean);
+  const sentences = String(text || "").split(/[.!?]+/).filter(s => s.trim().length > 0);
   const issuePatterns = [
     // Severe wordiness
     [/\bdemonstrates that there is\b/, 5],
@@ -826,7 +836,28 @@ function estimateScore(text) {
     if (pattern.test(lower)) deductions += penalty;
   }
 
-  return Math.max(55, Math.min(97, 92 - deductions));
+  let qualityDeductions = 0;
+
+  if (sentences.length > 0) {
+    const avgWordsPerSentence = words.length / sentences.length;
+    if (avgWordsPerSentence > 35) qualityDeductions += 2;
+    else if (avgWordsPerSentence > 25) qualityDeductions += 1;
+  }
+
+  const passiveMatches = lower.match(/\b(was|were|is|are|been|being)\s+\w+ed\b/g);
+  if (passiveMatches && sentences.length > 0) {
+    const passiveRatio = passiveMatches.length / sentences.length;
+    if (passiveRatio > 0.4) qualityDeductions += 3;
+    else if (passiveRatio > 0.25) qualityDeductions += 2;
+    else if (passiveRatio > 0.15) qualityDeductions += 1;
+  }
+
+  const uniqueWords = new Set(words.filter(w => w.length > 3));
+  const lexicalDiversity = words.length > 0 ? uniqueWords.size / words.length : 1;
+  if (lexicalDiversity < 0.4) qualityDeductions += 2;
+  else if (lexicalDiversity < 0.5) qualityDeductions += 1;
+
+  return Math.max(55, Math.min(97, 85 - deductions - qualityDeductions));
 }
 
 function countWords(text) {

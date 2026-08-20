@@ -1470,6 +1470,7 @@ const content = (
       ${sent.headingLevel === 1 ? 'font-bold block text-2xl mt-6 mb-3' : ''}
       ${sent.headingLevel === 2 ? 'font-bold block text-xl mt-5 mb-2' : ''}
       ${sent.headingLevel === 3 ? 'font-semibold block text-lg mt-4 mb-2' : ''}
+      ${sent.headingLevel === 4 ? 'font-semibold block text-base mt-3 mb-2' : ''}
       ${sent.isHeading && !sent.headingLevel ? 'font-bold block text-lg mt-4 mb-2' : ''}
     `}
   >

@@ -8,7 +8,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Superscript from '@tiptap/extension-superscript';
 import Underline from '@tiptap/extension-underline';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { 
   Bold, 
   Italic, 
@@ -55,6 +55,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
       </button>
       <button
         onClick={() => editor.chain().focus().toggleSuperscript().run()}
+        disabled={!editor.can().chain().focus().toggleSuperscript().run()}
         className={`p-1.5 rounded hover:bg-[#E5E5E5] transition-colors ${editor.isActive('superscript') ? 'bg-[#E5E5E5] text-black' : 'text-[#666]'}`}
         title="Superscript"
       >
@@ -80,9 +81,13 @@ const MenuBar = ({ editor }: { editor: any }) => {
 };
 
 export function RichTextEditor({ content, onChange, placeholder, disabled }: RichTextEditorProps) {
+  const isInternalChange = useRef(false);
+
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3, 4] },
+      }),
       Superscript,
       Underline,
       Placeholder.configure({
@@ -90,13 +95,33 @@ export function RichTextEditor({ content, onChange, placeholder, disabled }: Ric
       }),
     ],
     content: content,
+    editorProps: {
+      handlePaste: (view, event) => {
+        const html = event.clipboardData?.getData('text/html');
+        if (html) {
+          isInternalChange.current = true;
+          setTimeout(() => {
+            if (editor) {
+              onChange(editor.getHTML());
+            }
+            isInternalChange.current = false;
+          }, 0);
+        }
+        return false;
+      },
+    },
     onUpdate: ({ editor }) => {
+      isInternalChange.current = true;
       onChange(editor.getHTML());
     },
     editable: !disabled,
   });
 
   useEffect(() => {
+    if (editor && isInternalChange.current) {
+      isInternalChange.current = false;
+      return;
+    }
     if (editor && content !== editor.getHTML()) {
       editor.commands.setContent(content);
     }
