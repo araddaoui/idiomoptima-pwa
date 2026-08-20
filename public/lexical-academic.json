@@ -1,0 +1,2452 @@
+[
+  {
+    "clunky": "No one looked at this population.",
+    "native": "This cohort has been systematically excluded from existing studies.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "Not much is known about this.",
+    "native": "Knowledge of this phenomenon remains fragmentary.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "Research is missing here.",
+    "native": "There is a conspicuous paucity of literature regarding...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "Past studies didn't find this.",
+    "native": "Previous inquiries have failed to account for...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "People haven't checked this yet.",
+    "native": "This dimension has hitherto escaped empirical scrutiny.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We need to know more about X.",
+    "native": "A more granular understanding of X is urgently required.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This topic is ignored.",
+    "native": "This area has suffered from relative scholarly neglect.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "There is a big hole in the research.",
+    "native": "This represents a significant lacuna in the current body of work.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It’s still a secret how this works.",
+    "native": "The underlying mechanisms remain poorly understood.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "No one agrees on this.",
+    "native": "Scholarly consensus on this matter remains elusive.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They only looked at small groups.",
+    "native": "Existing studies have been limited by small sample sizes.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The old theory is wrong now.",
+    "native": "Current theoretical frameworks are ill-equipped to explain...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We don't have enough data.",
+    "native": "Empirical evidence for this claim is currently thin.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "Nobody has tried this method.",
+    "native": "This methodological approach has yet to be applied to...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It’s a new problem.",
+    "native": "This emergent issue warrants immediate investigation.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "People forgot about this part.",
+    "native": "This specific facet has been largely overlooked in the discourse.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We don't know the long-term effect.",
+    "native": "The longitudinal implications remain a matter of conjecture.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "Most studies are just about the US.",
+    "native": "There is a distinct Western-centric bias in the extant literature.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's not clear if this is true.",
+    "native": "The veracity of this assumption remains to be empirically tested.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We need to update this.",
+    "native": "The prevailing model requires significant refinement.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a big question.",
+    "native": "This remains one of the most contentious issues in the field.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We need to look closer.",
+    "native": "A more nuanced examination of these variables is necessary.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It’s hard to say what happens.",
+    "native": "The precise nature of this interaction remains obscured.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "No one has asked why.",
+    "native": "The drivers of this trend have yet to be interrogated.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "There is no proof for this.",
+    "native": "Empirical validation for this hypothesis is currently lacking.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We need to bridge the gap.",
+    "native": "This study seeks to reconcile the disparity between...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a blind spot.",
+    "native": "This oversight constitutes a critical blind spot in the field.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's been ignored for 20 years.",
+    "native": "This issue has lain dormant in the literature for decades.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We don't know the cause.",
+    "native": "The etiology of this condition remains a subject of debate.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We need better tools.",
+    "native": "Existing analytical tools are insufficient for capturing...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's a mystery.",
+    "native": "The provenance of these findings remains enigmatic.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This hasn't been tested in real life.",
+    "native": "Ecological validity has yet to be established for this model.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We only have old data.",
+    "native": "Our current understanding is predicated on outdated metrics.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This doesn't fit the theory.",
+    "native": "These observations are dissonant with established paradigms.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We need to find the link.",
+    "native": "The nexus between these two variables remains unexplored.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's just a guess right now.",
+    "native": "This remains a purely speculative proposition.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "No one looked at the side effects.",
+    "native": "The collateral implications have been largely disregarded.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We need to re-evaluate this.",
+    "native": "A critical reappraisal of this doctrine is long overdue.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It’s a missing link.",
+    "native": "This provides the missing link in our understanding of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "People only look at the surface.",
+    "native": "Most accounts provide only a superficial treatment of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We need to go deeper.",
+    "native": "A more profound investigation into the roots of X is required.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a new area.",
+    "native": "This represents a nascent field of inquiry.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We don't know how it starts.",
+    "native": "The inception of this process remains shrouded in uncertainty.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is an old debate.",
+    "native": "This study revisits a long-standing controversy regarding...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We need more proof.",
+    "native": "Further corroboration is required to substantiate these claims.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It’s a neglected topic.",
+    "native": "This subject has been relegated to the periphery of research.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We don't know the impact.",
+    "native": "The ramifications of this shift are yet to be fully realized.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a weak point.",
+    "native": "This represents a vulnerability in the current theoretical architecture.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "No one has used this data.",
+    "native": "This dataset has remained untapped by previous researchers.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It’s time to look at this.",
+    "native": "The time is ripe for a comprehensive re-examination of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is probably the truth.",
+    "native": "The balance of evidence would suggest...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I am sure that...",
+    "native": "It is reasonable to contend that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This proves that...",
+    "native": "These findings lend support to the notion that...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It will definitely happen.",
+    "native": "It is highly probable that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This means X.",
+    "native": "This can be tentatively interpreted as...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "Everyone knows that...",
+    "native": "It is widely accepted that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is because...",
+    "native": "This may be attributable, at least in part, to...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "I think X is right.",
+    "native": "There are grounds for suggesting that X is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a fact.",
+    "native": "This appears to be a robust phenomenon.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It is always like this.",
+    "native": "This tendency is frequently observed in...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This is the only reason.",
+    "native": "This may be a primary, though not exclusive, driver of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We can say that...",
+    "native": "It might be argued that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This shows why.",
+    "native": "This offers a plausible explanation for...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It's clear.",
+    "native": "It is discernible that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This is a big deal.",
+    "native": "This may have significant implications for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I believe.",
+    "native": "It is the author's contention that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It looks like.",
+    "native": "It would appear that...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is likely.",
+    "native": "There is a strong likelihood that...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "Maybe this is true.",
+    "native": "This remains a distinct possibility.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It shows.",
+    "native": "It points toward a potential...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "Usually.",
+    "native": "In the majority of instances...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We think.",
+    "native": "It is hypothesized that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is why.",
+    "native": "This could potentially account for...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It’s almost certain.",
+    "native": "It is highly likely, bordering on certain, that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "It seems.",
+    "native": "It is ostensibly the case that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This suggests.",
+    "native": "These results are indicative of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It could be.",
+    "native": "It is conceivable that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This is a result of.",
+    "native": "This is ostensibly linked to...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "I guess.",
+    "native": "One might speculate that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It is true.",
+    "native": "It is arguably the case that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This is the cause.",
+    "native": "This appears to be a salient factor in...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It leads to.",
+    "native": "This may predispose the system to...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It is possible.",
+    "native": "The possibility cannot be ruled out that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is the way.",
+    "native": "This represents a plausible pathway for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It is known.",
+    "native": "It is generally understood that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It is likely.",
+    "native": "It is predisposed to...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It’s a sign.",
+    "native": "This may serve as a proxy for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It’s a fact.",
+    "native": "This is consistent with the view that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We can see.",
+    "native": "It is evident from the data that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It might.",
+    "native": "It has the potential to...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It is common.",
+    "native": "It is a prevalent feature of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It is expected.",
+    "native": "It is anticipated that...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It is clear that.",
+    "native": "It is manifest that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "It is likely.",
+    "native": "It stands to reason that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It is a result.",
+    "native": "This is potentially a function of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It is possible.",
+    "native": "It is within the realm of possibility that...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It is because.",
+    "native": "This may be contingent upon...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It is likely.",
+    "native": "There is a high probability of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It is true.",
+    "native": "It is ostensibly valid that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "It is the reason.",
+    "native": "This may be the underlying cause of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "A changed because of B.",
+    "native": "A underwent transformation in response to B.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X makes Y happen.",
+    "native": "X precipitates Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "A is the reason for B.",
+    "native": "B is a direct consequence of A.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X causes Y.",
+    "native": "X exerts a profound influence on Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This leads to that.",
+    "native": "This culminates in...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "Because of this.",
+    "native": "By virtue of this...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "X helps Y.",
+    "native": "X facilitates the development of Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "Y is from X.",
+    "native": "Y is derived from...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X starts Y.",
+    "native": "X triggers a cascade of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X and Y are linked.",
+    "native": "X and Y are inextricably linked.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "X makes Y worse.",
+    "native": "X exacerbates Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X makes Y better.",
+    "native": "X ameliorates Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X stops Y.",
+    "native": "X inhibits the progression of Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X changes Y.",
+    "native": "X modulates the expression of Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X is why Y is like this.",
+    "native": "X is the primary determinant of Y.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X makes Y move.",
+    "native": "X drives the shift in Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X is the cause.",
+    "native": "X serves as the catalyst for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X and Y go together.",
+    "native": "X is frequently accompanied by Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X is the source of Y.",
+    "native": "Y originates from X.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X results in Y.",
+    "native": "X yields a significant increase in Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "The rationale behind Y is rooted in X.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X affects Y.",
+    "native": "X has a measurable impact on Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X is related to Y.",
+    "native": "X is closely correlated with Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X makes Y possible.",
+    "native": "X provides the necessary conditions for Y.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X forces Y.",
+    "native": "X necessitates the adoption of Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X creates Y.",
+    "native": "X engenders a sense of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X is the root.",
+    "native": "X lies at the heart of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X depends on Y.",
+    "native": "X is contingent upon Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X follows Y.",
+    "native": "X is a byproduct of Y.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the trigger.",
+    "native": "X acts as a stimulus for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X makes Y stay.",
+    "native": "X sustains the presence of Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "X is the key.",
+    "native": "X is pivotal to the success of Y.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the factor.",
+    "native": "X is a contributing factor to...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the base.",
+    "native": "X forms the foundation of Y.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "The genesis of Y can be traced to X.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the start.",
+    "native": "X marks the onset of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the impetus for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the driver of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the bedrock of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the focal point of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the mainspring of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the underpinning of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the progenitor of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the antecedent of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the precursor to...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the cornerstone of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the hallmark of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the signature of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the essence of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "X is the reason.",
+    "native": "X is the embodiment of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "These two studies say different things.",
+    "native": "These accounts are irreconcilable on the question of...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "Many authors agree.",
+    "native": "There is broad consensus among scholars that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "Smith says X but Jones says Y.",
+    "native": "Smith’s findings stand in stark contrast to those of Jones.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "Some people think X.",
+    "native": "A school of thought maintains that X...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a popular idea.",
+    "native": "This notion has gained considerable traction in recent years.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They both say the same.",
+    "native": "Their findings are mutually reinforcing.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "Research shows this is true.",
+    "native": "A growing body of evidence corroborates the view that...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It’s a big debate.",
+    "native": "This issue remains a subject of intense scholarly debate.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "Author A supports Author B.",
+    "native": "Author A’s work lends further weight to the arguments of Author B.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "There are two sides.",
+    "native": "The literature is polarized on this issue.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "They disagree on the details.",
+    "native": "While they agree on the premise, they diverge on the specifics.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is a common theme.",
+    "native": "This theme resonates throughout the extant literature.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This study is like that one.",
+    "native": "This study echoes the findings of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "They have different views.",
+    "native": "Their perspectives are fundamentally at odds.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "Most people think.",
+    "native": "The prevailing view in the field is that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It’s a controversial idea.",
+    "native": "This proposition has met with significant skepticism.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They use different words for it.",
+    "native": "Although terminologies vary, the underlying concept is...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is a new way of thinking.",
+    "native": "This represents a paradigm shift in the way we view...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They all say X is important.",
+    "native": "There is a unanimous recognition of the importance of X.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It’s not just one person.",
+    "native": "This view is shared by a plurality of researchers.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They found different results.",
+    "native": "Discrepancies in the findings can be attributed to...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a classic study.",
+    "native": "This seminal work laid the foundation for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They agree about X.",
+    "native": "There is a convergence of opinion regarding X.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a well-known fact.",
+    "native": "It is an established tenet of the field that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "They disagree about why.",
+    "native": "While the effect is noted, its origin is disputed.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is a minor view.",
+    "native": "This remains a minority position within the discourse.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They look at it differently.",
+    "native": "They adopt divergent analytical lenses.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a big part of the field.",
+    "native": "This concept is central to the discourse on...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They say X is the cause.",
+    "native": "X is widely cited as the primary cause of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a common mistake.",
+    "native": "A common fallacy in the literature is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They agree on the need for X.",
+    "native": "There is a collective call for X among researchers.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a new trend.",
+    "native": "This reflects a burgeoning interest in...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They have the same goal.",
+    "native": "Their research agendas are closely aligned.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This is a key debate.",
+    "native": "This debate is at the forefront of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They disagree on the impact.",
+    "native": "The magnitude of this effect is a point of contention.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a standard view.",
+    "native": "This has become the orthodox view in...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They agree on the value of X.",
+    "native": "The utility of X is widely acknowledged.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a complex issue.",
+    "native": "This issue is multifaceted and subject to various interpretations.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "They agree on the problem.",
+    "native": "There is a shared understanding of the problem.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a major theme.",
+    "native": "This theme is recurrent in the work of...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "They disagree on the solution.",
+    "native": "While the problem is clear, the remedy remains disputed.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is a strong argument.",
+    "native": "This argument is supported by a wealth of empirical data.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They agree on the timing.",
+    "native": "There is a consensus regarding the temporal aspects of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a weak argument.",
+    "native": "This argument lacks sufficient empirical support.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "They agree on the scope.",
+    "native": "The boundaries of the field are generally agreed upon.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a new finding.",
+    "native": "This finding challenges the long-held belief that...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "They agree on the method.",
+    "native": "The methodological rigor of this study is widely praised.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is a common finding.",
+    "native": "This finding is consistent with previous research.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "They agree on the importance.",
+    "native": "The significance of this study is widely recognized.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a key study.",
+    "native": "This study is a cornerstone of the literature on...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We did a check on the data.",
+    "native": "Data were cross-verified against...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We used a computer for this.",
+    "native": "Computational analysis was performed using...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We picked people randomly.",
+    "native": "Participants were recruited via a randomized sampling protocol.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We looked at it many times.",
+    "native": "A longitudinal approach was adopted to ensure...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We were very careful.",
+    "native": "Stringent measures were implemented to minimize bias.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We used a standard test.",
+    "native": "A validated instrument was employed to measure...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We cleaned the data.",
+    "native": "The dataset underwent rigorous preprocessing.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We followed the rules.",
+    "native": "Procedures were conducted in strict accordance with...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We made sure it was fair.",
+    "native": "To ensure impartiality, a double-blind protocol was used.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "We used a new way.",
+    "native": "An innovative methodological framework was devised.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We checked for mistakes.",
+    "native": "Error-correction mechanisms were systematically applied.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We used a lot of data.",
+    "native": "A substantial corpus of data was analyzed.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We did it in a lab.",
+    "native": "The experiment was conducted in a controlled laboratory environment.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We asked people questions.",
+    "native": "Data were elicited through semi-structured interviews.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We watched them closely.",
+    "native": "Systematic observation was carried out over a period of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We used a math model.",
+    "native": "A mathematical model was constructed to simulate...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We compared the groups.",
+    "native": "Inter-group comparisons were statistically evaluated.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We looked at the numbers.",
+    "native": "Quantitative analysis was prioritized to ensure objectivity.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We used a survey.",
+    "native": "A comprehensive survey was administered to...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We checked if it worked.",
+    "native": "The efficacy of the intervention was rigorously tested.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We used a pilot study.",
+    "native": "A preliminary pilot study was conducted to refine...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We chose the best one.",
+    "native": "The optimal parameters were selected based on...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We kept the same conditions.",
+    "native": "Environmental variables were held constant throughout.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We used a focus group.",
+    "native": "Insights were gathered from a series of focus groups.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We recorded everything.",
+    "native": "All interactions were meticulously documented.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We used a software.",
+    "native": "The data were processed using [Software Name] version X.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We checked the quality.",
+    "native": "Quality assurance protocols were strictly adhered to.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We used a case study.",
+    "native": "An in-depth case study approach was utilized.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We looked at the history.",
+    "native": "A retrospective analysis was performed on...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We used a scale.",
+    "native": "Responses were measured on a five-point Likert scale.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We made it simple.",
+    "native": "The model was parsimoniously designed to...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We used a expert.",
+    "native": "Expert validation was sought to ensure...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We did it many times.",
+    "native": "Iterative testing was conducted to achieve...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We checked the source.",
+    "native": "The provenance of the data was thoroughly vetted.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We used a sample.",
+    "native": "A representative sample was drawn from...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We looked at the context.",
+    "native": "Contextual factors were integrated into the analysis.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We used a filter.",
+    "native": "Data were filtered to exclude outliers.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We checked the ethics.",
+    "native": "Ethical approval was granted by the Institutional Review Board.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We used a proxy.",
+    "native": "X was utilized as a proxy for Y.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We looked at the trend.",
+    "native": "Trend analysis was performed to identify...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We used a control group.",
+    "native": "A control group was established to provide a baseline.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We checked for bias.",
+    "native": "Potential sources of bias were systematically identified.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We used a questionnaire.",
+    "native": "A structured questionnaire was distributed to...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We looked at the results.",
+    "native": "The results were subjected to statistical scrutiny.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We used a technique.",
+    "native": "A specialized technique was employed to...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We checked the reliability.",
+    "native": "The reliability of the scale was assessed using...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We used a framework.",
+    "native": "The study was situated within a [Name] framework.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We looked at the details.",
+    "native": "A granular analysis of the data was conducted.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We used a method.",
+    "native": "A robust methodological approach was adopted.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We checked the validity.",
+    "native": "The internal validity of the study was ensured by...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "My study was too small.",
+    "native": "The modest sample size may limit the generalizability of these findings.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "I didn't have enough time.",
+    "native": "Temporal constraints precluded a more longitudinal investigation.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The data is old.",
+    "native": "The reliance on historical data may not reflect current market dynamics.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "I only looked at one city.",
+    "native": "The geographical scope of this study was restricted to...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "Some people lied.",
+    "native": "The potential for social desirability bias cannot be entirely discounted.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This might be wrong.",
+    "native": "These results should be interpreted with a degree of caution.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "I missed some factors.",
+    "native": "Several confounding variables were beyond the scope of this analysis.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The method is not perfect.",
+    "native": "While robust, the methodology is not without its limitations.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "I couldn't check everything.",
+    "native": "A comprehensive evaluation was hampered by...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It only works for some people.",
+    "native": "The findings may not be applicable to diverse populations.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "The data is not very good.",
+    "native": "The granularity of the data was somewhat constrained by...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I had to guess.",
+    "native": "Certain assumptions were necessary in the absence of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It's just a snapshot.",
+    "native": "This study provides a cross-sectional view, rather than...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I didn't use a control group.",
+    "native": "The absence of a control group necessitates cautious interpretation.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "The survey was too short.",
+    "native": "The brevity of the instrument may have overlooked...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "People might forget.",
+    "native": "Recall bias may have influenced the accuracy of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I only used one tool.",
+    "native": "The reliance on a single metric may provide an incomplete picture.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "The results are not final.",
+    "native": "These findings are preliminary and require further validation.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "I couldn't get more people.",
+    "native": "Recruitment challenges resulted in a smaller than anticipated cohort.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The environment was fake.",
+    "native": "The artificial nature of the laboratory setting may...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I didn't look at the future.",
+    "native": "Future research is needed to determine the long-term...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "The data was self-reported.",
+    "native": "The use of self-reported data introduces potential subjectivity.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I ignored the culture.",
+    "native": "Cultural nuances were not explicitly addressed in this study.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The results are specific.",
+    "native": "These findings are context-dependent and may vary in...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "I couldn't control everything.",
+    "native": "Uncontrolled external factors may have influenced...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The study is just a start.",
+    "native": "This study represents an initial foray into...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I used a proxy.",
+    "native": "The use of X as a proxy for Y is a known limitation.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The sample is biased.",
+    "native": "The sample may be subject to selection bias.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I didn't measure X.",
+    "native": "The lack of a direct measure for X is a notable constraint.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The theory is limited.",
+    "native": "The theoretical framework may not fully capture...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "I only looked at the surface.",
+    "native": "This study provides only a cursory examination of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The results are mixed.",
+    "native": "The heterogeneity of the results suggests...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I had limited resources.",
+    "native": "Resource constraints restricted the depth of the analysis.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The data is noisy.",
+    "native": "The presence of significant noise in the data may...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I didn't consider Y.",
+    "native": "Y was not factored into the initial research design.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The study is descriptive.",
+    "native": "This study is primarily descriptive in nature and does not...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "I used a small group.",
+    "native": "The small sample size precludes definitive conclusions.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "The results are not universal.",
+    "native": "The universal applicability of these findings remains to be seen.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I didn't look at the mechanism.",
+    "native": "The underlying mechanism remains to be elucidated.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The data is skewed.",
+    "native": "The data exhibit a significant...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "The numbers went up.",
+    "native": "A marked upward trend is discernible in the data.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We found a big difference.",
+    "native": "A statistically significant discrepancy was observed.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The table shows...",
+    "native": "The data presented in Table X illustrate...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This result is the same as...",
+    "native": "These findings are concordant with...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "The numbers didn't change.",
+    "native": "The variables remained remarkably stable throughout.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "Most people said yes.",
+    "native": "A clear majority of respondents indicated...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This proves our idea.",
+    "native": "The empirical evidence validates the hypothesis.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This result was a surprise.",
+    "native": "This finding was counterintuitive and warrants...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "The effect is small.",
+    "native": "The observed effect size was negligible.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We see a pattern here.",
+    "native": "A distinct recurring pattern emerges from the data.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The graph goes down fast.",
+    "native": "A precipitous decline is evident in Figure X.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It happens more in Group A.",
+    "native": "Group A exhibits a higher propensity for...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The data is clear.",
+    "native": "The results offer a compelling illustration of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "These two go together.",
+    "native": "A strong positive correlation was identified between...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is the most important result.",
+    "native": "The most salient finding of this analysis is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It didn't work.",
+    "native": "The intervention failed to yield the anticipated results.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The change is slow.",
+    "native": "The data indicate a gradual transition toward...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We can see the link now.",
+    "native": "The results elucidate the relationship between...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This confirms the theory.",
+    "native": "These results lend empirical weight to the theory of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The result is always different.",
+    "native": "The findings were characterized by high variability.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "A few cases were different.",
+    "native": "Several outliers were identified within the dataset.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is exactly what we thought.",
+    "native": "The results are entirely consistent with expectations.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "The gap is getting bigger.",
+    "native": "The disparity appears to be widening over time.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We see a connection.",
+    "native": "An associative link was established between...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This result stands out.",
+    "native": "This finding is particularly noteworthy given...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "The results are all over the place.",
+    "native": "The data exhibit a high degree of heterogeneity.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We found a new thing.",
+    "native": "This study uncovered a previously unidentified...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The average is...",
+    "native": "The mean value was found to be...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This happens every time.",
+    "native": "This phenomenon was consistently observed across...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "The result is good.",
+    "native": "The outcome was favorable and suggests...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "There is a small link.",
+    "native": "A modest but significant correlation exists.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This didn't change anything.",
+    "native": "No discernible impact was recorded following...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "It peaked in 2020.",
+    "native": "The trend reached its zenith in the year 2020.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "The data supports this.",
+    "native": "The evidentiary base reinforces the claim that...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is the main outcome.",
+    "native": "The primary outcome measure revealed...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We can group them.",
+    "native": "The participants were categorized based on...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It was a small increase.",
+    "native": "An incremental rise was documented in...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This proves it's true.",
+    "native": "This provides conclusive evidence for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The results are similar.",
+    "native": "The findings mirror those reported in...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It happened because of X.",
+    "native": "The results are primarily attributable to X.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We didn't find much.",
+    "native": "The results were largely inconclusive regarding...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "It's a huge shift.",
+    "native": "This represents a profound shift in...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We noticed X.",
+    "native": "X was particularly prominent in the early stages.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This supports our goal.",
+    "native": "These findings are in alignment with the objectives of...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We compared X and Y.",
+    "native": "A comparative analysis of X and Y reveals...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The effect is gone.",
+    "native": "The observed effect was largely dissipated by...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a real effect.",
+    "native": "This result is statistically robust.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We saw it clearly.",
+    "native": "A transparent correlation is evident between...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "The results were positive.",
+    "native": "The data yielded a positive result concerning...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is the final result.",
+    "native": "The ultimate finding of this study is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "First, I will talk about...",
+    "native": "The analysis commences with an exploration of...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "Another point is...",
+    "native": "Furthermore, it is imperative to consider...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "I will now show...",
+    "native": "Turning now to the evidence regarding...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "Like I said before...",
+    "native": "As previously elucidated in Section X...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "In short...",
+    "native": "To synthesize the preceding arguments...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "For example...",
+    "native": "This is exemplified by the case of...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "But on the other hand...",
+    "native": "Conversely, an alternative perspective suggests...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "This is why...",
+    "native": "This line of reasoning leads to the conclusion that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "Next, we look at...",
+    "native": "Subsequent analysis focuses on...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "I will focus on...",
+    "native": "Particular attention will be devoted to...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "Let's look at this part.",
+    "native": "Central to this discussion is the issue of...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "I will finish with...",
+    "native": "The discussion concludes with a summary of...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It is important to note.",
+    "native": "Of particular significance is the fact that...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "To start...",
+    "native": "By way of introduction, it is useful to...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "This leads to...",
+    "native": "This transition warrants a closer look at...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "As shown here...",
+    "native": "As is evident from the foregoing discussion...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "I want to say...",
+    "native": "It is worth noting in this context that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "To be more specific...",
+    "native": "More specifically, this pertains to...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "Because of this...",
+    "native": "Consequently, it follows that...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "In the same way...",
+    "native": "Analogously, one might argue that...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "Looking at the history...",
+    "native": "From a historical perspective, it is clear that...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "To explain this...",
+    "native": "This phenomenon can be best understood by...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "In my view...",
+    "native": "From the standpoint of this analysis...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "For this reason...",
+    "native": "On this basis, it can be argued that...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "To repeat...",
+    "native": "At the risk of redundancy, it must be stated...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "Let's move on.",
+    "native": "Having established X, we may now turn to...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "I have three points.",
+    "native": "Three distinct themes emerge from this inquiry.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "One last thing...",
+    "native": "A final point of consideration is...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "Before I go on...",
+    "native": "Before proceeding further, it is necessary to...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "To simplify...",
+    "native": "For the sake of analytical clarity...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "Look at the data.",
+    "native": "A cursory glance at the data suggests...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It is clear that.",
+    "native": "It is manifest from the evidence that...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "In fact...",
+    "native": "Indeed, the evidence points toward...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "To clarify...",
+    "native": "To further refine this point...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "On a big scale...",
+    "native": "On a macro level, it appears that...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "I will compare them.",
+    "native": "A comparison will be drawn between...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is my main point.",
+    "native": "The central thesis of this work is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "At the same time...",
+    "native": "Simultaneously, it must be recognized that...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "It is not just about X.",
+    "native": "Beyond the immediate concerns of X...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "Following this logic...",
+    "native": "Consistent with this rationale...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "I'll be brief.",
+    "native": "To provide a succinct overview...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "To conclude this part...",
+    "native": "This section has attempted to demonstrate...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is common.",
+    "native": "This is a recurring motif in the literature.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "Let's examine X.",
+    "native": "X warrants a more detailed investigation.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is my goal.",
+    "native": "The primary objective of this chapter is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "In this paper...",
+    "native": "The present inquiry is situated within...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "Not only X, but Y.",
+    "native": "While X is important, Y is equally pivotal.",
+    "type": "Transition"
+  },
+  {
+    "clunky": "To summarize...",
+    "native": "In summary, the evidence suggests...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "This is why I say...",
+    "native": "This provides the rationale for the claim that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "Let's look at Figure 1.",
+    "native": "Reference to Figure 1 reveals that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This is only about...",
+    "native": "The parameters of this study are limited to...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "I won't look at X.",
+    "native": "X falls outside the remit of this investigation.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We focus on the US.",
+    "native": "This inquiry is geographically confined to...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This is for now.",
+    "native": "The temporal scope is restricted to the period of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I only mean...",
+    "native": "This term is used here in its narrowest sense.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We ignore small things.",
+    "native": "Negligible variables have been excluded from the analysis.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a specific look.",
+    "native": "This study adopts a highly focused lens on...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I only look at one group.",
+    "native": "The cohort is specifically restricted to...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is the start point.",
+    "native": "This analysis serves as an initial exploration of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's not about everything.",
+    "native": "This study does not purport to be exhaustive.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "I look at the main part.",
+    "native": "The focal point of this research is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We focus on the theory.",
+    "native": "This is a primarily theoretical endeavor.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This is about the law.",
+    "native": "The legal dimensions constitute the core of this study.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I am only looking at A.",
+    "native": "A serves as the primary unit of analysis.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's just a case study.",
+    "native": "This is a singular case-based inquiry.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I stop in 2020.",
+    "native": "The dataset terminates at the close of 2020.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We didn't look at Y.",
+    "native": "Y was deemed peripheral to the central argument.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "I focus on the basics.",
+    "native": "This study is concerned with the foundational aspects of...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It is a micro look.",
+    "native": "A micro-level perspective is prioritized here.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I am not a doctor.",
+    "native": "This is not intended as a clinical assessment.",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "We use a broad view.",
+    "native": "A holistic approach is adopted for this inquiry.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's about the future.",
+    "native": "This is an inherently forward-looking analysis.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "I only look at the data.",
+    "native": "This is a strictly empirical investigation.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "It's just one side.",
+    "native": "This analysis is confined to the supply-side factors.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a pilot look.",
+    "native": "This represents a preliminary feasibility study.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I ignore the costs.",
+    "native": "Financial considerations are beyond the current scope.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "It's for students.",
+    "native": "This is tailored to the needs of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "I look at the trend.",
+    "native": "The focus is strictly on long-term macro trends.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We define X as...",
+    "native": "For the purposes of this study, X is defined as...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "It's not for profit.",
+    "native": "This is a strictly academic, non-commercial inquiry.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "I look at the big city.",
+    "native": "The urban context is the primary setting for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We look at people.",
+    "native": "Human agency is the central variable of interest.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's a short look.",
+    "native": "This is a brief, focused commentary on...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I only use this tool.",
+    "native": "This analysis relies exclusively on X.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We look at the past.",
+    "native": "This is a retrospective study covering...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the rules.",
+    "native": "Regulatory frameworks are the main subject of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's about how it works.",
+    "native": "The operational mechanics are the focus of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the results.",
+    "native": "The outcomes are the primary concern here.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "It's about the why.",
+    "native": "The causal drivers are the subject of this study.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the where.",
+    "native": "Spatial dynamics are central to this research.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's about the who.",
+    "native": "The demographic profile is the focus of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the when.",
+    "native": "Temporal sequencing is the primary interest.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's about the what.",
+    "native": "The nature of the phenomenon is the focus.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the how much.",
+    "native": "Quantitative magnitude is the subject of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the impact.",
+    "native": "The ramifications are the central concern.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the source.",
+    "native": "The origin of the data is the main focus.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the change.",
+    "native": "The process of transformation is the focus.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the goal.",
+    "native": "The final objectives are the focus of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the logic.",
+    "native": "The internal consistency is the subject of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "I look at the system.",
+    "native": "The systemic structure is the primary focus.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This shows we must change X.",
+    "native": "These findings necessitate a re-evaluation of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "To wrap up...",
+    "native": "In light of the evidence presented, it is clear that...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "We should do more research.",
+    "native": "Further inquiry is warranted to elucidate...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This helps the field.",
+    "native": "This study contributes to the burgeoning body of work on...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "In conclusion...",
+    "native": "Taken together, these results suggest...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "It means X is good.",
+    "native": "The utility of X has been effectively demonstrated.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a big lesson.",
+    "native": "This study offers profound insights into...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We should change the law.",
+    "native": "These findings have clear policy implications.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is the final word.",
+    "native": "This represents a definitive account of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We found the answer.",
+    "native": "This study provides a resolution to the question of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This makes us think.",
+    "native": "This prompts a critical reconsideration of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "It's a new start.",
+    "native": "This opens up new avenues for research into...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is for the future.",
+    "native": "These findings lay the groundwork for future...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We did our job.",
+    "native": "The research objectives have been successfully met.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is important.",
+    "native": "The significance of these findings cannot be overstated.",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "It's a key takeaway.",
+    "native": "A central takeaway from this study is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We should be careful.",
+    "native": "Caution is advised when applying these findings to...",
+    "type": "Sentence Starter"
+  },
+  {
+    "clunky": "This helps people.",
+    "native": "The practical applications of this research include...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's a big discovery.",
+    "native": "This constitutes a major breakthrough in...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We need more data.",
+    "native": "Future longitudinal studies are required to...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is the end.",
+    "native": "In closing, the evidence points toward...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "It's a good result.",
+    "native": "The findings provide a robust basis for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is the truth.",
+    "native": "The evidence is consistent with the view that...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "We found X.",
+    "native": "The results identify X as a critical factor.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a new lens.",
+    "native": "This study provides a novel framework for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We should update X.",
+    "native": "X should be revised to reflect these findings.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is the path forward.",
+    "native": "This study delineates a clear trajectory for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "It's a solid study.",
+    "native": "The findings are methodologically sound and...",
+    "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "This is for scholars.",
+    "native": "This work is of particular interest to...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We found the link.",
+    "native": "The nexus between X and Y is now clear.",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is the main point.",
+    "native": "The overarching conclusion of this study is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We should stop doing X.",
+    "native": "These findings argue against the continued use of...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a new tool.",
+    "native": "This provides an essential tool for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We should look at Y.",
+    "native": "Y emerges as a key area for subsequent research.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a success.",
+    "native": "The study has successfully demonstrated that...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "We found the gap.",
+    "native": "The previously noted gap has been addressed.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is a clear sign.",
+    "native": "This serves as a definitive indicator of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We should listen.",
+    "native": "Stakeholders should take heed of these findings.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is the result.",
+    "native": "The resultant model provides a...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We found the cause.",
+    "native": "The causal relationship has been established.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is the proof.",
+    "native": "This serves as empirical verification of...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We should keep going.",
+    "native": "There is a clear need for ongoing research into...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is the value.",
+    "native": "The inherent value of this approach is...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We found the trend.",
+    "native": "The long-term trend has been identified.",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is the impact.",
+    "native": "The broader ramifications of this work include...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We should use this.",
+    "native": "This model should be adopted by...",
+    "type": "Verb Phrase"
+  },
+  {
+    "clunky": "This is the key.",
+    "native": "This finding is key to understanding...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "We found the way.",
+    "native": "This study charts a new course for...",
+    "type": "Noun Phrase"
+  },
+  {
+    "clunky": "This is the finish.",
+    "native": "To conclude, the evidence strongly suggests...",
+    "type": "Transition"
+  },
+  {
+    "clunky": "This is for all.",
+    "native": "These findings have universal relevance for...",
+    "type": "Adverbial Phrase"
+  }
+]

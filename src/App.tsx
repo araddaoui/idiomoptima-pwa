@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import type { ReactElement } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import { 
@@ -143,6 +143,7 @@ fetch('/idioms-clunky-native.json')
       .catch(error => console.error('Failed to load idiom database:', error));
   }, []);
   const [aiPhraseMap, setAiPhraseMap] = useState<any[]>([]);
+  const [lexicalDatabases, setLexicalDatabases] = useState<Record<string, any[]>>({});
 
 useEffect(() => {
   // Load all AI phrase databases and merge them
@@ -176,6 +177,19 @@ useEffect(() => {
     setAiPhraseMap(merged);
     console.log(`Loaded ${merged.length} unique AI phrases from 3 databases (main: ${main.length}, 1500: ${db1500.length}, 1000: ${db1000.length})`);
   });
+}, []);
+
+useEffect(() => {
+  const domains = ['academic', 'business', 'creative', 'general'];
+  const loaded: Record<string, any[]> = {};
+  Promise.all(
+    domains.map(d =>
+      fetch(`/lexical-${d}.json`)
+        .then(r => r.json())
+        .then(data => { loaded[d] = data; console.log(`Loaded ${data.length} lexical entries for ${d}`); })
+        .catch(e => console.error(`Failed to load lexical-${d}.json:`, e))
+    )
+  ).then(() => setLexicalDatabases(loaded));
 }, []);
     // Apply idiom replacements to text
   const applyIdiomReplacements = (text: string) => {
@@ -357,16 +371,10 @@ if (fileType !== 'docx') {
             }
           }
         } else if (sent.isImmutableFootnote) {
-          // Immutable Worker records are authoritative bibliography entries. Merge them
-          // into the visible map instead of hiding them without rendering their content.
-          const immutableMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
-          if (immutableMatch) {
-            const num = immutableMatch[1] || immutableMatch[2];
-            const content = immutableMatch[3]?.trim();
-            if (num && content && (!map[num] || map[num].length < content.length)) {
-              map[num] = content;
-            }
-          }
+          // If the AI explicitly marked it as immutable footnote but doesn't match our regex,
+          // it might be a bibliography entry or multi-line continuation.
+          // We don't necessarily map these to numeric IDs unless they match the regex,
+          // but we will use the flag to hide them from the body.
         }
       });
     }
@@ -403,7 +411,7 @@ const renderDiff = (original: string, native: string) => {
   try {
     const originalWords = original.split(/(\s+)/);
     const nativeWords = native.split(/(\s+)/);
-    const result: ReactElement[] = [];
+    const result: ReactNode[] = [];
     let i = 0;
     let j = 0;
     while (i < originalWords.length || j < nativeWords.length) {
@@ -499,7 +507,7 @@ const renderContentWithFootnotes = (text: string) => {
     return parts;
   };
 
-  const sharedInputStyles: React.CSSProperties = {
+  const sharedInputStyles: CSSProperties = {
     lineHeight: '1.75',
     fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
     fontVariantNumeric: 'tabular-nums',
@@ -553,7 +561,8 @@ const data = await transformText(
   forcedDialect, 
   mode,
   idiomDatabase,
-  aiPhraseMap
+  aiPhraseMap,
+  lexicalDatabases
 );
 
       // Final synchronization heartbeat
@@ -603,13 +612,10 @@ const data = await transformText(
     }
   };
 
-  const copyToClipboard = () => {
+const copyToClipboard = () => {
   if (!result) return;
-  // Copy the clean accepted text plus its resolved Notes & References section,
-  // never the interactive diff/tooltip markup rendered on screen.
-  const textToCopy = getVisibleText();
+  const textToCopy = result.finalVersion;
   navigator.clipboard.writeText(textToCopy);
-
   setCopied(true);
   toast.success("Copied to clipboard!");
   setTimeout(() => setCopied(false), 2000);
@@ -683,7 +689,7 @@ const data = await transformText(
             acc[id] = {
               children: [new Paragraph({
                 children: [
-                  new TextRun({ text: String(content), font: "Arial", size: 20 })
+                  new TextRun({ text: content, font: "Arial", size: 20 })
                 ],
                 spacing: { after: 120 },
                 indent: { start: 720, hanging: 360 },
@@ -1177,7 +1183,8 @@ const data = await transformText(
 </div>
             </div>
 
-            <div className="flex-1"><AnimatePresence mode="wait">
+            <div className="flex-1">
+            <AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <Card>
@@ -1200,14 +1207,12 @@ const data = await transformText(
                   {/* Quality Metrics */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white border border-gray-200 rounded-lg p-3">
-                      <div className="text-xs text-gray-400">Source Quality</div>
+                      <div className="text-xs text-gray-400">Original</div>
                       <div className="text-2xl font-bold text-gray-900">{result.originalScore}%</div>
-                      <div className="text-xs text-gray-400">Original text</div>
                     </div>
                     <div className="bg-blue-600 rounded-lg p-3 text-white">
-                      <div className="text-xs text-white/70">Refined Quality</div>
+                      <div className="text-xs text-white/70">Refined</div>
                       <div className="text-2xl font-bold">{result.revisedScore}%</div>
-                      <div className="text-xs text-white/70">After refinement</div>
                     </div>
                   </div>
 
@@ -1307,7 +1312,7 @@ const content = (
                                     {Object.entries(footnoteMap).sort((a,b) => parseInt(a[0]) - parseInt(b[0])).map(([num, content]) => (
                                       <div key={num} ref={el => { footnoteRefs.current[num] = el; }} className="flex gap-2 text-xs text-gray-500">
                                         <span className="font-bold text-blue-500 min-w-[2rem]">[{num}]</span>
-                                        <span>{String(content)}</span>
+                                        <span>{content}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -1322,9 +1327,10 @@ const content = (
                     </div>
                   </div>
 
-                  {/* Key Improvements */}
+                  {/* Analysis */}
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Key Improvements</h3>
+                    <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Analysis</h3>
+                    <p className="text-xs text-gray-500 mb-2">{result.explanation}</p>
                     <ul className="space-y-1">
                       {result.suggestions.map((s, i) => (
                         <li key={i} className="text-xs text-gray-600 flex gap-2">
@@ -1333,7 +1339,6 @@ const content = (
                       ))}
                     </ul>
                   </div>
-
                 </motion.div>
               ) : (
                 <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full">
@@ -1352,7 +1357,8 @@ const content = (
                   </div>
                 </motion.div>
               )}
-            </AnimatePresence></div>
+            </AnimatePresence>
+            </div>
           </div>
         </div>
       </main>
