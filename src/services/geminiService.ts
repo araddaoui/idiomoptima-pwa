@@ -127,6 +127,11 @@ function fixGrammar(text: string): string {
     return punct + ' ' + letter.toUpperCase();
   });
 
+  // Fix informal sentence starters in academic context (only at start of sentence)
+  result = result.replace(/([.!?]\s+)So,\s/g, '$1Consequently, ');
+  result = result.replace(/([.!?]\s+)Also,\s/g, '$1Additionally, ');
+  result = result.replace(/([.!?]\s+)But\s/g, '$1However, ');
+
   return result;
 }
 

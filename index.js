@@ -354,33 +354,52 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
   const withCitations = restoreInlineCitations(originalText, cleaned);
   const finalVersion = restoreTruncatedFootnotes(originalText, withCitations);
   const detectedDialect = options.forcedDialect || detectDialect(originalText);
-  const originalScore = estimateScore(originalText);
+  const baseOriginalScore = estimateScore(originalText);
   const baseRevisedScore = estimateScore(finalVersion);
 
   const sentences = buildSentenceObjects(originalText, finalVersion);
   const analysis = buildAnalysis(originalText, finalVersion, options);
 
-  // Calculate improvement based on actual changes, not just absence of bad patterns
+  // Count actual changes by comparing sentences positionally
   const origSentences = originalText.split(/(?<=[.!?])\s+/);
   const rewSentences = finalVersion.split(/(?<=[.!?])\s+/);
   let changedCount = 0;
   for (let i = 0; i < Math.min(origSentences.length, rewSentences.length); i++) {
     if (comparable(origSentences[i]) !== comparable(rewSentences[i])) changedCount++;
   }
-  const changeRatio = changedCount / Math.max(1, origSentences.length);
 
-  // Grammar fixes add value
+  // Count analysis-level improvements (pattern matches + specific changes)
+  const specificChangeCount = analysis.suggestions.filter(s => s.startsWith('Changed:')).length;
+  const patternFixCount = analysis.suggestions.filter(s => !s.startsWith('Changed:') && !s.startsWith('Preserved') && !s.startsWith('Condensed') && !s.startsWith('Broke') && !s.startsWith('Refined') && !s.startsWith('Text already')).length;
+  const totalImprovements = specificChangeCount + patternFixCount;
+
+  // Score original: penalize based on how many issues the AI found and fixed
+  // More fixes needed = more issues in original = lower original score
+  let originalPenalty = 0;
+  if (totalImprovements > 12) originalPenalty = 12;
+  else if (totalImprovements > 8) originalPenalty = 8;
+  else if (totalImprovements > 5) originalPenalty = 5;
+  else if (totalImprovements > 2) originalPenalty = 3;
+  else if (totalImprovements > 0) originalPenalty = 1;
+  const originalScore = Math.max(55, baseOriginalScore - originalPenalty);
+
+  // Score revised: boost based on quality and quantity of improvements
+  let qualityBonus = 0;
+  if (totalImprovements > 12) qualityBonus = 8;
+  else if (totalImprovements > 8) qualityBonus = 6;
+  else if (totalImprovements > 5) qualityBonus = 4;
+  else if (totalImprovements > 2) qualityBonus = 2;
+  else if (totalImprovements > 0) qualityBonus = 1;
+
+  // Additional bonuses for specific fix types
   const hasGrammarFixes = /\b(was|were)\b/.test(originalText) && /\b(were)\b/.test(finalVersion) && /\bData\b/.test(originalText);
   const hasSpellingFixes = /\b(analysed|neighbours)\b/.test(originalText) && /\b(analyzed|neighbors)\b/.test(finalVersion);
   const hasPossessiveFixes = /\bFairclough\b/.test(originalText) && /\bFairclough's\b/.test(finalVersion);
-
-  let qualityBonus = 0;
-  if (changeRatio > 0.3) qualityBonus += 2;
-  else if (changeRatio > 0.15) qualityBonus += 1;
   if (hasGrammarFixes) qualityBonus += 1;
   if (hasSpellingFixes) qualityBonus += 1;
   if (hasPossessiveFixes) qualityBonus += 1;
 
+  // Revised score: start from originalScore + improvement, capped at 97
   const revisedScore = Math.min(97, Math.max(baseRevisedScore, originalScore + qualityBonus));
 
   return {
@@ -501,18 +520,54 @@ function buildAnalysis(original, rewritten, options) {
     suggestions.push("Preserved all citation markers and footnote references intact.");
   }
 
+  // Content-based sentence matching (handles reordering)
   const origSentences = original.split(/(?<=[.!?])\s+/);
   const rewSentences = rewritten.split(/(?<=[.!?])\s+/);
+
+  function sentenceWords(s) {
+    return s.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3);
+  }
+  function wordOverlap(a, b) {
+    const setB = new Set(b);
+    let overlap = 0;
+    for (const w of a) { if (setB.has(w)) overlap++; }
+    return a.length > 0 ? overlap / a.length : 0;
+  }
+
+  const matchedOrigins = new Set();
+  const matchedRewrites = new Set();
   const specificChanges = [];
-  for (let i = 0; i < Math.min(origSentences.length, rewSentences.length, 15); i++) {
-    if (comparable(origSentences[i]) !== comparable(rewSentences[i])) {
-      const origPhrase = origSentences[i].trim().substring(0, 100);
-      const rewPhrase = rewSentences[i].trim().substring(0, 100);
-      if (origPhrase && rewPhrase) {
-        specificChanges.push('"' + origPhrase + (origSentences[i].length > 100 ? "..." : "") + '" \u2192 "' + rewPhrase + (rewSentences[i].length > 100 ? "..." : "") + '"');
+
+  // For each original sentence, find best match in rewritten
+  for (let i = 0; i < origSentences.length && specificChanges.length < 15; i++) {
+    const origWords = sentenceWords(origSentences[i]);
+    if (origWords.length < 3) continue;
+
+    let bestJ = -1;
+    let bestScore = 0;
+    for (let j = 0; j < rewSentences.length; j++) {
+      if (matchedRewrites.has(j)) continue;
+      const rewWords = sentenceWords(rewSentences[j]);
+      const score = wordOverlap(origWords, rewWords);
+      if (score > bestScore) {
+        bestScore = score;
+        bestJ = j;
+      }
+    }
+
+    if (bestJ >= 0 && bestScore > 0.3) {
+      matchedOrigins.add(i);
+      matchedRewrites.add(bestJ);
+      if (comparable(origSentences[i]) !== comparable(rewSentences[bestJ])) {
+        const origPhrase = origSentences[i].trim().substring(0, 100);
+        const rewPhrase = rewSentences[bestJ].trim().substring(0, 100);
+        if (origPhrase && rewPhrase) {
+          specificChanges.push('"' + origPhrase + (origSentences[i].length > 100 ? "..." : "") + '" \u2192 "' + rewPhrase + (rewSentences[bestJ].length > 100 ? "..." : "") + '"');
+        }
       }
     }
   }
+
   if (specificChanges.length > 0 && specificChanges.length <= 15) {
     specificChanges.forEach((change) => suggestions.push("Changed: " + change + "."));
   } else if (specificChanges.length > 15) {
@@ -704,20 +759,29 @@ function detectDialect(text) {
 function estimateScore(text) {
   const lower = String(text || "").toLowerCase();
   const issuePatterns = [
+    // Severe wordiness
     [/\bdemonstrates that there is\b/, 5],
     [/\bdiscuss about\b/, 5],
     [/\bin order to\b/, 4],
     [/\bdue to the fact that\b/, 5],
     [/\bat this point in time\b/, 5],
-    [/\bi go\b/, 4],
-    [/\bi forget\b/, 4],
-    [/\s{2,}/, 2],
-    [/\bcasting a broad look\b/, 4],
-    [/\byet more daring and unprecedented\b/, 3],
-    [/\bmeaning that\b/, 2],
+    [/\bfor the purpose of\b/, 4],
+    [/\bwith regard to\b/, 4],
+    [/\bin the event that\b/, 4],
+    [/\bfor the reason that\b/, 5],
+    [/\bon the grounds that\b/, 4],
+    [/\bin light of the fact\b/, 5],
+    [/\bat the present time\b/, 4],
+    [/\bin a timely manner\b/, 4],
     [/\bprior to\b/, 2],
     [/\bsubsequent to\b/, 2],
     [/\bpursuant to\b/, 2],
+    [/\bconcerning this\b/, 2],
+    [/\bas opposed to\b/, 2],
+    // Academic fluff
+    [/\bcasting a broad look\b/, 4],
+    [/\byet more daring and unprecedented\b/, 3],
+    [/\bmeaning that\b/, 2],
     [/\ba reported\b/, 2],
     [/\bfor the period preceding\b/, 3],
     [/\bat that time among\b/, 2],
@@ -725,13 +789,11 @@ function estimateScore(text) {
     [/\bwas always a\b/, 1],
     [/\bmust be resolved concerning\b/, 4],
     [/\bmust be resolved\b/, 2],
-    [/\bconcerning this\b/, 2],
     [/\ballocates? a peripheral position\b/, 3],
     [/\baccorded to\b/, 2],
     [/\bto an increasingly unusual degree\b/, 3],
     [/\bto an unusual degree\b/, 2],
     [/\bthis points to the limits\b/, 2],
-    [/\bas opposed to\b/, 2],
     [/\bmore extensive,? more populous\b/, 1],
     [/\binfluence the course of events\b/, 2],
     [/\bnewly acquired status\b/, 1],
@@ -740,6 +802,14 @@ function estimateScore(text) {
     [/\bperipheral position to\b/, 2],
     [/\branges between\b/, 1],
     [/\bincreasingly unusual\b/, 2],
+    // Common academic wordiness
+    [/\bgo to the extent of\b/, 4],
+    [/\bthe extent to which\b/, 3],
+    [/\binasmuch as\b/, 4],
+    [/\bfaulted with\b/, 2],
+    [/\byielding less than\b/, 2],
+    [/\bthe procedure gave the researcher\b/, 4],
+    [/\ba window into the thinking of\b/, 4],
   ];
 
   let deductions = 0;
@@ -780,6 +850,11 @@ function cleanText(value) {
   result = result.replace(/([.!?])\s+([a-z])/g, (match, punct, letter) => {
     return punct + ' ' + letter.toUpperCase();
   });
+
+  // Fix informal sentence starters in academic context (only at start of sentence)
+  result = result.replace(/([.!?]\s+)So,\s/g, '$1Consequently, ');
+  result = result.replace(/([.!?]\s+)Also,\s/g, '$1Additionally, ');
+  result = result.replace(/([.!?]\s+)But\s/g, '$1However, ');
 
   // Fix double spaces
   result = result.replace(/\s{2,}/g, ' ');
