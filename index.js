@@ -9,7 +9,7 @@ const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
 };
 
-const FOOTNOTE_DEF_REGEX = /^\s*(?:\[?(\d{1,3})\]?[\s.:)\-|]{1,3}|Footnote\s*(\d{1,3}))[\s.:)\-|]*\s*(.+)/i;
+const FOOTNOTE_DEF_REGEX = /^\s*(?:\[?(\d{1,3})\]?[\s.:)\-|]{1,3}|Footnote\s*(\d{1,3})|REFERENCE\s+(\d{1,3}))[\s.:)\-|]*\s*(.+)/i;
 
 export default {
   async fetch(request, env) {
@@ -134,7 +134,7 @@ async function callCloudflareAI(text, options, ai) {
     "Tone: " + options.tone + "\n\n" +
     "RULES:\n" +
     "- CRITICAL: Keep inline citation markers EXACTLY where they appear in the original. If the original has 'text [1] more text', your rewrite must have 'rewritten text [1] more rewritten text' in the same position.\n" +
-    "- CRITICAL: Preserve ALL footnotes, endnotes, and reference lists COMPLETELY. Do NOT truncate, abbreviate, or omit any part of footnotes or references. Copy them exactly as they appear.\n" +
+    "- CRITICAL: Do NOT repeat or duplicate any footnotes, endnotes, or reference lists. Include each footnote exactly ONCE at the very end. Do NOT add footnotes after every sentence. Do NOT truncate, abbreviate, or omit any footnote.\n" +
     "- Preserve the exact meaning, claims, numbers, names, and paragraph breaks.\n" +
     "- Do NOT move citations to the end. Do NOT remove inline citations. Do NOT invent new ones.\n" +
     "- Do NOT invent facts, citations, quotations, sources, or references.\n" +
@@ -243,42 +243,84 @@ function normalizeGeminiResult(rawText, originalText, options, provider) {
   };
 }
 
+function deduplicateFootnotes(text) {
+  const lines = text.split('\n');
+  const result = [];
+  const seenFootnotes = new Set();
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const isFootnoteLine = /^\s*\[?\d{1,3}\]?\s/.test(trimmed) ||
+                           /^REFERENCE\s+\d+/i.test(trimmed) ||
+                           /^Footnote\s+\d+/i.test(trimmed) ||
+                           /^Key\s*words?:/i.test(trimmed);
+
+    if (isFootnoteLine) {
+      const key = trimmed.toLowerCase().substring(0, 50);
+      if (seenFootnotes.has(key)) {
+        console.log('[deduplicateFootnotes] Removing duplicate: ' + trimmed.substring(0, 60));
+        continue;
+      }
+      seenFootnotes.add(key);
+    }
+
+    result.push(line);
+  }
+
+  return result.join('\n');
+}
+
+function deduplicateFootnoteBlocks(text) {
+  const blocks = text.split(/\n{2,}/);
+  const seen = new Set();
+  const result = [];
+
+  for (const block of blocks) {
+    const trimmed = block.trim();
+    const key = trimmed.toLowerCase().replace(/\s+/g, ' ').substring(0, 80);
+
+    if (seen.has(key)) {
+      console.log('[deduplicateFootnoteBlocks] Removing duplicate block: ' + trimmed.substring(0, 60));
+      continue;
+    }
+    seen.add(key);
+    result.push(block);
+  }
+
+  return result.join('\n\n');
+}
+
 function restoreTruncatedFootnotes(original, rewritten) {
-  const footnoteRegex = /^\s*(?:\[?\d{1,3}\]?[\s.:)\-|]{1,3}|Footnote\s*(\d{1,3})|Key\s*words?:)\s*(.+)/gi;
+  let result = deduplicateFootnotes(rewritten);
+  result = deduplicateFootnoteBlocks(result);
+
+  const footnoteRegex = /^\s*\[?\d{1,3}\]?[\s.:)\-|]{1,3}\s*(.+)/i;
   const origLines = original.split('\n');
-  const footnoteBlocks = [];
-  let currentFootnote = null;
+  const footnoteTexts = [];
 
   for (const line of origLines) {
-    if (footnoteRegex.test(line)) {
-      if (currentFootnote) footnoteBlocks.push(currentFootnote);
-      currentFootnote = line;
-    } else if (currentFootnote && line.trim().length > 0) {
-      currentFootnote += '\n' + line;
-    }
-  }
-  if (currentFootnote) footnoteBlocks.push(currentFootnote);
-
-  if (footnoteBlocks.length === 0) return rewritten;
-
-  const rewrittenLower = rewritten.toLowerCase();
-  const missingFootnotes = [];
-
-  for (const footnote of footnoteBlocks) {
-    const firstWords = footnote.trim().split(/\s+/).slice(0, 5).join(' ').toLowerCase();
-    if (!rewrittenLower.includes(firstWords.substring(0, 20))) {
-      missingFootnotes.push(footnote.trim());
+    if (footnoteRegex.test(line) || /^Key\s*words?:/i.test(line)) {
+      footnoteTexts.push(line.trim());
     }
   }
 
-  if (missingFootnotes.length === 0) return rewritten;
+  if (footnoteTexts.length === 0) return result;
 
-  console.log('[restoreTruncatedFootnotes] Restoring ' + missingFootnotes.length + ' truncated footnotes');
+  const resultLower = result.toLowerCase();
+  const missing = [];
 
-  let result = rewritten;
-  for (const footnote of missingFootnotes) {
-    if (!result.endsWith('\n\n')) result += '\n\n';
-    result += footnote;
+  for (const fn of footnoteTexts) {
+    const firstChars = fn.replace(/^\s*\[?\d{1,3}\]?[\s.:)\-|]*/, '').trim().substring(0, 30).toLowerCase();
+    if (firstChars.length > 5 && !resultLower.includes(firstChars)) {
+      missing.push(fn);
+    }
+  }
+
+  if (missing.length === 0) return result;
+
+  console.log('[restoreTruncatedFootnotes] Restoring ' + missing.length + ' missing footnotes');
+  for (const fn of missing) {
+    result += '\n\n' + fn;
   }
 
   return result;
@@ -696,10 +738,18 @@ function normalizeStringArray(value, fallback) {
 }
 
 function cleanText(value) {
-  return String(value || "")
+  let result = String(value || "")
     .replace(/\s+\n/g, "\n")
     .replace(/\n\s+/g, "\n")
     .trim();
+
+  // Fix corrupted Unicode characters (e.g., "War?II" from non-breaking space)
+  result = result.replace(/([a-zA-Z])[\?\u00A0\u2007\u202F\uFEFF]+([A-Z])/g, '$1 $2');
+
+  // Fix double spaces
+  result = result.replace(/\s{2,}/g, ' ');
+
+  return result;
 }
 
 function extractPhrases(text) {
