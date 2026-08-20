@@ -279,6 +279,17 @@ if (fileType !== 'docx') {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
     
+    // Convert headings to markdown
+    tempDiv.querySelectorAll('h1').forEach(h => { h.outerHTML = '\n\n# ' + h.innerText + '\n\n'; });
+    tempDiv.querySelectorAll('h2').forEach(h => { h.outerHTML = '\n\n## ' + h.innerText + '\n\n'; });
+    tempDiv.querySelectorAll('h3').forEach(h => { h.outerHTML = '\n\n### ' + h.innerText + '\n\n'; });
+    tempDiv.querySelectorAll('h4').forEach(h => { h.outerHTML = '\n\n#### ' + h.innerText + '\n\n'; });
+    
+    // Convert bold/italic/underline to markdown
+    tempDiv.querySelectorAll('strong, b').forEach(el => { el.outerHTML = '**' + (el as HTMLElement).innerText + '**'; });
+    tempDiv.querySelectorAll('em, i').forEach(el => { el.outerHTML = '*' + (el as HTMLElement).innerText + '*'; });
+    tempDiv.querySelectorAll('u').forEach(el => { el.outerHTML = '__' + (el as HTMLElement).innerText + '__'; });
+    
     // Convert <sup>1</sup> to [1]
     tempDiv.querySelectorAll('sup').forEach(sup => {
       const content = sup.innerText.trim();
@@ -287,10 +298,29 @@ if (fileType !== 'docx') {
       }
     });
     
+    // Convert lists to markdown
+    tempDiv.querySelectorAll('ul').forEach(ul => {
+      const items = Array.from(ul.querySelectorAll('li')).map(li => '- ' + li.innerText).join('\n');
+      ul.outerHTML = '\n\n' + items + '\n\n';
+    });
+    tempDiv.querySelectorAll('ol').forEach(ol => {
+      const items = Array.from(ol.querySelectorAll('li')).map((li, i) => (i + 1) + '. ' + li.innerText).join('\n');
+      ol.outerHTML = '\n\n' + items + '\n\n';
+    });
+    
+    // Convert blockquotes
+    tempDiv.querySelectorAll('blockquote').forEach(bq => {
+      const lines = bq.innerText.split('\n').map(l => '> ' + l).join('\n');
+      bq.outerHTML = '\n\n' + lines + '\n\n';
+    });
+    
     // Ensure paragraphs are separated by newlines
     tempDiv.querySelectorAll('p').forEach(p => {
       p.appendChild(document.createTextNode('\n\n'));
     });
+    
+    // Convert horizontal rules
+    tempDiv.querySelectorAll('hr').forEach(hr => { hr.outerHTML = '\n\n---\n\n'; });
 
     return tempDiv.innerText || tempDiv.textContent || "";
   };
@@ -443,6 +473,122 @@ const renderDiff = (original: string, native: string) => {
   }
 };
 
+const renderMarkdownInline = (text: string): React.ReactNode[] => {
+  if (!text) return [];
+  const elements: React.ReactNode[] = [];
+  const lines = text.split('\n');
+
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li];
+
+    // Headings
+    const headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const cls = level === 1 ? 'font-bold text-2xl block mt-4 mb-2'
+        : level === 2 ? 'font-bold text-xl block mt-3 mb-2'
+        : level === 3 ? 'font-semibold text-lg block mt-2 mb-1'
+        : 'font-semibold text-base block mt-2 mb-1';
+      elements.push(<span key={`h-${li}`} className={cls}>{headingMatch[2]}</span>);
+      if (li < lines.length - 1) elements.push(<br key={`hbr-${li}`} />);
+      continue;
+    }
+
+    // Blockquotes
+    if (/^>\s?/.test(line)) {
+      elements.push(
+        <span key={`bq-${li}`} className="block pl-4 border-l-4 border-gray-300 italic text-gray-600 my-1">
+          {line.replace(/^>\s?/, '')}
+        </span>
+      );
+      if (li < lines.length - 1) elements.push(<br key={`bqbr-${li}`} />);
+      continue;
+    }
+
+    // Horizontal rules
+    if (/^---+$/.test(line.trim())) {
+      elements.push(<hr key={`hr-${li}`} className="my-3 border-gray-300" />);
+      continue;
+    }
+
+    // Bullet lists
+    if (/^[-*]\s+/.test(line)) {
+      elements.push(
+        <span key={`ul-${li}`} className="block pl-4 my-0.5">
+          <span className="mr-2">•</span>
+          {renderInlineFormatting(line.replace(/^[-*]\s+/, ''))}
+        </span>
+      );
+      continue;
+    }
+
+    // Numbered lists
+    const olMatch = line.match(/^(\d+)[.)]\s+(.+)/);
+    if (olMatch) {
+      elements.push(
+        <span key={`ol-${li}`} className="block pl-4 my-0.5">
+          <span className="mr-2">{olMatch[1]}.</span>
+          {renderInlineFormatting(olMatch[2])}
+        </span>
+      );
+      continue;
+    }
+
+    // Regular text with inline formatting
+    elements.push(<span key={`t-${li}`}>{renderInlineFormatting(line)}</span>);
+    if (li < lines.length - 1) elements.push(<br key={`br-${li}`} />);
+  }
+
+  return elements;
+};
+
+const renderInlineFormatting = (text: string): React.ReactNode[] => {
+  if (!text) return [];
+  const parts: React.ReactNode[] = [];
+  let remaining = text;
+  let keyIdx = 0;
+
+  while (remaining.length > 0) {
+    // Bold: **text**
+    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+    // Italic: *text*
+    const italicMatch = remaining.match(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/);
+    // Underline: __text__
+    const underlineMatch = remaining.match(/__(.+?)__/);
+
+    // Find earliest match
+    const matches = [
+      boldMatch ? { type: 'bold', match: boldMatch, idx: boldMatch.index! } : null,
+      italicMatch ? { type: 'italic', match: italicMatch, idx: italicMatch.index! } : null,
+      underlineMatch ? { type: 'underline', match: underlineMatch, idx: underlineMatch.index! } : null,
+    ].filter(Boolean).sort((a, b) => a!.idx - b!.idx);
+
+    if (matches.length === 0) {
+      parts.push(remaining);
+      break;
+    }
+
+    const first = matches[0]!;
+    // Add text before match
+    if (first.idx > 0) {
+      parts.push(remaining.substring(0, first.idx));
+    }
+
+    if (first.type === 'bold') {
+      parts.push(<strong key={`b-${keyIdx++}`}>{first.match[1]}</strong>);
+      remaining = remaining.substring(first.idx + first.match[0].length);
+    } else if (first.type === 'italic') {
+      parts.push(<em key={`i-${keyIdx++}`}>{first.match[1]}</em>);
+      remaining = remaining.substring(first.idx + first.match[0].length);
+    } else if (first.type === 'underline') {
+      parts.push(<u key={`u-${keyIdx++}`}>{first.match[1]}</u>);
+      remaining = remaining.substring(first.idx + first.match[0].length);
+    }
+  }
+
+  return parts;
+};
+
 const renderContentWithFootnotes = (text: string) => {
   if (!text) return null;
     
@@ -452,9 +598,9 @@ const renderContentWithFootnotes = (text: string) => {
     
     if (!hasMarkers) {
       if (text.length > 800) {
-        return <div className="whitespace-pre-wrap leading-relaxed min-h-[1.6em]">{text}</div>;
+        return <div className="whitespace-pre-wrap leading-relaxed min-h-[1.6em]">{renderMarkdownInline(text)}</div>;
       }
-      return text;
+      return renderMarkdownInline(text);
     }
 
     markerRegex.lastIndex = 0; 
@@ -465,7 +611,7 @@ const renderContentWithFootnotes = (text: string) => {
     while ((match = markerRegex.exec(text)) !== null) {
       const before = text.substring(lastIndex, match.index);
       if (before) {
-        parts.push(<span key={`text-${lastIndex}`} className="whitespace-pre-wrap">{before}</span>);
+        parts.push(<span key={`text-${lastIndex}`} className="whitespace-pre-wrap">{renderMarkdownInline(before)}</span>);
       }
 
       const num = getMarkerNum(match);
@@ -673,6 +819,47 @@ const copyToClipboard = () => {
     return result.finalVersion;
   };
 
+  const parseMarkdownToTextRuns = (text: string, baseFont = "Arial", baseSize = 24): any[] => {
+    const runs: any[] = [];
+    let remaining = text;
+    let keyIdx = 0;
+
+    while (remaining.length > 0) {
+      const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+      const italicMatch = remaining.match(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/);
+      const underlineMatch = remaining.match(/__(.+?)__/);
+
+      const matches = [
+        boldMatch ? { type: 'bold', match: boldMatch, idx: boldMatch.index! } : null,
+        italicMatch ? { type: 'italic', match: italicMatch, idx: italicMatch.index! } : null,
+        underlineMatch ? { type: 'underline', match: underlineMatch, idx: underlineMatch.index! } : null,
+      ].filter(Boolean).sort((a, b) => a!.idx - b!.idx);
+
+      if (matches.length === 0) {
+        if (remaining) runs.push(new TextRun({ text: remaining, font: baseFont, size: baseSize }));
+        break;
+      }
+
+      const first = matches[0]!;
+      if (first.idx > 0) {
+        runs.push(new TextRun({ text: remaining.substring(0, first.idx), font: baseFont, size: baseSize }));
+      }
+
+      if (first.type === 'bold') {
+        runs.push(new TextRun({ text: first.match[1], font: baseFont, size: baseSize, bold: true }));
+        remaining = remaining.substring(first.idx + first.match[0].length);
+      } else if (first.type === 'italic') {
+        runs.push(new TextRun({ text: first.match[1], font: baseFont, size: baseSize, italics: true }));
+        remaining = remaining.substring(first.idx + first.match[0].length);
+      } else if (first.type === 'underline') {
+        runs.push(new TextRun({ text: first.match[1], font: baseFont, size: baseSize, underline: {} }));
+        remaining = remaining.substring(first.idx + first.match[0].length);
+      }
+    }
+
+    return runs;
+  };
+
   const exportToWord = async () => {
     if (!result) return;
     try {
@@ -730,9 +917,10 @@ const copyToClipboard = () => {
                       }));
                       currentParagraphChildren = [];
                     }
+                    const headingSize = sent.headingLevel === 1 ? 32 : sent.headingLevel === 2 ? 28 : sent.headingLevel === 3 ? 26 : 28;
                     paragraphs.push(new Paragraph({
-                      children: [new TextRun({ text: text, font: "Arial", size: 28, bold: true })],
-                      spacing: { before: 400, after: 200 },
+                      children: [new TextRun({ text: text.replace(/^#{1,4}\s+/, ''), font: "Arial", size: headingSize, bold: true })],
+                      spacing: { before: sent.headingLevel === 1 ? 600 : 400, after: 200 },
                     }));
                   } else {
                     const markerRegex = new RegExp(FOOTNOTE_MARKER_REGEX.source, 'gu');
@@ -743,7 +931,7 @@ const copyToClipboard = () => {
                     while ((match = markerRegex.exec(cleanText)) !== null) {
                       const before = cleanText.substring(lastIdx, match.index);
                       if (before) {
-                        currentParagraphChildren.push(new TextRun({ text: before, font: "Arial", size: 24 }));
+                        currentParagraphChildren.push(...parseMarkdownToTextRuns(before));
                       }
 
                       const numStr = match[1] || match[2] || superToNum[match[3]];
@@ -759,7 +947,7 @@ const copyToClipboard = () => {
 
                     const remaining = cleanText.substring(lastIdx);
                     if (remaining) {
-                      currentParagraphChildren.push(new TextRun({ text: remaining, font: "Arial", size: 24 }));
+                      currentParagraphChildren.push(...parseMarkdownToTextRuns(remaining));
                     }
 
                     if (sent.isEndOfParagraph || idx === result.sentences.length - 1) {
@@ -795,6 +983,16 @@ const copyToClipboard = () => {
       console.error("Docx Export Error:", error);
       toast.error("Failed to export Word document.");
     }
+  };
+
+  const stripMarkdown = (text: string): string => {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '$1')
+      .replace(/__(.+?)__/g, '$1')
+      .replace(/^#{1,4}\s+/gm, '')
+      .replace(/^[-*]\s+/gm, '• ')
+      .replace(/^>\s?/gm, '');
   };
 
   const exportToPDF = () => {
@@ -849,14 +1047,16 @@ const copyToClipboard = () => {
             if (currentY > 270) { doc.addPage(); currentY = margin + 10; }
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(14);
-            const lines = doc.splitTextToSize(text, maxWidth);
+            const headingFontSize = sent.headingLevel === 1 ? 16 : sent.headingLevel === 2 ? 14 : sent.headingLevel === 3 ? 12 : 14;
+            doc.setFontSize(headingFontSize);
+            const cleanHeadingText = stripMarkdown(text.replace(/^#{1,4}\s+/, ''));
+            const lines = doc.splitTextToSize(cleanHeadingText, maxWidth);
             doc.text(lines, margin, currentY);
-            currentY += (lines.length * 8) + 5;
+            currentY += (lines.length * (headingFontSize * 0.4)) + 5;
             doc.setFont("helvetica", "normal");
             doc.setFontSize(11);
           } else {
-            currentParaText += text + " ";
+            currentParaText += stripMarkdown(text) + " ";
             
             if (sent.isEndOfParagraph || idx === result.sentences.length - 1) {
               // Flush paragraph
@@ -1267,7 +1467,10 @@ const content = (
     className={`cursor-pointer transition-all duration-200 relative group inline p-0.5 rounded hover:bg-gray-50
       ${sent.isNativeMatch ? 'border-b border-blue-200' : ''}
       ${isSwapped ? 'text-gray-400 bg-gray-50' : ''}
-      ${sent.isHeading ? 'font-bold block text-lg mt-4 mb-2' : ''}
+      ${sent.headingLevel === 1 ? 'font-bold block text-2xl mt-6 mb-3' : ''}
+      ${sent.headingLevel === 2 ? 'font-bold block text-xl mt-5 mb-2' : ''}
+      ${sent.headingLevel === 3 ? 'font-semibold block text-lg mt-4 mb-2' : ''}
+      ${sent.isHeading && !sent.headingLevel ? 'font-bold block text-lg mt-4 mb-2' : ''}
     `}
   >
 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white p-4 rounded-xl text-sm leading-relaxed pointer-events-none z-[110] shadow-xl w-96 whitespace-normal">

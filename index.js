@@ -135,7 +135,7 @@ async function callCloudflareAI(text, options, ai) {
     "RULES:\n" +
     "- CRITICAL: Keep inline citation markers EXACTLY where they appear in the original. If the original has 'text [1] more text', your rewrite must have 'rewritten text [1] more rewritten text' in the same position.\n" +
     "- CRITICAL: Footnotes and reference lists must appear EXACTLY ONCE in the output, at the very end. NEVER repeat the same footnote after different paragraphs or sentences. NEVER write the same footnote block more than once. If the input has one footnote, the output must have exactly one footnote.\n" +
-    "- Preserve the exact meaning, claims, numbers, names, and paragraph breaks.\n" +
+    "- CRITICAL: Preserve ALL formatting markers exactly as they appear. Keep **bold**, *italic*, __underline__, # headings, ## subheadings, - bullet lists, and > blockquotes. Do NOT strip, alter, or reorder formatting.\n" +
     "- Do NOT move citations to the end. Do NOT remove inline citations. Do NOT invent new ones.\n" +
     "- Do NOT invent facts, citations, quotations, sources, or references.\n" +
     "- Improve grammar, idiom, collocation, word choice, clarity, and native flow.\n" +
@@ -701,6 +701,7 @@ function buildSentenceObjects(originalText, finalText) {
       isNativeMatch: comparable(original) === comparable(native),
       isEndOfParagraph: originals[i]?.isEndOfParagraph ?? true,
       isHeading: originals[i]?.isHeading ?? false,
+      headingLevel: originals[i]?.headingLevel ?? 0,
       isImmutableFootnote: immutable,
     });
   }
@@ -718,14 +719,17 @@ function splitForDisplay(text) {
 
     const lines = trimmedBlock.split(/\n/).map((line) => line.trim()).filter(Boolean);
 
-    if (lines.length === 1 && looksLikeHeading(lines[0])) {
-      items.push({ text: lines[0], isEndOfParagraph: true, isHeading: true });
-      continue;
+    if (lines.length === 1) {
+      const headingLevel = looksLikeHeading(lines[0]);
+      if (headingLevel > 0) {
+        items.push({ text: lines[0], isEndOfParagraph: true, isHeading: true, headingLevel });
+        continue;
+      }
     }
 
     const isFootnoteBlock = lines.some((line) => FOOTNOTE_DEF_REGEX.test(line));
     if (isFootnoteBlock) {
-      items.push({ text: trimmedBlock, isEndOfParagraph: true, isHeading: false });
+      items.push({ text: trimmedBlock, isEndOfParagraph: true, isHeading: false, headingLevel: 0 });
       continue;
     }
 
@@ -737,6 +741,7 @@ function splitForDisplay(text) {
           text: value,
           isEndOfParagraph: index === parts.length - 1,
           isHeading: false,
+          headingLevel: 0,
         });
       }
     });
@@ -746,7 +751,11 @@ function splitForDisplay(text) {
 }
 
 function looksLikeHeading(text) {
-  return text.length <= 80 && !/[.!?]$/.test(text) && !FOOTNOTE_DEF_REGEX.test(text);
+  if (text.length > 80 || /[.!?]$/.test(text) || FOOTNOTE_DEF_REGEX.test(text)) return 0;
+  if (text.length <= 30 && /^[A-Z\s:]+$/.test(text.trim())) return 1;
+  if (text.length <= 50 && /^[A-Z]/.test(text) && !/,$/.test(text)) return 2;
+  if (text.length <= 60 && !/[,;]$/.test(text)) return 3;
+  return 0;
 }
 
 function detectDialect(text) {
@@ -856,8 +865,8 @@ function cleanText(value) {
   result = result.replace(/([.!?]\s+)Also,\s/g, '$1Additionally, ');
   result = result.replace(/([.!?]\s+)But\s/g, '$1However, ');
 
-  // Fix double spaces
-  result = result.replace(/\s{2,}/g, ' ');
+  // Fix double spaces (but preserve paragraph breaks)
+  result = result.replace(/[^\S\n]{2,}/g, ' ');
 
   return result;
 }

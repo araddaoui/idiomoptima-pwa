@@ -6,6 +6,7 @@ export interface SentenceObject {
   isNativeMatch: boolean;
   isEndOfParagraph: boolean;
   isHeading: boolean;
+  headingLevel?: number;
   isImmutableFootnote?: boolean;
 }
 
@@ -79,7 +80,10 @@ function applyUnifiedReplacements(text: string, phrases: UnifiedPhrase[], label:
     }
   }
 
-  result = result.replace(/\s+/g, ' ').replace(/ ,/g, ',').replace(/ \./g, '.');
+  result = result.replace(/\n\n/g, '\x00PARA\x00');
+  result = result.replace(/[^\S\n]+/g, ' ');
+  result = result.replace(/\x00PARA\x00/g, '\n\n');
+  result = result.replace(/ ,/g, ',').replace(/ \./g, '.');
 
   if (count > 0) {
     console.log(`[${label}] Applied ${count} replacements`);
