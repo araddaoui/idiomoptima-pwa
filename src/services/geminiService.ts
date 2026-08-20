@@ -123,6 +123,9 @@ function fixGrammar(text: string): string {
   // Fix "a" before consonant sounds that start with vowel letters
   result = result.replace(/\b(a)\s+(un)/gi, 'an $2');
 
+  // Fix corrupted Unicode characters (e.g., "War?II" from non-breaking space)
+  result = result.replace(/([a-zA-Z])[\?\u00A0\u2007\u202F\uFEFF]+([A-Z])/g, '$1 $2');
+
   return result;
 }
 

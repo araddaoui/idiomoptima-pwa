@@ -312,7 +312,7 @@ if (fileType !== 'docx') {
 
   const footnoteRefs = useRef<Record<string, HTMLSpanElement | null>>({});
 
-  const FOOTNOTE_DEF_REGEX = /^\s*(?:\[?(\d{1,3})\]?[\s.:)\-|]{1,3}|Footnote\s*(\d{1,3}))[\s.:)\-|]*\s*(.+)/i;
+  const FOOTNOTE_DEF_REGEX = /^\s*(?:\[?(\d{1,3})\]?[\s.:)\-|]{1,3}|Footnote\s*(\d{1,3})|REFERENCE\s+(\d{1,3}))[\s.:)\-|]*\s*(.+)/i;
   const FOOTNOTE_MARKER_REGEX = /\[(\d{1,3})\]|\((\d{1,3})\)|([¹²³⁴⁵⁶⁷⁸⁹⁰])/gu;
 
   const SUPER_TO_NUM: Record<string, string> = {
