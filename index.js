@@ -218,7 +218,8 @@ function buildGeminiPrompt(text, options) {
 
 function normalizeGeminiResult(rawText, originalText, options, provider) {
   const parsed = parseJsonFromModel(rawText);
-  const finalVersion = cleanText(parsed.finalVersion || parsed.final || parsed.text || originalText);
+  const cleaned = cleanText(parsed.finalVersion || parsed.final || parsed.text || originalText);
+  const finalVersion = revertCorruptions(originalText, cleaned);
 
   if (comparable(finalVersion) === comparable(originalText)) {
     throw new Error("Gemini returned unchanged text");
@@ -349,10 +350,90 @@ function restoreTruncatedFootnotes(original, rewritten) {
   return result;
 }
 
+function revertCorruptions(originalText, revisedText) {
+  const origSentences = originalText.split(/(?<=[.!?])\s+/);
+  const revSentences = revisedText.split(/(?<=[.!?])\s+/);
+
+  if (origSentences.length !== revSentences.length) return revisedText;
+
+  const fixed = [];
+  for (let i = 0; i < origSentences.length; i++) {
+    const orig = origSentences[i];
+    const rev = revSentences[i];
+    if (comparable(orig) === comparable(rev)) {
+      fixed.push(rev);
+      continue;
+    }
+
+    const origWords = orig.split(/\s+/);
+    const revWords = rev.split(/\s+/);
+    let changedIndices = [];
+    for (let j = 0; j < Math.min(origWords.length, revWords.length); j++) {
+      if (comparable(origWords[j]) !== comparable(revWords[j])) {
+        changedIndices.push(j);
+      }
+    }
+
+    if (changedIndices.length === 0 || changedIndices.length > Math.ceil(origWords.length * 0.4)) {
+      fixed.push(rev);
+      continue;
+    }
+
+    let corrupted = false;
+    for (const idx of changedIndices) {
+      const origWord = origWords[idx].replace(/[^a-zA-Z'-]/g, '');
+      const revWord = revWords[idx].replace(/[^a-zA-Z'-]/g, '');
+
+      if (origWord.length >= 4 && revWord.length >= 4) {
+        const commonPrefix = countCommonPrefix(origWord.toLowerCase(), revWord.toLowerCase());
+        const similarity = commonPrefix / Math.max(origWord.length, revWord.length);
+        if (similarity > 0.3 && similarity < 0.8 && revWord.length < origWord.length) {
+          corrupted = true;
+          break;
+        }
+      }
+
+      if (/\b\w+-\w+\b/.test(origWord) && !/\b\w+-\w+\b/.test(revWord)) {
+        corrupted = true;
+        break;
+      }
+
+      if (origWord.length >= 5 && revWord.length <= 2 && !/^(a|i|o)$/.test(revWord.toLowerCase())) {
+        corrupted = true;
+        break;
+      }
+
+      if (revWord.length >= 3 && origWord.length >= 3) {
+        const vowels = (revWord.match(/[aeiou]/gi) || []).length;
+        const consonants = revWord.replace(/[aeiou]/gi, '').length;
+        if (consonants > vowels * 2 && revWord.length >= 5) {
+          corrupted = true;
+          break;
+        }
+      }
+    }
+
+    if (corrupted) {
+      fixed.push(orig);
+    } else {
+      fixed.push(rev);
+    }
+  }
+
+  return fixed.join(' ');
+}
+
+function countCommonPrefix(a, b) {
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return i;
+}
+
 function buildResultFromRewrite(originalText, rewrittenText, options, provider) {
   const cleaned = cleanText(rewrittenText);
   const withCitations = restoreInlineCitations(originalText, cleaned);
-  const finalVersion = restoreTruncatedFootnotes(originalText, withCitations);
+  const withFootnotes = restoreTruncatedFootnotes(originalText, withCitations);
+  const finalVersion = revertCorruptions(originalText, withFootnotes);
   const detectedDialect = options.forcedDialect || detectDialect(originalText);
 
   const sentences = buildSentenceObjects(originalText, finalVersion);
