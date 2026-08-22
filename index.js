@@ -136,6 +136,10 @@ async function callCloudflareAI(text, options, ai) {
     "- CRITICAL: Keep inline citation markers EXACTLY where they appear in the original. If the original has 'text [1] more text', your rewrite must have 'rewritten text [1] more rewritten text' in the same position.\n" +
     "- CRITICAL: Footnotes and reference lists must appear EXACTLY ONCE in the output, at the very end. NEVER repeat the same footnote after different paragraphs or sentences. NEVER write the same footnote block more than once. If the input has one footnote, the output must have exactly one footnote.\n" +
     "- CRITICAL: Preserve ALL formatting markers exactly as they appear. Keep **bold**, *italic*, __underline__, # headings, ## subheadings, - bullet lists, and > blockquotes. Do NOT strip, alter, or reorder formatting.\n" +
+    "- NEVER use em dashes (—) or en dashes (–). Use commas, semicolons, or parentheses instead.\n" +
+    "- Do NOT change the formality level. If the original uses 'I am', keep 'I am' — do NOT contract to 'I'm'. If the original uses 'We are', keep 'We are' — do NOT contract to 'We're'. If the original uses 'is not', keep 'is not' — do NOT contract to 'isn't'. Preserve the author's register.\n" +
+    "- Do NOT swap synonyms when the original word is already correct. Only change a word if it is clearly wrong, awkward, or unnatural. 'Explore' is fine — do NOT change it to 'Discover'. 'built' is fine — do NOT change it to 'launched'. 'respect' is fine — do NOT change it to 'honors'.\n" +
+    "- Do NOT change the meaning. 'practicing and teaching' means the author was actively practicing AND teaching — do NOT change this to 'taught and studied'.\n" +
     "- Do NOT move citations to the end. Do NOT remove inline citations. Do NOT invent new ones.\n" +
     "- Do NOT invent facts, citations, quotations, sources, or references.\n" +
     "- Improve grammar, idiom, collocation, word choice, clarity, and native flow.\n" +
@@ -185,6 +189,10 @@ function buildGeminiPrompt(text, options) {
     "Mode: " + options.mode + "\n\n" +
     "Rules:\n" +
     "- Preserve meaning, claims, citations, footnote markers, numbers, names, and paragraph boundaries.\n" +
+    "- NEVER use em dashes (—) or en dashes (–). Use commas, semicolons, or parentheses instead.\n" +
+    "- Do NOT change the formality level. If the original uses 'I am', keep 'I am' — do NOT contract to 'I'm'. If the original uses 'We are', keep 'We are' — do NOT contract to 'We're'. If the original uses 'is not', keep 'is not' — do NOT contract to 'isn't'. Preserve the author's register.\n" +
+    "- Do NOT swap synonyms when the original word is already correct. Only change a word if it is clearly wrong, awkward, or unnatural. 'Explore' is fine — do NOT change it to 'Discover'. 'built' is fine — do NOT change it to 'launched'. 'respect' is fine — do NOT change it to 'honors'.\n" +
+    "- Do NOT change the meaning. 'practicing and teaching' means the author was actively practicing AND teaching — do NOT change this to 'taught and studied'.\n" +
     "- Do not invent facts, citations, quotations, sources, or references.\n" +
     "- Improve grammar, idiom, collocation, clarity, and native flow.\n" +
     "- Keep academic writing appropriately precise and not inflated.\n" +
@@ -219,7 +227,8 @@ function buildGeminiPrompt(text, options) {
 function normalizeGeminiResult(rawText, originalText, options, provider) {
   const parsed = parseJsonFromModel(rawText);
   const cleaned = cleanText(parsed.finalVersion || parsed.final || parsed.text || originalText);
-  const finalVersion = revertCorruptions(originalText, cleaned);
+  const noCorruption = revertCorruptions(originalText, cleaned);
+  const finalVersion = revertContractions(originalText, noCorruption);
 
   if (comparable(finalVersion) === comparable(originalText)) {
     throw new Error("Gemini returned unchanged text");
@@ -423,6 +432,42 @@ function revertCorruptions(originalText, revisedText) {
   return fixed.join(' ');
 }
 
+const CONTRACTION_MAP = {
+  "i'm": "I am", "i've": "I have", "i'll": "I will", "i'd": "I would",
+  "we're": "We are", "we've": "We have", "we'll": "We will", "we'd": "We would",
+  "they're": "They are", "they've": "They have", "they'll": "They will", "they'd": "They would",
+  "you're": "You are", "you've": "You have", "you'll": "You will", "you'd": "You would",
+  "he's": "He is", "he'll": "He will", "he'd": "He would",
+  "she's": "She is", "she'll": "She will", "she'd": "She would",
+  "it's": "It is", "it'll": "It will", "it'd": "It would",
+  "isn't": "is not", "aren't": "are not", "wasn't": "was not", "weren't": "were not",
+  "hasn't": "has not", "haven't": "have not", "hadn't": "had not",
+  "doesn't": "does not", "don't": "do not", "didn't": "did not",
+  "can't": "cannot", "couldn't": "could not", "shouldn't": "should not",
+  "won't": "will not", "wouldn't": "would not", "mustn't": "must not",
+  "that's": "that is", "there's": "there is", "here's": "here is",
+  "what's": "what is", "who's": "who is", "where's": "where is",
+  "let's": "let us",
+};
+
+function revertContractions(originalText, revisedText) {
+  const origLower = originalText.toLowerCase();
+  const hasAnyContraction = Object.keys(CONTRACTION_MAP).some(c => origLower.includes(c));
+  if (hasAnyContraction) return revisedText;
+
+  let result = revisedText;
+  for (const [contraction, expanded] of Object.entries(CONTRACTION_MAP)) {
+    const regex = new RegExp("\\b" + contraction.replace("'", "'") + "\\b", "gi");
+    result = result.replace(regex, (match) => {
+      if (match[0] === match[0].toUpperCase() && expanded[0] === expanded[0].toLowerCase()) {
+        return expanded.charAt(0).toUpperCase() + expanded.slice(1);
+      }
+      return expanded;
+    });
+  }
+  return result;
+}
+
 function countCommonPrefix(a, b) {
   let i = 0;
   while (i < a.length && i < b.length && a[i] === b[i]) i++;
@@ -433,7 +478,8 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
   const cleaned = cleanText(rewrittenText);
   const withCitations = restoreInlineCitations(originalText, cleaned);
   const withFootnotes = restoreTruncatedFootnotes(originalText, withCitations);
-  const finalVersion = revertCorruptions(originalText, withFootnotes);
+  const noCorruption = revertCorruptions(originalText, withFootnotes);
+  const finalVersion = revertContractions(originalText, noCorruption);
   const detectedDialect = options.forcedDialect || detectDialect(originalText);
 
   const sentences = buildSentenceObjects(originalText, finalVersion);
@@ -442,25 +488,30 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
   // Count actual changes by comparing sentences positionally
   const origSentences = originalText.split(/(?<=[.!?])\s+/);
   const rewSentences = finalVersion.split(/(?<=[.!?])\s+/);
-  let changedCount = 0;
-  for (let i = 0; i < Math.min(origSentences.length, rewSentences.length); i++) {
-    if (comparable(origSentences[i]) !== comparable(rewSentences[i])) changedCount++;
+
+  function significantChange(a, b) {
+    const aW = a.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+    const bW = b.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+    const setA = new Set(aW);
+    let overlap = 0;
+    for (const w of bW) { if (setA.has(w)) overlap++; }
+    const similarity = aW.length > 0 ? overlap / aW.length : 1;
+    return similarity < 0.85;
   }
 
-  // Count analysis-level improvements (pattern matches + specific changes)
-  const specificChangeCount = analysis.suggestions.filter(s => s.startsWith('Changed:')).length;
-  const patternFixCount = analysis.suggestions.filter(s => !s.startsWith('Changed:') && !s.startsWith('Preserved') && !s.startsWith('Condensed') && !s.startsWith('Broke') && !s.startsWith('Refined') && !s.startsWith('Text already')).length;
-  const totalImprovements = specificChangeCount + patternFixCount;
-
-  const changeRatio = origSentences.length > 0 ? changedCount / origSentences.length : 0;
+  let significantChanges = 0;
+  for (let i = 0; i < Math.min(origSentences.length, rewSentences.length); i++) {
+    if (significantChange(origSentences[i], rewSentences[i])) significantChanges++;
+  }
 
   const baseOriginalScore = estimateScore(originalText);
   const baseRevisedScore = estimateScore(finalVersion);
 
-  const originalScore = Math.max(55, Math.min(88, baseOriginalScore - Math.min(totalImprovements, 10)));
+  const originalScore = Math.max(60, Math.min(92, baseOriginalScore));
 
-  const improvementMagnitude = Math.min(1, totalImprovements / 10);
-  const qualityBonus = Math.round(improvementMagnitude * 6 + changeRatio * 4);
+  const changeRatio = origSentences.length > 0 ? significantChanges / origSentences.length : 0;
+  const magnitude = Math.min(1, significantChanges / 8);
+  const qualityBonus = Math.round(magnitude * 4 + changeRatio * 3);
   const revisedScore = Math.max(originalScore + 1, Math.min(97, baseRevisedScore + qualityBonus));
 
   return {
@@ -963,6 +1014,15 @@ function cleanText(value) {
   result = result.replace(/(\.)[\?\u00A0\u2007\u202F\uFEFF]+([A-Z])/g, '$1 $2');
   // Fix corruption like "War?II" → "War II" (letter + corruption + capital)
   result = result.replace(/([a-zA-Z])[\?\u00A0\u2007\u202F\uFEFF]+([A-Z])/g, '$1 $2');
+
+  // Replace em dashes with commas or hyphens (context-dependent)
+  result = result.replace(/\s*[—–]\s*/g, (match, offset, str) => {
+    const before = str.charAt(offset - 1);
+    const after = str.charAt(offset + match.length);
+    if (before === ',' || after === ',') return ' ';
+    if (/[.!?]/.test(before)) return ' ';
+    return ', ';
+  });
 
   // Fix AI dropping words from proper nouns
   result = result.replace(/\bWorld II\b/g, 'World War II');
