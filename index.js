@@ -381,9 +381,7 @@ function restoreTruncatedFootnotes(original, rewritten) {
 }
 
 function revertCorruptions(originalText, revisedText) {
-  const origSentences = originalText.split(/(?<=[.!?])\s+/);
-  const revSentences = revisedText.split(/(?<=[.!?])\s+/);
-  if (revSentences.length === 0) return revisedText;
+  if (!revisedText || !originalText) return revisedText;
 
   function wordSet(s) {
     return new Set(normalizeDash(s).toLowerCase().replace(/[^a-z0-9\s-]/g, '').split(/\s+/).filter(w => w.length > 3));
@@ -422,29 +420,37 @@ function revertCorruptions(originalText, revisedText) {
     return false;
   }
 
-  const matched = [];
-  const usedRev = new Set();
-  for (const orig of origSentences) {
-    const oSet = wordSet(orig);
-    let bestJ = -1, bestScore = 0;
-    for (let j = 0; j < revSentences.length; j++) {
-      if (usedRev.has(j)) continue;
-      const score = overlap(oSet, wordSet(revSentences[j]));
-      if (score > bestScore) { bestScore = score; bestJ = j; }
-    }
-    if (bestJ >= 0 && bestScore > 0.3) {
-      matched.push({ orig, rev: revSentences[bestJ], revIdx: bestJ });
-      usedRev.add(bestJ);
-    }
-  }
+  const origParagraphs = originalText.split(/\n{2,}/);
+  const revParagraphs = revisedText.split(/\n{2,}/);
 
-  const result = revSentences.slice();
-  for (const m of matched) {
-    if (isCorruption(m.orig, m.rev)) {
-      result[m.revIdx] = m.orig;
+  const result = revParagraphs.map((rPara, pIdx) => {
+    const oPara = origParagraphs[pIdx] || origParagraphs[origParagraphs.length - 1] || '';
+    const oSentences = oPara.split(/(?<=[.!?])\s+/);
+    const rSentences = rPara.split(/(?<=[.!?])\s+/);
+    const matched = [];
+    const usedRev = new Set();
+    for (const orig of oSentences) {
+      const oSet = wordSet(orig);
+      let bestJ = -1, bestScore = 0;
+      for (let j = 0; j < rSentences.length; j++) {
+        if (usedRev.has(j)) continue;
+        const score = overlap(oSet, wordSet(rSentences[j]));
+        if (score > bestScore) { bestScore = score; bestJ = j; }
+      }
+      if (bestJ >= 0 && bestScore > 0.3) {
+        matched.push({ orig, rev: rSentences[bestJ], revIdx: bestJ });
+        usedRev.add(bestJ);
+      }
     }
-  }
-  return result.join(' ');
+    const fixed = rSentences.slice();
+    for (const m of matched) {
+      if (isCorruption(m.orig, m.rev)) {
+        fixed[m.revIdx] = m.orig;
+      }
+    }
+    return fixed.join(' ');
+  });
+  return result.join('\n\n');
 }
 
 const CONTRACTION_MAP = {
@@ -542,12 +548,16 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
     revisedMetrics[key] = Math.min(100, origRubric.metrics[key] + metricBonus + (revRubric.metrics[key] > origRubric.metrics[key] ? 1 : 0));
   }
 
-  const revComments = revRubric.comments.slice();
+  const revComments = revRubric.comments.slice(0, 5);
   if (significantChanges > 0) {
     revComments.unshift(improvementBonus + "-point improvement across " + significantChanges + " sentence" + (significantChanges > 1 ? "s" : ""));
   } else {
     revComments.unshift("Minor refinements applied — text was already strong");
   }
+  if (revComments.length > 5) revComments.length = 5;
+
+  const origComments = origRubric.comments.slice(0, 5);
+  if (origComments.length > 5) origComments.length = 5;
 
   return {
     finalVersion,
@@ -558,7 +568,7 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
     revisedScore,
     rubric: origRubric.rubric,
     originalMetrics: origRubric.metrics,
-    originalComments: origRubric.comments,
+    originalComments: origComments,
     originalLetterGrade: origRubric.letterGrade,
     revisedMetrics,
     revisedComments: revComments,
@@ -693,7 +703,7 @@ function buildAnalysis(original, rewritten, options) {
   const specificChanges = [];
 
   // For each original sentence, find best match in rewritten
-  for (let i = 0; i < origSentences.length && specificChanges.length < 15; i++) {
+  for (let i = 0; i < origSentences.length && specificChanges.length < 6; i++) {
     const origWords = sentenceWords(origSentences[i]);
     if (origWords.length < 3) continue;
 
@@ -722,11 +732,11 @@ function buildAnalysis(original, rewritten, options) {
     }
   }
 
-  if (specificChanges.length > 0 && specificChanges.length <= 15) {
+  if (specificChanges.length > 0 && specificChanges.length <= 5) {
     specificChanges.forEach((change) => suggestions.push("Changed: " + change + "."));
-  } else if (specificChanges.length > 15) {
-    specificChanges.slice(0, 10).forEach((change) => suggestions.push("Changed: " + change + "."));
-    suggestions.push("...and " + (specificChanges.length - 10) + " more sentence-level improvements.");
+  } else if (specificChanges.length > 5) {
+    specificChanges.slice(0, 3).forEach((change) => suggestions.push("Changed: " + change + "."));
+    suggestions.push("...and " + (specificChanges.length - 3) + " more sentence-level improvements.");
   }
 
   if (suggestions.length === 0) {
@@ -745,9 +755,12 @@ function buildAnalysis(original, rewritten, options) {
 
   const detectedReg = detectRegister(original, options.domain, options.mode);
   const explanation = "Refined for " + detectedReg + " register" + (options.forcedDialect ? " in " + options.forcedDialect + " dialect" : "")
-    + ". " + suggestions.length + " improvement" + (suggestions.length !== 1 ? "s" : "") + " applied while preserving citations, footnotes, and source structure.";
+    + ". " + suggestions.length + " improvement" + (suggestions.length !== 1 ? "s" : "") + " applied while preserving citations, footnotes, and source structure."
+    + " [Auto-Selected Mode: " + (options.mode || "hybrid") + "]";
 
-  return { suggestions, explanation };
+  if (suggestions.length > 6) suggestions.length = 6;
+
+  return { suggestions: suggestions.slice(0, 6), explanation };
 }
 
 function normalizeSentence(sentence, index) {

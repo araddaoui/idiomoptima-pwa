@@ -79,7 +79,12 @@ function applyUnifiedReplacements(text: string, phrases: UnifiedPhrase[], label:
     try {
       const regex = new RegExp(`\\b${escapeRegex(source)}\\b`, 'gi');
       if (regex.test(result)) {
-        result = result.replace(regex, target);
+        result = result.replace(regex, (match, offset) => {
+          const before = offset > 0 ? result.charAt(offset - 1) : '';
+          const after = offset + match.length < result.length ? result.charAt(offset + match.length) : '';
+          if (before === '-' || after === '-') return match;
+          return target;
+        });
         count++;
       }
     } catch {
