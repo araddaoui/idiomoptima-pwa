@@ -1566,30 +1566,6 @@ const content = (
                     </div>
                   </div>
 
-                  {/* Rubric Breakdown */}
-                  {(result.originalMetrics || result.revisedMetrics) && (
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Rubric Breakdown</div>
-                      <div className="space-y-1.5">
-                        {Object.keys(result.originalMetrics || result.revisedMetrics || {}).map((key) => (
-                          <div key={key} className="flex items-center gap-2">
-                            <span className="text-[11px] text-gray-500 w-28 truncate capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                            <div className="flex-1 bg-gray-200 rounded-full h-1.5 relative">
-                              <div className="absolute left-0 top-0 h-full bg-gray-400 rounded-full" style={{ width: `${result.originalMetrics?.[key] || 0}%` }} />
-                              <div className="absolute left-0 top-0 h-full bg-blue-500 rounded-full opacity-70" style={{ width: `${result.revisedMetrics?.[key] || 0}%` }} />
-                            </div>
-                            <span className="text-[10px] text-gray-400 w-6 text-right">{result.originalMetrics?.[key] || 0}</span>
-                            <span className="text-[10px] text-blue-600 w-6 text-right font-medium">{result.revisedMetrics?.[key] || 0}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex gap-4 mt-2 text-[10px] text-gray-400">
-                        <span className="flex items-center gap-1"><span className="w-2 h-1.5 bg-gray-400 rounded inline-block" /> Original</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-1.5 bg-blue-500 rounded inline-block" /> Refined</span>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Justification Comments */}
                   {(result.originalComments || result.revisedComments) && (
                     <div className="bg-gray-50 rounded-lg p-3">

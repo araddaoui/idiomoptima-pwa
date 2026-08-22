@@ -942,18 +942,18 @@ function splitForDisplay(text) {
 }
 
 function looksLikeHeading(text) {
-  const trimmed = text.trim();
-  if (trimmed.length > 80 || /[.!?]$/.test(trimmed) || FOOTNOTE_DEF_REGEX.test(trimmed)) return 0;
+  const stripped = text.trim().replace(/^#{1,4}\s+/, '').trim();
+  if (stripped.length > 120 || /[.!?]$/.test(stripped) || FOOTNOTE_DEF_REGEX.test(stripped)) return 0;
 
-  const mdMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
+  const mdMatch = text.trim().match(/^(#{1,4})\s+(.+)$/);
   if (mdMatch) {
-    const stripped = mdMatch[2].trim();
-    if (stripped.length <= 80 && !/[.!?]$/.test(stripped)) return mdMatch[1].length;
+    if (mdMatch[2].trim().length <= 120 && !/[.!?]$/.test(mdMatch[2].trim())) return mdMatch[1].length;
   }
 
-  if (trimmed.length <= 30 && /^[A-Z\s:]+$/.test(trimmed)) return 1;
-  if (trimmed.length <= 50 && /^[A-Z]/.test(trimmed) && !/,$/.test(trimmed)) return 2;
-  if (trimmed.length <= 60 && !/[,;]$/.test(trimmed)) return 3;
+  if (/^(chapter|part|section|appendix)\s+\w+/i.test(stripped)) return 1;
+  if (stripped.length <= 80 && /^[A-Z\s:]+$/.test(stripped)) return 1;
+  if (stripped.length <= 80 && /^[A-Z]/.test(stripped) && !/,$/.test(stripped)) return 2;
+  if (stripped.length <= 80 && !/[,;]$/.test(stripped)) return 3;
   return 0;
 }
 
@@ -1218,6 +1218,8 @@ function cleanText(value) {
   result = result.replace(/—/g, ', ');
   // Replace en dashes only between words (not between digits like page ranges)
   result = result.replace(/([a-zA-Z])\s*–\s*([a-zA-Z])/g, '$1, $2');
+  // Clean up consecutive commas
+  result = result.replace(/,\s*,\s*/g, ', ');
 
   // Fix AI dropping words from proper nouns
   result = result.replace(/\bWorld II\b/g, 'World War II');
