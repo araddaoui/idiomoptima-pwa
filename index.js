@@ -240,14 +240,23 @@ function normalizeGeminiResult(rawText, originalText, options, provider) {
     : buildSentenceObjects(originalText, finalVersion);
 
   const analysis = buildAnalysis(originalText, finalVersion, options);
+  const origRubric = estimateScore(originalText, options.domain, options.mode);
+  const revRubric = estimateScore(finalVersion, options.domain, options.mode);
 
   return {
     finalVersion,
     sentences,
     suggestions: analysis.suggestions,
     explanation: analysis.explanation,
-    originalScore: clampScore(parsed.originalScore, estimateScore(originalText)),
-    revisedScore: clampScore(parsed.revisedScore, Math.min(97, Math.max(estimateScore(finalVersion) + 2, estimateScore(originalText) + 3))),
+    originalScore: clampScore(parsed.originalScore, origRubric.score),
+    revisedScore: clampScore(parsed.revisedScore, Math.min(97, Math.max(revRubric.score + 2, origRubric.score + 3))),
+    rubric: origRubric.rubric,
+    originalMetrics: origRubric.metrics,
+    originalComments: origRubric.comments,
+    originalLetterGrade: origRubric.letterGrade,
+    revisedMetrics: revRubric.metrics,
+    revisedComments: revRubric.comments,
+    revisedLetterGrade: scoreToLetter(clampScore(parsed.revisedScore, Math.min(97, Math.max(revRubric.score + 2, origRubric.score + 3)))),
     detectedDialect,
     provider,
   };
@@ -504,23 +513,35 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
     if (significantChange(origSentences[i], rewSentences[i])) significantChanges++;
   }
 
-  const baseOriginalScore = estimateScore(originalText);
-  const baseRevisedScore = estimateScore(finalVersion);
-
-  const originalScore = Math.max(60, Math.min(92, baseOriginalScore));
+  const origRubric = estimateScore(originalText, options.domain, options.mode);
+  const revRubric = estimateScore(finalVersion, options.domain, options.mode);
 
   const changeRatio = origSentences.length > 0 ? significantChanges / origSentences.length : 0;
   const magnitude = Math.min(1, significantChanges / 8);
   const qualityBonus = Math.round(magnitude * 4 + changeRatio * 3);
-  const revisedScore = Math.max(originalScore + 1, Math.min(97, baseRevisedScore + qualityBonus));
+  const revisedScore = Math.max(origRubric.score + 1, Math.min(97, revRubric.score + qualityBonus));
+
+  const revComments = revRubric.comments.slice();
+  if (significantChanges > 0) {
+    revComments.unshift(significantChanges + " sentence" + (significantChanges > 1 ? "s" : "") + " significantly improved");
+  } else {
+    revComments.unshift("Minor refinements applied — text was already strong");
+  }
 
   return {
     finalVersion,
     sentences,
     suggestions: analysis.suggestions,
     explanation: analysis.explanation,
-    originalScore,
+    originalScore: origRubric.score,
     revisedScore,
+    rubric: origRubric.rubric,
+    originalMetrics: origRubric.metrics,
+    originalComments: origRubric.comments,
+    originalLetterGrade: origRubric.letterGrade,
+    revisedMetrics: revRubric.metrics,
+    revisedComments: revComments,
+    revisedLetterGrade: scoreToLetter(revisedScore),
     detectedDialect,
     provider,
   };
@@ -745,17 +766,26 @@ function parseJsonFromModel(rawText) {
 
 function buildDeterministicResult(text, options, reason) {
   const finalVersion = deterministicPolish(text);
-  const originalScore = estimateScore(text);
-  const revisedScore = estimateScore(finalVersion);
+  const origRubric = estimateScore(text, options.domain, options.mode);
+  const revRubric = estimateScore(finalVersion, options.domain, options.mode);
   const analysis = buildAnalysis(text, finalVersion, options);
+
+  const revisedScore = Math.max(origRubric.score + 1, Math.min(95, revRubric.score + 1));
 
   return {
     finalVersion,
     sentences: buildSentenceObjects(text, finalVersion),
     suggestions: analysis.suggestions,
     explanation: (reason ? "AI providers unavailable (" + reason + "). " : "") + analysis.explanation,
-    originalScore: Math.min(85, originalScore),
-    revisedScore: Math.max(revisedScore + 1, Math.min(92, originalScore + 3)),
+    originalScore: origRubric.score,
+    revisedScore,
+    rubric: origRubric.rubric,
+    originalMetrics: origRubric.metrics,
+    originalComments: origRubric.comments,
+    originalLetterGrade: origRubric.letterGrade,
+    revisedMetrics: revRubric.metrics,
+    revisedComments: revRubric.comments,
+    revisedLetterGrade: scoreToLetter(revisedScore),
     detectedDialect: options.forcedDialect || detectDialect(text),
     provider: "deterministic",
   };
@@ -905,91 +935,230 @@ function detectDialect(text) {
   return "US";
 }
 
-function estimateScore(text) {
+const REGISTER_RUBRICS = {
+  academic: {
+    weights: { wordiness: 20, passiveVoice: 12, sentenceLength: 10, lexicalDiversity: 12, vocabulary: 20, sentenceVariety: 13, register: 13 },
+  },
+  business: {
+    weights: { wordiness: 18, passiveVoice: 10, sentenceLength: 15, lexicalDiversity: 12, vocabulary: 15, sentenceVariety: 15, register: 15 },
+  },
+  general: {
+    weights: { wordiness: 12, passiveVoice: 8, sentenceLength: 15, lexicalDiversity: 18, vocabulary: 12, sentenceVariety: 18, register: 17 },
+  },
+  creative: {
+    weights: { wordiness: 5, passiveVoice: 3, sentenceLength: 10, lexicalDiversity: 25, vocabulary: 20, sentenceVariety: 22, register: 15 },
+  },
+};
+
+function detectRegister(text, domain, mode) {
+  const d = String(domain || "").toLowerCase();
+  const m = String(mode || "").toLowerCase();
+  if (d === "academic" || d === "scholarly" || d === "research") return "academic";
+  if (d === "business" || d === "corporate" || d === "professional") return "business";
+  if (d === "creative" || d === "fiction" || d === "narrative" || m === "creative") return "creative";
+  if (d === "general" || d === "blog" || d === "casual") return "general";
+  const lower = String(text || "").toLowerCase();
+  if (/\b(abstract|introduction|methodology|findings|conclusion|references|literature review|hypothesis|empirical)\b/.test(lower)) return "academic";
+  if (/\b(dear\s+(sir|madam|team)|regards|sincerely|memo|proposal|quarterly|stakeholders)\b/.test(lower)) return "business";
+  if (/\b(chapter|once upon|narrative|protagonist|dialogue|poem|stanza|metaphor)\b/.test(lower)) return "creative";
+  return "general";
+}
+
+function scoreToLetter(score) {
+  if (score >= 93) return "A";
+  if (score >= 90) return "A-";
+  if (score >= 87) return "B+";
+  if (score >= 83) return "B";
+  if (score >= 80) return "B-";
+  if (score >= 77) return "C+";
+  if (score >= 73) return "C";
+  if (score >= 70) return "C-";
+  if (score >= 67) return "D+";
+  if (score >= 60) return "D";
+  return "F";
+}
+
+const WORDINESS_PATTERNS = [
+  [/\bdemonstrates that there is\b/, 5],
+  [/\bdiscuss about\b/, 5],
+  [/\bin order to\b/, 4],
+  [/\bdue to the fact that\b/, 5],
+  [/\bat this point in time\b/, 5],
+  [/\bfor the purpose of\b/, 4],
+  [/\bwith regard to\b/, 4],
+  [/\bin the event that\b/, 4],
+  [/\bfor the reason that\b/, 5],
+  [/\bon the grounds that\b/, 4],
+  [/\bin light of the fact\b/, 5],
+  [/\bat the present time\b/, 4],
+  [/\bin a timely manner\b/, 4],
+  [/\bprior to\b/, 2],
+  [/\bsubsequent to\b/, 2],
+  [/\bpursuant to\b/, 2],
+  [/\bconcerning this\b/, 2],
+  [/\bas opposed to\b/, 2],
+  [/\bcasting a broad look\b/, 4],
+  [/\byet more daring and unprecedented\b/, 3],
+  [/\bmeaning that\b/, 2],
+  [/\ba reported\b/, 2],
+  [/\bfor the period preceding\b/, 3],
+  [/\bat that time among\b/, 2],
+  [/\bseveral location including\b/, 3],
+  [/\bwas always a\b/, 1],
+  [/\bmust be resolved concerning\b/, 4],
+  [/\bmust be resolved\b/, 2],
+  [/\ballocates? a peripheral position\b/, 3],
+  [/\baccorded to\b/, 2],
+  [/\bto an increasingly unusual degree\b/, 3],
+  [/\bto an unusual degree\b/, 2],
+  [/\bthis points to the limits\b/, 2],
+  [/\bmore extensive,? more populous\b/, 1],
+  [/\binfluence the course of events\b/, 2],
+  [/\bnewly acquired status\b/, 1],
+  [/\botherwise more powerful\b/, 1],
+  [/\bcentral position of\b/, 2],
+  [/\bperipheral position to\b/, 2],
+  [/\branges between\b/, 1],
+  [/\bincreasingly unusual\b/, 2],
+  [/\bgo to the extent of\b/, 4],
+  [/\bthe extent to which\b/, 3],
+  [/\binasmuch as\b/, 4],
+  [/\bfaulted with\b/, 2],
+  [/\byielding less than\b/, 2],
+  [/\bthe procedure gave the researcher\b/, 4],
+  [/\ba window into the thinking of\b/, 4],
+];
+
+function estimateScore(text, domain, mode) {
+  const reg = detectRegister(text, domain, mode);
+  const rubric = REGISTER_RUBRICS[reg] || REGISTER_RUBRICS.general;
   const lower = String(text || "").toLowerCase();
   const words = lower.split(/\s+/).filter(Boolean);
   const sentences = String(text || "").split(/[.!?]+/).filter(s => s.trim().length > 0);
-  const issuePatterns = [
-    // Severe wordiness
-    [/\bdemonstrates that there is\b/, 5],
-    [/\bdiscuss about\b/, 5],
-    [/\bin order to\b/, 4],
-    [/\bdue to the fact that\b/, 5],
-    [/\bat this point in time\b/, 5],
-    [/\bfor the purpose of\b/, 4],
-    [/\bwith regard to\b/, 4],
-    [/\bin the event that\b/, 4],
-    [/\bfor the reason that\b/, 5],
-    [/\bon the grounds that\b/, 4],
-    [/\bin light of the fact\b/, 5],
-    [/\bat the present time\b/, 4],
-    [/\bin a timely manner\b/, 4],
-    [/\bprior to\b/, 2],
-    [/\bsubsequent to\b/, 2],
-    [/\bpursuant to\b/, 2],
-    [/\bconcerning this\b/, 2],
-    [/\bas opposed to\b/, 2],
-    // Academic fluff
-    [/\bcasting a broad look\b/, 4],
-    [/\byet more daring and unprecedented\b/, 3],
-    [/\bmeaning that\b/, 2],
-    [/\ba reported\b/, 2],
-    [/\bfor the period preceding\b/, 3],
-    [/\bat that time among\b/, 2],
-    [/\bseveral location including\b/, 3],
-    [/\bwas always a\b/, 1],
-    [/\bmust be resolved concerning\b/, 4],
-    [/\bmust be resolved\b/, 2],
-    [/\ballocates? a peripheral position\b/, 3],
-    [/\baccorded to\b/, 2],
-    [/\bto an increasingly unusual degree\b/, 3],
-    [/\bto an unusual degree\b/, 2],
-    [/\bthis points to the limits\b/, 2],
-    [/\bmore extensive,? more populous\b/, 1],
-    [/\binfluence the course of events\b/, 2],
-    [/\bnewly acquired status\b/, 1],
-    [/\botherwise more powerful\b/, 1],
-    [/\bcentral position of\b/, 2],
-    [/\bperipheral position to\b/, 2],
-    [/\branges between\b/, 1],
-    [/\bincreasingly unusual\b/, 2],
-    // Common academic wordiness
-    [/\bgo to the extent of\b/, 4],
-    [/\bthe extent to which\b/, 3],
-    [/\binasmuch as\b/, 4],
-    [/\bfaulted with\b/, 2],
-    [/\byielding less than\b/, 2],
-    [/\bthe procedure gave the researcher\b/, 4],
-    [/\ba window into the thinking of\b/, 4],
-  ];
+  const wordCount = words.length;
+  const sentenceCount = Math.max(1, sentences.length);
 
-  let deductions = 0;
-  for (const [pattern, penalty] of issuePatterns) {
-    if (pattern.test(lower)) deductions += penalty;
+  const metrics = {};
+  const comments = [];
+
+  let wordinessPenalty = 0;
+  for (const [pattern, penalty] of WORDINESS_PATTERNS) {
+    if (pattern.test(lower)) wordinessPenalty += penalty;
   }
+  metrics.wordiness = Math.max(0, 100 - wordinessPenalty * 10);
+  if (wordinessPenalty === 0) comments.push("No wordiness patterns detected");
+  else comments.push("Detected " + wordinessPenalty + " wordiness points from verbose patterns");
 
-  let qualityDeductions = 0;
-
-  if (sentences.length > 0) {
-    const avgWordsPerSentence = words.length / sentences.length;
-    if (avgWordsPerSentence > 35) qualityDeductions += 2;
-    else if (avgWordsPerSentence > 25) qualityDeductions += 1;
-  }
-
+  let passivePenalty = 0;
   const passiveMatches = lower.match(/\b(was|were|is|are|been|being)\s+\w+ed\b/g);
-  if (passiveMatches && sentences.length > 0) {
-    const passiveRatio = passiveMatches.length / sentences.length;
-    if (passiveRatio > 0.4) qualityDeductions += 3;
-    else if (passiveRatio > 0.25) qualityDeductions += 2;
-    else if (passiveRatio > 0.15) qualityDeductions += 1;
+  const passiveRatio = passiveMatches ? passiveMatches.length / sentenceCount : 0;
+  if (passiveRatio > 0.4) passivePenalty = 30;
+  else if (passiveRatio > 0.25) passivePenalty = 20;
+  else if (passiveRatio > 0.15) passivePenalty = 10;
+  else if (passiveRatio > 0.08) passivePenalty = 5;
+  metrics.passiveVoice = Math.max(0, 100 - passivePenalty);
+  if (passiveRatio > 0.15) comments.push("Passive voice ratio " + Math.round(passiveRatio * 100) + "% — elevated for " + reg + " register");
+  else comments.push("Passive voice within acceptable range (" + Math.round(passiveRatio * 100) + "%)");
+
+  const avgSentenceLen = wordCount / sentenceCount;
+  let sentenceLenScore = 100;
+  if (reg === "academic") {
+    if (avgSentenceLen > 30) { sentenceLenScore = 60; comments.push("Average sentence length " + Math.round(avgSentenceLen) + " words — long for academic prose"); }
+    else if (avgSentenceLen > 25) { sentenceLenScore = 80; comments.push("Average sentence length " + Math.round(avgSentenceLen) + " words — slightly long"); }
+    else if (avgSentenceLen < 10) { sentenceLenScore = 70; comments.push("Average sentence length " + Math.round(avgSentenceLen) + " words — unusually short"); }
+    else { comments.push("Sentence length appropriate for academic register (" + Math.round(avgSentenceLen) + " words avg)"); }
+  } else if (reg === "business") {
+    if (avgSentenceLen > 25) { sentenceLenScore = 65; comments.push("Average sentence length " + Math.round(avgSentenceLen) + " words — long for business writing"); }
+    else if (avgSentenceLen < 8) { sentenceLenScore = 75; comments.push("Average sentence length " + Math.round(avgSentenceLen) + " words — very short"); }
+    else { comments.push("Sentence length appropriate for business register"); }
+  } else if (reg === "creative") {
+    sentenceLenScore = 95;
+    comments.push("Sentence variety noted in creative register");
+  } else {
+    if (avgSentenceLen > 30) { sentenceLenScore = 65; comments.push("Average sentence length " + Math.round(avgSentenceLen) + " words — long"); }
+    else { comments.push("Sentence length within normal range"); }
   }
+  metrics.sentenceLength = Math.max(0, sentenceLenScore);
 
   const uniqueWords = new Set(words.filter(w => w.length > 3));
-  const lexicalDiversity = words.length > 0 ? uniqueWords.size / words.length : 1;
-  if (lexicalDiversity < 0.4) qualityDeductions += 2;
-  else if (lexicalDiversity < 0.5) qualityDeductions += 1;
+  const lexicalDiversity = wordCount > 0 ? uniqueWords.size / wordCount : 1;
+  let diversityScore = 100;
+  if (lexicalDiversity < 0.35) { diversityScore = 50; comments.push("Low lexical diversity (" + (lexicalDiversity * 100).toFixed(0) + "% unique long words)"); }
+  else if (lexicalDiversity < 0.45) { diversityScore = 70; comments.push("Moderate lexical diversity (" + (lexicalDiversity * 100).toFixed(0) + "%)"); }
+  else if (lexicalDiversity < 0.55) { diversityScore = 85; comments.push("Good lexical diversity (" + (lexicalDiversity * 100).toFixed(0) + "%)"); }
+  else { comments.push("Strong lexical diversity (" + (lexicalDiversity * 100).toFixed(0) + "% unique long words)"); }
+  metrics.lexicalDiversity = diversityScore;
 
-  return Math.max(55, Math.min(97, 85 - deductions - qualityDeductions));
+  const longWords = words.filter(w => w.replace(/[^a-z]/g, "").length > 6);
+  const sophisticationRatio = wordCount > 0 ? longWords.length / wordCount : 0;
+  let vocabScore = 80;
+  if (reg === "academic") {
+    if (sophisticationRatio > 0.2) { vocabScore = 95; comments.push("Vocabulary sophistication appropriate for academic register"); }
+    else if (sophisticationRatio > 0.12) { vocabScore = 85; comments.push("Vocabulary level adequate for academic writing"); }
+    else { vocabScore = 65; comments.push("Vocabulary may be too simple for academic register (" + (sophisticationRatio * 100).toFixed(0) + "% complex words)"); }
+  } else if (reg === "business") {
+    if (sophisticationRatio > 0.15) { vocabScore = 90; comments.push("Vocabulary level appropriate for business register"); }
+    else if (sophisticationRatio > 0.08) { vocabScore = 80; comments.push("Vocabulary level standard for business writing"); }
+    else { vocabScore = 70; comments.push("Vocabulary may be too informal for business register"); }
+  } else if (reg === "creative") {
+    if (sophisticationRatio > 0.08 && sophisticationRatio < 0.25) { vocabScore = 90; comments.push("Vocabulary variety suits creative register"); }
+    else if (sophisticationRatio >= 0.25) { vocabScore = 80; comments.push("Vocabulary somewhat dense for creative writing"); }
+    else { vocabScore = 75; comments.push("Vocabulary may be too simple for literary register"); }
+  } else {
+    if (sophisticationRatio > 0.15) { vocabScore = 85; comments.push("Vocabulary level appropriate for general writing"); }
+    else { vocabScore = 75; comments.push("Vocabulary somewhat basic"); }
+  }
+  metrics.vocabulary = vocabScore;
+
+  const sentenceLengths = sentences.map(s => s.trim().split(/\s+/).filter(Boolean).length).filter(l => l > 0);
+  let varietyScore = 80;
+  if (sentenceLengths.length >= 3) {
+    const mean = sentenceLengths.reduce((a, b) => a + b, 0) / sentenceLengths.length;
+    const variance = sentenceLengths.reduce((sum, l) => sum + Math.pow(l - mean, 2), 0) / sentenceLengths.length;
+    const cv = mean > 0 ? Math.sqrt(variance) / mean : 0;
+    if (cv > 0.5) { varietyScore = 95; comments.push("Excellent sentence variety (CV: " + (cv * 100).toFixed(0) + "%)"); }
+    else if (cv > 0.35) { varietyScore = 85; comments.push("Good sentence variety (CV: " + (cv * 100).toFixed(0) + "%)"); }
+    else if (cv > 0.2) { varietyScore = 75; comments.push("Moderate sentence variety (CV: " + (cv * 100).toFixed(0) + "%)"); }
+    else { varietyScore = 60; comments.push("Low sentence variety — sentences are similar length (CV: " + (cv * 100).toFixed(0) + "%)"); }
+  } else {
+    varietyScore = 80;
+    comments.push("Too few sentences to measure variety");
+  }
+  metrics.sentenceVariety = varietyScore;
+
+  const contractions = lower.match(/\b\w+'\w+\b/g) || [];
+  const informalMarkers = lower.match(/\b(hey|gonna|wanna|kinda|gotta|yeah|yep|nope|ok|okay|lol|omg|btw)\b/g) || [];
+  const slangRatio = (contractions.length + informalMarkers.length) / Math.max(1, wordCount);
+  let registerScore = 100;
+  if (reg === "academic") {
+    if (contractions.length > 0) { registerScore -= contractions.length * 5; comments.push("Academic register flagged " + contractions.length + " contraction(s) — inappropriate for formal prose"); }
+    if (informalMarkers.length > 0) { registerScore -= informalMarkers.length * 10; comments.push("Found " + informalMarkers.length + " informal marker(s) in academic text"); }
+  } else if (reg === "business") {
+    if (informalMarkers.length > 0) { registerScore -= informalMarkers.length * 8; comments.push("Found " + informalMarkers.length + " informal marker(s) in business text"); }
+  } else if (reg === "general") {
+    if (slangRatio > 0.05) { registerScore -= 15; comments.push("High slang/contraction density for general register"); }
+  }
+  if (registerScore >= 100) comments.push("Register is consistent with " + reg + " expectations");
+  metrics.register = Math.max(0, registerScore);
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+  for (const [key, weight] of Object.entries(rubric.weights)) {
+    const metricScore = metrics[key] || 0;
+    weightedSum += metricScore * weight;
+    totalWeight += weight;
+  }
+
+  const rawScore = totalWeight > 0 ? weightedSum / totalWeight : 80;
+  const grade = Math.round(Math.max(40, Math.min(97, rawScore)));
+
+  return {
+    score: grade,
+    rubric: reg,
+    metrics,
+    comments,
+    letterGrade: scoreToLetter(grade),
+  };
 }
 
 function countWords(text) {

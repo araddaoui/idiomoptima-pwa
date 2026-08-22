@@ -17,6 +17,13 @@ export interface TransformationResult {
   explanation: string;
   originalScore: number;
   revisedScore: number;
+  rubric?: string;
+  originalMetrics?: Record<string, number>;
+  originalComments?: string[];
+  originalLetterGrade?: string;
+  revisedMetrics?: Record<string, number>;
+  revisedComments?: string[];
+  revisedLetterGrade?: string;
   detectedDialect?: string;
   appliedMode?: string;
 }
