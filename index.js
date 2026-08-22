@@ -377,51 +377,69 @@ function restoreTruncatedFootnotes(original, rewritten) {
 }
 
 function revertCorruptions(originalText, revisedText) {
-  const origLower = originalText.toLowerCase();
-  const revLower = revisedText.toLowerCase();
+  const origSentences = originalText.split(/(?<=[.!?])\s+/);
+  const revSentences = revisedText.split(/(?<=[.!?])\s+/);
+  if (revSentences.length === 0) return revisedText;
 
-  const origWords = origLower.split(/\s+/).filter(Boolean);
-  const revWords = revLower.split(/\s+/).filter(Boolean);
-
-  if (revWords.length === 0) return revisedText;
-
-  const result = revisedText.split(/\s+/);
-  let reverted = 0;
-
-  for (let j = 0; j < Math.min(origWords.length, revWords.length) && reverted < 20; j++) {
-    const origClean = origWords[j].replace(/[^a-z'-]/g, '');
-    const revClean = revWords[j].replace(/[^a-z'-]/g, '');
-
-    if (origClean === revClean || origClean.length < 3 || revClean.length < 3) continue;
-
-    let corrupted = false;
-
-    if (origClean.includes('-') && revClean.includes('-')) {
-      const origParts = origClean.split('-');
-      const revParts = revClean.split('-');
-      if (origParts.length === revParts.length && origParts[0] === revParts[0] && origParts[1] !== revParts[1]) {
-        corrupted = true;
+  function wordSet(s) {
+    return new Set(s.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3));
+  }
+  function overlap(a, b) {
+    const setB = new Set(b);
+    let c = 0;
+    for (const w of a) { if (setB.has(w)) c++; }
+    return a.size > 0 ? c / a.size : 0;
+  }
+  function isCorruption(orig, rev) {
+    const oWords = orig.split(/\s+/);
+    const rWords = rev.split(/\s+/);
+    const oSet = wordSet(orig);
+    const rSet = wordSet(rev);
+    let changedCount = 0;
+    const minLen = Math.min(oWords.length, rWords.length);
+    for (let j = 0; j < minLen; j++) {
+      const oW = oWords[j].replace(/[^a-zA-Z'-]/g, '').toLowerCase();
+      const rW = rWords[j].replace(/[^a-zA-Z'-]/g, '').toLowerCase();
+      if (oW !== rW && oW.length >= 3 && rW.length >= 3) {
+        changedCount++;
+        if (oW.includes('-') && rW.includes('-')) {
+          const oP = oW.split('-');
+          const rP = rW.split('-');
+          if (oP.length === rP.length && oP[0] === rP[0] && oP[1] !== rP[1]) return true;
+        }
+        if (/\w+-\w+/.test(oWords[j]) && !/\w+-\w+/.test(rWords[j])) return true;
+        if (oW.length >= 5 && rW.length <= 2) return true;
       }
     }
-
-    if (/\b\w+-\w+\b/.test(origWords[j]) && !/\b\w+-\w+\b/.test(revWords[j])) {
-      corrupted = true;
+    if (changedCount > 0 && changedCount <= Math.ceil(minLen * 0.4)) {
+      const revOnlyWords = [...rSet].filter(w => !oSet.has(w));
+      if (revOnlyWords.length > 0 && revOnlyWords.every(w => w.length < 5)) return true;
     }
+    return false;
+  }
 
-    if (!corrupted && origClean.length >= 4 && revClean.length >= 4) {
-      const cp = countCommonPrefix(origClean, revClean);
-      const sim = cp / Math.max(origClean.length, revClean.length);
-      if (sim > 0.3 && sim < 0.8 && revClean.length < origClean.length) {
-        corrupted = true;
-      }
+  const matched = [];
+  const usedRev = new Set();
+  for (const orig of origSentences) {
+    const oSet = wordSet(orig);
+    let bestJ = -1, bestScore = 0;
+    for (let j = 0; j < revSentences.length; j++) {
+      if (usedRev.has(j)) continue;
+      const score = overlap(oSet, wordSet(revSentences[j]));
+      if (score > bestScore) { bestScore = score; bestJ = j; }
     }
-
-    if (corrupted) {
-      result[j] = result[j].replace(new RegExp('\\b' + revWords[j].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i'), originalText.split(/\s+/)[j]);
-      reverted++;
+    if (bestJ >= 0 && bestScore > 0.3) {
+      matched.push({ orig, rev: revSentences[bestJ], revIdx: bestJ });
+      usedRev.add(bestJ);
     }
   }
 
+  const result = revSentences.slice();
+  for (const m of matched) {
+    if (isCorruption(m.orig, m.rev)) {
+      result[m.revIdx] = m.orig;
+    }
+  }
   return result.join(' ');
 }
 
@@ -475,10 +493,16 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
   const finalVersion = revertContractions(originalText, noCorruption);
   const detectedDialect = options.forcedDialect || detectDialect(originalText);
 
+  const preRevertSentences = withFootnotes.split(/(?<=[.!?])\s+/);
+  const postRevertSentences = finalVersion.split(/(?<=[.!?])\s+/);
+  let revertedCount = 0;
+  for (let i = 0; i < Math.min(preRevertSentences.length, postRevertSentences.length); i++) {
+    if (comparable(preRevertSentences[i]) !== comparable(postRevertSentences[i])) revertedCount++;
+  }
+
   const sentences = buildSentenceObjects(originalText, finalVersion);
   const analysis = buildAnalysis(originalText, finalVersion, options);
 
-  // Count actual changes by comparing sentences positionally
   const origSentences = originalText.split(/(?<=[.!?])\s+/);
   const rewSentences = finalVersion.split(/(?<=[.!?])\s+/);
 
@@ -500,9 +524,13 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
   const origRubric = estimateScore(originalText, options.domain, options.mode);
   const revRubric = estimateScore(finalVersion, options.domain, options.mode);
 
+  const corruptionRatio = revertedCount / Math.max(1, preRevertSentences.length);
   const changeRatio = origSentences.length > 0 ? significantChanges / origSentences.length : 0;
-  const improvementBonus = Math.round(Math.min(12, significantChanges * 0.6 + changeRatio * 8));
-  const revisedScore = Math.min(97, origRubric.score + Math.max(1, improvementBonus));
+  let improvementBonus = Math.round(Math.min(12, significantChanges * 0.6 + changeRatio * 8));
+  if (corruptionRatio > 0.2) {
+    improvementBonus = Math.min(0, improvementBonus - Math.round(corruptionRatio * 15));
+  }
+  const revisedScore = Math.min(97, Math.max(origRubric.score - 5, origRubric.score + improvementBonus));
 
   const metricBonus = Math.round(improvementBonus / 7);
   const revisedMetrics = {};
@@ -711,8 +739,8 @@ function buildAnalysis(original, rewritten, options) {
     }
   }
 
-  const explanation = "Refined for " + options.domain + " " + options.tone + " English"
-    + (options.forcedDialect ? " in " + options.forcedDialect + " dialect" : "")
+  const detectedReg = detectRegister(original, options.domain, options.mode);
+  const explanation = "Refined for " + detectedReg + " register" + (options.forcedDialect ? " in " + options.forcedDialect + " dialect" : "")
     + ". " + suggestions.length + " improvement" + (suggestions.length !== 1 ? "s" : "") + " applied while preserving citations, footnotes, and source structure.";
 
   return { suggestions, explanation };
@@ -1160,6 +1188,9 @@ function cleanText(value) {
     .replace(/\s+\n/g, "\n")
     .replace(/\n\s+/g, "\n")
     .trim();
+
+  // Strip markdown heading markers (# ## ### ####)
+  result = result.replace(/^(#{1,4})\s+/gm, '');
 
   // Fix corrupted Unicode whitespace (non-breaking spaces, etc.)
   result = result.replace(/(\S)[\u00A0\u2007\u202F\uFEFF]+(\S)/g, '$1 $2');
