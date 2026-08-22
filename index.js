@@ -4,6 +4,10 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
+function normalizeDash(s) {
+  return s.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u00AD]/g, '-');
+}
+
 const JSON_HEADERS = {
   ...CORS_HEADERS,
   "Content-Type": "application/json; charset=utf-8",
@@ -382,7 +386,7 @@ function revertCorruptions(originalText, revisedText) {
   if (revSentences.length === 0) return revisedText;
 
   function wordSet(s) {
-    return new Set(s.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3));
+    return new Set(normalizeDash(s).toLowerCase().replace(/[^a-z0-9\s-]/g, '').split(/\s+/).filter(w => w.length > 3));
   }
   function overlap(a, b) {
     const setB = new Set(b);
@@ -391,8 +395,8 @@ function revertCorruptions(originalText, revisedText) {
     return a.size > 0 ? c / a.size : 0;
   }
   function isCorruption(orig, rev) {
-    const oWords = orig.split(/\s+/);
-    const rWords = rev.split(/\s+/);
+    const oWords = normalizeDash(orig).split(/\s+/);
+    const rWords = normalizeDash(rev).split(/\s+/);
     const oSet = wordSet(orig);
     const rSet = wordSet(rev);
     let changedCount = 0;
@@ -407,7 +411,7 @@ function revertCorruptions(originalText, revisedText) {
           const rP = rW.split('-');
           if (oP.length === rP.length && oP[0] === rP[0] && oP[1] !== rP[1]) return true;
         }
-        if (/\w+-\w+/.test(oWords[j]) && !/\w+-\w+/.test(rWords[j])) return true;
+        if (/\w+-\w+/.test(oW) && !/\w+-\w+/.test(rW)) return true;
         if (oW.length >= 5 && rW.length <= 2) return true;
       }
     }
@@ -1221,6 +1225,13 @@ function cleanText(value) {
 
   // Fix double spaces (but preserve paragraph breaks)
   result = result.replace(/[^\S\n]{2,}/g, ' ');
+
+  // Normalize all remaining dash-like characters to regular hyphens
+  result = normalizeDash(result);
+
+  // Fix URL casing: Https:// → https://
+  result = result.replace(/\bHttps:\/\//g, 'https://');
+  result = result.replace(/\bHttp:\/\//g, 'http://');
 
   return result;
 }
