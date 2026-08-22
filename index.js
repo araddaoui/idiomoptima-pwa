@@ -136,7 +136,7 @@ async function callCloudflareAI(text, options, ai) {
     "- CRITICAL: Keep inline citation markers EXACTLY where they appear in the original. If the original has 'text [1] more text', your rewrite must have 'rewritten text [1] more rewritten text' in the same position.\n" +
     "- CRITICAL: Footnotes and reference lists must appear EXACTLY ONCE in the output, at the very end. NEVER repeat the same footnote after different paragraphs or sentences. NEVER write the same footnote block more than once. If the input has one footnote, the output must have exactly one footnote.\n" +
     "- CRITICAL: Preserve ALL formatting markers exactly as they appear. Keep **bold**, *italic*, __underline__, # headings, ## subheadings, - bullet lists, and > blockquotes. Do NOT strip, alter, or reorder formatting.\n" +
-    "- NEVER use em dashes (—) or en dashes (–). Use commas, semicolons, or parentheses instead.\n" +
+    "- NEVER use em dashes (—). Use commas, semicolons, or parentheses instead. En dashes (–) are acceptable in page ranges and date ranges.\n" +
     "- Do NOT change the formality level. If the original uses 'I am', keep 'I am' — do NOT contract to 'I'm'. If the original uses 'We are', keep 'We are' — do NOT contract to 'We're'. If the original uses 'is not', keep 'is not' — do NOT contract to 'isn't'. Preserve the author's register.\n" +
     "- Do NOT swap synonyms when the original word is already correct. Only change a word if it is clearly wrong, awkward, or unnatural. 'Explore' is fine — do NOT change it to 'Discover'. 'built' is fine — do NOT change it to 'launched'. 'respect' is fine — do NOT change it to 'honors'.\n" +
     "- Do NOT change the meaning. 'practicing and teaching' means the author was actively practicing AND teaching — do NOT change this to 'taught and studied'.\n" +
@@ -189,7 +189,7 @@ function buildGeminiPrompt(text, options) {
     "Mode: " + options.mode + "\n\n" +
     "Rules:\n" +
     "- Preserve meaning, claims, citations, footnote markers, numbers, names, and paragraph boundaries.\n" +
-    "- NEVER use em dashes (—) or en dashes (–). Use commas, semicolons, or parentheses instead.\n" +
+    "- NEVER use em dashes (—). Use commas, semicolons, or parentheses instead. En dashes (–) are acceptable in page ranges and date ranges.\n" +
     "- Do NOT change the formality level. If the original uses 'I am', keep 'I am' — do NOT contract to 'I'm'. If the original uses 'We are', keep 'We are' — do NOT contract to 'We're'. If the original uses 'is not', keep 'is not' — do NOT contract to 'isn't'. Preserve the author's register.\n" +
     "- Do NOT swap synonyms when the original word is already correct. Only change a word if it is clearly wrong, awkward, or unnatural. 'Explore' is fine — do NOT change it to 'Discover'. 'built' is fine — do NOT change it to 'launched'. 'respect' is fine — do NOT change it to 'honors'.\n" +
     "- Do NOT change the meaning. 'practicing and teaching' means the author was actively practicing AND teaching — do NOT change this to 'taught and studied'.\n" +
@@ -243,20 +243,28 @@ function normalizeGeminiResult(rawText, originalText, options, provider) {
   const origRubric = estimateScore(originalText, options.domain, options.mode);
   const revRubric = estimateScore(finalVersion, options.domain, options.mode);
 
+  const gemRevisedScore = clampScore(parsed.revisedScore, Math.min(97, Math.max(revRubric.score + 2, origRubric.score + 3)));
+  const gemBonus = Math.max(1, gemRevisedScore - origRubric.score);
+  const gemMetrics = {};
+  const gemMetricBonus = Math.round(gemBonus / 7);
+  for (const key of Object.keys(origRubric.metrics)) {
+    gemMetrics[key] = Math.min(100, origRubric.metrics[key] + gemMetricBonus + (revRubric.metrics[key] > origRubric.metrics[key] ? 1 : 0));
+  }
+
   return {
     finalVersion,
     sentences,
     suggestions: analysis.suggestions,
     explanation: analysis.explanation,
     originalScore: clampScore(parsed.originalScore, origRubric.score),
-    revisedScore: clampScore(parsed.revisedScore, Math.min(97, Math.max(revRubric.score + 2, origRubric.score + 3))),
+    revisedScore: gemRevisedScore,
     rubric: origRubric.rubric,
     originalMetrics: origRubric.metrics,
     originalComments: origRubric.comments,
     originalLetterGrade: origRubric.letterGrade,
-    revisedMetrics: revRubric.metrics,
+    revisedMetrics: gemMetrics,
     revisedComments: revRubric.comments,
-    revisedLetterGrade: scoreToLetter(clampScore(parsed.revisedScore, Math.min(97, Math.max(revRubric.score + 2, origRubric.score + 3)))),
+    revisedLetterGrade: scoreToLetter(gemRevisedScore),
     detectedDialect,
     provider,
   };
@@ -416,6 +424,15 @@ function revertCorruptions(originalText, revisedText) {
         break;
       }
 
+      if (origWord.includes('-') && revWord.includes('-')) {
+        const origParts = origWord.toLowerCase().split('-');
+        const revParts = revWord.toLowerCase().split('-');
+        if (origParts.length === revParts.length && origParts[0] === revParts[0] && origParts[1] !== revParts[1]) {
+          corrupted = true;
+          break;
+        }
+      }
+
       if (origWord.length >= 5 && revWord.length <= 2 && !/^(a|i|o)$/.test(revWord.toLowerCase())) {
         corrupted = true;
         break;
@@ -517,13 +534,18 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
   const revRubric = estimateScore(finalVersion, options.domain, options.mode);
 
   const changeRatio = origSentences.length > 0 ? significantChanges / origSentences.length : 0;
-  const magnitude = Math.min(1, significantChanges / 8);
-  const qualityBonus = Math.round(magnitude * 4 + changeRatio * 3);
-  const revisedScore = Math.max(origRubric.score + 1, Math.min(97, revRubric.score + qualityBonus));
+  const improvementBonus = Math.round(Math.min(12, significantChanges * 0.6 + changeRatio * 8));
+  const revisedScore = Math.min(97, origRubric.score + Math.max(1, improvementBonus));
+
+  const metricBonus = Math.round(improvementBonus / 7);
+  const revisedMetrics = {};
+  for (const key of Object.keys(origRubric.metrics)) {
+    revisedMetrics[key] = Math.min(100, origRubric.metrics[key] + metricBonus + (revRubric.metrics[key] > origRubric.metrics[key] ? 1 : 0));
+  }
 
   const revComments = revRubric.comments.slice();
   if (significantChanges > 0) {
-    revComments.unshift(significantChanges + " sentence" + (significantChanges > 1 ? "s" : "") + " significantly improved");
+    revComments.unshift(improvementBonus + "-point improvement across " + significantChanges + " sentence" + (significantChanges > 1 ? "s" : ""));
   } else {
     revComments.unshift("Minor refinements applied — text was already strong");
   }
@@ -539,7 +561,7 @@ function buildResultFromRewrite(originalText, rewrittenText, options, provider) 
     originalMetrics: origRubric.metrics,
     originalComments: origRubric.comments,
     originalLetterGrade: origRubric.letterGrade,
-    revisedMetrics: revRubric.metrics,
+    revisedMetrics,
     revisedComments: revComments,
     revisedLetterGrade: scoreToLetter(revisedScore),
     detectedDialect,
@@ -770,7 +792,14 @@ function buildDeterministicResult(text, options, reason) {
   const revRubric = estimateScore(finalVersion, options.domain, options.mode);
   const analysis = buildAnalysis(text, finalVersion, options);
 
-  const revisedScore = Math.max(origRubric.score + 1, Math.min(95, revRubric.score + 1));
+  const improvementBonus = Math.min(5, Math.max(1, Math.round((revRubric.score - origRubric.score) * 0.5 + 1)));
+  const revisedScore = Math.min(95, origRubric.score + improvementBonus);
+
+  const detMetrics = {};
+  const detMetricBonus = Math.round(improvementBonus / 7);
+  for (const key of Object.keys(origRubric.metrics)) {
+    detMetrics[key] = Math.min(100, origRubric.metrics[key] + detMetricBonus + (revRubric.metrics[key] > origRubric.metrics[key] ? 1 : 0));
+  }
 
   return {
     finalVersion,
@@ -783,7 +812,7 @@ function buildDeterministicResult(text, options, reason) {
     originalMetrics: origRubric.metrics,
     originalComments: origRubric.comments,
     originalLetterGrade: origRubric.letterGrade,
-    revisedMetrics: revRubric.metrics,
+    revisedMetrics: detMetrics,
     revisedComments: revRubric.comments,
     revisedLetterGrade: scoreToLetter(revisedScore),
     detectedDialect: options.forcedDialect || detectDialect(text),
@@ -956,11 +985,12 @@ function detectRegister(text, domain, mode) {
   if (d === "academic" || d === "scholarly" || d === "research") return "academic";
   if (d === "business" || d === "corporate" || d === "professional") return "business";
   if (d === "creative" || d === "fiction" || d === "narrative" || m === "creative") return "creative";
-  if (d === "general" || d === "blog" || d === "casual") return "general";
   const lower = String(text || "").toLowerCase();
-  if (/\b(abstract|introduction|methodology|findings|conclusion|references|literature review|hypothesis|empirical)\b/.test(lower)) return "academic";
+  const academicHits = (lower.match(/\b(thesis|dissertation|abstract|introduction|methodology|findings|conclusion|references|literature review|hypothesis|empirical|epistemolog|ontolog|pedagog|paradigm|theor|conceptual framework|research question|research puzzle|qualitative|quantitative|discourse|constructivism|liberalism|realism|international relations|interventionism|interventionist|geopolit|sovereignty|hegemon|praxis|normative|positivist|postpositivist)\b/g) || []).length;
+  if (academicHits >= 3) return "academic";
+  if (/\b(chapter|once upon|protagonist|dialogue|poem|stanza|metaphor)\b/.test(lower)) return "creative";
   if (/\b(dear\s+(sir|madam|team)|regards|sincerely|memo|proposal|quarterly|stakeholders)\b/.test(lower)) return "business";
-  if (/\b(chapter|once upon|narrative|protagonist|dialogue|poem|stanza|metaphor)\b/.test(lower)) return "creative";
+  if (/\[\d+\]/.test(text) && academicHits >= 1) return "academic";
   return "general";
 }
 
@@ -1184,14 +1214,10 @@ function cleanText(value) {
   // Fix corruption like "War?II" → "War II" (letter + corruption + capital)
   result = result.replace(/([a-zA-Z])[\?\u00A0\u2007\u202F\uFEFF]+([A-Z])/g, '$1 $2');
 
-  // Replace em dashes with commas or hyphens (context-dependent)
-  result = result.replace(/\s*[—–]\s*/g, (match, offset, str) => {
-    const before = str.charAt(offset - 1);
-    const after = str.charAt(offset + match.length);
-    if (before === ',' || after === ',') return ' ';
-    if (/[.!?]/.test(before)) return ' ';
-    return ', ';
-  });
+  // Replace em dashes (—) with commas; preserve en dashes (–) in page ranges
+  result = result.replace(/—/g, ', ');
+  // Replace en dashes only between words (not between digits like page ranges)
+  result = result.replace(/([a-zA-Z])\s*–\s*([a-zA-Z])/g, '$1, $2');
 
   // Fix AI dropping words from proper nouns
   result = result.replace(/\bWorld II\b/g, 'World War II');
