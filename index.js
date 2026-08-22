@@ -377,85 +377,52 @@ function restoreTruncatedFootnotes(original, rewritten) {
 }
 
 function revertCorruptions(originalText, revisedText) {
-  const origSentences = originalText.split(/(?<=[.!?])\s+/);
-  const revSentences = revisedText.split(/(?<=[.!?])\s+/);
+  const origLower = originalText.toLowerCase();
+  const revLower = revisedText.toLowerCase();
 
-  if (origSentences.length !== revSentences.length) return revisedText;
+  const origWords = origLower.split(/\s+/).filter(Boolean);
+  const revWords = revLower.split(/\s+/).filter(Boolean);
 
-  const fixed = [];
-  for (let i = 0; i < origSentences.length; i++) {
-    const orig = origSentences[i];
-    const rev = revSentences[i];
-    if (comparable(orig) === comparable(rev)) {
-      fixed.push(rev);
-      continue;
-    }
+  if (revWords.length === 0) return revisedText;
 
-    const origWords = orig.split(/\s+/);
-    const revWords = rev.split(/\s+/);
-    let changedIndices = [];
-    for (let j = 0; j < Math.min(origWords.length, revWords.length); j++) {
-      if (comparable(origWords[j]) !== comparable(revWords[j])) {
-        changedIndices.push(j);
-      }
-    }
+  const result = revisedText.split(/\s+/);
+  let reverted = 0;
 
-    if (changedIndices.length === 0 || changedIndices.length > Math.ceil(origWords.length * 0.4)) {
-      fixed.push(rev);
-      continue;
-    }
+  for (let j = 0; j < Math.min(origWords.length, revWords.length) && reverted < 20; j++) {
+    const origClean = origWords[j].replace(/[^a-z'-]/g, '');
+    const revClean = revWords[j].replace(/[^a-z'-]/g, '');
+
+    if (origClean === revClean || origClean.length < 3 || revClean.length < 3) continue;
 
     let corrupted = false;
-    for (const idx of changedIndices) {
-      const origWord = origWords[idx].replace(/[^a-zA-Z'-]/g, '');
-      const revWord = revWords[idx].replace(/[^a-zA-Z'-]/g, '');
 
-      if (origWord.length >= 4 && revWord.length >= 4) {
-        const commonPrefix = countCommonPrefix(origWord.toLowerCase(), revWord.toLowerCase());
-        const similarity = commonPrefix / Math.max(origWord.length, revWord.length);
-        if (similarity > 0.3 && similarity < 0.8 && revWord.length < origWord.length) {
-          corrupted = true;
-          break;
-        }
-      }
-
-      if (/\b\w+-\w+\b/.test(origWord) && !/\b\w+-\w+\b/.test(revWord)) {
+    if (origClean.includes('-') && revClean.includes('-')) {
+      const origParts = origClean.split('-');
+      const revParts = revClean.split('-');
+      if (origParts.length === revParts.length && origParts[0] === revParts[0] && origParts[1] !== revParts[1]) {
         corrupted = true;
-        break;
       }
+    }
 
-      if (origWord.includes('-') && revWord.includes('-')) {
-        const origParts = origWord.toLowerCase().split('-');
-        const revParts = revWord.toLowerCase().split('-');
-        if (origParts.length === revParts.length && origParts[0] === revParts[0] && origParts[1] !== revParts[1]) {
-          corrupted = true;
-          break;
-        }
-      }
+    if (/\b\w+-\w+\b/.test(origWords[j]) && !/\b\w+-\w+\b/.test(revWords[j])) {
+      corrupted = true;
+    }
 
-      if (origWord.length >= 5 && revWord.length <= 2 && !/^(a|i|o)$/.test(revWord.toLowerCase())) {
+    if (!corrupted && origClean.length >= 4 && revClean.length >= 4) {
+      const cp = countCommonPrefix(origClean, revClean);
+      const sim = cp / Math.max(origClean.length, revClean.length);
+      if (sim > 0.3 && sim < 0.8 && revClean.length < origClean.length) {
         corrupted = true;
-        break;
-      }
-
-      if (revWord.length >= 3 && origWord.length >= 3) {
-        const vowels = (revWord.match(/[aeiou]/gi) || []).length;
-        const consonants = revWord.replace(/[aeiou]/gi, '').length;
-        if (consonants > vowels * 2 && revWord.length >= 5) {
-          corrupted = true;
-          break;
-        }
       }
     }
 
     if (corrupted) {
-      fixed.push(orig);
-    } else {
-      fixed.push(rev);
+      result[j] = result[j].replace(new RegExp('\\b' + revWords[j].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i'), originalText.split(/\s+/)[j]);
+      reverted++;
     }
   }
 
-  return fixed.join(' ');
+  return result.join(' ');
 }
 
 const CONTRACTION_MAP = {
@@ -881,42 +848,17 @@ function buildSentenceObjects(originalText, finalText) {
 }
 
 function splitForDisplay(text) {
-  const blocks = String(text || "").split(/\n{2,}/);
+  const cleaned = String(text || "").replace(/\r\n/g, "\n").trim();
+  if (!cleaned) return [];
+
+  const blocks = cleaned.split(/\n{2,}/);
   const items = [];
 
   for (const block of blocks) {
     const trimmedBlock = block.trim();
     if (!trimmedBlock) continue;
 
-    const lines = trimmedBlock.split(/\n/).map((line) => line.trim()).filter(Boolean);
-
-    if (lines.length === 1) {
-      const headingLevel = looksLikeHeading(lines[0]);
-      if (headingLevel > 0) {
-        const stripped = lines[0].replace(/^#{1,4}\s+/, '').trim();
-        items.push({ text: stripped, isEndOfParagraph: true, isHeading: true, headingLevel });
-        continue;
-      }
-    }
-
-    if (lines.length > 1) {
-      const firstHeadingLevel = looksLikeHeading(lines[0]);
-      if (firstHeadingLevel > 0) {
-        const stripped = lines[0].replace(/^#{1,4}\s+/, '').trim();
-        items.push({ text: stripped, isEndOfParagraph: true, isHeading: true, headingLevel: firstHeadingLevel });
-        const rest = lines.slice(1).join(' ').trim();
-        if (rest) {
-          const parts = rest.match(/[^.!?]+(?:[.!?]+|$)(?:\s*\[\d{1,3}\])?/g) || [rest];
-          parts.forEach((part, index) => {
-            const value = part.trim();
-            if (value) {
-              items.push({ text: value, isEndOfParagraph: index === parts.length - 1, isHeading: false, headingLevel: 0 });
-            }
-          });
-        }
-        continue;
-      }
-    }
+    const lines = trimmedBlock.split(/\n/).map((l) => l.trim()).filter(Boolean);
 
     const isFootnoteBlock = lines.some((line) => FOOTNOTE_DEF_REGEX.test(line));
     if (isFootnoteBlock) {
@@ -924,18 +866,30 @@ function splitForDisplay(text) {
       continue;
     }
 
-    const parts = trimmedBlock.match(/[^.!?]+(?:[.!?]+|$)(?:\s*\[\d{1,3}\])?/g) || [trimmedBlock];
-    parts.forEach((part, index) => {
-      const value = part.trim();
-      if (value) {
-        items.push({
-          text: value,
-          isEndOfParagraph: index === parts.length - 1,
-          isHeading: false,
-          headingLevel: 0,
-        });
+    if (lines.length === 1) {
+      const headingLevel = looksLikeHeading(lines[0]);
+      const stripped = lines[0].replace(/^#{1,4}\s+/, '').trim();
+      if (headingLevel > 0) {
+        items.push({ text: stripped, isEndOfParagraph: true, isHeading: true, headingLevel });
+        continue;
       }
-    });
+      items.push({ text: stripped, isEndOfParagraph: true, isHeading: false, headingLevel: 0 });
+      continue;
+    }
+
+    const firstLine = lines[0].replace(/^#{1,4}\s+/, '').trim();
+    const firstHeadingLevel = looksLikeHeading(lines[0]);
+    if (firstHeadingLevel > 0) {
+      items.push({ text: firstLine, isEndOfParagraph: false, isHeading: true, headingLevel: firstHeadingLevel });
+      const rest = lines.slice(1).join(' ').trim();
+      if (rest) {
+        items.push({ text: rest, isEndOfParagraph: true, isHeading: false, headingLevel: 0 });
+      }
+      continue;
+    }
+
+    const paragraphText = lines.join(' ').trim();
+    items.push({ text: paragraphText, isEndOfParagraph: true, isHeading: false, headingLevel: 0 });
   }
 
   return items;
