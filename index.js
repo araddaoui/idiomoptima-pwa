@@ -81,6 +81,36 @@ async function callGemini(text, options, apiKey) {
   return String(raw || "");
 }
 
+async function callOpenRouter(text, options, apiKey) {
+  var dialect = options.forcedDialect || "the most likely";
+  var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\nRewrite the following text with minimal intervention. Preserve voice, headings, citations, paragraph structure. Return ONLY valid JSON.\n\nText:\n" + text;
+
+  var response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + apiKey,
+    },
+    body: JSON.stringify({
+      model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.25,
+      max_tokens: 8192,
+    }),
+  });
+
+  if (!response.ok) {
+    var err = await response.text();
+    throw new Error("OpenRouter error: " + err.substring(0, 200));
+  }
+
+  var data = await response.json();
+  return String((data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "");
+}
+
 async function callCloudflareAI(text, options, ai) {
   var dialect = options.forcedDialect || "US";
   var prompt =
@@ -205,10 +235,20 @@ export default {
         }
       }
 
+      if (!parsed && env.OPENROUTER_API_KEY) {
+        try {
+          var raw2 = await callOpenRouter(text, options, env.OPENROUTER_API_KEY);
+          parsed = parseJsonFromModel(raw2);
+          provider = "openrouter";
+        } catch (e) {
+          console.error("OpenRouter failed:", e.message);
+        }
+      }
+
       if (!parsed && env.AI) {
         try {
-          var raw2 = await callCloudflareAI(text, options, env.AI);
-          parsed = parseJsonFromModel(raw2);
+          var raw3 = await callCloudflareAI(text, options, env.AI);
+          parsed = parseJsonFromModel(raw3);
           provider = "cloudflare";
         } catch (e) {
           console.error("Cloudflare AI failed:", e.message);
