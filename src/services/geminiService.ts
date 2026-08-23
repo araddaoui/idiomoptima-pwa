@@ -42,6 +42,21 @@ Example: "Fixed 3 spelling errors, 2 subject-verb agreement issues, and 1 comma 
 
 ---
 
+## SCORING RULES (CRITICAL)
+- originalScore: Rate the ORIGINAL text's grammatical correctness, fluency, and native-level expression on 0-100.
+  - 90-100: Near-perfect native English
+  - 70-89: Minor issues, mostly fluent
+  - 50-69: Noticeable errors that affect clarity
+  - 30-49: Frequent errors, hard to read naturally
+  - 0-29: Severely broken English
+- revisedScore: Rate the REVISED text after corrections. It MUST be higher than originalScore if improvements were made.
+  - The gap MUST reflect the magnitude of improvements.
+  - Fixed 5 spelling + 2 grammar issues = 15-30 point gap.
+  - Fixed 1 minor issue = 3-8 point gap.
+  - NEVER set revisedScore equal to or lower than originalScore unless text was already perfect.
+
+---
+
 ## INTERNAL MODE ROUTING (HIDDEN)
 - **Academic Mode**: Arguments, theory, analysis.
 - **Business Mode**: Coordination, operations, reporting.

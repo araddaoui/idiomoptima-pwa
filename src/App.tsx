@@ -110,20 +110,14 @@ export default function App() {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = inputHtml;
     const text = tempDiv.textContent || tempDiv.innerText || "";
-    if (text.trim()) {
-      setDetectedMode(detectBestMode(text));
-    }
+    if (text.trim()) setDetectedMode(detectBestMode(text));
   }, [inputHtml]);
 
   const handleTransform = async () => {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = inputHtml;
     const plainText = tempDiv.textContent || tempDiv.innerText || "";
-
-    if (!plainText.trim()) {
-      setError("Please write or paste some text first.");
-      return;
-    }
+    if (!plainText.trim()) { setError("Please write or paste some text first."); return; }
 
     setLoading(true);
     setError(null);
@@ -134,14 +128,9 @@ export default function App() {
 
     try {
       const response = await transformText(
-        plainText,
-        domain,
-        tone,
+        plainText, domain, tone,
         forcedDialect === "auto" ? undefined : forcedDialect,
-        (percent, _chunkIdx, _total, phase) => {
-          setProgress(percent);
-          if (phase) setProgressPhase(phase);
-        },
+        (percent, _c, _t, phase) => { setProgress(percent); if (phase) setProgressPhase(phase); },
         "auto",
         { idiomDatabase, aiPhraseMap, lexicalDatabases }
       );
@@ -155,12 +144,7 @@ export default function App() {
     }
   };
 
-  const handleClear = () => {
-    setInputHtml("<p></p>");
-    setResult(null);
-    setSelectedSentenceIdx(null);
-    setError(null);
-  };
+  const handleClear = () => { setInputHtml("<p></p>"); setResult(null); setSelectedSentenceIdx(null); setError(null); };
 
   const handleCopy = () => {
     if (!result) return;
@@ -172,19 +156,12 @@ export default function App() {
   const exportAsWord = async () => {
     if (!result) return;
     try {
-      const paragraphs = result.sentences.map(s => {
-        return new Paragraph({
-          children: [new TextRun({ text: s.revised + " ", font: "Georgia", size: 24 })]
-        });
-      });
+      const paragraphs = result.sentences.map(s => new Paragraph({ children: [new TextRun({ text: s.revised + " ", font: "Georgia", size: 24 })] }));
       const doc = new Document({
         sections: [{
           properties: {},
           children: [
-            new Paragraph({
-              children: [new TextRun({ text: "IdiomOptima Export", bold: true, size: 36, font: "Georgia" })],
-              spacing: { after: 300 }
-            }),
+            new Paragraph({ children: [new TextRun({ text: "IdiomOptima Export", bold: true, size: 36, font: "Georgia" })], spacing: { after: 300 } }),
             ...paragraphs
           ]
         }]
@@ -192,15 +169,10 @@ export default function App() {
       const blob = await Packer.toBlob(doc);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
-      a.download = "idiomoptima-export.docx";
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (e) {
-      console.error("Failed to export Word document:", e);
-    }
+      a.href = url; a.download = "idiomoptima-export.docx";
+      document.body.appendChild(a); a.click();
+      window.URL.revokeObjectURL(url); document.body.removeChild(a);
+    } catch (e) { console.error("Failed to export Word:", e); }
   };
 
   const exportAsPDF = () => {
@@ -211,23 +183,13 @@ export default function App() {
       doc.setFontSize(16);
       doc.text("IdiomOptima - Preserved Document", 20, 20);
       doc.setFontSize(11);
-      const splitText = doc.splitTextToSize(result.finalVersion, 170);
-      doc.text(splitText, 20, 35);
+      doc.text(doc.splitTextToSize(result.finalVersion, 170), 20, 35);
       doc.save("idiomoptima-export.pdf");
-    } catch (e) {
-      console.error("Failed to export PDF:", e);
-    }
+    } catch (e) { console.error("Failed to export PDF:", e); }
   };
 
-  const wordCount = (text: string) => {
-    if (!text) return 0;
-    return text.trim().split(/\s+/).filter(Boolean).length;
-  };
-
-  const charCount = (text: string) => {
-    if (!text) return 0;
-    return text.length;
-  };
+  const wordCount = (t: string) => t ? t.trim().split(/\s+/).filter(Boolean).length : 0;
+  const charCount = (t: string) => t ? t.length : 0;
 
   const plainTextInput = (() => {
     const d = document.createElement("div");
@@ -235,21 +197,15 @@ export default function App() {
     return d.textContent || d.innerText || "";
   })();
 
-  const currentActiveModeInfo = () => {
-    const finalMode = result?.appliedMode || detectedMode.mode;
-    switch (finalMode) {
-      case "academic":
-        return { label: "Academic", color: "bg-indigo-50 text-indigo-700 border-indigo-200", icon: <BookOpen className="w-3 h-3" /> };
-      case "business":
-        return { label: "Business", color: "bg-sky-50 text-sky-700 border-sky-200", icon: <Briefcase className="w-3 h-3" /> };
-      case "creative":
-        return { label: "Creative", color: "bg-rose-50 text-rose-700 border-rose-200", icon: <Activity className="w-3 h-3" /> };
-      default:
-        return { label: "General", color: "bg-slate-50 text-slate-600 border-slate-200", icon: <Languages className="w-3 h-3" /> };
+  const modeInfo = (() => {
+    const m = result?.appliedMode || detectedMode.mode;
+    switch (m) {
+      case "academic": return { label: "Academic", color: "bg-indigo-50 text-indigo-700 border-indigo-200", icon: <BookOpen className="w-3 h-3" /> };
+      case "business": return { label: "Business", color: "bg-sky-50 text-sky-700 border-sky-200", icon: <Briefcase className="w-3 h-3" /> };
+      case "creative": return { label: "Creative", color: "bg-rose-50 text-rose-700 border-rose-200", icon: <Activity className="w-3 h-3" /> };
+      default: return { label: "General", color: "bg-slate-50 text-slate-600 border-slate-200", icon: <Languages className="w-3 h-3" /> };
     }
-  };
-
-  const modeInfo = currentActiveModeInfo();
+  })();
 
   const renderDiff = (original: string, native: string) => {
     const dmp = new diff_match_patch();
@@ -287,13 +243,13 @@ export default function App() {
   const bodySentences = taggedSentences.filter(s => !s.isImmutableFootnote);
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#1a1a2e] flex flex-col font-sans selection:bg-[#4f46e5]/15 selection:text-[#1a1a2e]">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1a1a2e] flex flex-col font-sans selection:bg-indigo-100 selection:text-[#1a1a2e]">
 
       {/* ─── Top Bar ─── */}
       <header className="border-b border-[#E5E2DC] bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-[1600px] mx-auto px-6 h-12 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] rounded-lg flex items-center justify-center shadow-sm">
+            <div className="w-7 h-7 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md shadow-indigo-200">
               <Languages className="w-3.5 h-3.5 text-white" />
             </div>
             <h1 className="font-serif text-lg font-bold tracking-tight text-[#1a1a2e]">IdiomOptima</h1>
@@ -307,8 +263,8 @@ export default function App() {
 
       {/* ─── Hero ─── */}
       <section className="relative overflow-hidden border-b border-[#E5E2DC]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#EEF2FF] via-[#FAF8F5] to-[#F5F0FF]" />
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #4f46e5 1px, transparent 0)", backgroundSize: "20px 20px" }} />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-[#FAF8F5] to-purple-50" />
+        <div className="absolute inset-0 opacity-[0.035]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #4338ca 1px, transparent 0)", backgroundSize: "20px 20px" }} />
         <div className="relative max-w-[1600px] mx-auto px-6 py-8 md:py-10 text-center">
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-[#1a1a2e] leading-tight mb-3 tracking-tight">
             Edit. Nativize. Humanize.
@@ -319,42 +275,44 @@ export default function App() {
         </div>
       </section>
 
-      {/* ─── Main Tool ─── */}
+      {/* ─── Main ─── */}
       <main className="max-w-[1600px] w-full mx-auto px-6 py-6 flex-1 flex flex-col gap-5">
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1">
 
-          {/* ── Left: Editor ── */}
+          {/* ── Editor ── */}
           <section className="lg:col-span-7 flex flex-col bg-white border border-[#E5E2DC] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
 
-            {/* Editor toolbar */}
+            {/* Toolbar */}
             <div className="px-4 py-2 border-b border-[#E5E2DC] bg-[#FAF8F5] flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-2 mr-auto">
-                <PenLine className="w-3.5 h-3.5 text-[#8C857B]" />
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#8C857B]">
+                <PenLine className="w-3.5 h-3.5 text-indigo-500" />
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#7c7a85]">
                   {wordCount(plainTextInput)} words
                 </span>
               </div>
 
               <select value={forcedDialect} onChange={(e) => setForcedDialect(e.target.value)}
-                className="h-7 text-[10px] font-semibold bg-white border border-[#E5E2DC] rounded-md px-2 text-[#1a1a2e] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#4f46e5]">
+                className="h-7 text-[10px] font-semibold bg-white border border-[#E5E2DC] rounded-md px-2 text-[#1a1a2e] cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-all">
                 {DIALECTS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
               </select>
               <select value={domain} onChange={(e) => setDomain(e.target.value)}
-                className="h-7 text-[10px] font-semibold bg-white border border-[#E5E2DC] rounded-md px-2 text-[#1a1a2e] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#4f46e5]">
+                className="h-7 text-[10px] font-semibold bg-white border border-[#E5E2DC] rounded-md px-2 text-[#1a1a2e] cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-all">
                 {DOMAINS.map((dm) => <option key={dm.value} value={dm.value}>{dm.label}</option>)}
               </select>
               <select value={tone} onChange={(e) => setTone(e.target.value)}
-                className="h-7 text-[10px] font-semibold bg-white border border-[#E5E2DC] rounded-md px-2 text-[#1a1a2e] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#4f46e5]">
+                className="h-7 text-[10px] font-semibold bg-white border border-[#E5E2DC] rounded-md px-2 text-[#1a1a2e] cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-all">
                 {TONES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
 
               <div className="w-px h-5 bg-[#E5E2DC]" />
 
+              {/* Danger button: Clear */}
               <button onClick={handleClear}
-                className="p-1 text-[#8C857B] hover:text-red-500 transition-colors rounded hover:bg-red-50"
-                title="Clear">
-                <Trash2 className="w-3.5 h-3.5" />
+                className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-red-500 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:text-red-700 transition-all"
+                title="Clear all text">
+                <Trash2 className="w-3 h-3" />
+                Clear
               </button>
             </div>
 
@@ -365,13 +323,14 @@ export default function App() {
 
             {/* Action bar */}
             <div className="px-4 py-3 border-t border-[#E5E2DC] bg-[#FAF8F5] flex items-center justify-between">
-              <div className="text-[10px] text-[#8C857B] max-w-xs">
+              <div className="text-[10px] text-[#9896a3] max-w-xs">
                 Paste or write freely. Your voice stays intact.
               </div>
+              {/* Primary action: Nativize */}
               <button
                 onClick={handleTransform}
                 disabled={loading || !plainTextInput.trim()}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#6366f1] text-white hover:from-[#4338ca] hover:to-[#4f46e5] disabled:from-[#C5C5D2] disabled:to-[#C5C5D2] disabled:cursor-not-allowed rounded-full text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-95"
+                className="inline-flex items-center gap-2 px-7 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 disabled:from-[#C5C5D2] disabled:to-[#C5C5D2] disabled:cursor-not-allowed rounded-full text-xs font-bold transition-all shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-300 active:scale-95"
               >
                 {loading ? (
                   <>
@@ -388,24 +347,30 @@ export default function App() {
             </div>
           </section>
 
-          {/* ── Right: Output ── */}
+          {/* ── Output ── */}
           <section className="lg:col-span-5 flex flex-col bg-white border border-[#E5E2DC] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
 
-            {/* Output tabs + tools */}
+            {/* Tabs + tools */}
             <div className="px-4 py-2 border-b border-[#E5E2DC] bg-[#FAF8F5] flex items-center gap-1">
+              {/* Primary tab */}
               <button onClick={() => setActiveTab("result")} disabled={!result}
-                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-colors ${
-                  activeTab === "result" ? "bg-[#4f46e5] text-white" : "text-[#8C857B] hover:bg-[#E5E2DC]"
+                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${
+                  activeTab === "result"
+                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
+                    : "text-[#7c7a85] hover:bg-[#E5E2DC] hover:text-[#1a1a2e]"
                 } disabled:opacity-30`}>
                 Output
               </button>
+              {/* Secondary tab */}
               <button onClick={() => setActiveTab("suggestions")} disabled={!result || result.suggestions.length === 0}
-                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-colors ${
-                  activeTab === "suggestions" ? "bg-[#4f46e5] text-white" : "text-[#8C857B] hover:bg-[#E5E2DC]"
+                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${
+                  activeTab === "suggestions"
+                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
+                    : "text-[#7c7a85] hover:bg-[#E5E2DC] hover:text-[#1a1a2e]"
                 } disabled:opacity-30`}>
                 Diagnostics
                 {result?.suggestions && result.suggestions.length > 0 && (
-                  <span className="ml-1.5 px-1 py-0.5 bg-amber-400 text-amber-900 text-[9px] font-black rounded-full">
+                  <span className="ml-1.5 px-1.5 py-0.5 bg-amber-400 text-amber-900 text-[9px] font-black rounded-full">
                     {result.suggestions.length}
                   </span>
                 )}
@@ -414,21 +379,30 @@ export default function App() {
               <div className="ml-auto flex items-center gap-1">
                 {result && activeTab === "result" && (
                   <button onClick={() => setShowDiff(!showDiff)}
-                    className={`text-[10px] px-2 py-1 rounded-md border transition-all font-semibold ${
-                      showDiff ? 'bg-[#4f46e5] text-white border-[#4f46e5]' : 'bg-white text-[#8C857B] border-[#E5E2DC] hover:border-[#4f46e5]'
+                    className={`text-[10px] px-2.5 py-1 rounded-md border transition-all font-semibold ${
+                      showDiff
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                        : 'bg-white text-[#7c7a85] border-[#E5E2DC] hover:border-indigo-400 hover:text-indigo-600'
                     }`}>
                     {showDiff ? 'Diff On' : 'Diff'}
                   </button>
                 )}
                 {result && (
                   <>
-                    <button onClick={handleCopy} className="p-1.5 hover:bg-[#E5E2DC] rounded-md text-[#8C857B] hover:text-[#1a1a2e] transition-colors" title="Copy">
+                    {/* Tertiary tool buttons */}
+                    <button onClick={handleCopy}
+                      className="p-1.5 rounded-md border border-[#E5E2DC] bg-white text-[#7c7a85] hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-all"
+                      title="Copy to clipboard">
                       {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Clipboard className="w-3.5 h-3.5" />}
                     </button>
-                    <button onClick={exportAsPDF} className="p-1.5 hover:bg-[#E5E2DC] rounded-md text-[#8C857B] hover:text-[#1a1a2e] transition-colors" title="Export PDF">
+                    <button onClick={exportAsPDF}
+                      className="p-1.5 rounded-md border border-[#E5E2DC] bg-white text-[#7c7a85] hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300 transition-all"
+                      title="Export as PDF">
                       <FileText className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={exportAsWord} className="p-1.5 hover:bg-[#E5E2DC] rounded-md text-[#8C857B] hover:text-[#1a1a2e] transition-colors" title="Export Word">
+                    <button onClick={exportAsWord}
+                      className="p-1.5 rounded-md border border-[#E5E2DC] bg-white text-[#7c7a85] hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all"
+                      title="Export as Word">
                       <Download className="w-3.5 h-3.5" />
                     </button>
                   </>
@@ -436,26 +410,29 @@ export default function App() {
               </div>
             </div>
 
-            {/* Output content */}
+            {/* Content */}
             <div className="flex-1 bg-white flex flex-col overflow-y-auto">
               {loading ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                   <div className="relative w-14 h-14 flex items-center justify-center mb-4">
-                    <div className="absolute inset-0 border-[3px] border-[#E5E2DC] border-t-[#4f46e5] rounded-full animate-spin" />
-                    <Sparkles className="w-5 h-5 text-[#4f46e5]" />
+                    <div className="absolute inset-0 border-[3px] border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+                    <Sparkles className="w-5 h-5 text-indigo-600" />
                   </div>
                   <h3 className="font-serif text-lg font-bold mb-1 text-[#1a1a2e]">Preserving your voice</h3>
-                  <p className="text-xs text-[#8C857B] mb-4 max-w-xs">{progressPhase}</p>
-                  <div className="w-48 h-1.5 bg-[#E5E2DC] rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#4f46e5] to-[#6366f1] rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+                  <p className="text-xs text-[#7c7a85] mb-4 max-w-xs">{progressPhase}</p>
+                  <div className="w-48 h-1.5 bg-indigo-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
                   </div>
                 </div>
               ) : error ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                  <Info className="w-8 h-8 text-red-400 mb-3" />
+                  <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-3">
+                    <Info className="w-6 h-6 text-red-500" />
+                  </div>
                   <h3 className="font-bold text-sm text-red-800 mb-1">Something went wrong</h3>
                   <p className="text-xs text-[#64607a] max-w-sm leading-relaxed mb-4">{error}</p>
-                  <button onClick={handleTransform} className="px-4 py-2 bg-red-50 text-red-700 rounded-full font-bold text-xs hover:bg-red-100 transition-colors border border-red-200">
+                  <button onClick={handleTransform}
+                    className="px-4 py-2 bg-red-50 text-red-700 rounded-full font-bold text-xs hover:bg-red-100 transition-all border border-red-200 hover:border-red-300">
                     Retry
                   </button>
                 </div>
@@ -467,30 +444,35 @@ export default function App() {
 
                       {/* Score cards */}
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-[#FAF8F5] border border-[#E5E2DC] rounded-xl">
-                          <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block mb-0.5">Voice Integrity</span>
+                        <div className="p-3 bg-gradient-to-br from-slate-50 to-gray-50 border border-[#E5E2DC] rounded-xl">
+                          <span className="text-[9px] uppercase tracking-wider text-[#7c7a85] font-bold block mb-0.5">Original</span>
                           <div className="flex items-baseline gap-1.5">
                             <span className="text-2xl font-serif font-black text-[#1a1a2e]">{result.originalScore}</span>
-                            <span className="text-[10px] text-[#8C857B] font-semibold">/ 100</span>
+                            <span className="text-[10px] text-[#9896a3] font-semibold">/ 100</span>
                           </div>
                         </div>
-                        <div className="p-3 bg-[#FAF8F5] border border-[#E5E2DC] rounded-xl">
-                          <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block mb-0.5">Fluency Score</span>
+                        <div className="p-3 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl">
+                          <span className="text-[9px] uppercase tracking-wider text-indigo-600 font-bold block mb-0.5">Refined</span>
                           <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl font-serif font-black text-[#1a1a2e]">{result.revisedScore}</span>
-                            <span className="text-[10px] text-[#8C857B] font-semibold">/ 100</span>
+                            <span className="text-2xl font-serif font-black text-indigo-700">{result.revisedScore}</span>
+                            <span className="text-[10px] text-indigo-400 font-semibold">/ 100</span>
+                            {result.revisedScore > result.originalScore && (
+                              <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+                                +{result.revisedScore - result.originalScore}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
 
                       {/* Instruction */}
-                      <div className="flex items-center gap-1.5 text-[10px] text-[#8C857B] font-semibold">
+                      <div className="flex items-center gap-1.5 text-[10px] text-[#9896a3] font-semibold">
                         <Eye className="w-3 h-3" />
                         <span>{showDiff ? 'Word-level diff active' : 'Click any sentence to compare original vs. refined'}</span>
                       </div>
 
-                      {/* Sentence output with paragraph grouping */}
-                      <div className="output-prose pl-4 border-l-2 border-[#4f46e5]/20">
+                      {/* Output text */}
+                      <div className="output-prose pl-4 border-l-2 border-indigo-200">
                         {(() => {
                           const groups: JSX.Element[] = [];
                           let currentParagraph: JSX.Element[] = [];
@@ -505,15 +487,13 @@ export default function App() {
                                 onClick={() => setSelectedSentenceIdx(idx)}
                                 className={`inline px-0.5 rounded transition-all cursor-pointer ${
                                   selectedSentenceIdx === idx
-                                    ? "bg-[#4f46e5]/10 font-medium"
+                                    ? "bg-indigo-100 font-medium"
                                     : sent.original !== sent.revised
                                     ? "bg-amber-50 hover:bg-amber-100"
                                     : "hover:bg-slate-50"
                                 }`}
                               >
-                                {showDiff && !sent.isNativeMatch
-                                  ? renderDiff(sent.original, sent.revised)
-                                  : text}
+                                {showDiff && !sent.isNativeMatch ? renderDiff(sent.original, sent.revised) : text}
                               </span>
                             );
 
@@ -522,11 +502,7 @@ export default function App() {
                                 groups.push(<p key={`p-${pIdx++}`} className="mb-4">{currentParagraph}</p>);
                                 currentParagraph = [];
                               }
-                              groups.push(
-                                <h3 key={`h-${idx}`} className="text-lg font-bold text-[#1a1a2e] mb-2 mt-4 first:mt-0">
-                                  {content}
-                                </h3>
-                              );
+                              groups.push(<h3 key={`h-${idx}`} className="text-lg font-bold text-[#1a1a2e] mb-2 mt-4 first:mt-0">{content}</h3>);
                             } else {
                               currentParagraph.push(<span key={`ws-${idx}`}> </span>);
                               currentParagraph.push(content);
@@ -537,49 +513,44 @@ export default function App() {
                             }
                           });
 
-                          if (currentParagraph.length > 0) {
-                            groups.push(<p key={`p-${pIdx}`} className="mb-4">{currentParagraph}</p>);
-                          }
-
+                          if (currentParagraph.length > 0) groups.push(<p key={`p-${pIdx}`} className="mb-4">{currentParagraph}</p>);
                           return groups;
                         })()}
                       </div>
 
                       {/* Sentence comparison */}
                       {selectedSentenceIdx !== null && (
-                        <div className="border border-[#E5E2DC] rounded-xl p-4 bg-[#FAF8F5] space-y-3 transform transition-all duration-200 shadow-sm">
+                        <div className="border border-indigo-200 rounded-xl p-4 bg-indigo-50/30 space-y-3 transform transition-all duration-200 shadow-sm">
                           <div className="flex items-center justify-between">
-                            <span className="text-[9px] uppercase font-bold tracking-widest text-[#8C857B]">
+                            <span className="text-[9px] uppercase font-bold tracking-widest text-indigo-600">
                               Sentence #{selectedSentenceIdx + 1}
                             </span>
                             <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${
                               result.sentences[selectedSentenceIdx].original === result.sentences[selectedSentenceIdx].revised
-                                ? "text-slate-600 bg-slate-100"
-                                : "text-amber-700 bg-amber-50"
+                                ? "text-slate-600 bg-slate-100" : "text-amber-700 bg-amber-100"
                             }`}>
-                              {result.sentences[selectedSentenceIdx].original === result.sentences[selectedSentenceIdx].revised
-                                ? "Unchanged" : "Refined"}
+                              {result.sentences[selectedSentenceIdx].original === result.sentences[selectedSentenceIdx].revised ? "Unchanged" : "Refined"}
                             </span>
                           </div>
 
                           <div className="grid grid-cols-2 gap-3 text-xs">
                             <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-[#8C857B] uppercase">Draft</span>
-                              <p className="p-2.5 bg-white border border-[#E5E2DC] rounded-lg text-[#64607a] italic text-[11px] leading-relaxed">
+                              <span className="text-[9px] font-bold text-red-500 uppercase">Draft</span>
+                              <p className="p-2.5 bg-white border border-red-100 rounded-lg text-[#64607a] italic text-[11px] leading-relaxed">
                                 {result.sentences[selectedSentenceIdx].original}
                               </p>
                             </div>
                             <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-[#8C857B] uppercase">Refined</span>
-                              <p className="p-2.5 bg-white border border-[#4f46e5]/20 rounded-lg text-[#1a1a2e] font-medium text-[11px] leading-relaxed">
+                              <span className="text-[9px] font-bold text-indigo-600 uppercase">Refined</span>
+                              <p className="p-2.5 bg-white border border-indigo-200 rounded-lg text-[#1a1a2e] font-medium text-[11px] leading-relaxed">
                                 {result.sentences[selectedSentenceIdx].revised}
                               </p>
                             </div>
                           </div>
 
                           {result.sentences[selectedSentenceIdx].explanation && (
-                            <div className="flex gap-2 items-start pt-2 border-t border-[#E5E2DC]">
-                              <Info className="w-3 h-3 text-[#4f46e5] shrink-0 mt-0.5" />
+                            <div className="flex gap-2 items-start pt-2 border-t border-indigo-100">
+                              <Info className="w-3 h-3 text-indigo-500 shrink-0 mt-0.5" />
                               <span className="text-[10px] text-[#64607a] leading-relaxed">
                                 {result.sentences[selectedSentenceIdx].explanation}
                               </span>
@@ -590,18 +561,18 @@ export default function App() {
 
                       {/* Diagnosis */}
                       <div className="border-t border-[#E5E2DC] pt-4">
-                        <p className="text-[11px] text-[#8C857B] italic leading-relaxed">
+                        <p className="text-[11px] text-[#7c7a85] italic leading-relaxed">
                           {result.explanation || "All structures, paragraph bounds, and footnotes preserved correctly."}
                         </p>
                       </div>
 
-                      {/* Footnotes — visually separated */}
+                      {/* Footnotes — separated */}
                       {footnotes.length > 0 && (
-                        <div className="mt-4 pt-4 border-t-2 border-[#E5E2DC] bg-[#FAF8F5] -mx-6 px-6 pb-0 rounded-b-2xl">
-                          <span className="text-[9px] uppercase font-bold tracking-wider text-[#8C857B] block mb-2">Notes & References</span>
+                        <div className="mt-4 pt-4 border-t-2 border-dashed border-[#E5E2DC] bg-[#FAF8F5] -mx-6 px-6 pb-0 rounded-b-2xl">
+                          <span className="text-[9px] uppercase font-bold tracking-wider text-indigo-500 block mb-2">Notes & References</span>
                           <div className="space-y-1.5">
                             {footnotes.map((fn, i) => (
-                              <p key={i} className="text-xs text-[#64607a] font-serif leading-relaxed pl-4 border-l-2 border-[#E5E2DC]">
+                              <p key={i} className="text-xs text-[#64607a] font-serif leading-relaxed pl-4 border-l-2 border-indigo-200">
                                 {fn.revised}
                               </p>
                             ))}
@@ -619,8 +590,8 @@ export default function App() {
                         <h4 className="text-xs uppercase font-extrabold tracking-widest text-[#1a1a2e]">Diagnostics</h4>
                       </div>
                       {result.suggestions.map((suggestion, sIdx) => (
-                        <div key={sIdx} className="p-3 bg-[#FAF8F5] border border-[#E5E2DC] rounded-xl text-xs text-[#64607a] flex gap-2">
-                          <span className="text-[#4f46e5] font-bold shrink-0">{sIdx + 1}.</span>
+                        <div key={sIdx} className="p-3 bg-amber-50/50 border border-amber-200 rounded-xl text-xs text-[#64607a] flex gap-2">
+                          <span className="text-amber-600 font-bold shrink-0">{sIdx + 1}.</span>
                           <p className="leading-relaxed">{suggestion}</p>
                         </div>
                       ))}
@@ -630,12 +601,12 @@ export default function App() {
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-[#4f46e5]/5 flex items-center justify-center mb-5">
-                    <Sparkles className="w-6 h-6 text-[#4f46e5]" />
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center mb-5">
+                    <Sparkles className="w-6 h-6 text-indigo-400" />
                   </div>
                   <h3 className="font-serif text-xl font-bold mb-2 text-[#1a1a2e]">Ready to refine</h3>
-                  <p className="text-sm text-[#8C857B] max-w-xs leading-relaxed">
-                    Write or paste your text on the left, then hit <strong className="text-[#4f46e5]">Nativize</strong>.
+                  <p className="text-sm text-[#7c7a85] max-w-xs leading-relaxed">
+                    Write or paste your text on the left, then hit <strong className="text-indigo-600">Nativize</strong>.
                   </p>
                 </div>
               )}
@@ -643,7 +614,7 @@ export default function App() {
 
             {/* Status bar */}
             {result && (
-              <div className="px-4 py-2 border-t border-[#E5E2DC] bg-[#FAF8F5] flex items-center justify-between text-[10px] text-[#8C857B]">
+              <div className="px-4 py-2 border-t border-[#E5E2DC] bg-[#FAF8F5] flex items-center justify-between text-[10px] text-[#9896a3]">
                 <span>{wordCount(result.finalVersion)} words, {charCount(result.finalVersion)} chars</span>
                 <span>Dialect: <strong className="text-[#1a1a2e]">{result.detectedDialect || "US"}</strong></span>
               </div>
@@ -660,13 +631,13 @@ export default function App() {
         <div className="max-w-[1600px] mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="font-serif text-sm font-bold text-[#1a1a2e]">IdiomOptima</span>
-            <span className="text-[10px] text-[#8C857B]">&copy; {new Date().getFullYear()}</span>
+            <span className="text-[10px] text-[#9896a3]">&copy; {new Date().getFullYear()}</span>
           </div>
-          <nav className="flex items-center gap-5 text-[11px] font-semibold text-[#8C857B]">
-            <a href="/faq.html" className="hover:text-[#4f46e5] transition-colors">FAQ</a>
-            <a href="/terms.html" className="hover:text-[#4f46e5] transition-colors">Terms</a>
-            <a href="/privacy.html" className="hover:text-[#4f46e5] transition-colors">Privacy</a>
-            <a href="mailto:contact@IdiomOptima.com" className="hover:text-[#4f46e5] transition-colors">Contact</a>
+          <nav className="flex items-center gap-5 text-[11px] font-semibold text-[#7c7a85]">
+            <a href="/faq.html" className="hover:text-indigo-600 transition-colors">FAQ</a>
+            <a href="/terms.html" className="hover:text-indigo-600 transition-colors">Terms</a>
+            <a href="/privacy.html" className="hover:text-indigo-600 transition-colors">Privacy</a>
+            <a href="mailto:contact@IdiomOptima.com" className="hover:text-indigo-600 transition-colors">Contact</a>
           </nav>
         </div>
       </footer>
