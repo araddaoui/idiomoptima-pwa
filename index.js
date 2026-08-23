@@ -23,6 +23,7 @@ const SYSTEM_PROMPT = [
   "4. Structural Integrity: Preserve headings, numbering, paragraph structure, emphasis, citations exactly.",
   "5. Tone and Dialect: Adjust tone only at sentence-level softness or formality.",
   "   Dialect adjustment at surface-level spelling and lexical conventions only.",
+  "6. NEVER use em dashes (—). Use commas, semicolons, or periods instead.",
   "",
   "OUTPUT: Return ONLY valid JSON, no markdown fences.",
   '{"originalScore": (0-100), "revisedScore": (0-100), "finalVersion": "Full text",',
@@ -130,10 +131,17 @@ function ensureValidResult(parsed, originalText, options) {
     sentences = parts.map(function(s) { return { original: s, revised: s, suggestions: [], explanation: "", isImmutableFootnote: false }; });
   }
 
+  // Capitalize first letter after sentence-ending punctuation
+  function capitalizeAfterPunctuation(str) {
+    return str.replace(/([.!?]\s+|^)([a-z])/gm, function(match, pre, letter) {
+      return pre + letter.toUpperCase();
+    });
+  }
+
   sentences = sentences.map(function(s) {
     return {
       original: String(s.original || s.source || ""),
-      revised: String(s.revised || s.native || s.final || s.original || s.source || ""),
+      revised: capitalizeAfterPunctuation(String(s.revised || s.native || s.final || s.original || s.source || "")),
       suggestions: Array.isArray(s.suggestions) ? s.suggestions : [],
       explanation: String(s.explanation || ""),
       isImmutableFootnote: Boolean(s.isImmutableFootnote),
@@ -141,13 +149,11 @@ function ensureValidResult(parsed, originalText, options) {
   });
 
   var dialect = parsed.detectedDialect || detectDialect(originalText);
-  var origLen = originalText.split(/\s+/).length;
-  var revLen = finalVersion.split(/\s+/).length;
 
   return {
     originalScore: safeScore(parsed.originalScore, Math.min(97, 70 + Math.floor(Math.random() * 15))),
     revisedScore: safeScore(parsed.revisedScore, Math.min(97, 75 + Math.floor(Math.random() * 15))),
-    finalVersion: finalVersion,
+    finalVersion: capitalizeAfterPunctuation(finalVersion),
     sentences: sentences,
     suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
     explanation: String(parsed.explanation || "Text refined with minimal intervention."),

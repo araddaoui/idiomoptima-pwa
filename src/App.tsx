@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { jsPDF } from "jspdf";
+import { diff_match_patch } from "diff-match-patch";
 import { RichTextEditor } from "./components/RichTextEditor";
 import { transformText, TransformationResult, detectBestMode } from "./services/geminiService";
 
@@ -61,6 +62,7 @@ export default function App() {
   const [copied, setCopied] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"result" | "suggestions" | "metadata">("result");
 
+  const [showDiff, setShowDiff] = useState(false);
   const [detectedMode, setDetectedMode] = useState<{ mode: string; reason: string }>({ mode: "general", reason: "" });
 
   const [idiomDatabase, setIdiomDatabase] = useState<any[]>([]);
@@ -288,6 +290,51 @@ export default function App() {
 
   const modeInfo = currentActiveModeInfo();
 
+  const renderDiff = (original: string, native: string) => {
+    const dmp = new diff_match_patch();
+    const diffs = dmp.diff_main(original, native);
+    dmp.diff_cleanupSemantic(diffs);
+    return (
+      <span>
+        {diffs.map(([op, text], i) => {
+          if (op === 0) return <span key={i}>{text}</span>;
+          if (op === -1) return (
+            <span key={i} className="bg-red-100 text-red-700 line-through rounded px-0.5">{text}</span>
+          );
+          if (op === 1) return (
+            <span key={i} className="bg-green-100 text-green-700 font-medium rounded px-0.5">{text}</span>
+          );
+          return null;
+        })}
+      </span>
+    );
+  };
+
+  const HEADING_REGEX = /^(?:#{1,4}\s+)?(?:Chapter|Section|Introduction|Conclusion|Abstract|Summary|Background|Methodology|Results|Discussion|References|Appendix|Acknowledgements|Table of Contents|Literature Review|Problem Statement|Objectives?|Scope|Limitations?|Deliverables?|Timeline|Budget|Recommendations?)\b/i;
+  const FOOTNOTE_DEF_REGEX = /^\s*(?:\[?(\d{1,3})\]?[\s.:)\-|]{1,3}|Footnote\s*(\d{1,3})|REFERENCE\s+(\d{1,3}))[\s.:)\-|]*\s*(.+)/i;
+  const HEADING_MARKER_REGEX = /^#{1,4}\s+/;
+
+  const tagSentence = (sent: any) => {
+    const text = (sent.original || "").trim();
+    const words = text.split(/\s+/);
+    const isShortLine = words.length <= 8;
+    const noTrailingPeriod = !/[.!?]\s*$/.test(text) && !/[.!?]$/.test(text);
+    const isHeadingLike = isShortLine && noTrailingPeriod && HEADING_REGEX.test(text);
+    const headingMatch = text.match(HEADING_MARKER_REGEX);
+    if (headingMatch) {
+      return { ...sent, isHeading: true, headingLevel: headingMatch[1].length || 2 };
+    }
+    if (isHeadingLike) {
+      return { ...sent, isHeading: true, headingLevel: 2 };
+    }
+    return { ...sent, isHeading: false, headingLevel: 0 };
+  };
+
+  const taggedSentences = (result?.sentences || []).map(tagSentence);
+
+  const footnotes = taggedSentences.filter(s => s.isImmutableFootnote);
+  const bodySentences = taggedSentences.filter(s => !s.isImmutableFootnote);
+
   return (
     <div className="min-h-screen bg-[#FDFDFB] text-[#1A1A1A] flex flex-col font-sans transition-all duration-300 selection:bg-[#F2EFE9] selection:text-[#1a1a1a]">
       
@@ -474,6 +521,18 @@ export default function App() {
 
                  {result && (
                   <div className="flex items-center gap-1.5">
+                    {activeTab === "result" && (
+                      <button
+                        onClick={() => setShowDiff(!showDiff)}
+                        className={`text-[10px] px-2 py-1 rounded-full border transition-all font-semibold ${
+                          showDiff
+                            ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                            : 'bg-white text-[#8C857B] border-[#EAE6DF] hover:border-[#8C857B]'
+                        }`}
+                      >
+                        {showDiff ? 'Diff On' : 'Show Diff'}
+                      </button>
+                    )}
                     <button
                       onClick={handleCopy}
                       className="p-1 px-2 hover:bg-[#EAE6DF] rounded text-xs gap-1 flex items-center text-[#555] transition-colors"
@@ -555,28 +614,65 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="space-y-4">
+                        <div className="space-y-4">
                         <h4 className="text-[10px] uppercase font-bold tracking-wider text-[#8C857B] flex items-center gap-1.5">
                           <Eye className="w-3 h-3" />
-                          <span>Review Mode: Click any sentence to check transformations</span>
+                          <span>Review Mode: {showDiff ? 'Word diff shown' : 'Click any sentence to check transformations'}</span>
                         </h4>
 
                         <div className="prose prose-stone font-serif text-lg leading-relaxed text-[#1A1A1A] border-l-2 border-[#1A1A1A]/10 pl-4 py-1">
-                          {result.sentences.map((sentence, idx) => (
-                            <span
-                              key={idx}
-                              onClick={() => setSelectedSentenceIdx(idx)}
-                              className={`sentence-highlight inline px-1 py-0.5 rounded transition-all cursor-pointer ${
-                                selectedSentenceIdx === idx 
-                                  ? "bg-amber-100 text-[#1A1A1A] font-medium scale-[1.01]" 
-                                  : sentence.original !== sentence.revised
-                                  ? "bg-[#FCFBE3]/50 hover:bg-[#FCFBE3]"
-                                  : "hover:bg-slate-50"
-                              }`}
-                            >
-                              {sentence.revised}{" "}
-                            </span>
-                          ))}
+                          {(() => {
+                            const groups: JSX.Element[] = [];
+                            let currentGroup: JSX.Element[] = [];
+                            let groupIdx = 0;
+
+                            bodySentences.forEach((sent, idx) => {
+                              const text = sent.isNativeMatch ? sent.original : sent.revised;
+                              const content = (
+                                <span
+                                  key={idx}
+                                  title={`Original: ${sent.original}`}
+                                  onClick={() => setSelectedSentenceIdx(idx)}
+                                  className={`sentence-highlight inline px-1 py-0.5 rounded transition-all cursor-pointer ${
+                                    selectedSentenceIdx === idx 
+                                      ? "bg-amber-100 text-[#1A1A1A] font-medium scale-[1.01]" 
+                                      : sent.original !== sent.revised
+                                      ? "bg-[#FCFBE3]/50 hover:bg-[#FCFBE3]"
+                                      : "hover:bg-slate-50"
+                                  }`}
+                                >
+                                  {showDiff && !sent.isNativeMatch
+                                    ? renderDiff(sent.original, sent.revised)
+                                    : text}
+                                </span>
+                              );
+
+                              if (sent.isHeading) {
+                                if (currentGroup.length > 0) {
+                                  groups.push(<div key={`p-${groupIdx++}`} className="mb-3 last:mb-0">{currentGroup}</div>);
+                                  currentGroup = [];
+                                }
+                                groups.push(
+                                  <div key={`h-${idx}`} className="mb-2 last:mb-0">
+                                    {content}
+                                  </div>
+                                );
+                              } else {
+                                currentGroup.push(<span key={`ws-${idx}`}> </span>);
+                                currentGroup.push(content);
+                                if (sent.isEndOfParagraph) {
+                                  groups.push(<div key={`p-${groupIdx++}`} className="mb-3 last:mb-0">{currentGroup}</div>);
+                                  currentGroup = [];
+                                }
+                              }
+                            });
+
+                            if (currentGroup.length > 0) {
+                              groups.push(<div key={`p-${groupIdx}`} className="mb-3 last:mb-0">{currentGroup}</div>);
+                            }
+
+                            return groups;
+                          })()}
                         </div>
                       </div>
 
@@ -638,6 +734,19 @@ export default function App() {
                           {result.explanation || "All author structures, paragraph bounds, and footnotes preserved correctly."}
                         </p>
                       </div>
+
+                      {footnotes.length > 0 && (
+                        <div className="space-y-2 border-t border-[#EAE6DF] pt-4">
+                          <span className="text-[9px] uppercase font-bold tracking-wider text-[#8C857B] block">Notes & References</span>
+                          <div className="space-y-1">
+                            {footnotes.map((fn, i) => (
+                              <p key={i} className="text-xs text-[#555] font-serif leading-relaxed">
+                                {fn.revised}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                     </div>
                   )}

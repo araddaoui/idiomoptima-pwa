@@ -183,20 +183,12 @@ export async function transformText(
 
   if (onProgress) onProgress(10, 0, 1, "Connecting to server...");
 
-  let processedText = text;
-
-  if (databases?.idiomDatabase && databases.idiomDatabase.length > 0) {
-    const unified = normalizeToUnified(databases.idiomDatabase);
-    const idiomResult = applyReplacements(processedText, unified);
-    processedText = idiomResult.text;
-  }
-
   try {
     const response = await fetch(WORKER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        text: processedText,
+        text,
         domain,
         tone,
         forcedDialect,
@@ -213,17 +205,42 @@ export async function transformText(
 
     const data: TransformationResult = await response.json();
 
-    if (databases?.aiPhraseMap && databases.aiPhraseMap.length > 0) {
-      const unified = normalizeToUnified(databases.aiPhraseMap);
-      const aiResult = applyReplacements(data.finalVersion, unified);
-      data.finalVersion = aiResult.text;
-
+    // Post-Worker replacements: idiom + AI phrases (applied to .revised only, .original untouched)
+    if (databases?.idiomDatabase && databases.idiomDatabase.length > 0) {
+      const unified = normalizeToUnified(databases.idiomDatabase);
       if (data.sentences && data.sentences.length > 0) {
         data.sentences = data.sentences.map(sentence => {
+          if (sentence.isImmutableFootnote) return sentence;
           const result = applyReplacements(sentence.revised, unified);
           return { ...sentence, revised: result.text };
         });
       }
+      data.finalVersion = applyReplacements(data.finalVersion, normalizeToUnified(databases.idiomDatabase)).text;
+    }
+
+    if (databases?.aiPhraseMap && databases.aiPhraseMap.length > 0) {
+      const unified = normalizeToUnified(databases.aiPhraseMap);
+      if (data.sentences && data.sentences.length > 0) {
+        data.sentences = data.sentences.map(sentence => {
+          if (sentence.isImmutableFootnote) return sentence;
+          const result = applyReplacements(sentence.revised, unified);
+          return { ...sentence, revised: result.text };
+        });
+      }
+      data.finalVersion = applyReplacements(data.finalVersion, unified).text;
+    }
+
+    // Activate lexical databases for the detected domain
+    if (databases?.lexicalDatabases && databases.lexicalDatabases[domain] && databases.lexicalDatabases[domain].length > 0) {
+      const unified = normalizeToUnified(databases.lexicalDatabases[domain]);
+      if (data.sentences && data.sentences.length > 0) {
+        data.sentences = data.sentences.map(sentence => {
+          if (sentence.isImmutableFootnote) return sentence;
+          const result = applyReplacements(sentence.revised, unified);
+          return { ...sentence, revised: result.text };
+        });
+      }
+      data.finalVersion = applyReplacements(data.finalVersion, unified).text;
     }
 
     if (onProgress) onProgress(100, 1, 1, "Complete!");
