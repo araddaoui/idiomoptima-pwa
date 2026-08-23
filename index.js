@@ -58,10 +58,13 @@ async function callGemini(text, options, apiKey) {
   var dialect = options.forcedDialect || "the most likely";
   var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\nRewrite the following text with minimal intervention. Preserve voice, headings, citations, paragraph structure. Return ONLY valid JSON.\n\nText:\n" + text;
 
-  var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey;
+  var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
   var response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + apiKey,
+    },
     body: JSON.stringify({
       contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\n" + prompt }] }],
       generationConfig: { temperature: 0.25, topP: 0.9, responseMimeType: "application/json" },
