@@ -6,15 +6,15 @@ import {
   Trash2,
   Languages,
   PenLine,
-  BookOpen,
-  Briefcase,
-  Activity,
   FileText,
   Info,
   Eye,
   Zap,
   Clipboard,
   Check,
+  BookOpen,
+  Briefcase,
+  Activity,
 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { jsPDF } from "jspdf";
@@ -59,7 +59,7 @@ export default function App() {
 
   const [selectedSentenceIdx, setSelectedSentenceIdx] = useState<number | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"result" | "suggestions" | "metadata">("result");
+  const [activeTab, setActiveTab] = useState<"result" | "suggestions">("result");
 
   const [showDiff, setShowDiff] = useState(false);
   const [detectedMode, setDetectedMode] = useState<{ mode: string; reason: string }>({ mode: "general", reason: "" });
@@ -74,7 +74,6 @@ export default function App() {
         const idiomRes = await fetch("/idioms-clunky-native.json");
         if (idiomRes.ok) setIdiomDatabase(await idiomRes.json());
       } catch {}
-
       try {
         const [db1, db2, db3] = await Promise.all([
           fetch("/ai-natural-database.json").then(r => r.ok ? r.json() : []),
@@ -95,7 +94,6 @@ export default function App() {
         }
         setAiPhraseMap(Array.from(merged.values()));
       } catch {}
-
       try {
         const lexResult: Record<string, any[]> = {};
         for (const d of ["academic", "business", "creative", "general"]) {
@@ -132,7 +130,7 @@ export default function App() {
     setResult(null);
     setSelectedSentenceIdx(null);
     setProgress(0);
-    setProgressPhase("Loading analytical layers...");
+    setProgressPhase("Analyzing your text...");
 
     try {
       const response = await transformText(
@@ -176,36 +174,21 @@ export default function App() {
     try {
       const paragraphs = result.sentences.map(s => {
         return new Paragraph({
-          children: [
-            new TextRun({
-              text: s.revised + " ",
-              font: "Georgia",
-              size: 24,
-            })
-          ]
+          children: [new TextRun({ text: s.revised + " ", font: "Georgia", size: 24 })]
         });
       });
-
       const doc = new Document({
         sections: [{
           properties: {},
           children: [
             new Paragraph({
-              children: [
-                new TextRun({
-                  text: "IdiomOptima Document Export",
-                  bold: true,
-                  size: 36,
-                  font: "Georgia",
-                })
-              ],
+              children: [new TextRun({ text: "IdiomOptima Export", bold: true, size: 36, font: "Georgia" })],
               spacing: { after: 300 }
             }),
             ...paragraphs
           ]
         }]
       });
-
       const blob = await Packer.toBlob(doc);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -228,12 +211,11 @@ export default function App() {
       doc.setFontSize(16);
       doc.text("IdiomOptima - Preserved Document", 20, 20);
       doc.setFontSize(11);
-
       const splitText = doc.splitTextToSize(result.finalVersion, 170);
       doc.text(splitText, 20, 35);
       doc.save("idiomoptima-export.pdf");
     } catch (e) {
-      console.error("Failed to export PDF doc:", e);
+      console.error("Failed to export PDF:", e);
     }
   };
 
@@ -257,29 +239,13 @@ export default function App() {
     const finalMode = result?.appliedMode || detectedMode.mode;
     switch (finalMode) {
       case "academic":
-        return {
-          label: "Academic",
-          color: "bg-indigo-50 text-indigo-700 border-indigo-200",
-          icon: <BookOpen className="w-3 h-3" />,
-        };
+        return { label: "Academic", color: "bg-indigo-50 text-indigo-700 border-indigo-200", icon: <BookOpen className="w-3 h-3" /> };
       case "business":
-        return {
-          label: "Business",
-          color: "bg-blue-50 text-blue-700 border-blue-200",
-          icon: <Briefcase className="w-3 h-3" />,
-        };
+        return { label: "Business", color: "bg-sky-50 text-sky-700 border-sky-200", icon: <Briefcase className="w-3 h-3" /> };
       case "creative":
-        return {
-          label: "Creative",
-          color: "bg-rose-50 text-rose-700 border-rose-200",
-          icon: <Activity className="w-3 h-3" />,
-        };
+        return { label: "Creative", color: "bg-rose-50 text-rose-700 border-rose-200", icon: <Activity className="w-3 h-3" /> };
       default:
-        return {
-          label: "General",
-          color: "bg-slate-50 text-slate-600 border-slate-200",
-          icon: <Languages className="w-3 h-3" />,
-        };
+        return { label: "General", color: "bg-slate-50 text-slate-600 border-slate-200", icon: <Languages className="w-3 h-3" /> };
     }
   };
 
@@ -293,12 +259,8 @@ export default function App() {
       <span>
         {diffs.map(([op, text], i) => {
           if (op === 0) return <span key={i}>{text}</span>;
-          if (op === -1) return (
-            <span key={i} className="bg-red-100 text-red-700 line-through rounded px-0.5">{text}</span>
-          );
-          if (op === 1) return (
-            <span key={i} className="bg-green-100 text-green-700 font-medium rounded px-0.5">{text}</span>
-          );
+          if (op === -1) return <span key={i} className="bg-red-100 text-red-700 line-through rounded px-0.5">{text}</span>;
+          if (op === 1) return <span key={i} className="bg-emerald-100 text-emerald-700 font-medium rounded px-0.5">{text}</span>;
           return null;
         })}
       </span>
@@ -306,7 +268,6 @@ export default function App() {
   };
 
   const HEADING_REGEX = /^(?:#{1,4}\s+)?(?:Chapter|Section|Introduction|Conclusion|Abstract|Summary|Background|Methodology|Results|Discussion|References|Appendix|Acknowledgements|Table of Contents|Literature Review|Problem Statement|Objectives?|Scope|Limitations?|Deliverables?|Timeline|Budget|Recommendations?)\b/i;
-  const FOOTNOTE_DEF_REGEX = /^\s*(?:\[?(\d{1,3})\]?[\s.:)\-|]{1,3}|Footnote\s*(\d{1,3})|REFERENCE\s+(\d{1,3}))[\s.:)\-|]*\s*(.+)/i;
   const HEADING_MARKER_REGEX = /^#{1,4}\s+/;
 
   const tagSentence = (sent: any) => {
@@ -316,31 +277,26 @@ export default function App() {
     const noTrailingPeriod = !/[.!?]\s*$/.test(text) && !/[.!?]$/.test(text);
     const isHeadingLike = isShortLine && noTrailingPeriod && HEADING_REGEX.test(text);
     const headingMatch = text.match(HEADING_MARKER_REGEX);
-    if (headingMatch) {
-      return { ...sent, isHeading: true, headingLevel: headingMatch[1].length || 2 };
-    }
-    if (isHeadingLike) {
-      return { ...sent, isHeading: true, headingLevel: 2 };
-    }
+    if (headingMatch) return { ...sent, isHeading: true, headingLevel: headingMatch[1].length || 2 };
+    if (isHeadingLike) return { ...sent, isHeading: true, headingLevel: 2 };
     return { ...sent, isHeading: false, headingLevel: 0 };
   };
 
   const taggedSentences = (result?.sentences || []).map(tagSentence);
-
   const footnotes = taggedSentences.filter(s => s.isImmutableFootnote);
   const bodySentences = taggedSentences.filter(s => !s.isImmutableFootnote);
 
   return (
-    <div className="min-h-screen bg-[#FDFDFB] text-[#1A1A1A] flex flex-col font-sans selection:bg-[#F2EFE9] selection:text-[#1a1a1a]">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1a1a2e] flex flex-col font-sans selection:bg-[#4f46e5]/15 selection:text-[#1a1a2e]">
 
       {/* ─── Top Bar ─── */}
-      <header className="border-b border-[#EAE6DF] bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#1A1A1A] rounded-lg flex items-center justify-center">
-              <Languages className="w-4 h-4 text-white" />
+      <header className="border-b border-[#E5E2DC] bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-[1600px] mx-auto px-6 h-12 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-gradient-to-br from-[#4f46e5] to-[#7c3aed] rounded-lg flex items-center justify-center shadow-sm">
+              <Languages className="w-3.5 h-3.5 text-white" />
             </div>
-            <h1 className="font-serif text-xl font-bold tracking-tight">IdiomOptima</h1>
+            <h1 className="font-serif text-lg font-bold tracking-tight text-[#1a1a2e]">IdiomOptima</h1>
           </div>
           <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${modeInfo.color}`}>
             {modeInfo.icon}
@@ -350,31 +306,29 @@ export default function App() {
       </header>
 
       {/* ─── Hero ─── */}
-      <section className="relative overflow-hidden border-b border-[#EAE6DF]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#FAF9F6] via-white to-[#F5F0E8]" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #1A1A1A 1px, transparent 0)", backgroundSize: "24px 24px" }} />
-        <div className="relative max-w-[1600px] mx-auto px-6 py-16 md:py-20 text-center">
-          <h2 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-[#1A1A1A] leading-[1.05] mb-5 tracking-tight">
-            Edit.<br className="hidden sm:block" /> Nativize. Humanize.
+      <section className="relative overflow-hidden border-b border-[#E5E2DC]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#EEF2FF] via-[#FAF8F5] to-[#F5F0FF]" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #4f46e5 1px, transparent 0)", backgroundSize: "20px 20px" }} />
+        <div className="relative max-w-[1600px] mx-auto px-6 py-8 md:py-10 text-center">
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-[#1a1a2e] leading-tight mb-3 tracking-tight">
+            Edit. Nativize. Humanize.
           </h2>
-          <p className="text-base md:text-lg text-[#8C857B] max-w-xl mx-auto leading-relaxed">
-            Your voice, preserved. Grammar, fluency, and native expression refined
-            while protecting your rhythm, headings, and citations.
+          <p className="text-sm md:text-base text-[#64607a] max-w-lg mx-auto leading-relaxed">
+            Your voice, preserved. Grammar and fluency refined while protecting your rhythm, headings, and citations.
           </p>
         </div>
       </section>
 
       {/* ─── Main Tool ─── */}
-      <main className="max-w-[1600px] w-full mx-auto px-6 py-8 flex-1 flex flex-col gap-6">
+      <main className="max-w-[1600px] w-full mx-auto px-6 py-6 flex-1 flex flex-col gap-5">
 
-        {/* Editor + Output */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1">
 
           {/* ── Left: Editor ── */}
-          <section className="lg:col-span-7 flex flex-col bg-white border border-[#EAE6DF] rounded-2xl overflow-hidden shadow-sm">
+          <section className="lg:col-span-7 flex flex-col bg-white border border-[#E5E2DC] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
 
-            {/* Editor toolbar: settings + controls inline */}
-            <div className="px-4 py-2.5 border-b border-[#EAE6DF] bg-[#FAF9F6] flex items-center gap-3 flex-wrap">
+            {/* Editor toolbar */}
+            <div className="px-4 py-2 border-b border-[#E5E2DC] bg-[#FAF8F5] flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-2 mr-auto">
                 <PenLine className="w-3.5 h-3.5 text-[#8C857B]" />
                 <span className="text-[10px] uppercase font-bold tracking-wider text-[#8C857B]">
@@ -382,64 +336,42 @@ export default function App() {
                 </span>
               </div>
 
-              <select
-                value={forcedDialect}
-                onChange={(e) => setForcedDialect(e.target.value)}
-                className="h-7 text-[10px] font-semibold bg-white border border-[#EAE6DF] rounded-md px-2 text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1A1A1A]"
-              >
-                {DIALECTS.map((d) => (
-                  <option key={d.value} value={d.value}>{d.label}</option>
-                ))}
+              <select value={forcedDialect} onChange={(e) => setForcedDialect(e.target.value)}
+                className="h-7 text-[10px] font-semibold bg-white border border-[#E5E2DC] rounded-md px-2 text-[#1a1a2e] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#4f46e5]">
+                {DIALECTS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+              </select>
+              <select value={domain} onChange={(e) => setDomain(e.target.value)}
+                className="h-7 text-[10px] font-semibold bg-white border border-[#E5E2DC] rounded-md px-2 text-[#1a1a2e] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#4f46e5]">
+                {DOMAINS.map((dm) => <option key={dm.value} value={dm.value}>{dm.label}</option>)}
+              </select>
+              <select value={tone} onChange={(e) => setTone(e.target.value)}
+                className="h-7 text-[10px] font-semibold bg-white border border-[#E5E2DC] rounded-md px-2 text-[#1a1a2e] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#4f46e5]">
+                {TONES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
 
-              <select
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                className="h-7 text-[10px] font-semibold bg-white border border-[#EAE6DF] rounded-md px-2 text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1A1A1A]"
-              >
-                {DOMAINS.map((dm) => (
-                  <option key={dm.value} value={dm.value}>{dm.label}</option>
-                ))}
-              </select>
+              <div className="w-px h-5 bg-[#E5E2DC]" />
 
-              <select
-                value={tone}
-                onChange={(e) => setTone(e.target.value)}
-                className="h-7 text-[10px] font-semibold bg-white border border-[#EAE6DF] rounded-md px-2 text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1A1A1A]"
-              >
-                {TONES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
-
-              <div className="w-px h-5 bg-[#EAE6DF]" />
-
-              <button
-                onClick={handleClear}
-                className="p-1 text-[#8C857B] hover:text-[#DC2626] transition-colors rounded hover:bg-[#F2EFE9]"
-                title="Clear"
-              >
+              <button onClick={handleClear}
+                className="p-1 text-[#8C857B] hover:text-red-500 transition-colors rounded hover:bg-red-50"
+                title="Clear">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
 
             {/* Editor surface */}
-            <div className="flex-1 min-h-[560px] bg-white relative">
-              <RichTextEditor
-                content={inputHtml}
-                onChange={setInputHtml}
-              />
+            <div className="flex-1 min-h-[500px] bg-white relative">
+              <RichTextEditor content={inputHtml} onChange={setInputHtml} />
             </div>
 
             {/* Action bar */}
-            <div className="px-4 py-3 border-t border-[#EAE6DF] bg-[#FAF9F6] flex items-center justify-between">
+            <div className="px-4 py-3 border-t border-[#E5E2DC] bg-[#FAF8F5] flex items-center justify-between">
               <div className="text-[10px] text-[#8C857B] max-w-xs">
                 Paste or write freely. Your voice stays intact.
               </div>
               <button
                 onClick={handleTransform}
                 disabled={loading || !plainTextInput.trim()}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#1A1A1A] text-white hover:bg-[#333] disabled:bg-[#CCC] disabled:cursor-not-allowed rounded-full text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-95"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#4f46e5] to-[#6366f1] text-white hover:from-[#4338ca] hover:to-[#4f46e5] disabled:from-[#C5C5D2] disabled:to-[#C5C5D2] disabled:cursor-not-allowed rounded-full text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-95"
               >
                 {loading ? (
                   <>
@@ -457,29 +389,23 @@ export default function App() {
           </section>
 
           {/* ── Right: Output ── */}
-          <section className="lg:col-span-5 flex flex-col bg-white border border-[#EAE6DF] rounded-2xl overflow-hidden shadow-sm">
+          <section className="lg:col-span-5 flex flex-col bg-white border border-[#E5E2DC] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
 
             {/* Output tabs + tools */}
-            <div className="px-4 py-2.5 border-b border-[#EAE6DF] bg-[#FAF9F6] flex items-center gap-1">
-              <button
-                onClick={() => setActiveTab("result")}
-                disabled={!result}
+            <div className="px-4 py-2 border-b border-[#E5E2DC] bg-[#FAF8F5] flex items-center gap-1">
+              <button onClick={() => setActiveTab("result")} disabled={!result}
                 className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-colors ${
-                  activeTab === "result" ? "bg-[#1A1A1A] text-white" : "text-[#8C857B] hover:bg-[#EAE6DF]"
-                } disabled:opacity-30`}
-              >
+                  activeTab === "result" ? "bg-[#4f46e5] text-white" : "text-[#8C857B] hover:bg-[#E5E2DC]"
+                } disabled:opacity-30`}>
                 Output
               </button>
-              <button
-                onClick={() => setActiveTab("suggestions")}
-                disabled={!result || result.suggestions.length === 0}
+              <button onClick={() => setActiveTab("suggestions")} disabled={!result || result.suggestions.length === 0}
                 className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-colors ${
-                  activeTab === "suggestions" ? "bg-[#1A1A1A] text-white" : "text-[#8C857B] hover:bg-[#EAE6DF]"
-                } disabled:opacity-30`}
-              >
+                  activeTab === "suggestions" ? "bg-[#4f46e5] text-white" : "text-[#8C857B] hover:bg-[#E5E2DC]"
+                } disabled:opacity-30`}>
                 Diagnostics
                 {result?.suggestions && result.suggestions.length > 0 && (
-                  <span className="ml-1.5 px-1 py-0.5 bg-[#F2C94C] text-[#333] text-[9px] font-black rounded-full">
+                  <span className="ml-1.5 px-1 py-0.5 bg-amber-400 text-amber-900 text-[9px] font-black rounded-full">
                     {result.suggestions.length}
                   </span>
                 )}
@@ -487,26 +413,22 @@ export default function App() {
 
               <div className="ml-auto flex items-center gap-1">
                 {result && activeTab === "result" && (
-                  <button
-                    onClick={() => setShowDiff(!showDiff)}
+                  <button onClick={() => setShowDiff(!showDiff)}
                     className={`text-[10px] px-2 py-1 rounded-md border transition-all font-semibold ${
-                      showDiff
-                        ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
-                        : 'bg-white text-[#8C857B] border-[#EAE6DF] hover:border-[#8C857B]'
-                    }`}
-                  >
+                      showDiff ? 'bg-[#4f46e5] text-white border-[#4f46e5]' : 'bg-white text-[#8C857B] border-[#E5E2DC] hover:border-[#4f46e5]'
+                    }`}>
                     {showDiff ? 'Diff On' : 'Diff'}
                   </button>
                 )}
                 {result && (
                   <>
-                    <button onClick={handleCopy} className="p-1.5 hover:bg-[#EAE6DF] rounded-md text-[#555] transition-colors" title="Copy">
-                      {copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Clipboard className="w-3.5 h-3.5" />}
+                    <button onClick={handleCopy} className="p-1.5 hover:bg-[#E5E2DC] rounded-md text-[#8C857B] hover:text-[#1a1a2e] transition-colors" title="Copy">
+                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Clipboard className="w-3.5 h-3.5" />}
                     </button>
-                    <button onClick={exportAsPDF} className="p-1.5 hover:bg-[#EAE6DF] rounded-md text-[#555] transition-colors" title="Export PDF">
+                    <button onClick={exportAsPDF} className="p-1.5 hover:bg-[#E5E2DC] rounded-md text-[#8C857B] hover:text-[#1a1a2e] transition-colors" title="Export PDF">
                       <FileText className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={exportAsWord} className="p-1.5 hover:bg-[#EAE6DF] rounded-md text-[#555] transition-colors" title="Export Word">
+                    <button onClick={exportAsWord} className="p-1.5 hover:bg-[#E5E2DC] rounded-md text-[#8C857B] hover:text-[#1a1a2e] transition-colors" title="Export Word">
                       <Download className="w-3.5 h-3.5" />
                     </button>
                   </>
@@ -519,20 +441,20 @@ export default function App() {
               {loading ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                   <div className="relative w-14 h-14 flex items-center justify-center mb-4">
-                    <div className="absolute inset-0 border-[3px] border-[#EAE6DF] border-t-[#1A1A1A] rounded-full animate-spin" />
-                    <Sparkles className="w-5 h-5 text-[#1A1A1A]" />
+                    <div className="absolute inset-0 border-[3px] border-[#E5E2DC] border-t-[#4f46e5] rounded-full animate-spin" />
+                    <Sparkles className="w-5 h-5 text-[#4f46e5]" />
                   </div>
-                  <h3 className="font-serif text-lg font-bold mb-1">Preserving your voice</h3>
+                  <h3 className="font-serif text-lg font-bold mb-1 text-[#1a1a2e]">Preserving your voice</h3>
                   <p className="text-xs text-[#8C857B] mb-4 max-w-xs">{progressPhase}</p>
-                  <div className="w-48 h-1 bg-[#EAE6DF] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#1A1A1A] transition-all duration-300" style={{ width: `${progress}%` }} />
+                  <div className="w-48 h-1.5 bg-[#E5E2DC] rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-[#4f46e5] to-[#6366f1] rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
                   </div>
                 </div>
               ) : error ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                   <Info className="w-8 h-8 text-red-400 mb-3" />
                   <h3 className="font-bold text-sm text-red-800 mb-1">Something went wrong</h3>
-                  <p className="text-xs text-[#555] max-w-sm leading-relaxed mb-4">{error}</p>
+                  <p className="text-xs text-[#64607a] max-w-sm leading-relaxed mb-4">{error}</p>
                   <button onClick={handleTransform} className="px-4 py-2 bg-red-50 text-red-700 rounded-full font-bold text-xs hover:bg-red-100 transition-colors border border-red-200">
                     Retry
                   </button>
@@ -545,17 +467,17 @@ export default function App() {
 
                       {/* Score cards */}
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-[#FAF9F6] border border-[#EAE6DF] rounded-xl">
+                        <div className="p-3 bg-[#FAF8F5] border border-[#E5E2DC] rounded-xl">
                           <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block mb-0.5">Voice Integrity</span>
                           <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl font-serif font-black">{result.originalScore}</span>
+                            <span className="text-2xl font-serif font-black text-[#1a1a2e]">{result.originalScore}</span>
                             <span className="text-[10px] text-[#8C857B] font-semibold">/ 100</span>
                           </div>
                         </div>
-                        <div className="p-3 bg-[#FAF9F6] border border-[#EAE6DF] rounded-xl">
+                        <div className="p-3 bg-[#FAF8F5] border border-[#E5E2DC] rounded-xl">
                           <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block mb-0.5">Fluency Score</span>
                           <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl font-serif font-black">{result.revisedScore}</span>
+                            <span className="text-2xl font-serif font-black text-[#1a1a2e]">{result.revisedScore}</span>
                             <span className="text-[10px] text-[#8C857B] font-semibold">/ 100</span>
                           </div>
                         </div>
@@ -567,12 +489,12 @@ export default function App() {
                         <span>{showDiff ? 'Word-level diff active' : 'Click any sentence to compare original vs. refined'}</span>
                       </div>
 
-                      {/* Sentence output */}
-                      <div className="font-serif text-[17px] leading-[1.75] text-[#1A1A1A] pl-4 border-l-2 border-[#1A1A1A]/10">
+                      {/* Sentence output with paragraph grouping */}
+                      <div className="output-prose pl-4 border-l-2 border-[#4f46e5]/20">
                         {(() => {
                           const groups: JSX.Element[] = [];
-                          let currentGroup: JSX.Element[] = [];
-                          let groupIdx = 0;
+                          let currentParagraph: JSX.Element[] = [];
+                          let pIdx = 0;
 
                           bodySentences.forEach((sent, idx) => {
                             const text = sent.isNativeMatch ? sent.original : sent.revised;
@@ -583,9 +505,9 @@ export default function App() {
                                 onClick={() => setSelectedSentenceIdx(idx)}
                                 className={`inline px-0.5 rounded transition-all cursor-pointer ${
                                   selectedSentenceIdx === idx
-                                    ? "bg-amber-100 font-medium"
+                                    ? "bg-[#4f46e5]/10 font-medium"
                                     : sent.original !== sent.revised
-                                    ? "bg-[#FCFBE3]/60 hover:bg-[#FCFBE3]"
+                                    ? "bg-amber-50 hover:bg-amber-100"
                                     : "hover:bg-slate-50"
                                 }`}
                               >
@@ -596,27 +518,27 @@ export default function App() {
                             );
 
                             if (sent.isHeading) {
-                              if (currentGroup.length > 0) {
-                                groups.push(<div key={`p-${groupIdx++}`} className="mb-4 last:mb-0">{currentGroup}</div>);
-                                currentGroup = [];
+                              if (currentParagraph.length > 0) {
+                                groups.push(<p key={`p-${pIdx++}`} className="mb-4">{currentParagraph}</p>);
+                                currentParagraph = [];
                               }
                               groups.push(
-                                <div key={`h-${idx}`} className="mb-2 last:mb-0 font-bold">
+                                <h3 key={`h-${idx}`} className="text-lg font-bold text-[#1a1a2e] mb-2 mt-4 first:mt-0">
                                   {content}
-                                </div>
+                                </h3>
                               );
                             } else {
-                              currentGroup.push(<span key={`ws-${idx}`}> </span>);
-                              currentGroup.push(content);
+                              currentParagraph.push(<span key={`ws-${idx}`}> </span>);
+                              currentParagraph.push(content);
                               if (sent.isEndOfParagraph) {
-                                groups.push(<div key={`p-${groupIdx++}`} className="mb-4 last:mb-0">{currentGroup}</div>);
-                                currentGroup = [];
+                                groups.push(<p key={`p-${pIdx++}`} className="mb-4">{currentParagraph}</p>);
+                                currentParagraph = [];
                               }
                             }
                           });
 
-                          if (currentGroup.length > 0) {
-                            groups.push(<div key={`p-${groupIdx}`} className="mb-4 last:mb-0">{currentGroup}</div>);
+                          if (currentParagraph.length > 0) {
+                            groups.push(<p key={`p-${pIdx}`} className="mb-4">{currentParagraph}</p>);
                           }
 
                           return groups;
@@ -625,7 +547,7 @@ export default function App() {
 
                       {/* Sentence comparison */}
                       {selectedSentenceIdx !== null && (
-                        <div className="border border-[#EAE6DF] rounded-xl p-4 bg-[#FAF9F6] space-y-3 transform transition-all duration-200">
+                        <div className="border border-[#E5E2DC] rounded-xl p-4 bg-[#FAF8F5] space-y-3 transform transition-all duration-200 shadow-sm">
                           <div className="flex items-center justify-between">
                             <span className="text-[9px] uppercase font-bold tracking-widest text-[#8C857B]">
                               Sentence #{selectedSentenceIdx + 1}
@@ -636,30 +558,29 @@ export default function App() {
                                 : "text-amber-700 bg-amber-50"
                             }`}>
                               {result.sentences[selectedSentenceIdx].original === result.sentences[selectedSentenceIdx].revised
-                                ? "Unchanged"
-                                : "Refined"}
+                                ? "Unchanged" : "Refined"}
                             </span>
                           </div>
 
                           <div className="grid grid-cols-2 gap-3 text-xs">
                             <div className="space-y-1">
                               <span className="text-[9px] font-bold text-[#8C857B] uppercase">Draft</span>
-                              <p className="p-2.5 bg-white border border-[#EAE6DF] rounded-lg text-[#666] italic text-[11px] leading-relaxed">
+                              <p className="p-2.5 bg-white border border-[#E5E2DC] rounded-lg text-[#64607a] italic text-[11px] leading-relaxed">
                                 {result.sentences[selectedSentenceIdx].original}
                               </p>
                             </div>
                             <div className="space-y-1">
                               <span className="text-[9px] font-bold text-[#8C857B] uppercase">Refined</span>
-                              <p className="p-2.5 bg-white border border-[#1A1A1A]/10 rounded-lg text-[#1A1A1A] font-medium text-[11px] leading-relaxed">
+                              <p className="p-2.5 bg-white border border-[#4f46e5]/20 rounded-lg text-[#1a1a2e] font-medium text-[11px] leading-relaxed">
                                 {result.sentences[selectedSentenceIdx].revised}
                               </p>
                             </div>
                           </div>
 
                           {result.sentences[selectedSentenceIdx].explanation && (
-                            <div className="flex gap-2 items-start pt-2 border-t border-[#EAE6DF]">
-                              <Info className="w-3 h-3 text-[#8C857B] shrink-0 mt-0.5" />
-                              <span className="text-[10px] text-[#555] leading-relaxed">
+                            <div className="flex gap-2 items-start pt-2 border-t border-[#E5E2DC]">
+                              <Info className="w-3 h-3 text-[#4f46e5] shrink-0 mt-0.5" />
+                              <span className="text-[10px] text-[#64607a] leading-relaxed">
                                 {result.sentences[selectedSentenceIdx].explanation}
                               </span>
                             </div>
@@ -668,19 +589,19 @@ export default function App() {
                       )}
 
                       {/* Diagnosis */}
-                      <div className="border-t border-[#EAE6DF] pt-4">
+                      <div className="border-t border-[#E5E2DC] pt-4">
                         <p className="text-[11px] text-[#8C857B] italic leading-relaxed">
                           {result.explanation || "All structures, paragraph bounds, and footnotes preserved correctly."}
                         </p>
                       </div>
 
-                      {/* Footnotes */}
+                      {/* Footnotes — visually separated */}
                       {footnotes.length > 0 && (
-                        <div className="border-t border-[#EAE6DF] pt-4">
+                        <div className="mt-4 pt-4 border-t-2 border-[#E5E2DC] bg-[#FAF8F5] -mx-6 px-6 pb-0 rounded-b-2xl">
                           <span className="text-[9px] uppercase font-bold tracking-wider text-[#8C857B] block mb-2">Notes & References</span>
-                          <div className="space-y-1">
+                          <div className="space-y-1.5">
                             {footnotes.map((fn, i) => (
-                              <p key={i} className="text-xs text-[#555] font-serif leading-relaxed">
+                              <p key={i} className="text-xs text-[#64607a] font-serif leading-relaxed pl-4 border-l-2 border-[#E5E2DC]">
                                 {fn.revised}
                               </p>
                             ))}
@@ -695,11 +616,11 @@ export default function App() {
                     <div className="p-6 space-y-3">
                       <div className="flex items-center gap-2 mb-3">
                         <Zap className="w-4 h-4 text-amber-500" />
-                        <h4 className="text-xs uppercase font-extrabold tracking-widest">Diagnostics</h4>
+                        <h4 className="text-xs uppercase font-extrabold tracking-widest text-[#1a1a2e]">Diagnostics</h4>
                       </div>
                       {result.suggestions.map((suggestion, sIdx) => (
-                        <div key={sIdx} className="p-3 bg-[#FAF9F6] border border-[#EAE6DF] rounded-xl text-xs text-[#555] flex gap-2">
-                          <span className="text-[#1A1A1A] font-bold shrink-0">{sIdx + 1}.</span>
+                        <div key={sIdx} className="p-3 bg-[#FAF8F5] border border-[#E5E2DC] rounded-xl text-xs text-[#64607a] flex gap-2">
+                          <span className="text-[#4f46e5] font-bold shrink-0">{sIdx + 1}.</span>
                           <p className="leading-relaxed">{suggestion}</p>
                         </div>
                       ))}
@@ -709,12 +630,12 @@ export default function App() {
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-[#1A1A1A]/5 flex items-center justify-center mb-5">
-                    <Sparkles className="w-6 h-6 text-[#8C857B]" />
+                  <div className="w-14 h-14 rounded-2xl bg-[#4f46e5]/5 flex items-center justify-center mb-5">
+                    <Sparkles className="w-6 h-6 text-[#4f46e5]" />
                   </div>
-                  <h3 className="font-serif text-xl font-bold mb-2">Ready to refine</h3>
+                  <h3 className="font-serif text-xl font-bold mb-2 text-[#1a1a2e]">Ready to refine</h3>
                   <p className="text-sm text-[#8C857B] max-w-xs leading-relaxed">
-                    Write or paste your text on the left, then hit <strong className="text-[#1A1A1A]">Nativize</strong>.
+                    Write or paste your text on the left, then hit <strong className="text-[#4f46e5]">Nativize</strong>.
                   </p>
                 </div>
               )}
@@ -722,9 +643,9 @@ export default function App() {
 
             {/* Status bar */}
             {result && (
-              <div className="px-4 py-2 border-t border-[#EAE6DF] bg-[#FAF9F6] flex items-center justify-between text-[10px] text-[#8C857B]">
+              <div className="px-4 py-2 border-t border-[#E5E2DC] bg-[#FAF8F5] flex items-center justify-between text-[10px] text-[#8C857B]">
                 <span>{wordCount(result.finalVersion)} words, {charCount(result.finalVersion)} chars</span>
-                <span>Dialect: <strong className="text-[#1A1A1A]">{result.detectedDialect || "US"}</strong></span>
+                <span>Dialect: <strong className="text-[#1a1a2e]">{result.detectedDialect || "US"}</strong></span>
               </div>
             )}
 
@@ -735,17 +656,17 @@ export default function App() {
       </main>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-[#EAE6DF] bg-white mt-auto">
-        <div className="max-w-[1600px] mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-[#E5E2DC] bg-white mt-auto">
+        <div className="max-w-[1600px] mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-serif text-sm font-bold">IdiomOptima</span>
+            <span className="font-serif text-sm font-bold text-[#1a1a2e]">IdiomOptima</span>
             <span className="text-[10px] text-[#8C857B]">&copy; {new Date().getFullYear()}</span>
           </div>
           <nav className="flex items-center gap-5 text-[11px] font-semibold text-[#8C857B]">
-            <a href="/faq.html" className="hover:text-[#1A1A1A] transition-colors">FAQ</a>
-            <a href="/terms.html" className="hover:text-[#1A1A1A] transition-colors">Terms</a>
-            <a href="/privacy.html" className="hover:text-[#1A1A1A] transition-colors">Privacy</a>
-            <a href="mailto:contact@IdiomOptima.com" className="hover:text-[#1A1A1A] transition-colors">Contact</a>
+            <a href="/faq.html" className="hover:text-[#4f46e5] transition-colors">FAQ</a>
+            <a href="/terms.html" className="hover:text-[#4f46e5] transition-colors">Terms</a>
+            <a href="/privacy.html" className="hover:text-[#4f46e5] transition-colors">Privacy</a>
+            <a href="mailto:contact@IdiomOptima.com" className="hover:text-[#4f46e5] transition-colors">Contact</a>
           </nav>
         </div>
       </footer>

@@ -32,24 +32,24 @@
 
 @layer base {
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
+    --background: oklch(0.995 0.002 80);
+    --foreground: oklch(0.17 0.02 260);
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
+    --card-foreground: oklch(0.17 0.02 260);
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.17 0.02 260);
+    --primary: oklch(0.35 0.12 265);
+    --primary-foreground: oklch(0.98 0 0);
+    --secondary: oklch(0.96 0.008 80);
+    --secondary-foreground: oklch(0.25 0.04 260);
+    --muted: oklch(0.96 0.005 80);
+    --muted-foreground: oklch(0.50 0.02 260);
+    --accent: oklch(0.93 0.02 80);
+    --accent-foreground: oklch(0.20 0.04 260);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: oklch(0.91 0.01 80);
+    --input: oklch(0.91 0.01 80);
+    --ring: oklch(0.35 0.12 265);
     --radius: 0.625rem;
   }
 
@@ -83,4 +83,135 @@
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+/* TipTap editor styles */
+.tiptap-editor .tiptap {
+  outline: none;
+  min-height: 500px;
+  padding: 2rem;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #1a1a2e;
+}
+
+.tiptap-editor .tiptap p {
+  margin-bottom: 1em;
+}
+
+.tiptap-editor .tiptap p:last-child {
+  margin-bottom: 0;
+}
+
+.tiptap-editor .tiptap h1,
+.tiptap-editor .tiptap h2,
+.tiptap-editor .tiptap h3 {
+  font-weight: 700;
+  margin-bottom: 0.5em;
+  margin-top: 1em;
+  color: #1a1a2e;
+}
+
+.tiptap-editor .tiptap h1 { font-size: 1.5em; }
+.tiptap-editor .tiptap h2 { font-size: 1.3em; }
+.tiptap-editor .tiptap h3 { font-size: 1.15em; }
+
+.tiptap-editor .tiptap ul,
+.tiptap-editor .tiptap ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.tiptap-editor .tiptap li {
+  margin-bottom: 0.25em;
+}
+
+.tiptap-editor .tiptap strong {
+  font-weight: 700;
+}
+
+.tiptap-editor .tiptap em {
+  font-style: italic;
+}
+
+.tiptap-editor .tiptap sub {
+  font-size: 0.75em;
+}
+
+.tiptap-editor .tiptap sup {
+  font-size: 0.75em;
+  vertical-align: super;
+}
+
+.tiptap-editor .tiptap blockquote {
+  border-left: 3px solid #6366f1;
+  padding-left: 1em;
+  margin-left: 0;
+  color: #555;
+  font-style: italic;
+}
+
+.tiptap-editor .tiptap a {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+/* Output prose styles */
+.output-prose {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #1a1a2e;
+}
+
+.output-prose p {
+  margin-bottom: 1em;
+}
+
+.output-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.output-prose h1,
+.output-prose h2,
+.output-prose h3 {
+  font-weight: 700;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  color: #1a1a2e;
+}
+
+.output-prose ul,
+.output-prose ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.output-prose li {
+  margin-bottom: 0.25em;
+}
+
+.output-prose strong {
+  font-weight: 700;
+}
+
+.output-prose em {
+  font-style: italic;
+}
+
+.output-prose sup {
+  font-size: 0.75em;
+  vertical-align: super;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+  background: oklch(0.90 0.04 265 / 0.3);
+  color: #1a1a2e;
 }

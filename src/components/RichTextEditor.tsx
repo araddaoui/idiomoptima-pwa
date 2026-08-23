@@ -1,21 +1,19 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Superscript from '@tiptap/extension-superscript';
 import Underline from '@tiptap/extension-underline';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect, useRef } from 'react';
-import { 
-  Bold, 
-  Italic, 
-  Underline as UnderlineIcon, 
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
   Superscript as SuperscriptIcon,
   List,
-  ListOrdered
+  ListOrdered,
+  Heading1,
+  Heading2,
+  Quote,
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -28,52 +26,46 @@ interface RichTextEditorProps {
 const MenuBar = ({ editor }: { editor: any }) => {
   if (!editor) return null;
 
+  const btnClass = (active: boolean) =>
+    `p-1.5 rounded-md transition-colors ${
+      active
+        ? 'bg-[#4f46e5]/10 text-[#4f46e5]'
+        : 'text-[#8C857B] hover:text-[#1a1a2e] hover:bg-[#EAE6DF]'
+    }`;
+
   return (
-    <div className="flex flex-wrap gap-1 p-2 border-b border-[#E5E5E5] bg-[#F9F9F9]">
-      <button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={`p-1.5 rounded hover:bg-[#E5E5E5] transition-colors ${editor.isActive('bold') ? 'bg-[#E5E5E5] text-black' : 'text-[#666]'}`}
-        title="Bold"
-      >
+    <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-[#EAE6DF] bg-[#FAF9F6]">
+      <button onClick={() => editor.chain().focus().toggleBold().run()} className={btnClass(editor.isActive('bold'))} title="Bold">
         <Bold className="w-4 h-4" />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={`p-1.5 rounded hover:bg-[#E5E5E5] transition-colors ${editor.isActive('italic') ? 'bg-[#E5E5E5] text-black' : 'text-[#666]'}`}
-        title="Italic"
-      >
+      <button onClick={() => editor.chain().focus().toggleItalic().run()} className={btnClass(editor.isActive('italic'))} title="Italic">
         <Italic className="w-4 h-4" />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={`p-1.5 rounded hover:bg-[#E5E5E5] transition-colors ${editor.isActive('underline') ? 'bg-[#E5E5E5] text-black' : 'text-[#666]'}`}
-        title="Underline"
-      >
+      <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={btnClass(editor.isActive('underline'))} title="Underline">
         <UnderlineIcon className="w-4 h-4" />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleSuperscript().run()}
-        disabled={!editor.can().chain().focus().toggleSuperscript().run()}
-        className={`p-1.5 rounded hover:bg-[#E5E5E5] transition-colors ${editor.isActive('superscript') ? 'bg-[#E5E5E5] text-black' : 'text-[#666]'}`}
-        title="Superscript"
-      >
+      <button onClick={() => editor.chain().focus().toggleSuperscript().run()} className={btnClass(editor.isActive('superscript'))} title="Superscript">
         <SuperscriptIcon className="w-4 h-4" />
       </button>
-      <div className="w-[1px] h-4 bg-[#E5E5E5] self-center mx-1" />
-      <button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`p-1.5 rounded hover:bg-[#E5E5E5] transition-colors ${editor.isActive('bulletList') ? 'bg-[#E5E5E5] text-black' : 'text-[#666]'}`}
-        title="Bullet List"
-      >
+
+      <div className="w-px h-5 bg-[#EAE6DF] mx-1.5" />
+
+      <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnClass(editor.isActive('heading', { level: 2 }))} title="Heading">
+        <Heading1 className="w-4 h-4" />
+      </button>
+      <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btnClass(editor.isActive('heading', { level: 3 }))} title="Subheading">
+        <Heading2 className="w-4 h-4" />
+      </button>
+      <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btnClass(editor.isActive('blockquote'))} title="Quote">
+        <Quote className="w-4 h-4" />
+      </button>
+
+      <div className="w-px h-5 bg-[#EAE6DF] mx-1.5" />
+
+      <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={btnClass(editor.isActive('bulletList'))} title="Bullet List">
         <List className="w-4 h-4" />
       </button>
-      <button
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`p-1.5 rounded hover:bg-[#E5E5E5] transition-colors ${editor.isActive('orderedList') ? 'bg-[#E5E5E5] text-black' : 'text-[#666]'}`}
-        title="Ordered List"
-      >
+      <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btnClass(editor.isActive('orderedList'))} title="Numbered List">
         <ListOrdered className="w-4 h-4" />
       </button>
     </div>
@@ -96,7 +88,7 @@ export function RichTextEditor({ content, onChange, placeholder, disabled }: Ric
     ],
     content: content,
     editorProps: {
-      handlePaste: (view, event) => {
+      handlePaste: (_view, event) => {
         const html = event.clipboardData?.getData('text/html');
         if (html) {
           isInternalChange.current = true;
@@ -130,11 +122,11 @@ export function RichTextEditor({ content, onChange, placeholder, disabled }: Ric
   if (!editor) return null;
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-white tiptap-editor">
       <MenuBar editor={editor} />
-      <div className="flex-1 overflow-y-auto p-8 font-serif text-xl leading-relaxed focus-within:outline-none min-h-[600px]">
-        <EditorContent 
-          editor={editor} 
+      <div className="flex-1 overflow-y-auto">
+        <EditorContent
+          editor={editor}
           className="outline-none h-full"
         />
       </div>
