@@ -63,7 +63,7 @@ async function callGemini(text, options, apiKey) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer " + apiKey,
+      "x-goog-api-key": apiKey,
     },
     body: JSON.stringify({
       contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\n" + prompt }] }],
