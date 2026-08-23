@@ -1,21 +1,22 @@
 import { useState, useEffect } from "react";
-import { 
-  Sparkles, 
-  Download, 
-  RefreshCw, 
-  Trash2, 
-  Languages, 
-  PenLine, 
-  BookOpen, 
-  Briefcase, 
-  Activity, 
-  FileText, 
-  Info, 
-  CheckCircle2, 
-  Eye, 
-  Zap, 
+import {
+  Sparkles,
+  Download,
+  RefreshCw,
+  Trash2,
+  Languages,
+  PenLine,
+  BookOpen,
+  Briefcase,
+  Activity,
+  FileText,
+  Info,
+  CheckCircle2,
+  Eye,
+  Zap,
   Clipboard,
-  Check
+  Check,
+  Feather,
 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { jsPDF } from "jspdf";
@@ -24,26 +25,26 @@ import { RichTextEditor } from "./components/RichTextEditor";
 import { transformText, TransformationResult, detectBestMode } from "./services/geminiService";
 
 const DIALECTS = [
-  { value: "auto", label: "Auto-Detect Dialect" },
-  { value: "US", label: "American English (US)" },
-  { value: "UK", label: "British English (UK)" },
-  { value: "CA", label: "Canadian English (CA)" },
-  { value: "AU", label: "Australian English (AU)" },
+  { value: "auto", label: "Auto-Detect" },
+  { value: "US", label: "American (US)" },
+  { value: "UK", label: "British (UK)" },
+  { value: "CA", label: "Canadian (CA)" },
+  { value: "AU", label: "Australian (AU)" },
 ];
 
 const DOMAINS = [
-  { value: "general", label: "General Domain" },
-  { value: "academic", label: "Academic Mode" },
-  { value: "business", label: "Business Mode" },
-  { value: "creative", label: "Creative Mode" },
+  { value: "general", label: "General" },
+  { value: "academic", label: "Academic" },
+  { value: "business", label: "Business" },
+  { value: "creative", label: "Creative" },
 ];
 
 const TONES = [
-  { value: "neutral", label: "Neutral Tone" },
-  { value: "formal", label: "Formal Tone" },
-  { value: "informal", label: "Informal Tone" },
-  { value: "persuasive", label: "Persuasive Tone" },
-  { value: "empathetic", label: "Empathetic Tone" },
+  { value: "neutral", label: "Neutral" },
+  { value: "formal", label: "Formal" },
+  { value: "informal", label: "Informal" },
+  { value: "persuasive", label: "Persuasive" },
+  { value: "empathetic", label: "Empathetic" },
 ];
 
 export default function App() {
@@ -51,13 +52,13 @@ export default function App() {
   const [forcedDialect, setForcedDialect] = useState<string>("auto");
   const [domain, setDomain] = useState<string>("general");
   const [tone, setTone] = useState<string>("neutral");
-  
+
   const [loading, setLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [progressPhase, setProgressPhase] = useState<string>("");
   const [result, setResult] = useState<TransformationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [selectedSentenceIdx, setSelectedSentenceIdx] = useState<number | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"result" | "suggestions" | "metadata">("result");
@@ -122,7 +123,7 @@ export default function App() {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = inputHtml;
     const plainText = tempDiv.textContent || tempDiv.innerText || "";
-    
+
     if (!plainText.trim()) {
       setError("Please write or paste some text first.");
       return;
@@ -152,7 +153,7 @@ export default function App() {
       setActiveTab("result");
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Something went wrong during Voice Preservation optimization.");
+      setError(err.message || "Something went wrong during transformation.");
     } finally {
       setLoading(false);
     }
@@ -194,7 +195,7 @@ export default function App() {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "NativeWrite Document Export",
+                  text: "IdiomOptima Document Export",
                   bold: true,
                   size: 36,
                   font: "Georgia",
@@ -211,7 +212,7 @@ export default function App() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "nativewrite-preserved-voice.docx";
+      a.download = "idiomoptima-export.docx";
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -227,12 +228,12 @@ export default function App() {
       const doc = new jsPDF();
       doc.setFont("Helvetica", "normal");
       doc.setFontSize(16);
-      doc.text("NativeWrite - Preserved Document", 20, 20);
+      doc.text("IdiomOptima - Preserved Document", 20, 20);
       doc.setFontSize(11);
-      
+
       const splitText = doc.splitTextToSize(result.finalVersion, 170);
       doc.text(splitText, 20, 35);
-      doc.save("nativewrite-preserved-voice.pdf");
+      doc.save("idiomoptima-export.pdf");
     } catch (e) {
       console.error("Failed to export PDF doc:", e);
     }
@@ -259,31 +260,27 @@ export default function App() {
     switch (finalMode) {
       case "academic":
         return {
-          label: "Academic Mode Activated",
-          color: "bg-indigo-100 text-indigo-700 border-indigo-200",
-          icon: <BookOpen className="w-4 h-4" />,
-          desc: "Preserving analytical density and complex logical argument stacking. Restores natural epistemic hedging."
+          label: "Academic",
+          color: "bg-indigo-50 text-indigo-700 border-indigo-200",
+          icon: <BookOpen className="w-3 h-3" />,
         };
       case "business":
         return {
-          label: "Business Mode Activated",
-          color: "bg-blue-100 text-blue-700 border-blue-200",
-          icon: <Briefcase className="w-4 h-4" />,
-          desc: "Preserving practical operations ambiguity, stakeholder nuances, and internal communication alignment."
+          label: "Business",
+          color: "bg-blue-50 text-blue-700 border-blue-200",
+          icon: <Briefcase className="w-3 h-3" />,
         };
       case "creative":
         return {
-          label: "Creative Mode Activated",
-          color: "bg-rose-100 text-rose-700 border-rose-200",
-          icon: <Activity className="w-4 h-4" />,
-          desc: "Protecting fragmented rhythms, emotional nuance, metaphor, and repeating styles. No flattening."
+          label: "Creative",
+          color: "bg-rose-50 text-rose-700 border-rose-200",
+          icon: <Activity className="w-3 h-3" />,
         };
       default:
         return {
-          label: "Hybrid Alignment Activated",
-          color: "bg-slate-100 text-slate-700 border-slate-200",
-          icon: <Languages className="w-4 h-4" />,
-          desc: "Dynamically balancing across multiple registers within individual paragraphs."
+          label: "General",
+          color: "bg-slate-50 text-slate-600 border-slate-200",
+          icon: <Languages className="w-3 h-3" />,
         };
     }
   };
@@ -336,8 +333,9 @@ export default function App() {
   const bodySentences = taggedSentences.filter(s => !s.isImmutableFootnote);
 
   return (
-    <div className="min-h-screen bg-[#FDFDFB] text-[#1A1A1A] flex flex-col font-sans transition-all duration-300 selection:bg-[#F2EFE9] selection:text-[#1a1a1a]">
-      
+    <div className="min-h-screen bg-[#FDFDFB] text-[#1A1A1A] flex flex-col font-sans selection:bg-[#F2EFE9] selection:text-[#1a1a1a]">
+
+      {/* ─── Hero ─── */}
       <header className="border-b border-[#EAE6DF] bg-white/70 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -345,33 +343,69 @@ export default function App() {
               <Languages className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="font-serif text-xl font-bold tracking-tight text-[#1A1A1A]">NativeWrite</h1>
+              <h1 className="font-serif text-xl font-bold tracking-tight text-[#1A1A1A]">IdiomOptima</h1>
               <p className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold">Voice Preservation Engine</p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className={`hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-bold border ${modeInfo.color}`}>
+            <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${modeInfo.color}`}>
               {modeInfo.icon}
               <span>{modeInfo.label}</span>
-            </div>
-
-            <div className="text-xs text-[#8C857B] font-mono">
-              v3.0 Production
             </div>
           </div>
         </div>
       </header>
 
+      {/* ─── Hero Banner ─── */}
+      <section className="border-b border-[#EAE6DF] bg-[#FAF9F6]">
+        <div className="max-w-[1600px] mx-auto px-6 py-10 md:py-14 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#1A1A1A]/5 rounded-full text-[10px] font-bold uppercase tracking-widest text-[#8C857B] mb-5">
+            <Feather className="w-3 h-3" />
+            <span>AI-Powered Text Refinement</span>
+          </div>
+
+          <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A1A1A] leading-[1.1] mb-4">
+            Edit. Nativize. Humanize.
+          </h2>
+
+          <p className="text-sm md:text-base text-[#8C857B] max-w-2xl mx-auto leading-relaxed mb-6">
+            Your voice, preserved. IdiomOptima refines grammar, fluency, and native expression
+            while protecting your rhythm, headings, citations, and authorial intent.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] font-semibold text-[#555]">
+            <span className="flex items-center gap-1.5 bg-white border border-[#EAE6DF] rounded-full px-3 py-1.5">
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+              Voice preservation
+            </span>
+            <span className="flex items-center gap-1.5 bg-white border border-[#EAE6DF] rounded-full px-3 py-1.5">
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+              Dialect-aware
+            </span>
+            <span className="flex items-center gap-1.5 bg-white border border-[#EAE6DF] rounded-full px-3 py-1.5">
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+              Citations safe
+            </span>
+            <span className="flex items-center gap-1.5 bg-white border border-[#EAE6DF] rounded-full px-3 py-1.5">
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+              Minimal intervention
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Tool ─── */}
       <main className="max-w-[1600px] w-full mx-auto px-6 py-6 flex-1 flex flex-col gap-6">
-        
+
+        {/* Settings bar */}
         <div className="flex justify-center md:justify-start">
           <section className="w-full max-w-2xl bg-white border border-[#EAE6DF] rounded-2xl p-3 shadow-sm hover:shadow-md transition-shadow">
             <div className="grid grid-cols-3 gap-6">
-              
+
               <div className="space-y-1">
                 <label className="text-[9px] font-bold text-[#8C857B] uppercase tracking-[0.15em] pl-0.5 min-h-[14px] block">
-                  Dialect Preference
+                  Dialect
                 </label>
                 <select
                   value={forcedDialect}
@@ -379,16 +413,14 @@ export default function App() {
                   className="w-full h-8 text-[11px] font-semibold bg-[#FAF9F6] border border-[#EAE6DF] rounded-lg px-2.5 text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1A1A1A]"
                 >
                   {DIALECTS.map((d) => (
-                    <option key={d.value} value={d.value}>
-                      {d.label}
-                    </option>
+                    <option key={d.value} value={d.value}>{d.label}</option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-1">
                 <label className="text-[9px] font-bold text-[#8C857B] uppercase tracking-[0.15em] pl-0.5 min-h-[14px] block">
-                  Domain Profile
+                  Domain
                 </label>
                 <select
                   value={domain}
@@ -396,16 +428,14 @@ export default function App() {
                   className="w-full h-8 text-[11px] font-semibold bg-[#FAF9F6] border border-[#EAE6DF] rounded-lg px-2.5 text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1A1A1A]"
                 >
                   {DOMAINS.map((dm) => (
-                    <option key={dm.value} value={dm.value}>
-                      {dm.label}
-                    </option>
+                    <option key={dm.value} value={dm.value}>{dm.label}</option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-1">
                 <label className="text-[9px] font-bold text-[#8C857B] uppercase tracking-[0.15em] pl-0.5 min-h-[14px] block">
-                  Subtle Tone Shift
+                  Tone
                 </label>
                 <select
                   value={tone}
@@ -413,9 +443,7 @@ export default function App() {
                   className="w-full h-8 text-[11px] font-semibold bg-[#FAF9F6] border border-[#EAE6DF] rounded-lg px-2.5 text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1A1A1A]"
                 >
                   {TONES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
+                    <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
                 </select>
               </div>
@@ -424,34 +452,31 @@ export default function App() {
           </section>
         </div>
 
+        {/* Editor + Output */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch flex-1">
-          
+
+          {/* Left: Editor */}
           <section className="lg:col-span-7 flex flex-col bg-white border border-[#EAE6DF] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-            
+
             <div className="px-5 py-3 border-b border-[#EAE6DF] bg-[#FAF9F6] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <PenLine className="w-3.5 h-3.5 text-[#8C857B]" />
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#8C857B]">
-                  Original Material
-                </span>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#8C857B]">Original</span>
                 <span className="text-[10px] px-1.5 py-0.5 bg-[#EAE6DF] text-[#555] rounded font-semibold">
                   {wordCount(plainTextInput)} words
                 </span>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleClear}
-                  className="p-1 text-[#8C857B] hover:text-[#DC2626] transition-colors rounded hover:bg-[#F2EFE9]"
-                  title="Clear source canvas"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              <button
+                onClick={handleClear}
+                className="p-1 text-[#8C857B] hover:text-[#DC2626] transition-colors rounded hover:bg-[#F2EFE9]"
+                title="Clear"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             <div className="flex-1 min-h-[600px] bg-white relative">
-              <RichTextEditor 
+              <RichTextEditor
                 content={inputHtml}
                 onChange={setInputHtml}
               />
@@ -459,9 +484,9 @@ export default function App() {
 
             <div className="p-4 border-t border-[#EAE6DF] bg-[#FAF9F6] flex items-center justify-between">
               <div className="text-[10px] text-[#8C857B] max-w-sm">
-                Write freely. The micro-engine automatically preserves your voice and matches it against lexical structures in the background.
+                Write freely. The engine preserves your voice and matches it against lexical structures in the background.
               </div>
-              
+
               <button
                 onClick={handleTransform}
                 disabled={loading || !plainTextInput.trim()}
@@ -470,12 +495,12 @@ export default function App() {
                 {loading ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Nativizing Phrasing ({progress}%)...</span>
+                    <span>Nativizing ({progress}%)...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Nativize Prose & Preserve Voice</span>
+                    <span>Nativize & Preserve Voice</span>
                   </>
                 )}
               </button>
@@ -483,8 +508,10 @@ export default function App() {
 
           </section>
 
+          {/* Right: Output */}
           <section className="lg:col-span-5 flex flex-col bg-white border border-[#EAE6DF] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all">
-            
+
+            {/* Tabs */}
             <div className="border-b border-[#EAE6DF] bg-[#FAF9F6] px-4">
               <div className="flex items-center justify-between h-11">
                 <div className="flex gap-2">
@@ -495,10 +522,8 @@ export default function App() {
                       activeTab === "result" ? "text-[#1A1A1A]" : "text-[#8C857B] hover:text-[#555]"
                     } disabled:opacity-40`}
                   >
-                    Preserved Output
-                    {activeTab === "result" && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A]" />
-                    )}
+                    Output
+                    {activeTab === "result" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A]" />}
                   </button>
                   <button
                     onClick={() => setActiveTab("suggestions")}
@@ -507,19 +532,17 @@ export default function App() {
                       activeTab === "suggestions" ? "text-[#1A1A1A]" : "text-[#8C857B] hover:text-[#555]"
                     } disabled:opacity-40`}
                   >
-                    Lexical Diagnostics
+                    Diagnostics
                     {result?.suggestions && result.suggestions.length > 0 && (
                       <span className="ml-1.5 px-1.5 py-0.2 bg-[#F2C94C] text-[#333] text-[9.5px] font-black rounded-full">
                         {result.suggestions.length}
                       </span>
                     )}
-                    {activeTab === "suggestions" && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A]" />
-                    )}
+                    {activeTab === "suggestions" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A]" />}
                   </button>
                 </div>
 
-                 {result && (
+                {result && (
                   <div className="flex items-center gap-1.5">
                     {activeTab === "result" && (
                       <button
@@ -536,7 +559,7 @@ export default function App() {
                     <button
                       onClick={handleCopy}
                       className="p-1 px-2 hover:bg-[#EAE6DF] rounded text-xs gap-1 flex items-center text-[#555] transition-colors"
-                      title="Copy output text"
+                      title="Copy"
                     >
                       {copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Clipboard className="w-3.5 h-3.5" />}
                       <span className="text-[10px] font-semibold">{copied ? "Copied" : "Copy"}</span>
@@ -544,7 +567,7 @@ export default function App() {
                     <button
                       onClick={exportAsPDF}
                       className="p-1 px-2 hover:bg-[#EAE6DF] rounded text-xs gap-1 flex items-center text-[#555] transition-colors"
-                      title="Export PDF Document (.pdf)"
+                      title="Export PDF"
                     >
                       <FileText className="w-3.5 h-3.5 text-[#555]" />
                       <span className="text-[10px] font-semibold">PDF</span>
@@ -552,7 +575,7 @@ export default function App() {
                     <button
                       onClick={exportAsWord}
                       className="p-1 px-2 hover:bg-[#EAE6DF] rounded text-xs gap-1 flex items-center text-[#555] transition-colors"
-                      title="Export Word Document (.docx)"
+                      title="Export Word"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span className="text-[10px] font-semibold">Word</span>
@@ -562,6 +585,7 @@ export default function App() {
               </div>
             </div>
 
+            {/* Content */}
             <div className="flex-1 bg-white flex flex-col overflow-y-auto">
               {loading ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#FAF9F6]/50">
@@ -569,11 +593,10 @@ export default function App() {
                     <div className="absolute inset-0 border-4 border-[#EAE6DF] border-t-[#1A1A1A] rounded-full animate-spin" />
                     <Sparkles className="w-5 h-5 text-[#1A1A1A]" />
                   </div>
-                  <h3 className="font-serif text-lg font-bold mb-1">Preserving authorial rhythm...</h3>
+                  <h3 className="font-serif text-lg font-bold mb-1">Preserving your voice...</h3>
                   <p className="text-xs text-[#8C857B] mb-4 max-w-xs">{progressPhase}</p>
-                  
                   <div className="w-48 h-1 bg-[#EAE6DF] rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-[#1A1A1A] transition-all duration-300"
                       style={{ width: `${progress}%` }}
                     />
@@ -582,110 +605,112 @@ export default function App() {
               ) : error ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-red-50/20">
                   <Info className="w-8 h-8 text-red-500 mb-3" />
-                  <h3 className="font-bold text-sm text-red-800 mb-1">Process Halted Check Required</h3>
+                  <h3 className="font-bold text-sm text-red-800 mb-1">Something went wrong</h3>
                   <p className="text-xs text-[#555] max-w-sm leading-relaxed mb-4">{error}</p>
-                  <button 
+                  <button
                     onClick={handleTransform}
                     className="px-4 py-2 bg-red-100 text-red-800 rounded-full font-bold text-xs hover:bg-red-200 transition-colors"
                   >
-                    Retry Analysis
+                    Retry
                   </button>
                 </div>
               ) : result ? (
                 <div className="flex-1 flex flex-col h-full">
-                  
+
                   {activeTab === "result" && (
                     <div className="p-6 space-y-6 flex-1">
-                      
+
+                      {/* Scores */}
                       <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#FAF9F6] border border-[#EAE6DF] rounded-2xl">
                         <div className="space-y-0.5">
-                          <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block">Voice Integrity Index</span>
+                          <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block">Voice Integrity</span>
                           <div className="flex items-center gap-1.5">
                             <span className="text-xl font-serif font-black">{result.originalScore}%</span>
-                            <span className="text-[10px] text-green-600 font-bold">Unflattened</span>
+                            <span className="text-[10px] text-green-600 font-bold">Preserved</span>
                           </div>
                         </div>
                         <div className="space-y-0.5">
-                          <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block">Syntactic Rhythm Stability</span>
+                          <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block">Fluency Gain</span>
                           <div className="flex items-center gap-1.5">
                             <span className="text-xl font-serif font-black">{result.revisedScore}%</span>
-                            <span className="text-[10px] text-blue-600 font-bold">Variable</span>
+                            <span className="text-[10px] text-blue-600 font-bold">Enhanced</span>
                           </div>
                         </div>
                       </div>
 
-                        <div className="space-y-4">
-                        <h4 className="text-[10px] uppercase font-bold tracking-wider text-[#8C857B] flex items-center gap-1.5">
-                          <Eye className="w-3 h-3" />
-                          <span>Review Mode: {showDiff ? 'Word diff shown' : 'Click any sentence to check transformations'}</span>
-                        </h4>
+                      {/* Review instruction */}
+                      <h4 className="text-[10px] uppercase font-bold tracking-wider text-[#8C857B] flex items-center gap-1.5">
+                        <Eye className="w-3 h-3" />
+                        <span>{showDiff ? 'Word diff shown' : 'Click any sentence to compare'}</span>
+                      </h4>
 
-                        <div className="prose prose-stone font-serif text-lg leading-relaxed text-[#1A1A1A] border-l-2 border-[#1A1A1A]/10 pl-4 py-1">
-                          {(() => {
-                            const groups: JSX.Element[] = [];
-                            let currentGroup: JSX.Element[] = [];
-                            let groupIdx = 0;
+                      {/* Sentence output */}
+                      <div className="prose prose-stone font-serif text-lg leading-relaxed text-[#1A1A1A] border-l-2 border-[#1A1A1A]/10 pl-4 py-1">
+                        {(() => {
+                          const groups: JSX.Element[] = [];
+                          let currentGroup: JSX.Element[] = [];
+                          let groupIdx = 0;
 
-                            bodySentences.forEach((sent, idx) => {
-                              const text = sent.isNativeMatch ? sent.original : sent.revised;
-                              const content = (
-                                <span
-                                  key={idx}
-                                  title={`Original: ${sent.original}`}
-                                  onClick={() => setSelectedSentenceIdx(idx)}
-                                  className={`sentence-highlight inline px-1 py-0.5 rounded transition-all cursor-pointer ${
-                                    selectedSentenceIdx === idx 
-                                      ? "bg-amber-100 text-[#1A1A1A] font-medium scale-[1.01]" 
-                                      : sent.original !== sent.revised
-                                      ? "bg-[#FCFBE3]/50 hover:bg-[#FCFBE3]"
-                                      : "hover:bg-slate-50"
-                                  }`}
-                                >
-                                  {showDiff && !sent.isNativeMatch
-                                    ? renderDiff(sent.original, sent.revised)
-                                    : text}
-                                </span>
-                              );
+                          bodySentences.forEach((sent, idx) => {
+                            const text = sent.isNativeMatch ? sent.original : sent.revised;
+                            const content = (
+                              <span
+                                key={idx}
+                                title={`Original: ${sent.original}`}
+                                onClick={() => setSelectedSentenceIdx(idx)}
+                                className={`sentence-highlight inline px-1 py-0.5 rounded transition-all cursor-pointer ${
+                                  selectedSentenceIdx === idx
+                                    ? "bg-amber-100 text-[#1A1A1A] font-medium scale-[1.01]"
+                                    : sent.original !== sent.revised
+                                    ? "bg-[#FCFBE3]/50 hover:bg-[#FCFBE3]"
+                                    : "hover:bg-slate-50"
+                                }`}
+                              >
+                                {showDiff && !sent.isNativeMatch
+                                  ? renderDiff(sent.original, sent.revised)
+                                  : text}
+                              </span>
+                            );
 
-                              if (sent.isHeading) {
-                                if (currentGroup.length > 0) {
-                                  groups.push(<div key={`p-${groupIdx++}`} className="mb-3 last:mb-0">{currentGroup}</div>);
-                                  currentGroup = [];
-                                }
-                                groups.push(
-                                  <div key={`h-${idx}`} className="mb-2 last:mb-0">
-                                    {content}
-                                  </div>
-                                );
-                              } else {
-                                currentGroup.push(<span key={`ws-${idx}`}> </span>);
-                                currentGroup.push(content);
-                                if (sent.isEndOfParagraph) {
-                                  groups.push(<div key={`p-${groupIdx++}`} className="mb-3 last:mb-0">{currentGroup}</div>);
-                                  currentGroup = [];
-                                }
+                            if (sent.isHeading) {
+                              if (currentGroup.length > 0) {
+                                groups.push(<div key={`p-${groupIdx++}`} className="mb-3 last:mb-0">{currentGroup}</div>);
+                                currentGroup = [];
                               }
-                            });
-
-                            if (currentGroup.length > 0) {
-                              groups.push(<div key={`p-${groupIdx}`} className="mb-3 last:mb-0">{currentGroup}</div>);
+                              groups.push(
+                                <div key={`h-${idx}`} className="mb-2 last:mb-0">
+                                  {content}
+                                </div>
+                              );
+                            } else {
+                              currentGroup.push(<span key={`ws-${idx}`}> </span>);
+                              currentGroup.push(content);
+                              if (sent.isEndOfParagraph) {
+                                groups.push(<div key={`p-${groupIdx++}`} className="mb-3 last:mb-0">{currentGroup}</div>);
+                                currentGroup = [];
+                              }
                             }
+                          });
 
-                            return groups;
-                          })()}
-                        </div>
+                          if (currentGroup.length > 0) {
+                            groups.push(<div key={`p-${groupIdx}`} className="mb-3 last:mb-0">{currentGroup}</div>);
+                          }
+
+                          return groups;
+                        })()}
                       </div>
 
+                      {/* Sentence comparison */}
                       {selectedSentenceIdx !== null && (
-                        <div className="border border-[#EAE6DF] rounded-2xl p-4 bg-[#FAF9F6] space-y-3.5 transform transition-all duration-300 animate-fadeIn">
+                        <div className="border border-[#EAE6DF] rounded-2xl p-4 bg-[#FAF9F6] space-y-3.5 transform transition-all duration-300">
                           <div className="flex items-center justify-between">
                             <span className="text-[9px] uppercase font-black tracking-widest text-[#8C857B] block">
-                              Sentence Comparison #{selectedSentenceIdx + 1}
+                              Sentence #{selectedSentenceIdx + 1}
                             </span>
                             <span className="text-[9.5px] shrink-0 font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
-                              {result.sentences[selectedSentenceIdx].original === result.sentences[selectedSentenceIdx].revised 
-                                ? "Preserved exactly" 
-                                : "Refined mapping"}
+                              {result.sentences[selectedSentenceIdx].original === result.sentences[selectedSentenceIdx].revised
+                                ? "Unchanged"
+                                : "Refined"}
                             </span>
                           </div>
 
@@ -697,7 +722,7 @@ export default function App() {
                               </p>
                             </div>
                             <div className="space-y-1">
-                              <span className="text-[9px] lowercase font-bold text-[#8C857B]">nativized version:</span>
+                              <span className="text-[9px] lowercase font-bold text-[#8C857B]">nativized:</span>
                               <p className="p-3 bg-white border border-[#1A1A1A]/10 rounded-xl text-[#1A1A1A] font-medium font-serif leading-relaxed">
                                 {result.sentences[selectedSentenceIdx].revised}
                               </p>
@@ -709,14 +734,14 @@ export default function App() {
                               <div className="flex gap-2 items-start">
                                 <Info className="w-3.5 h-3.5 text-[#8C857B] shrink-0 mt-0.5" />
                                 <span className="text-[11px] text-[#555]">
-                                  <strong>Rule logic:</strong> {result.sentences[selectedSentenceIdx].explanation}
+                                  <strong>Rule:</strong> {result.sentences[selectedSentenceIdx].explanation}
                                 </span>
                               </div>
                             )}
 
                             {result.sentences[selectedSentenceIdx].suggestions && (result.sentences[selectedSentenceIdx].suggestions?.length ?? 0) > 0 && (
                               <div className="space-y-1 pl-5">
-                                <span className="text-[9px] uppercase tracking-wider font-bold text-[#8C857B]">Option variations:</span>
+                                <span className="text-[9px] uppercase tracking-wider font-bold text-[#8C857B]">Alternatives:</span>
                                 <ul className="list-disc list-inside space-y-1 text-[#555] text-[11px]">
                                   {result.sentences[selectedSentenceIdx].suggestions?.map((sug, sIdx) => (
                                     <li key={sIdx}>{sug}</li>
@@ -728,13 +753,15 @@ export default function App() {
                         </div>
                       )}
 
+                      {/* Diagnosis */}
                       <div className="space-y-2 border-t border-[#EAE6DF] pt-4">
-                        <span className="text-[9px] uppercase font-bold tracking-wider text-[#8C857B] block">Optimization Diagnosis</span>
+                        <span className="text-[9px] uppercase font-bold tracking-wider text-[#8C857B] block">Diagnosis</span>
                         <p className="text-xs text-[#555] bg-slate-50 border border-slate-100 p-3 rounded-xl italic">
                           {result.explanation || "All author structures, paragraph bounds, and footnotes preserved correctly."}
                         </p>
                       </div>
 
+                      {/* Footnotes */}
                       {footnotes.length > 0 && (
                         <div className="space-y-2 border-t border-[#EAE6DF] pt-4">
                           <span className="text-[9px] uppercase font-bold tracking-wider text-[#8C857B] block">Notes & References</span>
@@ -756,13 +783,13 @@ export default function App() {
                       <div className="flex items-center gap-2 mb-2">
                         <Zap className="w-4 h-4 text-amber-500" />
                         <h4 className="text-xs uppercase font-extrabold tracking-widest text-[#1a1a1a]">
-                          Syntactic & Style Variance Recommendations
+                          Lexical Diagnostics
                         </h4>
                       </div>
-                      
+
                       <div className="space-y-3">
                         {result.suggestions.map((suggestion, sIdx) => (
-                          <div 
+                          <div
                             key={sIdx}
                             className="p-3 bg-[#FAF9F6] border border-[#EAE6DF] rounded-xl text-xs text-[#555] flex gap-2"
                           >
@@ -773,7 +800,7 @@ export default function App() {
                       </div>
 
                       <div className="text-[10px] p-3 text-[#8C857B] leading-relaxed bg-[#FFF]/80 rounded-xl border border-dashed border-[#EAE6DF] mt-6">
-                        These suggestions correspond directly with Domain levels activated in Mode 8 rules. You can edit your Draft on the left at any time to include them.
+                        These suggestions correspond to domain-level patterns detected in your text. Edit your draft on the left to apply them.
                       </div>
                     </div>
                   )}
@@ -784,41 +811,41 @@ export default function App() {
                   <div className="w-12 h-12 rounded-2xl bg-[#1A1A1A]/5 flex items-center justify-center mb-4">
                     <Sparkles className="w-6 h-6 text-[#8C857B]" />
                   </div>
-                  <h3 className="font-serif text-lg font-bold mb-1">Preservation Ready</h3>
+                  <h3 className="font-serif text-lg font-bold mb-1">Ready to Nativize</h3>
                   <p className="text-xs text-[#8C857B] max-w-xs leading-relaxed mb-4">
-                    Draft, import citations, or write freely in the left canvas. Hit nativize to launch voice identity preservation.
+                    Write or paste your text on the left, then hit Nativize to launch voice-preserving refinement.
                   </p>
-                  
+
                   <div className="space-y-2 w-full max-w-xs text-left bg-white p-4 border border-[#EAE6DF] rounded-2xl text-[11px] text-[#555]">
-                    <span className="text-[9px] uppercase tracking-wider font-bold text-[#8C857B] block mb-1">Core Constraints:</span>
+                    <span className="text-[9px] uppercase tracking-wider font-bold text-[#8C857B] block mb-1">What happens:</span>
                     <div className="flex gap-2 items-start">
                       <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span>Headings are preserved without standardizing punctuation styles</span>
+                      <span>Headings and citations preserved exactly</span>
                     </div>
                     <div className="flex gap-2 items-start">
                       <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span>Rhythm is prioritized over global flat standard english</span>
+                      <span>Your rhythm and voice kept intact</span>
                     </div>
                     <div className="flex gap-2 items-start">
                       <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                      <span>Citations, bibliographic footnotes, and links are kept safe</span>
+                      <span>Grammar and fluency corrected minimally</span>
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
+            {/* Bottom bar */}
             {result && (
               <div className="px-5 py-3 border-t border-[#EAE6DF] bg-[#FAF9F6] flex items-center justify-between text-[10px] text-[#8C857B]">
                 <div className="flex items-center gap-2">
                   <FileText className="w-3.5 h-3.5" />
-                  <span>Preserved result:</span>
-                  <span className="font-bold">{wordCount(result.finalVersion)} words</span>
-                  <span>•</span>
+                  <span>{wordCount(result.finalVersion)} words</span>
+                  <span>·</span>
                   <span>{charCount(result.finalVersion)} chars</span>
                 </div>
                 <div>
-                  Detected Dialect: <span className="font-bold text-[#1A1A1A]">{result.detectedDialect || "US"}</span>
+                  Dialect: <span className="font-bold text-[#1A1A1A]">{result.detectedDialect || "US"}</span>
                 </div>
               </div>
             )}
@@ -827,17 +854,49 @@ export default function App() {
 
         </div>
 
+        {/* How it works */}
         <section className="bg-white border border-[#EAE6DF] p-4 rounded-3xl space-y-2 mt-4 max-w-4xl">
           <h4 className="text-[10px] uppercase font-bold tracking-wider text-[#1a1a1a] flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5" />
-            <span>How NativeWrite Preserves Your Authentic Voice</span>
+            <span>How IdiomOptima Preserves Your Voice</span>
           </h4>
           <p className="text-xs text-[#555] leading-relaxed">
-            Standard checkers attempt to rewrite foreign, ESL, or non-traditional sentences into standard homogeneous academic styles. NativeWrite detects structural signals (such as complex clause alternation, academic hedging like <em>may appear to</em>, or interpretive business ambiguity) to protect your rhythm while correcting spelling or outright grammatical bugs. Headings, citations, and list structures remain strictly safe.
+            Standard checkers rewrite non-native sentences into homogeneous academic styles. IdiomOptima detects
+            structural signals such as complex clause alternation, academic hedging like <em>may appear to</em>,
+            or interpretive business ambiguity to protect your rhythm while correcting spelling and grammar.
+            Headings, citations, and list structures remain strictly safe.
           </p>
         </section>
 
       </main>
+
+      {/* ─── Footer ─── */}
+      <footer className="border-t border-[#EAE6DF] bg-[#FAF9F6] mt-auto">
+        <div className="max-w-[1600px] mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 bg-[#1A1A1A] rounded-lg flex items-center justify-center">
+                <Languages className="w-3.5 h-3.5 text-white" />
+              </div>
+              <div>
+                <span className="font-serif text-sm font-bold text-[#1A1A1A]">IdiomOptima</span>
+                <p className="text-[9px] text-[#8C857B]">Voice Preservation Engine</p>
+              </div>
+            </div>
+
+            <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] font-semibold text-[#8C857B]">
+              <a href="/faq.html" className="hover:text-[#1A1A1A] transition-colors">FAQ</a>
+              <a href="/terms.html" className="hover:text-[#1A1A1A] transition-colors">Terms of Service</a>
+              <a href="/privacy.html" className="hover:text-[#1A1A1A] transition-colors">Privacy Policy</a>
+              <a href="mailto:contact@IdiomOptima.com" className="hover:text-[#1A1A1A] transition-colors">Contact</a>
+            </nav>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-[#EAE6DF] text-center text-[10px] text-[#8C857B]">
+            &copy; {new Date().getFullYear()} IdiomOptima. All rights reserved.
+          </div>
+        </div>
+      </footer>
 
     </div>
   );

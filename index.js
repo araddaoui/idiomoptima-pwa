@@ -111,6 +111,36 @@ async function callOpenRouter(text, options, apiKey) {
   return String((data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "");
 }
 
+async function callDeepSeek(text, options, apiKey) {
+  var dialect = options.forcedDialect || "the most likely";
+  var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\nRewrite the following text with minimal intervention. Preserve voice, headings, citations, paragraph structure. Return ONLY valid JSON.\n\nText:\n" + text;
+
+  var response = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + apiKey,
+    },
+    body: JSON.stringify({
+      model: "deepseek-v4-flash",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.25,
+      max_tokens: 16384,
+    }),
+  });
+
+  if (!response.ok) {
+    var err = await response.text();
+    throw new Error("DeepSeek error: " + err.substring(0, 200));
+  }
+
+  var data = await response.json();
+  return String((data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "");
+}
+
 async function callCloudflareAI(text, options, ai) {
   var dialect = options.forcedDialect || "US";
   var prompt =
@@ -235,10 +265,20 @@ export default {
         }
       }
 
+      if (!parsed && env.DEEPSEEK_API_KEY) {
+        try {
+          var raw2 = await callDeepSeek(text, options, env.DEEPSEEK_API_KEY);
+          parsed = parseJsonFromModel(raw2);
+          provider = "deepseek";
+        } catch (e) {
+          console.error("DeepSeek failed:", e.message);
+        }
+      }
+
       if (!parsed && env.OPENROUTER_API_KEY) {
         try {
-          var raw2 = await callOpenRouter(text, options, env.OPENROUTER_API_KEY);
-          parsed = parseJsonFromModel(raw2);
+          var raw3 = await callOpenRouter(text, options, env.OPENROUTER_API_KEY);
+          parsed = parseJsonFromModel(raw3);
           provider = "openrouter";
         } catch (e) {
           console.error("OpenRouter failed:", e.message);
@@ -247,8 +287,8 @@ export default {
 
       if (!parsed && env.AI) {
         try {
-          var raw3 = await callCloudflareAI(text, options, env.AI);
-          parsed = parseJsonFromModel(raw3);
+          var raw4 = await callCloudflareAI(text, options, env.AI);
+          parsed = parseJsonFromModel(raw4);
           provider = "cloudflare";
         } catch (e) {
           console.error("Cloudflare AI failed:", e.message);
