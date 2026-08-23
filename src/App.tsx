@@ -1,1766 +1,735 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import type { CSSProperties, ReactNode } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import ReactMarkdown from "react-markdown";
+import { useState, useEffect } from "react";
 import { 
-  PenLine, 
   Sparkles, 
-  Copy, 
-  Check, 
-  RotateCcw, 
-  ChevronRight, 
+  Download, 
+  RefreshCw, 
+  Trash2, 
+  Languages, 
+  PenLine, 
+  BookOpen, 
+  Briefcase, 
+  Activity, 
+  FileText, 
   Info, 
-  History as HistoryIcon,
-  Trash2,
-  Languages,
-  FileText,
-  Download,
-  ExternalLink,
-  Loader2,
-  Plus,
-  Lightbulb,
-  UserCheck,
-  Zap,
-  Database,
-  Search,
-  Activity,
-  BookOpen,
-  Briefcase,
-  Shield,
-  Tag,
-  Mail
+  CheckCircle2, 
+  Eye, 
+  Zap, 
+  Clipboard,
+  Check
 } from "lucide-react";
-import { Document, Packer, Paragraph, TextRun, FootnoteReferenceRun, PageBreak } from "docx";
+import { Document, Packer, Paragraph, TextRun } from "docx";
 import { jsPDF } from "jspdf";
-import { saveAs } from "file-saver";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
-import { transformText, TransformationResult } from "@/src/services/geminiService";
 import { RichTextEditor } from "./components/RichTextEditor";
-import { Analytics } from "@vercel/analytics/react";
+import { transformText, TransformationResult, detectBestMode } from "./services/geminiService";
+
+const DIALECTS = [
+  { value: "auto", label: "Auto-Detect Dialect" },
+  { value: "US", label: "American English (US)" },
+  { value: "UK", label: "British English (UK)" },
+  { value: "CA", label: "Canadian English (CA)" },
+  { value: "AU", label: "Australian English (AU)" },
+];
 
 const DOMAINS = [
-  { value: "general", label: "General", description: "Everyday communication" },
-  { value: "academic", label: "Academic", description: "Formal, precise, hedged" },
-  { value: "business", label: "Business", description: "Concise, direct, professional" },
-  { value: "creative", label: "Creative", description: "Expressive, varied, evocative" },
+  { value: "general", label: "General Domain" },
+  { value: "academic", label: "Academic Mode" },
+  { value: "business", label: "Business Mode" },
+  { value: "creative", label: "Creative Mode" },
 ];
 
 const TONES = [
-  { value: "neutral", label: "Neutral" },
-  { value: "formal", label: "Formal" },
-  { value: "informal", label: "Informal" },
-  { value: "persuasive", label: "Persuasive" },
-  { value: "empathetic", label: "Empathetic" },
+  { value: "neutral", label: "Neutral Tone" },
+  { value: "formal", label: "Formal Tone" },
+  { value: "informal", label: "Informal Tone" },
+  { value: "persuasive", label: "Persuasive Tone" },
+  { value: "empathetic", label: "Empathetic Tone" },
 ];
 
-interface HistoryItem extends TransformationResult {
-  id: string;
-  originalText: string;
-  domain: string;
-  tone: string;
-  mode: string;
-  timestamp: number;
-}
-
-import * as mammoth from "mammoth";
-import * as pdfjs from "pdfjs-dist";
-
-// Set worker source for pdfjs
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-
 export default function App() {
-  const [inputText, setInputText] = useState("");
-  const [inputHtml, setInputHtml] = useState("");
-  const [isReading, setIsReading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const inputSectionRef = useRef<HTMLDivElement>(null);
+  const [inputHtml, setInputHtml] = useState<string>("<p>Despite of the difficulties, the research team went ahead with the methodology [1]. I mean, they probably had to, because the stakeholders wanted to find some sort of positive result. Maybe they are right, who knows. Let us analyze this.</p>");
+  const [forcedDialect, setForcedDialect] = useState<string>("auto");
+  const [domain, setDomain] = useState<string>("general");
+  const [tone, setTone] = useState<string>("neutral");
+  
+  const [loading, setLoading] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [progressPhase, setProgressPhase] = useState<string>("");
+  const [result, setResult] = useState<TransformationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [selectedSentenceIdx, setSelectedSentenceIdx] = useState<number | null>(null);
+  const [copied, setCopied] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<"result" | "suggestions" | "metadata">("result");
 
-  // --- Consent state ---
-  const [consentGiven, setConsentGiven] = useState(() => {
-    return localStorage.getItem('IdiomOptima_consent') === 'true';
-  });
+  const [detectedMode, setDetectedMode] = useState<{ mode: string; reason: string }>({ mode: "general", reason: "" });
 
-  // --- Usage limits ---
-  const DAILY_LIMIT = 4;
-  const MAX_WORDS = 800;
-  const [remainingUses, setRemainingUses] = useState<number | null>(null);
-    const [demoShown, setDemoShown] = useState(false);
-
-  // Load daily usage from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('IdiomOptima_usage');
-    const today = new Date().toDateString();
-    if (stored) {
-      const data = JSON.parse(stored);
-      if (data.date === today) {
-        setRemainingUses(DAILY_LIMIT - data.count);
-      } else {
-        localStorage.setItem('IdiomOptima_usage', JSON.stringify({ date: today, count: 0 }));
-        setRemainingUses(DAILY_LIMIT);
-      }
-    } else {
-      localStorage.setItem('IdiomOptima_usage', JSON.stringify({ date: today, count: 0 }));
-      setRemainingUses(DAILY_LIMIT);
-    }
-  }, []);
-    // Load daily usage from localStorage
-  useEffect(() => {
-    // ... existing code ...
-  }, []);
-
-  // Demo on first load
-useEffect(() => {
-  if (!demoShown && !inputText.trim()) {
-    const example = "The results of the experiment demonstrates that there is a significant correlation between the variables, however further research is needed to establish causality.[1]";
-    setInputText(example);
-    setInputHtml(example);
-    setDemoShown(true);
-    setTimeout(() => handleTransform(), 100);
-  }
-}, [demoShown, inputText]);
   const [idiomDatabase, setIdiomDatabase] = useState<any[]>([]);
-
-  useEffect(() => {
-fetch('/idioms-clunky-native.json')
-      .then(response => response.json())
-      .then(data => {
-        setIdiomDatabase(data);
-        console.log(`Loaded ${data.length} idioms from database`);
-      })
-      .catch(error => console.error('Failed to load idiom database:', error));
-  }, []);
   const [aiPhraseMap, setAiPhraseMap] = useState<any[]>([]);
   const [lexicalDatabases, setLexicalDatabases] = useState<Record<string, any[]>>({});
 
-useEffect(() => {
-  // Load all AI phrase databases and merge them
-  Promise.all([
-    fetch('/ai-natural-database.json').then(r => r.json()).catch(() => []),
-    fetch('/ai-natural-database-1500.json').then(r => r.json()).catch(() => []),
-    fetch('/ai-natural-database-1000.json').then(r => r.json()).catch(() => []),
-  ]).then(([main, db1500, db1000]) => {
-    // Normalize all to {ai, natural} format
-    const normalize = (data: any[]) => data
-      .filter(e => (e.ai || e.clunky) && (e.natural || e.native))
-      .map(e => ({ ai: e.ai || e.clunky, natural: e.natural || e.native }));
-    
-    const allPhrases = [
-      ...normalize(main),
-      ...normalize(db1500),
-      ...normalize(db1000),
-    ];
-    
-    // Deduplicate by source phrase (keep longest target)
-    const seen = new Map<string, { ai: string; natural: string }>();
-    for (const p of allPhrases) {
-      const key = p.ai.toLowerCase();
-      const existing = seen.get(key);
-      if (!existing || p.natural.length > existing.natural.length) {
-        seen.set(key, p);
-      }
-    }
-    
-    const merged = Array.from(seen.values());
-    setAiPhraseMap(merged);
-    console.log(`Loaded ${merged.length} unique AI phrases from 3 databases (main: ${main.length}, 1500: ${db1500.length}, 1000: ${db1000.length})`);
-  });
-}, []);
+  useEffect(() => {
+    const loadDatabases = async () => {
+      try {
+        const idiomRes = await fetch("/idioms-clunky-native.json");
+        if (idiomRes.ok) setIdiomDatabase(await idiomRes.json());
+      } catch {}
 
-useEffect(() => {
-  const domains = ['academic', 'business', 'creative', 'general'];
-  const loaded: Record<string, any[]> = {};
-  Promise.all(
-    domains.map(d =>
-      fetch(`/lexical-${d}.json`)
-        .then(r => r.json())
-        .then(data => { loaded[d] = data; console.log(`Loaded ${data.length} lexical entries for ${d}`); })
-        .catch(e => console.error(`Failed to load lexical-${d}.json:`, e))
-    )
-  ).then(() => setLexicalDatabases(loaded));
-}, []);
-    // Apply idiom replacements to text
-  const applyIdiomReplacements = (text: string) => {
-    let result = text;
-    if (idiomDatabase && idiomDatabase.length > 0) {
-      idiomDatabase.forEach(entry => {
-        if (entry.clunky && result.toLowerCase().includes(entry.clunky.toLowerCase())) {
-          const regex = new RegExp(entry.clunky, 'gi');
-          result = result.replace(regex, entry.native);
-        }
-      });
-    }
-    return result;
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const fileType = file.name.split('.').pop()?.toLowerCase();
-    
-if (fileType !== 'docx') {
-  toast.error("IdiomOptima currently supports Word documents only. For PDFs, copy and paste the text directly.");
-  return;
-}
-
-    setIsReading(true);
-    try {
-      if (fileType === 'docx') {
-        const arrayBuffer = await file.arrayBuffer();
-        const result = await mammoth.convertToHtml({ arrayBuffer });
-        
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = result.value;
-        
-        // Wrap superscripts in brackets if they aren't already, so our detection regex catches them
-        tempDiv.querySelectorAll('sup').forEach(sup => {
-          const content = sup.innerText.trim();
-          if (content && /^\d+$/.test(content)) {
-            sup.innerText = `[${content}]`;
-          }
-        });
-        
-        const text = tempDiv.innerText || tempDiv.textContent || "";
-        setInputHtml(result.value);
-        setInputText(text);
-        toast.success("Word document loaded (with footnotes).");
-      } else if (fileType === 'pdf') {
-        const arrayBuffer = await file.arrayBuffer();
-        const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
-        const pdf = await loadingTask.promise;
-        let fullText = "";
-        
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          // Smarter joining to preserve numbers at line starts
-          const pageText = textContent.items
-            .map((item: any) => item.str)
-            .join(" ")
-            .replace(/\s{2,}/g, " "); // Clean up extra spaces
-          fullText += pageText + "\n\n";
-        }
-        
-        setInputHtml(fullText.trim().split('\n\n').map(p => `<p>${p}</p>`).join(''));
-        setInputText(fullText.trim());
-        toast.success("PDF document loaded.");
-      }
-    } catch (error) {
-      console.error("Error reading file:", error);
-      toast.error("Failed to read the document. It might be corrupted.");
-    } finally {
-      setIsReading(false);
-      if (event.target) event.target.value = "";
-    }
-  };
-  const [domain, setDomain] = useState("general");
-  const [tone, setTone] = useState("neutral");
-  const [mode, setMode] = useState("auto");
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<TransformationResult | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const htmlToBracketedText = (html: string) => {
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = html;
-    
-    // Convert headings to markdown
-    tempDiv.querySelectorAll('h1').forEach(h => { h.outerHTML = '\n\n# ' + h.innerText + '\n\n'; });
-    tempDiv.querySelectorAll('h2').forEach(h => { h.outerHTML = '\n\n## ' + h.innerText + '\n\n'; });
-    tempDiv.querySelectorAll('h3').forEach(h => { h.outerHTML = '\n\n### ' + h.innerText + '\n\n'; });
-    tempDiv.querySelectorAll('h4').forEach(h => { h.outerHTML = '\n\n#### ' + h.innerText + '\n\n'; });
-    
-    // Convert bold/italic/underline to markdown
-    tempDiv.querySelectorAll('strong, b').forEach(el => { el.outerHTML = '**' + (el as HTMLElement).innerText + '**'; });
-    tempDiv.querySelectorAll('em, i').forEach(el => { el.outerHTML = '*' + (el as HTMLElement).innerText + '*'; });
-    tempDiv.querySelectorAll('u').forEach(el => { el.outerHTML = '__' + (el as HTMLElement).innerText + '__'; });
-    
-    // Convert <sup>1</sup> to [1]
-    tempDiv.querySelectorAll('sup').forEach(sup => {
-      const content = sup.innerText.trim();
-      if (content && /^\d+$/.test(content)) {
-        sup.innerText = `[${content}]`;
-      }
-    });
-    
-    // Convert lists to markdown
-    tempDiv.querySelectorAll('ul').forEach(ul => {
-      const items = Array.from(ul.querySelectorAll('li')).map(li => '- ' + li.innerText).join('\n');
-      ul.outerHTML = '\n\n' + items + '\n\n';
-    });
-    tempDiv.querySelectorAll('ol').forEach(ol => {
-      const items = Array.from(ol.querySelectorAll('li')).map((li, i) => (i + 1) + '. ' + li.innerText).join('\n');
-      ol.outerHTML = '\n\n' + items + '\n\n';
-    });
-    
-    // Convert blockquotes
-    tempDiv.querySelectorAll('blockquote').forEach(bq => {
-      const lines = bq.innerText.split('\n').map(l => '> ' + l).join('\n');
-      bq.outerHTML = '\n\n' + lines + '\n\n';
-    });
-    
-    // Ensure paragraphs are separated by newlines
-    tempDiv.querySelectorAll('p').forEach(p => {
-      p.appendChild(document.createTextNode('\n\n'));
-    });
-    
-    // Convert horizontal rules
-    tempDiv.querySelectorAll('hr').forEach(hr => { hr.outerHTML = '\n\n---\n\n'; });
-
-    return tempDiv.innerText || tempDiv.textContent || "";
-  };
-
-  const handleEditorChange = (html: string) => {
-    setInputHtml(html);
-    const text = htmlToBracketedText(html);
-    setInputText(text);
-  };
-
-  const [swappedSentenceIndices, setSwappedSentenceIndices] = useState<number[]>([]);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState("");
-
-  const [progress, setProgress] = useState(0);
-  const [processingStatus, setProcessingStatus] = useState("");
-  const [forcedDialect, setForcedDialect] = useState<string | undefined>(undefined);
-  const [showDiff, setShowDiff] = useState(false);
-
-  const footnoteRefs = useRef<Record<string, HTMLSpanElement | null>>({});
-
-  const FOOTNOTE_DEF_REGEX = /^\s*(?:\[?(\d{1,3})\]?[\s.:)\-|]{1,3}|Footnote\s*(\d{1,3})|REFERENCE\s+(\d{1,3}))[\s.:)\-|]*\s*(.+)/i;
-  const FOOTNOTE_MARKER_REGEX = /\[(\d{1,3})\]|\((\d{1,3})\)|([¹²³⁴⁵⁶⁷⁸⁹⁰])/gu;
-
-  const SUPER_TO_NUM: Record<string, string> = {
-    '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5',
-    '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁰': '0'
-  };
-
-  const getMarkerNum = (match: RegExpExecArray) => {
-    return match[1] || match[2] || SUPER_TO_NUM[match[3]];
-  };
-
-  const footnoteMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    if (!inputText) return map;
-    
-    // Pass 1: Original input text
-    const lines = inputText.split(/\r?\n/);
-    let currentNum: string | null = null;
-    let currentContent: string[] = [];
-
-    const saveCurrent = () => {
-      if (currentNum && currentContent.length > 0) {
-        const text = currentContent.join(' ').replace(/\s+/g, ' ').trim();
-        if (text) map[currentNum] = text;
-      }
-    };
-
-    lines.forEach(line => {
-      const match = line.match(FOOTNOTE_DEF_REGEX);
-      if (match) {
-        saveCurrent();
-        currentNum = match[1] || match[2];
-        currentContent = [match[3]?.trim() || ""];
-      } else if (currentNum && line.trim()) {
-        currentContent.push(line.trim());
-      } else if (line.trim() === "" && currentNum) {
-        saveCurrent();
-        currentNum = null;
-      }
-    });
-    saveCurrent();
-
-    // Pass 2: Result sentences (AI often extracts or refines footnotes)
-    if (result && result.sentences) {
-      result.sentences.forEach((sent, idx) => {
-        const text = swappedSentenceIndices.includes(idx) ? sent.original : sent.native;
-        const match = text.trim().match(FOOTNOTE_DEF_REGEX);
-        
-        if (match) {
-          const num = match[1] || match[2];
-          const content = match[3]?.trim();
-          if (num && content) {
-            // Keep the longer version if multiple definitions exist
-            if (!map[num] || map[num].length < content.length) {
-              map[num] = content;
+      try {
+        const [db1, db2, db3] = await Promise.all([
+          fetch("/ai-natural-database.json").then(r => r.ok ? r.json() : []),
+          fetch("/ai-natural-database-1500.json").then(r => r.ok ? r.json() : []),
+          fetch("/ai-natural-database-1000.json").then(r => r.ok ? r.json() : []),
+        ]);
+        const merged = new Map<string, any>();
+        for (const db of [db1, db2, db3]) {
+          for (const entry of db) {
+            const key = (entry.ai || entry.clunky || "").toLowerCase().trim();
+            if (key && (entry.natural || entry.native)) {
+              const existing = merged.get(key);
+              if (!existing || JSON.stringify(entry).length > JSON.stringify(existing).length) {
+                merged.set(key, entry);
+              }
             }
           }
-        } else if (sent.isImmutableFootnote) {
-          // If the AI explicitly marked it as immutable footnote but doesn't match our regex,
-          // it might be a bibliography entry or multi-line continuation.
-          // We don't necessarily map these to numeric IDs unless they match the regex,
-          // but we will use the flag to hide them from the body.
         }
-      });
-    }
+        setAiPhraseMap(Array.from(merged.values()));
+      } catch {}
 
-    return map;
-  }, [inputText, result, swappedSentenceIndices]);
-
-  const footnoteStats = useMemo(() => {
-    if (!inputText) return { markerCount: 0, defCount: 0 };
-    // Use a fresh regex to avoid state issues
-    const markerMatches = inputText.match(new RegExp(FOOTNOTE_MARKER_REGEX.source, 'gu'));
-    const markerCount = markerMatches ? markerMatches.length : 0;
-    const defCount = Object.keys(footnoteMap).length;
-    return { markerCount, defCount };
-  }, [inputText, footnoteMap]);
-
-  const wordCount = useMemo(() => {
-    if (!inputText) return 0;
-    return inputText.trim().split(/\s+/).length;
-  }, [inputText]);
-
-  const scrollToFootnote = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const element = footnoteRefs.current[id];
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      element.classList.add('bg-blue-100', 'ring-4', 'ring-blue-300', 'transition-all');
-      setTimeout(() => element.classList.remove('bg-blue-100', 'ring-4', 'ring-blue-300'), 2500);
-    }
-  };
-
-const renderDiff = (original: string, native: string) => {
-  try {
-    const originalWords = original.split(/(\s+)/);
-    const nativeWords = native.split(/(\s+)/);
-    const result: ReactNode[] = [];
-    let i = 0;
-    let j = 0;
-    while (i < originalWords.length || j < nativeWords.length) {
-      const origWord = originalWords[i] || "";
-      const nativeWord = nativeWords[j] || "";
-      if (origWord === nativeWord) {
-        result.push(<span key={`same-${i}`}>{nativeWord}</span>);
-        i++;
-        j++;
-      } else {
-        if (origWord && origWord.trim()) {
-          result.push(
-            <span key={`del-${i}`} className="bg-red-100 text-red-700 line-through rounded px-0.5 mx-0.5">{origWord}</span>
-          );
+      try {
+        const lexResult: Record<string, any[]> = {};
+        for (const d of ["academic", "business", "creative", "general"]) {
+          const res = await fetch(`/lexical-${d}.json`);
+          if (res.ok) lexResult[d] = await res.json();
         }
-        if (nativeWord && nativeWord.trim()) {
-          result.push(
-            <span key={`add-${j}`} className="bg-green-100 text-green-700 font-medium rounded px-0.5 mx-0.5">{nativeWord}</span>
-          );
-        }
-        i++;
-        j++;
-      }
+        setLexicalDatabases(lexResult);
+      } catch {}
+    };
+    loadDatabases();
+  }, []);
+
+  useEffect(() => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = inputHtml;
+    const text = tempDiv.textContent || tempDiv.innerText || "";
+    if (text.trim()) {
+      setDetectedMode(detectBestMode(text));
     }
-    return <span>{result}</span>;
-  } catch (err) {
-    console.error("Diff error:", err);
-    return <span>{native}</span>;
-  }
-};
-
-const renderMarkdownInline = (text: string): React.ReactNode[] => {
-  if (!text) return [];
-  const elements: React.ReactNode[] = [];
-  const lines = text.split('\n');
-
-  for (let li = 0; li < lines.length; li++) {
-    const line = lines[li];
-
-    // Headings
-    const headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
-    if (headingMatch) {
-      const level = headingMatch[1].length;
-      const cls = level === 1 ? 'font-bold text-2xl block mt-4 mb-2'
-        : level === 2 ? 'font-bold text-xl block mt-3 mb-2'
-        : level === 3 ? 'font-semibold text-lg block mt-2 mb-1'
-        : 'font-semibold text-base block mt-2 mb-1';
-      elements.push(<span key={`h-${li}`} className={cls}>{headingMatch[2]}</span>);
-      if (li < lines.length - 1) elements.push(<br key={`hbr-${li}`} />);
-      continue;
-    }
-
-    // Blockquotes
-    if (/^>\s?/.test(line)) {
-      elements.push(
-        <span key={`bq-${li}`} className="block pl-4 border-l-4 border-gray-300 italic text-gray-600 my-1">
-          {line.replace(/^>\s?/, '')}
-        </span>
-      );
-      if (li < lines.length - 1) elements.push(<br key={`bqbr-${li}`} />);
-      continue;
-    }
-
-    // Horizontal rules
-    if (/^---+$/.test(line.trim())) {
-      elements.push(<hr key={`hr-${li}`} className="my-3 border-gray-300" />);
-      continue;
-    }
-
-    // Bullet lists
-    if (/^[-*]\s+/.test(line)) {
-      elements.push(
-        <span key={`ul-${li}`} className="block pl-4 my-0.5">
-          <span className="mr-2">•</span>
-          {renderInlineFormatting(line.replace(/^[-*]\s+/, ''))}
-        </span>
-      );
-      continue;
-    }
-
-    // Numbered lists
-    const olMatch = line.match(/^(\d+)[.)]\s+(.+)/);
-    if (olMatch) {
-      elements.push(
-        <span key={`ol-${li}`} className="block pl-4 my-0.5">
-          <span className="mr-2">{olMatch[1]}.</span>
-          {renderInlineFormatting(olMatch[2])}
-        </span>
-      );
-      continue;
-    }
-
-    // Regular text with inline formatting
-    elements.push(<span key={`t-${li}`}>{renderInlineFormatting(line)}</span>);
-    if (li < lines.length - 1) elements.push(<br key={`br-${li}`} />);
-  }
-
-  return elements;
-};
-
-const renderInlineFormatting = (text: string): React.ReactNode[] => {
-  if (!text) return [];
-  const parts: React.ReactNode[] = [];
-  let remaining = text;
-  let keyIdx = 0;
-
-  while (remaining.length > 0) {
-    // Bold: **text**
-    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
-    // Italic: *text*
-    const italicMatch = remaining.match(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/);
-    // Underline: __text__
-    const underlineMatch = remaining.match(/__(.+?)__/);
-
-    // Find earliest match
-    const matches = [
-      boldMatch ? { type: 'bold', match: boldMatch, idx: boldMatch.index! } : null,
-      italicMatch ? { type: 'italic', match: italicMatch, idx: italicMatch.index! } : null,
-      underlineMatch ? { type: 'underline', match: underlineMatch, idx: underlineMatch.index! } : null,
-    ].filter(Boolean).sort((a, b) => a!.idx - b!.idx);
-
-    if (matches.length === 0) {
-      parts.push(remaining);
-      break;
-    }
-
-    const first = matches[0]!;
-    // Add text before match
-    if (first.idx > 0) {
-      parts.push(remaining.substring(0, first.idx));
-    }
-
-    if (first.type === 'bold') {
-      parts.push(<strong key={`b-${keyIdx++}`}>{first.match[1]}</strong>);
-      remaining = remaining.substring(first.idx + first.match[0].length);
-    } else if (first.type === 'italic') {
-      parts.push(<em key={`i-${keyIdx++}`}>{first.match[1]}</em>);
-      remaining = remaining.substring(first.idx + first.match[0].length);
-    } else if (first.type === 'underline') {
-      parts.push(<u key={`u-${keyIdx++}`}>{first.match[1]}</u>);
-      remaining = remaining.substring(first.idx + first.match[0].length);
-    }
-  }
-
-  return parts;
-};
-
-const renderContentWithFootnotes = (text: string) => {
-  if (!text) return null;
-    
-    // Quick check: if no markers, just render text or markdown if needed
-    const markerRegex = new RegExp(FOOTNOTE_MARKER_REGEX.source, 'gu');
-    const hasMarkers = /\[\d+\]|\(\d+\)|[¹²³⁴⁵⁶⁷⁸⁹⁰]/.test(text) || (text.match(markerRegex)?.length || 0) > 0;
-    
-    if (!hasMarkers) {
-      if (text.length > 800) {
-        return <div className="whitespace-pre-wrap leading-relaxed min-h-[1.6em]">{renderMarkdownInline(text)}</div>;
-      }
-      return renderMarkdownInline(text);
-    }
-
-    markerRegex.lastIndex = 0; 
-    const parts = [];
-    let lastIndex = 0;
-    let match;
-
-    while ((match = markerRegex.exec(text)) !== null) {
-      const before = text.substring(lastIndex, match.index);
-      if (before) {
-        parts.push(<span key={`text-${lastIndex}`} className="whitespace-pre-wrap">{renderMarkdownInline(before)}</span>);
-      }
-
-      const num = getMarkerNum(match);
-      const content = num ? footnoteMap[num] : null;
-
-      parts.push(
-        <span key={`marker-${match.index}`} className="group/marker relative inline-flex items-baseline mx-0.5" id={num ? `ref-${num}` : undefined}>
-          <button
-            onClick={(e) => scrollToFootnote(num, e)}
-            className="bg-blue-600 text-white font-bold px-1.5 py-0 rounded text-[9px] translate-y-[-0.3em] hover:bg-blue-700 transition-colors shadow-sm select-none"
-          >
-            {num}
-          </button>
-          {content && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover/marker:opacity-100 transition-all bg-white border-2 border-blue-600 p-4 rounded-xl text-xs shadow-2xl w-80 z-[200] pointer-events-none transform translate-y-1 group-hover/marker:translate-y-0 text-left">
-              <div className="font-bold text-blue-600 border-b border-blue-50 pb-2 mb-2 flex items-center gap-2">
-                <Info className="w-4 h-4" /> REFERENCE {num}
-              </div>
-              <div className="text-[#333] leading-relaxed font-serif overflow-auto max-h-40">
-                 {content}
-              </div>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-[10px] border-transparent border-t-blue-600" />
-            </div>
-          )}
-        </span>
-      );
-      lastIndex = markerRegex.lastIndex;
-    }
-
-    const remaining = text.substring(lastIndex);
-    if (remaining) {
-      if (remaining.length < 1000 && /[*_~\[]/.test(remaining)) {
-        parts.push(<ReactMarkdown key={`rem-${lastIndex}`} components={{ p: ({children}) => <span className="inline">{children}</span> }}>{remaining}</ReactMarkdown>);
-      } else {
-        parts.push(<span key={`rem-${lastIndex}`} className="whitespace-pre-wrap">{remaining}</span>);
-      }
-    }
-
-    return parts;
-  };
-
-  const sharedInputStyles: CSSProperties = {
-    lineHeight: '1.75',
-    fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-    fontVariantNumeric: 'tabular-nums',
-    padding: '24px',
-    fontSize: '1.125rem',
-    whiteSpace: 'pre-wrap',
-    overflowWrap: 'break-word',
-    boxSizing: 'border-box',
-    border: 'none',
-    boxShadow: 'none',
-  };
+  }, [inputHtml]);
 
   const handleTransform = async () => {
-    if (!inputText.trim()) {
-      toast.error("Please enter some text to transform.");
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = inputHtml;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    
+    if (!plainText.trim()) {
+      setError("Please write or paste some text first.");
       return;
     }
 
-    // Word limit check
-    if (wordCount > MAX_WORDS) {
-      toast.error(`Your text exceeds the maximum allowed length (${MAX_WORDS} words). Please shorten it.`);
-      return;
-    }
-
-    // Daily limit check
-    if (remainingUses !== null && remainingUses <= 0) {
-      toast.error(`You've reached the daily limit of ${DAILY_LIMIT} transformations. Please try again tomorrow.`);
-      return;
-    }
-
-    setIsLoading(true);
+    setLoading(true);
+    setError(null);
     setResult(null);
-    setSwappedSentenceIndices([]);
+    setSelectedSentenceIdx(null);
     setProgress(0);
-    setProcessingStatus("Initializing...");
+    setProgressPhase("Loading analytical layers...");
 
     try {
-      // Apply idiom replacements before sending to worker
-      const processedText = applyIdiomReplacements(inputText);
-
-const data = await transformText(
-  processedText, 
-  domain, 
-  tone, 
-  (p, current, total, extraStatus) => {
-    setProgress(p);
-    let status = total > 1 ? `Processing section ${current + 1} of ${total}...` : "Nativizing text...";
-    if (extraStatus) status = extraStatus;
-    setProcessingStatus(status);
-  }, 
-  forcedDialect, 
-  mode,
-  idiomDatabase,
-  aiPhraseMap,
-  lexicalDatabases
-);
-
-      // Final synchronization heartbeat
-      setProgress(100);
-      setProcessingStatus("Polishing final prose...");
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      setResult(data);
-      
-      // Lock dialect if it was auto-detected
-      if (data.detectedDialect) {
-        setForcedDialect(data.detectedDialect);
-      }
-      
-      const newHistoryItem: HistoryItem = {
-        ...data,
-        id: crypto.randomUUID(),
-        originalText: inputText,
+      const response = await transformText(
+        plainText,
         domain,
         tone,
-        mode,
-        timestamp: Date.now(),
-      };
-      setHistory(prev => [newHistoryItem, ...prev].slice(0, 10));
-      toast.success("Text transformed successfully!");
-
-      // Update usage count after successful transformation
-      const today = new Date().toDateString();
-      const stored = localStorage.getItem('IdiomOptima_usage');
-      let newCount = 1;
-      if (stored) {
-        const usage = JSON.parse(stored);
-        if (usage.date === today) {
-          newCount = usage.count + 1;
-        }
-      }
-      localStorage.setItem('IdiomOptima_usage', JSON.stringify({ date: today, count: newCount }));
-      setRemainingUses(DAILY_LIMIT - newCount);
-
-    } catch (error: any) {
-      console.error("Transformation failed:", error);
-      toast.error(`Transformation failed: ${error.message || "Unknown error"}`);
+        forcedDialect === "auto" ? undefined : forcedDialect,
+        (percent, _chunkIdx, _total, phase) => {
+          setProgress(percent);
+          if (phase) setProgressPhase(phase);
+        },
+        "auto",
+        { idiomDatabase, aiPhraseMap, lexicalDatabases }
+      );
+      setResult(response);
+      setActiveTab("result");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Something went wrong during Voice Preservation optimization.");
     } finally {
-      setIsLoading(false);
-      setProgress(0);
-      setProcessingStatus("");
+      setLoading(false);
     }
   };
 
-const copyToClipboard = () => {
-  if (!result) return;
-  const textToCopy = result.finalVersion;
-  navigator.clipboard.writeText(textToCopy);
-  setCopied(true);
-  toast.success("Copied to clipboard!");
-  setTimeout(() => setCopied(false), 2000);
-};
-
-  const getVisibleText = () => {
-    if (!result) return "";
-    if (result.sentences && result.sentences.length > 0) {
-      const bodyParts: string[] = [];
-      let currentPara: string[] = [];
-
-      result.sentences.forEach((sent, idx) => {
-        const text = swappedSentenceIndices.includes(idx) ? sent.original : sent.native;
-        
-        const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
-        const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
-        const isReferencesHeading = sent.isHeading && (
-          text.toLowerCase() === "references" || 
-          text.toLowerCase() === "bibliography" || 
-          text.toLowerCase() === "footnotes"
-        );
-        
-        if (isFootnoteDef || isReferencesHeading) return;
-
-        if (sent.isHeading) {
-          if (currentPara.length > 0) {
-            bodyParts.push(currentPara.join(" ") + "\n\n");
-            currentPara = [];
-          }
-          bodyParts.push(text + "\n\n");
-        } else {
-          currentPara.push(text);
-          if (sent.isEndOfParagraph) {
-            bodyParts.push(currentPara.join(" ") + "\n\n");
-            currentPara = [];
-          }
-        }
-      });
-
-      if (currentPara.length > 0) {
-        bodyParts.push(currentPara.join(" "));
-      }
-
-      let final = bodyParts.join("").trim();
-      
-      const footnoteItems = Object.entries(footnoteMap).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
-      if (footnoteItems.length > 0) {
-        final += "\n\n" + "=".repeat(30) + "\nREFERENCES & FOOTNOTES\n" + "-".repeat(30) + "\n\n";
-        footnoteItems.forEach(([num, content]) => {
-          final += `[${num}] ${content}\n\n`;
-        });
-      }
-      return final;
-    }
-    return result.finalVersion;
+  const handleClear = () => {
+    setInputHtml("<p></p>");
+    setResult(null);
+    setSelectedSentenceIdx(null);
+    setError(null);
   };
 
-  const parseMarkdownToTextRuns = (text: string, baseFont = "Arial", baseSize = 24): any[] => {
-    const runs: any[] = [];
-    let remaining = text;
-    let keyIdx = 0;
-
-    while (remaining.length > 0) {
-      const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
-      const italicMatch = remaining.match(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/);
-      const underlineMatch = remaining.match(/__(.+?)__/);
-
-      const matches = [
-        boldMatch ? { type: 'bold', match: boldMatch, idx: boldMatch.index! } : null,
-        italicMatch ? { type: 'italic', match: italicMatch, idx: italicMatch.index! } : null,
-        underlineMatch ? { type: 'underline', match: underlineMatch, idx: underlineMatch.index! } : null,
-      ].filter(Boolean).sort((a, b) => a!.idx - b!.idx);
-
-      if (matches.length === 0) {
-        if (remaining) runs.push(new TextRun({ text: remaining, font: baseFont, size: baseSize }));
-        break;
-      }
-
-      const first = matches[0]!;
-      if (first.idx > 0) {
-        runs.push(new TextRun({ text: remaining.substring(0, first.idx), font: baseFont, size: baseSize }));
-      }
-
-      if (first.type === 'bold') {
-        runs.push(new TextRun({ text: first.match[1], font: baseFont, size: baseSize, bold: true }));
-        remaining = remaining.substring(first.idx + first.match[0].length);
-      } else if (first.type === 'italic') {
-        runs.push(new TextRun({ text: first.match[1], font: baseFont, size: baseSize, italics: true }));
-        remaining = remaining.substring(first.idx + first.match[0].length);
-      } else if (first.type === 'underline') {
-        runs.push(new TextRun({ text: first.match[1], font: baseFont, size: baseSize, underline: {} }));
-        remaining = remaining.substring(first.idx + first.match[0].length);
-      }
-    }
-
-    return runs;
+  const handleCopy = () => {
+    if (!result) return;
+    navigator.clipboard.writeText(result.finalVersion);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const exportToWord = async () => {
+  const exportAsWord = async () => {
     if (!result) return;
     try {
-      const footnoteIdMap: Record<string, number> = {};
-      const sortedNums = Object.keys(footnoteMap).sort((a, b) => parseInt(a) - parseInt(b));
-      sortedNums.forEach((num, index) => {
-        footnoteIdMap[num] = index + 1;
+      const paragraphs = result.sentences.map(s => {
+        return new Paragraph({
+          children: [
+            new TextRun({
+              text: s.revised + " ",
+              font: "Georgia",
+              size: 24,
+            })
+          ]
+        });
       });
 
       const doc = new Document({
-        footnotes: Object.entries(footnoteMap).reduce((acc, [num, content]) => {
-          const id = footnoteIdMap[num];
-          if (id) {
-            acc[id] = {
-              children: [new Paragraph({
-                children: [
-                  new TextRun({ text: content, font: "Arial", size: 20 })
-                ],
-                spacing: { after: 120 },
-                indent: { start: 720, hanging: 360 },
-              })]
-            };
-          }
-          return acc;
-        }, {} as Record<number, any>),
         sections: [{
-          children: result.sentences && result.sentences.length > 0
-            ? (() => {
-                const paragraphs: Paragraph[] = [];
-                let currentParagraphChildren: any[] = [];
-
-                const superToNum: Record<string, string> = {
-                  '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5',
-                  '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁰': '0'
-                };
-
-                result.sentences.forEach((sent, idx) => {
-                  const text = swappedSentenceIndices.includes(idx) ? sent.original : sent.native;
-                  
-                  const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
-                  const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
-                  const isReferencesHeading = sent.isHeading && (
-                    text.toLowerCase() === "references" || 
-                    text.toLowerCase() === "bibliography" || 
-                    text.toLowerCase() === "footnotes"
-                  );
-                  
-                  if (isFootnoteDef || isReferencesHeading) return;
-
-                  if (sent.isHeading) {
-                    if (currentParagraphChildren.length > 0) {
-                      paragraphs.push(new Paragraph({
-                        children: [...currentParagraphChildren],
-                        spacing: { line: 276, after: 200 },
-                      }));
-                      currentParagraphChildren = [];
-                    }
-                    const headingSize = sent.headingLevel === 1 ? 32 : sent.headingLevel === 2 ? 28 : sent.headingLevel === 3 ? 26 : 28;
-                    paragraphs.push(new Paragraph({
-                      children: [new TextRun({ text: text.replace(/^#{1,4}\s+/, ''), font: "Arial", size: headingSize, bold: true })],
-                      spacing: { before: sent.headingLevel === 1 ? 600 : 400, after: 200 },
-                    }));
-                  } else {
-                    const markerRegex = new RegExp(FOOTNOTE_MARKER_REGEX.source, 'gu');
-                    let lastIdx = 0;
-                    let match;
-                    const cleanText = text;
-                    
-                    while ((match = markerRegex.exec(cleanText)) !== null) {
-                      const before = cleanText.substring(lastIdx, match.index);
-                      if (before) {
-                        currentParagraphChildren.push(...parseMarkdownToTextRuns(before));
-                      }
-
-                      const numStr = match[1] || match[2] || superToNum[match[3]];
-                      const id = footnoteIdMap[numStr];
-                      
-                      if (id) {
-                        currentParagraphChildren.push(new FootnoteReferenceRun(id));
-                      } else {
-                        currentParagraphChildren.push(new TextRun({ text: match[0], font: "Arial", size: 24, superScript: true }));
-                      }
-                      lastIdx = markerRegex.lastIndex;
-                    }
-
-                    const remaining = cleanText.substring(lastIdx);
-                    if (remaining) {
-                      currentParagraphChildren.push(...parseMarkdownToTextRuns(remaining));
-                    }
-
-                    if (sent.isEndOfParagraph || idx === result.sentences.length - 1) {
-                      if (currentParagraphChildren.length > 0) {
-                        paragraphs.push(new Paragraph({
-                          children: [...currentParagraphChildren],
-                          spacing: { line: 276, after: 200 },
-                        }));
-                        currentParagraphChildren = [];
-                      }
-                    } else if (!sent.isEndOfParagraph) {
-                      currentParagraphChildren.push(new TextRun({ text: " " }));
-                    }
-                  }
-                });
-
-                return paragraphs;
-              })()
-            : [
-                new Paragraph({
-                  children: [new TextRun({ text: result.finalVersion, font: "Arial", size: 24 })],
-                  spacing: { line: 276 },
-                }),
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "NativeWrite Document Export",
+                  bold: true,
+                  size: 36,
+                  font: "Georgia",
+                })
               ],
-        }],
-      } as any);
+              spacing: { after: 300 }
+            }),
+            ...paragraphs
+          ]
+        }]
+      });
 
       const blob = await Packer.toBlob(doc);
-      const date = new Date().toISOString().split('T')[0];
-      saveAs(blob, `IdiomOptima_Document_${date}.docx`);
-      toast.success("Word document exported!");
-    } catch (error) {
-      console.error("Docx Export Error:", error);
-      toast.error("Failed to export Word document.");
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "nativewrite-preserved-voice.docx";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (e) {
+      console.error("Failed to export Word document:", e);
     }
   };
 
-  const stripMarkdown = (text: string): string => {
-    return text
-      .replace(/\*\*(.+?)\*\*/g, '$1')
-      .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '$1')
-      .replace(/__(.+?)__/g, '$1')
-      .replace(/^#{1,4}\s+/gm, '')
-      .replace(/^[-*]\s+/gm, '• ')
-      .replace(/^>\s?/gm, '');
-  };
-
-  const exportToPDF = () => {
+  const exportAsPDF = () => {
     if (!result) return;
     try {
       const doc = new jsPDF();
-      const date = new Date().toISOString().split('T')[0];
-      
-      const margin = 20;
-      const pageWidth = doc.internal.pageSize.width;
-      const maxWidth = pageWidth - (margin * 2);
-      let currentY = margin + 10;
-      
-      doc.setFont("helvetica", "normal");
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(16);
+      doc.text("NativeWrite - Preserved Document", 20, 20);
       doc.setFontSize(11);
-
-      if (result.sentences && result.sentences.length > 0) {
-        let currentParaText = "";
-        
-        result.sentences.forEach((sent, idx) => {
-          const text = swappedSentenceIndices.includes(idx) ? sent.original : sent.native;
-          
-          const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
-          const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
-          const isReferencesHeading = sent.isHeading && (
-            text.toLowerCase() === "references" || 
-            text.toLowerCase() === "bibliography" || 
-            text.toLowerCase() === "footnotes"
-          );
-          
-          if (isFootnoteDef || isReferencesHeading) {
-            // Flush current paragraph first
-            if (currentParaText.trim()) {
-              const lines = doc.splitTextToSize(currentParaText.trim(), maxWidth);
-              doc.text(lines, margin, currentY);
-              currentY += (lines.length * 6) + 5;
-              currentParaText = "";
-            }
-            return;
-          }
-
-          if (sent.isHeading) {
-            // Flush current paragraph
-            if (currentParaText.trim()) {
-              const lines = doc.splitTextToSize(currentParaText.trim(), maxWidth);
-              doc.text(lines, margin, currentY);
-              currentY += (lines.length * 6) + 5;
-              currentParaText = "";
-            }
-
-            // Check page break
-            if (currentY > 270) { doc.addPage(); currentY = margin + 10; }
-
-            doc.setFont("helvetica", "bold");
-            const headingFontSize = sent.headingLevel === 1 ? 16 : sent.headingLevel === 2 ? 14 : sent.headingLevel === 3 ? 12 : 14;
-            doc.setFontSize(headingFontSize);
-            const cleanHeadingText = stripMarkdown(text.replace(/^#{1,4}\s+/, ''));
-            const lines = doc.splitTextToSize(cleanHeadingText, maxWidth);
-            doc.text(lines, margin, currentY);
-            currentY += (lines.length * (headingFontSize * 0.4)) + 5;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(11);
-          } else {
-            currentParaText += stripMarkdown(text) + " ";
-            
-            if (sent.isEndOfParagraph || idx === result.sentences.length - 1) {
-              // Flush paragraph
-              const lines = doc.splitTextToSize(currentParaText.trim(), maxWidth);
-              
-              // Check if we need a new page for this paragraph
-              if (currentY + (lines.length * 6) > 280) {
-                doc.addPage();
-                currentY = margin + 10;
-              }
-              
-              doc.text(lines, margin, currentY);
-              currentY += (lines.length * 6) + 8;
-              currentParaText = "";
-            }
-          }
-        });
-
-        // Add physical footnotes section to PDF using the centralized map
-        const footnoteEntries = Object.entries(footnoteMap).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
-
-        if (footnoteEntries.length > 0) {
-          if (currentY + 20 > 280) { doc.addPage(); currentY = margin + 10; }
-          currentY += 10;
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(12);
-          doc.text("NOTES & REFERENCES", margin, currentY);
-          currentY += 8;
-          doc.setFont("helvetica", "italic");
-          doc.setFontSize(9);
-          
-          footnoteEntries.forEach(([num, content]) => {
-            const lines = doc.splitTextToSize(`[${num}] ${content}`, maxWidth);
-            if (currentY + (lines.length * 5) > 280) { doc.addPage(); currentY = margin + 10; }
-            doc.text(lines, margin, currentY);
-            currentY += (lines.length * 5) + 3;
-          });
-        }
-      } else {
-        const lines = doc.splitTextToSize(result.finalVersion, maxWidth);
-        doc.text(lines, margin, currentY);
-      }
       
-      doc.save(`IdiomOptima_Document_${date}.pdf`);
-      toast.success("PDF document exported!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to export PDF.");
+      const splitText = doc.splitTextToSize(result.finalVersion, 170);
+      doc.text(splitText, 20, 35);
+      doc.save("nativewrite-preserved-voice.pdf");
+    } catch (e) {
+      console.error("Failed to export PDF doc:", e);
     }
   };
 
-  const reset = () => {
-    setInputText("");
-    setInputHtml("");
-    setResult(null);
-    setDomain("general");
-    setTone("neutral");
-    setMode("auto");
+  const wordCount = (text: string) => {
+    if (!text) return 0;
+    return text.trim().split(/\s+/).filter(Boolean).length;
   };
 
-  const loadFromHistory = (item: HistoryItem) => {
-    setInputText(item.originalText);
-    setDomain(item.domain);
-    setTone(item.tone);
-    setMode(item.mode || "line-edit");
-    setResult({
-      finalVersion: item.finalVersion,
-      sentences: item.sentences || [],
-      suggestions: item.suggestions,
-      explanation: item.explanation,
-      originalScore: item.originalScore,
-      revisedScore: item.revisedScore,
-      rubric: item.rubric,
-      originalMetrics: item.originalMetrics,
-      originalComments: item.originalComments,
-      originalLetterGrade: item.originalLetterGrade,
-      revisedMetrics: item.revisedMetrics,
-      revisedComments: item.revisedComments,
-      revisedLetterGrade: item.revisedLetterGrade,
-    });
-    setSwappedSentenceIndices([]);
-    setShowHistory(false);
-    toast.info("Loaded from history");
+  const charCount = (text: string) => {
+    if (!text) return 0;
+    return text.length;
   };
 
-  const clearHistory = () => {
-    setHistory([]);
-    toast.info("History cleared");
+  const plainTextInput = (() => {
+    const d = document.createElement("div");
+    d.innerHTML = inputHtml;
+    return d.textContent || d.innerText || "";
+  })();
+
+  const currentActiveModeInfo = () => {
+    const finalMode = result?.appliedMode || detectedMode.mode;
+    switch (finalMode) {
+      case "academic":
+        return {
+          label: "Academic Mode Activated",
+          color: "bg-indigo-100 text-indigo-700 border-indigo-200",
+          icon: <BookOpen className="w-4 h-4" />,
+          desc: "Preserving analytical density and complex logical argument stacking. Restores natural epistemic hedging."
+        };
+      case "business":
+        return {
+          label: "Business Mode Activated",
+          color: "bg-blue-100 text-blue-700 border-blue-200",
+          icon: <Briefcase className="w-4 h-4" />,
+          desc: "Preserving practical operations ambiguity, stakeholder nuances, and internal communication alignment."
+        };
+      case "creative":
+        return {
+          label: "Creative Mode Activated",
+          color: "bg-rose-100 text-rose-700 border-rose-200",
+          icon: <Activity className="w-4 h-4" />,
+          desc: "Protecting fragmented rhythms, emotional nuance, metaphor, and repeating styles. No flattening."
+        };
+      default:
+        return {
+          label: "Hybrid Alignment Activated",
+          color: "bg-slate-100 text-slate-700 border-slate-200",
+          icon: <Languages className="w-4 h-4" />,
+          desc: "Dynamically balancing across multiple registers within individual paragraphs."
+        };
+    }
   };
 
-  const scrollToInput = () => {
-    inputSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const startEdit = (idx: number, currentText: string) => {
-    setEditingIndex(idx);
-    setEditValue(currentText);
-  };
-  const saveEdit = (idx: number) => {
-    if (!result || !result.sentences) return;
-    const newSentences = [...result.sentences];
-    newSentences[idx] = { ...newSentences[idx], native: editValue };
-    setResult({ ...result, sentences: newSentences });
-    setEditingIndex(null);
-    setEditValue("");
-    toast.success("Sentence updated");
-  };
-  const handleKeyDown = (e: React.KeyboardEvent, idx: number) => {
-    if (e.key === 'Enter') saveEdit(idx);
-    if (e.key === 'Escape') setEditingIndex(null);
-  };
+  const modeInfo = currentActiveModeInfo();
 
   return (
-    <div className="min-h-screen bg-[#FDFCFB] text-[#1A1A1A] font-sans selection:bg-[#E6E6E6]">
-      <Toaster position="top-center" />
-      <Analytics />
+    <div className="min-h-screen bg-[#FDFDFB] text-[#1A1A1A] flex flex-col font-sans transition-all duration-300 selection:bg-[#F2EFE9] selection:text-[#1a1a1a]">
       
-      {/* Header */}
-      <header className="border-b border-[#E5E5E5] bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-3">
-          {/* Top row: Logo (left) + Buttons (right) */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#1E3A8A] to-[#0F172A] rounded-2xl flex items-center justify-center shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white sm:w-6 sm:h-6">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
-                  <path d="M2 12h20"/>
-                </svg>
-              </div>
-              <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] bg-clip-text text-transparent">
-                IdiomOptima
-              </h1>
+      <header className="border-b border-[#EAE6DF] bg-white/70 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-[#1A1A1A] rounded-lg flex items-center justify-center">
+              <Languages className="w-4 h-4 text-white" />
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="text-[#666] hover:text-[#1A1A1A] text-xs sm:text-sm">
-                <HistoryIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> History
-              </Button>
-              <Button variant="outline" size="sm" onClick={reset} className="text-xs sm:text-sm">
-                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> Reset
-              </Button>
-              <Button variant="ghost" size="sm" className="text-[#666] border border-[#E5E5E5] rounded-full text-xs sm:text-sm">Sign in</Button>
-              <Button size="sm" className="bg-[#1A1A1A] text-white rounded-full hover:bg-[#333] text-xs sm:text-sm">Sign up</Button>
+            <div>
+              <h1 className="font-serif text-xl font-bold tracking-tight text-[#1A1A1A]">NativeWrite</h1>
+              <p className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold">Voice Preservation Engine</p>
             </div>
           </div>
-          {/* Three words - CENTERED under logo */}
-          <div className="flex justify-center mt-6">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-wide">
-              <span style={{ color: "#3B82F6" }}>Edit.</span>{' '}
-              <span style={{ color: "#10B981" }}>Nativize.</span>{' '}
-              <span style={{ color: "#F59E0B" }}>Humanize.</span>
+
+          <div className="flex items-center gap-4">
+            <div className={`hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-bold border ${modeInfo.color}`}>
+              {modeInfo.icon}
+              <span>{modeInfo.label}</span>
+            </div>
+
+            <div className="text-xs text-[#8C857B] font-mono">
+              v3.0 Production
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-
-        {/* Try a sample chips */}
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="text-xs text-gray-400">Try a sample:</span>
-          <button onClick={() => {
-            const example = "The results of the experiment demonstrates that there is a significant correlation between the variables, however further research is needed to establish causality.[1]";
-            setInputText(example);
-            setInputHtml(example);
-            toast.info("Academic example loaded");
-          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">🎓 Academic</button>
-          <button onClick={() => {
-            const example = "Please find attached the quarterly report. We need to discuss about the budget allocation for next quarter.";
-            setInputText(example);
-            setInputHtml(example);
-            toast.info("Business example loaded");
-          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">💼 Business</button>
-          <button onClick={() => {
-            const example = "The old house stood on the hill, its windows like empty eyes.";
-            setInputText(example);
-            setInputHtml(example);
-            toast.info("Creative example loaded");
-          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">✍️ Creative</button>
-          <button onClick={() => {
-            const example = "I am writing to apply for the marketing position. I have 5 years of experience.";
-            setInputText(example);
-            setInputHtml(example);
-            toast.info("Professional example loaded");
-          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">📧 Professional</button>
-          <button onClick={() => {
-            const example = "Yesterday I go to the store and buy some apples, but I forget my wallet.";
-            setInputText(example);
-            setInputHtml(example);
-            toast.info("ELL example loaded");
-          }} className="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">🌍 ELL</button>
-        </div>
-
-        {/* Control Row - Dialect, Domain, Tone with message on same line */}
-        <div className="bg-white border-2 border-gray-200 rounded-xl p-4 mb-6 hover:border-blue-400 transition-all duration-200">
-          <div className="flex flex-wrap gap-4 justify-between items-center">
-            <div className="flex gap-6">
-              <div>
-                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Dialect</Label>
-                <Select value={forcedDialect || "auto"} onValueChange={(val) => setForcedDialect(val === "auto" ? undefined : val)}>
-                  <SelectTrigger className="h-8 text-sm w-[90px] hover:bg-blue-50 transition-colors">
-                    <SelectValue placeholder="Auto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto">Auto</SelectItem>
-                    <SelectItem value="US">US</SelectItem>
-                    <SelectItem value="UK">UK</SelectItem>
-                    <SelectItem value="AU">AU</SelectItem>
-                    <SelectItem value="CA">CA</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Domain</Label>
-                <Select value={domain} onValueChange={setDomain}>
-                  <SelectTrigger className="h-8 text-sm w-[100px] hover:bg-blue-50 transition-colors">
-                    <SelectValue placeholder="General" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DOMAINS.map((d) => (<SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tone</Label>
-                <Select value={tone} onValueChange={setTone}>
-                  <SelectTrigger className="h-8 text-sm w-[100px] hover:bg-blue-50 transition-colors">
-                    <SelectValue placeholder="Neutral" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TONES.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-<span className="text-base font-bold text-blue-600">Refine, compare, and approve sentence by sentence</span>              <span className="text-xs text-gray-400">· {wordCount} words · {remainingUses}/{DAILY_LIMIT} remaining</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-          
-          {/* Left Column: Source Text */}
-          <div className="space-y-4 h-full flex flex-col">
-<div className="flex items-center justify-between">
-  <div>
-    <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Source Text</h3>
-    <p className="text-xs text-gray-400 mt-1">Paste your text here or import a Word document</p>
-  </div>
-  <div className="flex gap-2">
-    <input type="file" ref={fileInputRef} className="hidden" accept=".docx" onChange={handleFileUpload} />
-    <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isReading || isLoading} className="text-xs h-7">
-      {isReading ? "Reading..." : "Import Word"}
-    </Button>
-    {inputText && (
-      <Button variant="ghost" size="sm" onClick={() => setInputText("")} className="text-xs h-7 text-gray-400 hover:text-red-500">
-        Clear
-      </Button>
-    )}
-  </div>
-</div>
-
-            {/* Rich Text Editor with button inside */}
-            <div className="border-2 border-gray-200 rounded-xl overflow-hidden bg-white hover:border-blue-400 transition-all duration-200 flex flex-col" style={{ height: "380px" }}>
-              <div className="flex-1 overflow-auto">
-                <RichTextEditor 
-                  content={inputHtml}
-                  onChange={handleEditorChange}
-                  placeholder="Paste your text here..."
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="border-t border-gray-100 p-3 bg-gray-50">
-                <Button
-                  className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 text-white rounded-xl py-3 text-base font-bold shadow-2xl transition-all duration-300"
-                  onClick={handleTransform}
-                  disabled={isLoading || !inputText.trim()}
+      <main className="max-w-[1600px] w-full mx-auto px-6 py-6 flex-1 flex flex-col gap-6">
+        
+        <div className="flex justify-center md:justify-start">
+          <section className="w-full max-w-2xl bg-white border border-[#EAE6DF] rounded-2xl p-3 shadow-sm hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-3 gap-6">
+              
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-[#8C857B] uppercase tracking-[0.15em] pl-0.5 min-h-[14px] block">
+                  Dialect Preference
+                </label>
+                <select
+                  value={forcedDialect}
+                  onChange={(e) => setForcedDialect(e.target.value)}
+                  className="w-full h-8 text-[11px] font-semibold bg-[#FAF9F6] border border-[#EAE6DF] rounded-lg px-2.5 text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1A1A1A]"
                 >
-                  {isLoading ? (
-                    <><Sparkles className="w-4 h-4 animate-spin inline mr-2" /> Refining...</>
-                  ) : (
-                    <><Sparkles className="w-4 h-4 inline mr-2" /> Transform to Native English →</>
-                  )}
-                </Button>
-                {result && !isLoading && (
-                  <Button
-                    variant="outline"
-                    className="mt-2 w-full rounded-xl py-2 px-4 text-sm font-semibold border-2 border-blue-300 text-blue-600 hover:bg-blue-50 transition-all"
-                    onClick={handleTransform}
-                    title="Not happy with the result? Try again for a different output."
-                  >
-                    ↺ Retry with different output
-                  </Button>
-                )}
+                  {DIALECTS.map((d) => (
+                    <option key={d.value} value={d.value}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-[#8C857B] uppercase tracking-[0.15em] pl-0.5 min-h-[14px] block">
+                  Domain Profile
+                </label>
+                <select
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                  className="w-full h-8 text-[11px] font-semibold bg-[#FAF9F6] border border-[#EAE6DF] rounded-lg px-2.5 text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1A1A1A]"
+                >
+                  {DOMAINS.map((dm) => (
+                    <option key={dm.value} value={dm.value}>
+                      {dm.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] font-bold text-[#8C857B] uppercase tracking-[0.15em] pl-0.5 min-h-[14px] block">
+                  Subtle Tone Shift
+                </label>
+                <select
+                  value={tone}
+                  onChange={(e) => setTone(e.target.value)}
+                  className="w-full h-8 text-[11px] font-semibold bg-[#FAF9F6] border border-[#EAE6DF] rounded-lg px-2.5 text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#1A1A1A]"
+                >
+                  {TONES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
             </div>
-
-            {/* Notices below the editor box */}
-            <div className="space-y-2">
-              <p className="text-xs text-center text-gray-400">
-                🔒 Private by default · No sign-up required
-              </p>
-              <p className="text-xs text-center text-gray-400">
-                By pasting text or importing a document, you agree to IdiomOptima's <a href="/terms.html" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy.html" className="text-blue-600 hover:underline">Privacy Policy</a>.
-              </p>
-            </div>
-          </div>
-
-          {/* Right Column: Results */}
-          <div className="space-y-4 h-full flex flex-col bg-blue-50/20 border border-blue-100 rounded-xl p-4">
-            <div className="flex items-center justify-between">
-<h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Final Version</h3>              
-<div className="flex gap-2">
-  {result && (
-    <button
-      onClick={() => setShowDiff(!showDiff)}
-      className={`text-xs px-2 py-1 rounded-full border transition-all ${
-        showDiff 
-          ? 'bg-blue-600 text-white border-blue-600' 
-          : 'bg-white text-gray-500 border-gray-300 hover:border-blue-400'
-      }`}
-    >
-      {showDiff ? '● Diff On' : '○ Show Diff'}
-    </button>
-  )}
-  <Button variant="outline" size="sm" className="text-xs h-7" onClick={exportToPDF}>Export PDF</Button>
-  <Button variant="outline" size="sm" className="text-xs h-7" onClick={copyToClipboard}>Copy</Button>
-  <Button variant="outline" size="sm" className="text-xs h-7" onClick={exportToWord}>Export Word</Button>
-</div>
-            </div>
-
-            <div className="flex-1">
-            <AnimatePresence mode="wait">
-              {isLoading ? (
-                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-1/3" />
-                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} className="h-full bg-blue-600" />
-                        </div>
-                        <p className="text-xs text-gray-400">{processingStatus}</p>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-48 w-full" />
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ) : result ? (
-                <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-
-                  {/* Refined Output — FIRST */}
-        <div className="bg-white border-2 border-gray-200 rounded-xl p-4 mb-6 hover:border-blue-400 transition-all duration-200">                    
- <div className="flex items-center justify-between mb-3">
-   <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Refined Output</div>
-   <div className="flex items-baseline gap-2">
-     <span className="text-lg font-bold text-gray-900">{result.originalScore}%</span>
-     <span className="text-xs text-gray-400">→</span>
-     <span className="text-lg font-bold text-blue-600">{result.revisedScore}%</span>
-     {result.originalLetterGrade && result.revisedLetterGrade && (
-       <span className="text-xs text-gray-400">({result.originalLetterGrade} → {result.revisedLetterGrade})</span>
-     )}
-   </div>
- </div>
-<div className="text-gray-700 font-serif leading-relaxed text-lg">                      {result.sentences && result.sentences.length > 0 ? (
-                        (() => {
-                          const bodyGroups: any[] = [];
-                          let currentGroup: any[] = [];
-
-                          result.sentences.forEach((sent, idx) => {
-                            const isSwapped = swappedSentenceIndices.includes(idx);
-                            const text = isSwapped ? sent.original : sent.native;
-                            
-                            const defMatch = text.trim().match(FOOTNOTE_DEF_REGEX);
-                            const isFootnoteDef = (!sent.isHeading && !!defMatch) || sent.isImmutableFootnote;
-                            const isReferencesHeading = sent.isHeading && (
-                              text.toLowerCase() === "references" || 
-                              text.toLowerCase() === "bibliography" || 
-                              text.toLowerCase() === "footnotes"
-                            );
-                            
-                            if (isFootnoteDef || isReferencesHeading) return;
-
-                            if (editingIndex === idx) {
-                              bodyGroups.push(
-                                <div key={`edit-${idx}`} className="my-2">
-                                  <input
-                                    type="text"
-                                    value={editValue}
-                                    onChange={(e) => setEditValue(e.target.value)}
-                                    onBlur={() => saveEdit(idx)}
-                                    onKeyDown={(e) => handleKeyDown(e, idx)}
-                                    className="w-full p-1 border border-gray-300 rounded text-sm"
-                                    autoFocus
-                                  />
-                                </div>
-                              );
-                              return;
-                            }
-
-const content = (
-  <span
-    key={idx}
-    onClick={() => {
-      setSwappedSentenceIndices(prev => 
-        prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
-      );
-    }}
-    onDoubleClick={() => startEdit(idx, text)}
-    title={`Original: ${sent.original}`}
-    className={`cursor-pointer transition-all duration-200 relative group inline p-0.5 rounded hover:bg-gray-50
-      ${sent.isNativeMatch ? 'border-b border-blue-200' : ''}
-      ${isSwapped ? 'text-gray-400 bg-gray-50' : ''}
-      ${sent.headingLevel === 1 ? 'font-bold block text-2xl mt-6 mb-3' : ''}
-      ${sent.headingLevel === 2 ? 'font-bold block text-xl mt-5 mb-2' : ''}
-      ${sent.headingLevel === 3 ? 'font-semibold block text-lg mt-4 mb-2' : ''}
-      ${sent.headingLevel === 4 ? 'font-semibold block text-base mt-3 mb-2' : ''}
-      ${sent.isHeading && !sent.headingLevel ? 'font-bold block text-lg mt-4 mb-2' : ''}
-    `}
-  >
-<span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity bg-gray-900 text-white p-4 rounded-xl text-sm leading-relaxed pointer-events-none z-[110] shadow-xl w-96 whitespace-normal">
-  <span className="block text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Original</span>
-  {sent.original}
-  <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
-</span>
-    {showDiff && !isSwapped && !sent.isNativeMatch 
-      ? renderDiff(sent.original, sent.native)
-      : renderContentWithFootnotes(text)
-    }
-    {isSwapped && <RotateCcw className="w-3 h-3 text-gray-400 inline ml-1 align-middle" />}
-  </span>
-);
-
-                            if (sent.isHeading) {
-                              if (currentGroup.length > 0) {
-                                bodyGroups.push(<div key={`p-${idx}-pre`} className="mb-3 last:mb-0">{currentGroup}</div>);
-                                currentGroup = [];
-                              }
-                              bodyGroups.push(content);
-                            } else {
-                              currentGroup.push(content);
-                              if (sent.isEndOfParagraph) {
-                                bodyGroups.push(<div key={`p-${idx}`} className="mb-3 last:mb-0">{currentGroup}</div>);
-                                currentGroup = [];
-                              }
-                            }
-                          });
-
-                          if (currentGroup.length > 0) {
-                            bodyGroups.push(<div key="p-last" className="mb-0">{currentGroup}</div>);
-                          }
-
-                          return (
-                            <>
-                              <div className="space-y-3">{bodyGroups}</div>
-                              {Object.keys(footnoteMap).length > 0 && (
-                                <div className="mt-6 pt-4 border-t border-dashed border-gray-200">
-                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Notes & References</h4>
-                                  <div className="space-y-1">
-                                    {Object.entries(footnoteMap).sort((a,b) => parseInt(a[0]) - parseInt(b[0])).map(([num, content]) => (
-                                      <div key={num} ref={el => { footnoteRefs.current[num] = el; }} className="flex gap-2 text-xs text-gray-500">
-                                        <span className="font-bold text-blue-500 min-w-[2rem]">[{num}]</span>
-                                        <span>{content}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </>
-                          );
-                        })()
-                      ) : (
-                        <div className="whitespace-pre-wrap">{renderContentWithFootnotes(result.finalVersion)}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Quality Metrics — after text */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white border border-gray-200 rounded-lg p-3">
-                      <div className="text-xs text-gray-400">Original</div>
-                      <div className="flex items-baseline gap-2">
-                        <div className="text-2xl font-bold text-gray-900">{result.originalScore}%</div>
-                        {result.originalLetterGrade && (
-                          <span className="text-sm font-semibold text-gray-500">({result.originalLetterGrade})</span>
-                        )}
-                      </div>
-                      {result.rubric && (
-                        <div className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">{result.rubric} register</div>
-                      )}
-                    </div>
-                    <div className="bg-blue-600 rounded-lg p-3 text-white">
-                      <div className="text-xs text-white/70">Refined</div>
-                      <div className="flex items-baseline gap-2">
-                        <div className="text-2xl font-bold">{result.revisedScore}%</div>
-                        {result.revisedLetterGrade && (
-                          <span className="text-sm font-semibold text-white/80">({result.revisedLetterGrade})</span>
-                        )}
-                      </div>
-                      {result.rubric && (
-                        <div className="text-[10px] text-white/50 uppercase tracking-wider mt-0.5">{result.rubric} register</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Justification Comments */}
-                  {(result.originalComments || result.revisedComments) && (
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Original Assessment</div>
-                      {(result.originalComments || []).map((c, i) => (
-                        <div key={i} className="text-[11px] text-gray-600 flex gap-1.5 mb-0.5">
-                          <span className="text-gray-400">•</span> {c}
-                        </div>
-                      ))}
-                      <div className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider mt-2 mb-1">Refined Assessment</div>
-                      {(result.revisedComments || []).map((c, i) => (
-                        <div key={i} className="text-[11px] text-blue-700 flex gap-1.5 mb-0.5">
-                          <span className="text-blue-400">•</span> {c}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Analysis */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Analysis</h3>
-                    <p className="text-xs text-gray-500 mb-2">{result.explanation}</p>
-                    <ul className="space-y-1">
-                      {result.suggestions.map((s, i) => (
-                        <li key={i} className="text-xs text-gray-600 flex gap-2">
-                          <span className="text-blue-500">•</span> {s}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full">
-                  <div className="bg-transparent border-2 border-blue-200 rounded-lg overflow-hidden" style={{ height: "380px", display: "flex", flexDirection: "column" }}>                    <div className="flex-1 p-4 space-y-3">                      {/* ← Add your text box - light blue */}
-                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 text-left">
-                        <span className="text-2xl text-gray-500 mr-2">←</span>
-                        <span className="text-xl font-medium text-gray-700">Add your text</span>
-                      </div>
-                      {/* Information box - light blue (kept) */}
-                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                        <p className="text-sm text-gray-600">
-                          Footnotes, citations, paragraph breaks, and document layout are preserved in the refined version.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            </div>
-          </div>
+          </section>
         </div>
-      </main>
 
-      {/* History Sidebar */}
-      <AnimatePresence>
-        {showHistory && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowHistory(false)}
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60]"
-            />
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-[70] flex flex-col"
-            >
-              <div className="p-6 border-b border-[#E5E5E5] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <HistoryIcon className="w-5 h-5" />
-                  <h2 className="font-serif text-xl font-semibold">Recent History</h2>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => setShowHistory(false)}>
-                  <ChevronRight className="w-5 h-5" />
-                </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch flex-1">
+          
+          <section className="lg:col-span-7 flex flex-col bg-white border border-[#EAE6DF] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+            
+            <div className="px-5 py-3 border-b border-[#EAE6DF] bg-[#FAF9F6] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <PenLine className="w-3.5 h-3.5 text-[#8C857B]" />
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#8C857B]">
+                  Original Material
+                </span>
+                <span className="text-[10px] px-1.5 py-0.5 bg-[#EAE6DF] text-[#555] rounded font-semibold">
+                  {wordCount(plainTextInput)} words
+                </span>
               </div>
               
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {history.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-[#999]">
-                    <HistoryIcon className="w-12 h-12 mb-4 opacity-20" />
-                    <p>No history yet</p>
-                  </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleClear}
+                  className="p-1 text-[#8C857B] hover:text-[#DC2626] transition-colors rounded hover:bg-[#F2EFE9]"
+                  title="Clear source canvas"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 min-h-[600px] bg-white relative">
+              <RichTextEditor 
+                content={inputHtml}
+                onChange={setInputHtml}
+              />
+            </div>
+
+            <div className="p-4 border-t border-[#EAE6DF] bg-[#FAF9F6] flex items-center justify-between">
+              <div className="text-[10px] text-[#8C857B] max-w-sm">
+                Write freely. The micro-engine automatically preserves your voice and matches it against lexical structures in the background.
+              </div>
+              
+              <button
+                onClick={handleTransform}
+                disabled={loading || !plainTextInput.trim()}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1A1A1A] text-white hover:bg-[#333] disabled:bg-[#CCC] disabled:cursor-not-allowed rounded-full text-xs font-bold transition-all shadow-sm hover:shadow-md active:scale-95"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Nativizing Phrasing ({progress}%)...</span>
+                  </>
                 ) : (
-                  history.map((item) => (
-                    <Card 
-                      key={item.id} 
-                      className="border-[#E5E5E5] hover:border-[#1A1A1A] transition-colors cursor-pointer group"
-                      onClick={() => loadFromHistory(item)}
+                  <>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Nativize Prose & Preserve Voice</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+          </section>
+
+          <section className="lg:col-span-5 flex flex-col bg-white border border-[#EAE6DF] rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+            
+            <div className="border-b border-[#EAE6DF] bg-[#FAF9F6] px-4">
+              <div className="flex items-center justify-between h-11">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setActiveTab("result")}
+                    disabled={!result}
+                    className={`h-11 px-3 text-[11px] font-bold uppercase tracking-wider relative transition-colors ${
+                      activeTab === "result" ? "text-[#1A1A1A]" : "text-[#8C857B] hover:text-[#555]"
+                    } disabled:opacity-40`}
+                  >
+                    Preserved Output
+                    {activeTab === "result" && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A]" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("suggestions")}
+                    disabled={!result || result.suggestions.length === 0}
+                    className={`h-11 px-3 text-[11px] font-bold uppercase tracking-wider relative transition-colors ${
+                      activeTab === "suggestions" ? "text-[#1A1A1A]" : "text-[#8C857B] hover:text-[#555]"
+                    } disabled:opacity-40`}
+                  >
+                    Lexical Diagnostics
+                    {result?.suggestions && result.suggestions.length > 0 && (
+                      <span className="ml-1.5 px-1.5 py-0.2 bg-[#F2C94C] text-[#333] text-[9.5px] font-black rounded-full">
+                        {result.suggestions.length}
+                      </span>
+                    )}
+                    {activeTab === "suggestions" && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A1A1A]" />
+                    )}
+                  </button>
+                </div>
+
+                 {result && (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={handleCopy}
+                      className="p-1 px-2 hover:bg-[#EAE6DF] rounded text-xs gap-1 flex items-center text-[#555] transition-colors"
+                      title="Copy output text"
                     >
-                      <CardHeader className="p-4 pb-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-[#999]">
-                            {new Date(item.timestamp).toLocaleTimeString()}
-                          </span>
-                          <div className="flex gap-2">
-                            <span className="text-[10px] bg-[#F5F5F5] px-1.5 py-0.5 rounded uppercase font-bold text-[#666]">
-                              {item.domain}
-                            </span>
-                            <span className="text-[10px] bg-[#F5F5F5] px-1.5 py-0.5 rounded uppercase font-bold text-[#666]">
-                              {item.tone}
-                            </span>
-                          </div>
-                        </div>
-                        <p className="text-sm font-medium line-clamp-2 text-[#1A1A1A]">
-                          {item.originalText}
-                        </p>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-0">
-                        <Separator className="my-2 opacity-50" />
-                        <p className="text-xs italic text-[#666] line-clamp-2">
-                          "{item.finalVersion}"
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))
+                      {copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Clipboard className="w-3.5 h-3.5" />}
+                      <span className="text-[10px] font-semibold">{copied ? "Copied" : "Copy"}</span>
+                    </button>
+                    <button
+                      onClick={exportAsPDF}
+                      className="p-1 px-2 hover:bg-[#EAE6DF] rounded text-xs gap-1 flex items-center text-[#555] transition-colors"
+                      title="Export PDF Document (.pdf)"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-[#555]" />
+                      <span className="text-[10px] font-semibold">PDF</span>
+                    </button>
+                    <button
+                      onClick={exportAsWord}
+                      className="p-1 px-2 hover:bg-[#EAE6DF] rounded text-xs gap-1 flex items-center text-[#555] transition-colors"
+                      title="Export Word Document (.docx)"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold">Word</span>
+                    </button>
+                  </div>
                 )}
               </div>
+            </div>
 
-              {history.length > 0 && (
-                <div className="p-6 border-t border-[#E5E5E5]">
-                  <Button 
-                    variant="outline" 
-                    className="w-full text-destructive hover:text-destructive hover:bg-destructive/5"
-                    onClick={clearHistory}
+            <div className="flex-1 bg-white flex flex-col overflow-y-auto">
+              {loading ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#FAF9F6]/50">
+                  <div className="relative w-16 h-16 flex items-center justify-center mb-4">
+                    <div className="absolute inset-0 border-4 border-[#EAE6DF] border-t-[#1A1A1A] rounded-full animate-spin" />
+                    <Sparkles className="w-5 h-5 text-[#1A1A1A]" />
+                  </div>
+                  <h3 className="font-serif text-lg font-bold mb-1">Preserving authorial rhythm...</h3>
+                  <p className="text-xs text-[#8C857B] mb-4 max-w-xs">{progressPhase}</p>
+                  
+                  <div className="w-48 h-1 bg-[#EAE6DF] rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-[#1A1A1A] transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-red-50/20">
+                  <Info className="w-8 h-8 text-red-500 mb-3" />
+                  <h3 className="font-bold text-sm text-red-800 mb-1">Process Halted Check Required</h3>
+                  <p className="text-xs text-[#555] max-w-sm leading-relaxed mb-4">{error}</p>
+                  <button 
+                    onClick={handleTransform}
+                    className="px-4 py-2 bg-red-100 text-red-800 rounded-full font-bold text-xs hover:bg-red-200 transition-colors"
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Clear History
-                  </Button>
+                    Retry Analysis
+                  </button>
+                </div>
+              ) : result ? (
+                <div className="flex-1 flex flex-col h-full">
+                  
+                  {activeTab === "result" && (
+                    <div className="p-6 space-y-6 flex-1">
+                      
+                      <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#FAF9F6] border border-[#EAE6DF] rounded-2xl">
+                        <div className="space-y-0.5">
+                          <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block">Voice Integrity Index</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xl font-serif font-black">{result.originalScore}%</span>
+                            <span className="text-[10px] text-green-600 font-bold">Unflattened</span>
+                          </div>
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="text-[9px] uppercase tracking-wider text-[#8C857B] font-bold block">Syntactic Rhythm Stability</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xl font-serif font-black">{result.revisedScore}%</span>
+                            <span className="text-[10px] text-blue-600 font-bold">Variable</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] uppercase font-bold tracking-wider text-[#8C857B] flex items-center gap-1.5">
+                          <Eye className="w-3 h-3" />
+                          <span>Review Mode: Click any sentence to check transformations</span>
+                        </h4>
+
+                        <div className="prose prose-stone font-serif text-lg leading-relaxed text-[#1A1A1A] border-l-2 border-[#1A1A1A]/10 pl-4 py-1">
+                          {result.sentences.map((sentence, idx) => (
+                            <span
+                              key={idx}
+                              onClick={() => setSelectedSentenceIdx(idx)}
+                              className={`sentence-highlight inline px-1 py-0.5 rounded transition-all cursor-pointer ${
+                                selectedSentenceIdx === idx 
+                                  ? "bg-amber-100 text-[#1A1A1A] font-medium scale-[1.01]" 
+                                  : sentence.original !== sentence.revised
+                                  ? "bg-[#FCFBE3]/50 hover:bg-[#FCFBE3]"
+                                  : "hover:bg-slate-50"
+                              }`}
+                            >
+                              {sentence.revised}{" "}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {selectedSentenceIdx !== null && (
+                        <div className="border border-[#EAE6DF] rounded-2xl p-4 bg-[#FAF9F6] space-y-3.5 transform transition-all duration-300 animate-fadeIn">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] uppercase font-black tracking-widest text-[#8C857B] block">
+                              Sentence Comparison #{selectedSentenceIdx + 1}
+                            </span>
+                            <span className="text-[9.5px] shrink-0 font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
+                              {result.sentences[selectedSentenceIdx].original === result.sentences[selectedSentenceIdx].revised 
+                                ? "Preserved exactly" 
+                                : "Refined mapping"}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+                            <div className="space-y-1">
+                              <span className="text-[9px] lowercase font-bold text-[#8C857B]">your draft:</span>
+                              <p className="p-3 bg-white border border-[#EAE6DF] rounded-xl text-[#666] italic">
+                                "{result.sentences[selectedSentenceIdx].original}"
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <span className="text-[9px] lowercase font-bold text-[#8C857B]">nativized version:</span>
+                              <p className="p-3 bg-white border border-[#1A1A1A]/10 rounded-xl text-[#1A1A1A] font-medium font-serif leading-relaxed">
+                                {result.sentences[selectedSentenceIdx].revised}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 pt-2 border-t border-[#EAE6DF] text-xs">
+                            {result.sentences[selectedSentenceIdx].explanation && (
+                              <div className="flex gap-2 items-start">
+                                <Info className="w-3.5 h-3.5 text-[#8C857B] shrink-0 mt-0.5" />
+                                <span className="text-[11px] text-[#555]">
+                                  <strong>Rule logic:</strong> {result.sentences[selectedSentenceIdx].explanation}
+                                </span>
+                              </div>
+                            )}
+
+                            {result.sentences[selectedSentenceIdx].suggestions && (result.sentences[selectedSentenceIdx].suggestions?.length ?? 0) > 0 && (
+                              <div className="space-y-1 pl-5">
+                                <span className="text-[9px] uppercase tracking-wider font-bold text-[#8C857B]">Option variations:</span>
+                                <ul className="list-disc list-inside space-y-1 text-[#555] text-[11px]">
+                                  {result.sentences[selectedSentenceIdx].suggestions?.map((sug, sIdx) => (
+                                    <li key={sIdx}>{sug}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-2 border-t border-[#EAE6DF] pt-4">
+                        <span className="text-[9px] uppercase font-bold tracking-wider text-[#8C857B] block">Optimization Diagnosis</span>
+                        <p className="text-xs text-[#555] bg-slate-50 border border-slate-100 p-3 rounded-xl italic">
+                          {result.explanation || "All author structures, paragraph bounds, and footnotes preserved correctly."}
+                        </p>
+                      </div>
+
+                    </div>
+                  )}
+
+                  {activeTab === "suggestions" && (
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Zap className="w-4 h-4 text-amber-500" />
+                        <h4 className="text-xs uppercase font-extrabold tracking-widest text-[#1a1a1a]">
+                          Syntactic & Style Variance Recommendations
+                        </h4>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {result.suggestions.map((suggestion, sIdx) => (
+                          <div 
+                            key={sIdx}
+                            className="p-3 bg-[#FAF9F6] border border-[#EAE6DF] rounded-xl text-xs text-[#555] flex gap-2"
+                          >
+                            <span className="text-[#1A1A1A] font-bold">{sIdx + 1}.</span>
+                            <p className="leading-relaxed">{suggestion}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="text-[10px] p-3 text-[#8C857B] leading-relaxed bg-[#FFF]/80 rounded-xl border border-dashed border-[#EAE6DF] mt-6">
+                        These suggestions correspond directly with Domain levels activated in Mode 8 rules. You can edit your Draft on the left at any time to include them.
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#FAF9F6]/35 rounded-3xl">
+                  <div className="w-12 h-12 rounded-2xl bg-[#1A1A1A]/5 flex items-center justify-center mb-4">
+                    <Sparkles className="w-6 h-6 text-[#8C857B]" />
+                  </div>
+                  <h3 className="font-serif text-lg font-bold mb-1">Preservation Ready</h3>
+                  <p className="text-xs text-[#8C857B] max-w-xs leading-relaxed mb-4">
+                    Draft, import citations, or write freely in the left canvas. Hit nativize to launch voice identity preservation.
+                  </p>
+                  
+                  <div className="space-y-2 w-full max-w-xs text-left bg-white p-4 border border-[#EAE6DF] rounded-2xl text-[11px] text-[#555]">
+                    <span className="text-[9px] uppercase tracking-wider font-bold text-[#8C857B] block mb-1">Core Constraints:</span>
+                    <div className="flex gap-2 items-start">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
+                      <span>Headings are preserved without standardizing punctuation styles</span>
+                    </div>
+                    <div className="flex gap-2 items-start">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
+                      <span>Rhythm is prioritized over global flat standard english</span>
+                    </div>
+                    <div className="flex gap-2 items-start">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
+                      <span>Citations, bibliographic footnotes, and links are kept safe</span>
+                    </div>
+                  </div>
                 </div>
               )}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </div>
 
-      {/* Footer */}
-        <footer className="max-w-[1600px] mx-auto px-8 py-10 border-t border-[#E5E5E5] mt-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm text-[#888]">
-          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Product</h4><ul className="space-y-2">
-  <li><a href="/about.html" className="hover:text-[#1A1A1A] transition">About</a></li>
-  <li><a href="/faq.html" className="hover:text-[#1A1A1A] transition">FAQ</a></li>
-  <li><span className="text-gray-400">Pricing – coming soon</span></li>
-</ul></div>
-          <div><h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Legal</h4><ul className="space-y-2"><li><a href="/terms.html" className="hover:text-[#1A1A1A] transition">Terms of Service</a></li><li><a href="/privacy.html" className="hover:text-[#1A1A1A] transition">Privacy & Security</a></li></ul></div>
-<div>
-  <h4 className="font-bold text-[#1A1A1A] uppercase text-xs tracking-wider mb-3">Connect</h4>
-  <ul className="space-y-2">
-    <li>
-      <a
-        href="mailto:contact@idiomoptima.com"
-        className="hover:text-[#1A1A1A] transition flex items-center gap-1"
-      >
-        <Mail className="w-3.5 h-3.5" /> contact@idiomoptima.com
-      </a>
-    </li>
-    <li>
-      <a
-        href="https://x.com/araddaoui"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="hover:text-[#1A1A1A] transition"
-      >
-        X / Twitter
-      </a>
-    </li>
-    <li>
-      <a
-        href="https://www.linkedin.com/in/araddaoui/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="hover:text-[#1A1A1A] transition"
-      >
-        LinkedIn
-      </a>
-    </li>
-  </ul>
-</div>        </div>
-        <div className="mt-8 text-center text-xs text-gray-400 border-t border-gray-100 pt-6">
-          © 2026 IdiomOptima • Free forever during beta • No credit card required
+            {result && (
+              <div className="px-5 py-3 border-t border-[#EAE6DF] bg-[#FAF9F6] flex items-center justify-between text-[10px] text-[#8C857B]">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Preserved result:</span>
+                  <span className="font-bold">{wordCount(result.finalVersion)} words</span>
+                  <span>•</span>
+                  <span>{charCount(result.finalVersion)} chars</span>
+                </div>
+                <div>
+                  Detected Dialect: <span className="font-bold text-[#1A1A1A]">{result.detectedDialect || "US"}</span>
+                </div>
+              </div>
+            )}
+
+          </section>
+
         </div>
-      </footer>
-      {/* Floating chat button (simulates Tawk.to) */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <div className="w-14 h-14 bg-[#1A1A1A] rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition cursor-default">
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        </div>
-      </div>      
+
+        <section className="bg-white border border-[#EAE6DF] p-4 rounded-3xl space-y-2 mt-4 max-w-4xl">
+          <h4 className="text-[10px] uppercase font-bold tracking-wider text-[#1a1a1a] flex items-center gap-1.5">
+            <Info className="w-3.5 h-3.5" />
+            <span>How NativeWrite Preserves Your Authentic Voice</span>
+          </h4>
+          <p className="text-xs text-[#555] leading-relaxed">
+            Standard checkers attempt to rewrite foreign, ESL, or non-traditional sentences into standard homogeneous academic styles. NativeWrite detects structural signals (such as complex clause alternation, academic hedging like <em>may appear to</em>, or interpretive business ambiguity) to protect your rhythm while correcting spelling or outright grammatical bugs. Headings, citations, and list structures remain strictly safe.
+          </p>
+        </section>
+
+      </main>
+
     </div>
   );
 }
