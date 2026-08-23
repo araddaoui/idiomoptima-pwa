@@ -92,7 +92,7 @@ async function callOpenRouter(text, options, apiKey) {
       "Authorization": "Bearer " + apiKey,
     },
     body: JSON.stringify({
-      model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+      model: "nvidia/nemotron-3-nano-30b-a3b:free",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: prompt },
