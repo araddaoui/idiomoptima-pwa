@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserButton, useUser, useAuth } from "@clerk/clerk-react";
 import {
   PenTool,
   Download,
@@ -82,6 +83,7 @@ const PRESETS = [
 
 export default function ToolPage() {
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [inputHtml, setInputHtml] = useState<string>(PRESETS[0].html);
   const [forcedDialect, setForcedDialect] = useState<string>("auto");
   const [domain, setDomain] = useState<string>("academic");
@@ -155,6 +157,7 @@ export default function ToolPage() {
     setProgress(0);
     setProgressPhase("Analyzing sentence cadence & register markers...");
     try {
+      const token = await getToken();
       const response = await transformText(
         plainText,
         domain,
@@ -165,7 +168,8 @@ export default function ToolPage() {
           if (phase) setProgressPhase(phase);
         },
         "auto",
-        { idiomDatabase, aiPhraseMap, lexicalDatabases }
+        { idiomDatabase, aiPhraseMap, lexicalDatabases },
+        token || undefined
       );
       setResult(response);
       setSelectedSentenceIdx(0);
@@ -292,7 +296,16 @@ export default function ToolPage() {
             </h1>
           </div>
 
-          <div className="w-[140px] shrink-0" />
+          <div className="w-[140px] shrink-0 flex justify-end">
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "w-8 h-8",
+                },
+              }}
+            />
+          </div>
         </div>
       </header>
 

@@ -1,9 +1,239 @@
 ﻿const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type, Cache-Control",
+  "Access-Control-Allow-Headers": "Content-Type, Cache-Control, Authorization",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
+function jsonResponse(data, status) {
+  return new Response(JSON.stringify(data), {
+    status: status || 200,
+    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+  });
+}
+
+// ─── Clerk JWT verification ───────────────────────────────────────────
+let cachedJWKS = null;
+let jwksExpiry = 0;
+
+async function fetchJWKS(clerkDomain) {
+  const now = Date.now();
+  if (cachedJWKS && now < jwksExpiry) return cachedJWKS;
+  const resp = await fetch("https://" + clerkDomain + "/.well-known/jwks.json");
+  if (!resp.ok) throw new Error("Failed to fetch JWKS");
+  const data = await resp.json();
+  cachedJWKS = data;
+  jwksExpiry = now + 3600000;
+  return data;
+}
+
+function base64urlDecode(str) {
+  const padded = str.replace(/-/g, "+").replace(/_/g, "/");
+  const binary = atob(padded);
+  return new Uint8Array([...binary].map((c) => c.charCodeAt(0)));
+}
+
+async function verifyClerkToken(token, clerkDomain) {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [headerB64, payloadB64, signatureB64] = parts;
+  const jwks = await fetchJWKS(clerkDomain);
+  const header = JSON.parse(new TextDecoder().decode(base64urlDecode(headerB64)));
+  const key = (jwks.keys || []).find((k) => k.kid === header.kid);
+  if (!key) return null;
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "jwk", key,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false, ["verify"]
+  );
+  const data = new TextEncoder().encode(headerB64 + "." + payloadB64);
+  const sig = base64urlDecode(signatureB64);
+  const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", cryptoKey, sig, data);
+  if (!valid) return null;
+
+  const payload = JSON.parse(new TextDecoder().decode(base64urlDecode(payloadB64)));
+  if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+  return payload;
+}
+
+function getUserIdFromRequest(request, clerkDomain) {
+  const auth = request.headers.get("Authorization") || "";
+  const token = auth.replace(/^Bearer\s+/i, "").trim();
+  if (!token || !clerkDomain) return null;
+  return verifyClerkToken(token, clerkDomain).then((p) => p?.sub || null).catch(() => null);
+}
+
+// ─── Supabase helpers ─────────────────────────────────────────────────
+async function supabaseQuery(supabaseUrl, supabaseKey, table, params) {
+  const url = supabaseUrl + "/rest/v1/" + table + "?" + params;
+  const resp = await fetch(url, {
+    headers: {
+      apikey: supabaseKey,
+      Authorization: "Bearer " + supabaseKey,
+      "Content-Type": "application/json",
+    },
+  });
+  if (!resp.ok) return null;
+  return resp.json();
+}
+
+async function supabaseRpc(supabaseUrl, supabaseKey, fn, body) {
+  const resp = await fetch(supabaseUrl + "/rest/v1/rpc/" + fn, {
+    method: "POST",
+    headers: {
+      apikey: supabaseKey,
+      Authorization: "Bearer " + supabaseKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) return null;
+  return resp.json();
+}
+
+async function getUserTier(supabaseUrl, supabaseKey, clerkId) {
+  const rows = await supabaseQuery(
+    supabaseUrl, supabaseKey, "users",
+    "select=subscription_tier&clerk_id=eq." + encodeURIComponent(clerkId) + "&limit=1"
+  );
+  return rows && rows[0] ? rows[0].subscription_tier : "free";
+}
+
+async function getDailyUsage(supabaseUrl, supabaseKey, clerkId) {
+  const today = new Date().toISOString().split("T")[0];
+  const rows = await supabaseQuery(
+    supabaseUrl, supabaseKey, "usage",
+    "select=request_count&user_id=eq." + encodeURIComponent(clerkId) + "&date=eq." + today + "&limit=1"
+  );
+  return rows && rows[0] ? rows[0].request_count : 0;
+}
+
+async function incrementUsage(supabaseUrl, supabaseKey, clerkId) {
+  const today = new Date().toISOString().split("T")[0];
+  await supabaseRpc(supabaseUrl, supabaseKey, "increment_usage", {
+    p_user_id: clerkId,
+    p_date: today,
+  });
+}
+
+async function upsertUser(supabaseUrl, supabaseKey, clerkId, email) {
+  await supabaseQuery(supabaseUrl, supabaseKey, "users", "clerk_id=eq." + encodeURIComponent(clerkId));
+  await fetch(supabaseUrl + "/rest/v1/users", {
+    method: "POST",
+    headers: {
+      apikey: supabaseKey,
+      Authorization: "Bearer " + supabaseKey,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates",
+    },
+    body: JSON.stringify({ clerk_id: clerkId, email: email || "" }),
+  });
+}
+
+// ─── Stripe helpers ───────────────────────────────────────────────────
+async function createStripeCheckout(stripeKey, priceId, clerkId, email, supabaseUrl, supabaseKey) {
+  const origin = "https://idiomoptima.com";
+  const resp = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + stripeKey,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      "mode": "subscription",
+      "line_items[0][price]": priceId,
+      "line_items[0][quantity]": "1",
+      success_url: origin + "/app?upgraded=1",
+      cancel_url: origin + "/app?upgrade_cancelled=1",
+      "metadata[clerk_id]": clerkId,
+      "metadata[email]": email || "",
+      customer_email: email || "",
+    }).toString(),
+  });
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error("Stripe error: " + err.substring(0, 200));
+  }
+  return resp.json();
+}
+
+async function handleStripeWebhook(request, env) {
+  const sig = request.headers.get("Stripe-Signature");
+  const body = await request.text();
+
+  let event;
+  try {
+    const payloadToVerify = new TextEncoder().encode(body);
+    const parts = (sig || "").split(",").reduce((acc, part) => {
+      const [k, v] = part.split("=");
+      acc[k.trim()] = v;
+      return acc;
+    }, {});
+
+    const signedPayload = new TextEncoder().encode(parts.t || "" + "." + body);
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(env.STRIPE_WEBHOOK_SECRET),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const expectedSig = await crypto.subtle.sign("HMAC", key, signedPayload);
+    const expectedHex = [...new Uint8Array(expectedSig)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    if (expectedHex !== parts.v1) {
+      return jsonResponse({ error: "Invalid signature" }, 401);
+    }
+  } catch (e) {
+    return jsonResponse({ error: "Signature verification failed" }, 401);
+  }
+
+  try {
+    event = JSON.parse(body);
+  } catch (e) {
+    return jsonResponse({ error: "Invalid JSON" }, 400);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const clerkId = session.metadata && session.metadata.clerk_id;
+    const stripeCustomerId = session.customer;
+    const stripeSubscriptionId = session.subscription;
+    if (clerkId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+      await fetch(env.SUPABASE_URL + "/rest/v1/users?clerk_id=eq." + encodeURIComponent(clerkId), {
+        method: "PATCH",
+        headers: {
+          apikey: env.SUPABASE_SERVICE_KEY,
+          Authorization: "Bearer " + env.SUPABASE_SERVICE_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subscription_tier: "pro",
+          stripe_customer_id: stripeCustomerId,
+          stripe_subscription_id: stripeSubscriptionId,
+        }),
+      });
+    }
+  }
+
+  if (event.type === "customer.subscription.deleted") {
+    const sub = event.data.object;
+    if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+      await fetch(env.SUPABASE_URL + "/rest/v1/users?stripe_subscription_id=eq." + encodeURIComponent(sub.id), {
+        method: "PATCH",
+        headers: {
+          apikey: env.SUPABASE_SERVICE_KEY,
+          Authorization: "Bearer " + env.SUPABASE_SERVICE_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ subscription_tier: "free" }),
+      });
+    }
+  }
+
+  return jsonResponse({ received: true });
+}
+
+// ─── Main fetch handler ──────────────────────────────────────────────
 const SYSTEM_PROMPT = [
   "You are IdiomOptima, a voice-preserving linguistic stabilizer.",
   "Transform input text with minimal intervention while preserving author voice.",
@@ -96,13 +326,6 @@ const SYSTEM_PROMPT = [
   '"sentences": [{"original": "...", "revised": "...", "explanation": "Specific change and why it is superior", "isImmutableFootnote": false}],',
   '"suggestions": ["Grammar: ...", "Spelling: ...", "AI-ese: ...", ...], "explanation": "Summary of all changes", "detectedDialect": "US|UK|CA|AU"}',
 ].join("\n");
-
-function jsonResponse(data, status) {
-  return new Response(JSON.stringify(data), {
-    status: status || 200,
-    headers: { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*" },
-  });
-}
 
 function parseJsonFromModel(text) {
   var cleaned = String(text || "").replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
@@ -296,12 +519,61 @@ export default {
       return new Response(null, { headers: CORS_HEADERS });
     }
 
-    if (request.method === "GET" && new URL(request.url).pathname === "/health") {
+    var url = new URL(request.url);
+    var path = url.pathname;
+
+    // ── Health ──────────────────────────────────────────────────────
+    if (request.method === "GET" && path === "/health") {
       return jsonResponse({ status: "ok", timestamp: Date.now() });
     }
 
-    if (request.method !== "POST") {
-      return jsonResponse({ error: "Method not allowed" }, 405);
+    // ── Stripe webhook ─────────────────────────────────────────────
+    if (request.method === "POST" && path === "/stripe-webhook") {
+      return handleStripeWebhook(request, env);
+    }
+
+    // ── Create Stripe Checkout session ─────────────────────────────
+    if (request.method === "POST" && path === "/create-checkout") {
+      try {
+        var body = await request.json();
+        var clerkId = body.clerk_id;
+        var email = body.email;
+        if (!clerkId || !env.STRIPE_SECRET_KEY) {
+          return jsonResponse({ error: "Missing clerk_id or Stripe key" }, 400);
+        }
+        var checkout = await createStripeCheckout(
+          env.STRIPE_SECRET_KEY,
+          env.STRIPE_PRICE_ID || "price_placeholder",
+          clerkId,
+          email,
+          env.SUPABASE_URL,
+          env.SUPABASE_SERVICE_KEY
+        );
+        return jsonResponse({ url: checkout.url });
+      } catch (e) {
+        return jsonResponse({ error: e.message }, 500);
+      }
+    }
+
+    // ── Get user tier + usage ──────────────────────────────────────
+    if (request.method === "GET" && path === "/user-tier") {
+      var clerkDomain = env.CLERK_DOMAIN || "";
+      var userId = await getUserIdFromRequest(request, clerkDomain);
+      if (!userId) return jsonResponse({ tier: "free", usage: 0, limit: 50 });
+
+      var tier = "free";
+      var usage = 0;
+      if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+        tier = await getUserTier(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
+        usage = await getDailyUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
+      }
+      var limit = tier === "pro" || tier === "enterprise" ? 9999 : 50;
+      return jsonResponse({ tier: tier, usage: usage, limit: limit });
+    }
+
+    // ── Main transformation (POST) ─────────────────────────────────
+    if (request.method !== "POST" || path !== "/") {
+      return jsonResponse({ error: "Not found" }, 404);
     }
 
     try {
@@ -318,46 +590,72 @@ export default {
         return jsonResponse({ error: "No text provided" }, 400);
       }
 
+      // ── Auth + tier check ────────────────────────────────────────
+      var clerkDomain = env.CLERK_DOMAIN || "";
+      var userId = await getUserIdFromRequest(request, clerkDomain);
+      var tier = "free";
+      var usage = 0;
+
+      if (userId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+        tier = await getUserTier(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
+        usage = await getDailyUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
+
+        var limit = tier === "pro" || tier === "enterprise" ? 9999 : 50;
+        if (usage >= limit) {
+          return jsonResponse({
+            error: "Daily limit reached (" + limit + " requests). " +
+              (tier === "free" ? "Upgrade to Pro for unlimited." : "Try again tomorrow."),
+            limitReached: true,
+            tier: tier,
+            usage: usage,
+            limit: limit,
+          }, 429);
+        }
+      }
+
+      // ── Provider routing based on tier ───────────────────────────
       var parsed = null;
       var provider = "none";
 
-      if (env.GEMINI_API_KEY) {
-        try {
-          var raw = await callGemini(text, options, env.GEMINI_API_KEY);
-          parsed = parseJsonFromModel(raw);
-          provider = "gemini";
-        } catch (e) {
-          console.error("Gemini failed:", e.message);
+      if (tier === "pro" || tier === "enterprise") {
+        // Pro: Gemini first (best quality + long docs)
+        if (env.GEMINI_API_KEY) {
+          try {
+            var raw = await callGemini(text, options, env.GEMINI_API_KEY);
+            parsed = parseJsonFromModel(raw);
+            provider = "gemini";
+          } catch (e) { console.error("Gemini failed:", e.message); }
         }
-      }
-
-      if (!parsed && env.DEEPSEEK_API_KEY) {
-        try {
-          var raw2 = await callDeepSeek(text, options, env.DEEPSEEK_API_KEY);
-          parsed = parseJsonFromModel(raw2);
-          provider = "deepseek";
-        } catch (e) {
-          console.error("DeepSeek failed:", e.message);
+        if (!parsed && env.OPENROUTER_API_KEY) {
+          try {
+            var raw3 = await callOpenRouter(text, options, env.OPENROUTER_API_KEY);
+            parsed = parseJsonFromModel(raw3);
+            provider = "openrouter";
+          } catch (e) { console.error("OpenRouter failed:", e.message); }
         }
-      }
-
-      if (!parsed && env.OPENROUTER_API_KEY) {
-        try {
-          var raw3 = await callOpenRouter(text, options, env.OPENROUTER_API_KEY);
-          parsed = parseJsonFromModel(raw3);
-          provider = "openrouter";
-        } catch (e) {
-          console.error("OpenRouter failed:", e.message);
+      } else {
+        // Free: OpenRouter first (cheapest), then Cloudflare fallback
+        if (env.OPENROUTER_API_KEY) {
+          try {
+            var raw3 = await callOpenRouter(text, options, env.OPENROUTER_API_KEY);
+            parsed = parseJsonFromModel(raw3);
+            provider = "openrouter";
+          } catch (e) { console.error("OpenRouter failed:", e.message); }
         }
-      }
-
-      if (!parsed && env.AI) {
-        try {
-          var raw4 = await callCloudflareAI(text, options, env.AI);
-          parsed = parseJsonFromModel(raw4);
-          provider = "cloudflare";
-        } catch (e) {
-          console.error("Cloudflare AI failed:", e.message);
+        if (!parsed && env.AI) {
+          try {
+            var raw4 = await callCloudflareAI(text, options, env.AI);
+            parsed = parseJsonFromModel(raw4);
+            provider = "cloudflare";
+          } catch (e) { console.error("Cloudflare AI failed:", e.message); }
+        }
+        // Fallback: try Gemini even for free if OpenRouter/CF failed
+        if (!parsed && env.GEMINI_API_KEY) {
+          try {
+            var raw = await callGemini(text, options, env.GEMINI_API_KEY);
+            parsed = parseJsonFromModel(raw);
+            provider = "gemini";
+          } catch (e) { console.error("Gemini fallback failed:", e.message); }
         }
       }
 
@@ -370,7 +668,15 @@ export default {
         return jsonResponse({ error: "Invalid response from AI model" }, 502);
       }
 
+      // ── Increment usage ──────────────────────────────────────────
+      if (userId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+        await incrementUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
+        usage += 1;
+      }
+
       result.provider = provider;
+      result.tier = tier;
+      result.usage = usage;
       return jsonResponse(result);
 
     } catch (error) {

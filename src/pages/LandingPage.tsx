@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useUser, useClerk } from '@clerk/clerk-react';
 import {
   Feather,
   Zap,
@@ -20,15 +21,13 @@ import {
   Clock,
   TrendingUp,
   AlertCircle,
-  Loader2,
-  Eye,
-  EyeOff,
   Crown,
   PenTool,
 } from 'lucide-react';
 
 interface LandingPageProps {
   onStartFree: () => void;
+  onGoToApp?: () => void;
 }
 
 const plans = [
@@ -196,27 +195,13 @@ const testimonials = [
   },
 ];
 
-export default function LandingPage({ onStartFree }: LandingPageProps) {
+export default function LandingPage({ onStartFree, onGoToApp }: LandingPageProps) {
+  const { isSignedIn } = useUser();
+  const { openSignIn, openSignUp } = useClerk();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [activeExample, setActiveExample] = useState(0);
-  const [authModal, setAuthModal] = useState<'login' | 'signup' | null>(null);
   const [policyModal, setPolicyModal] = useState<'terms' | 'privacy' | null>(null);
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState('');
-  const [authSuccess, setAuthSuccess] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleAuthSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthLoading(true);
-    setAuthError('');
-    setAuthSuccess('');
-    setTimeout(() => {
-      setAuthLoading(false);
-      setAuthSuccess('Demo mode: auth not configured yet.');
-    }, 1500);
-  };
 
   return (
     <div className="min-h-screen bg-[#0B1120] text-white font-sans selection:bg-indigo-500/30">
@@ -238,18 +223,29 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
           </nav>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setAuthModal('login')}
-              className="hidden md:block text-sm text-slate-400 hover:text-white transition-colors"
-            >
-              Log In
-            </button>
-            <button
-              onClick={onStartFree}
-              className="hidden md:block px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold rounded-full hover:from-indigo-600 hover:to-purple-600 transition-all"
-            >
-              Start Free
-            </button>
+            {isSignedIn ? (
+              <button
+                onClick={() => onGoToApp?.()}
+                className="hidden md:block px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold rounded-full hover:from-indigo-600 hover:to-purple-600 transition-all"
+              >
+                Open App
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => openSignIn()}
+                  className="hidden md:block text-sm text-slate-400 hover:text-white transition-colors"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() => onStartFree()}
+                  className="hidden md:block px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold rounded-full hover:from-indigo-600 hover:to-purple-600 transition-all"
+                >
+                  Start Free
+                </button>
+              </>
+            )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 text-slate-400 hover:text-white"
@@ -266,8 +262,14 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
             <a href="#pricing" className="block text-sm text-slate-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
             <a href="#faq" className="block text-sm text-slate-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
             <hr className="border-white/10" />
-            <button onClick={() => { setAuthModal('login'); setMobileMenuOpen(false); }} className="block text-sm text-slate-400 hover:text-white">Log In</button>
-            <button onClick={() => { onStartFree(); setMobileMenuOpen(false); }} className="block w-full text-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold rounded-full">Start Free</button>
+            {isSignedIn ? (
+              <button onClick={() => { onGoToApp?.(); setMobileMenuOpen(false); }} className="block w-full text-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold rounded-full">Open App</button>
+            ) : (
+              <>
+                <button onClick={() => { openSignIn(); setMobileMenuOpen(false); }} className="block text-sm text-slate-400 hover:text-white">Log In</button>
+                <button onClick={() => { onStartFree(); setMobileMenuOpen(false); }} className="block w-full text-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-sm font-semibold rounded-full">Start Free</button>
+              </>
+            )}
           </div>
         )}
       </header>
@@ -630,51 +632,6 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
           </div>
         </div>
       </footer>
-
-      {/* Auth Modal */}
-      {authModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" onClick={() => setAuthModal(null)}>
-          <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-md p-8 relative" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setAuthModal(null)} className="absolute top-4 right-4 text-slate-500 hover:text-white"><X className="w-5 h-5" /></button>
-            <h3 className="text-xl font-bold mb-1">{authModal === 'login' ? 'Welcome back' : 'Create your account'}</h3>
-            <p className="text-sm text-slate-400 mb-6">{authModal === 'login' ? 'Log in to access your writing workspace.' : 'Start refining your writing in seconds.'}</p>
-            {authError && <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400">{authError}</div>}
-            {authSuccess && <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-sm text-emerald-400">{authSuccess}</div>}
-            <form onSubmit={handleAuthSubmit} className="space-y-4">
-              {authModal === 'signup' && (
-                <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Full Name</label>
-                  <input type="text" required className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="Alex Morgan" />
-                </div>
-              )}
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Email Address</label>
-                <input type="email" required className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="you@example.com" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Password</label>
-                <div className="relative">
-                  <input type={showPassword ? 'text' : 'password'} required className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors pr-10" placeholder="At least 8 characters" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-              <button type="submit" disabled={authLoading} className="w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                {authLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {authModal === 'login' ? 'Log In' : 'Create Account'}
-              </button>
-            </form>
-            <p className="text-center text-xs text-slate-500 mt-4">
-              {authModal === 'login' ? (
-                <>No account? <button onClick={() => setAuthModal('signup')} className="text-indigo-400 hover:text-indigo-300">Sign up</button></>
-              ) : (
-                <>Already have an account? <button onClick={() => setAuthModal('login')} className="text-indigo-400 hover:text-indigo-300">Log in</button></>
-              )}
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Policy Modal */}
       {policyModal && (

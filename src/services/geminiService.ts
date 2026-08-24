@@ -184,7 +184,8 @@ export async function transformText(
     idiomDatabase?: any[];
     aiPhraseMap?: any[];
     lexicalDatabases?: Record<string, any[]>;
-  }
+  },
+  authToken?: string
 ): Promise<TransformationResult> {
   if (!text.trim()) {
     return {
@@ -212,9 +213,16 @@ export async function transformText(
   if (onProgress) onProgress(10, 0, 1, "Connecting to server...");
 
   try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
     const response = await fetch(WORKER_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({
         text,
         domain,
