@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import {
-  Sparkles,
+  Feather,
   Zap,
   Shield,
   Globe,
   Check,
-  ChevronRight,
   ArrowRight,
   X,
   BookOpen,
@@ -24,6 +23,8 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  Crown,
+  PenTool,
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -36,9 +37,9 @@ const plans = [
     price: '0',
     description: 'Try IdiomOptima with no commitment',
     features: [
-      '3,000 words per month',
-      'Academic, Business, Creative & General modes',
-      'American, British & Canadian English',
+      'Free to use with daily request limits',
+      'Academic, Business, Literary & General registers',
+      'American, British, Canadian & Australian English',
       'Word, PDF & Plain Text export',
       'Basic diagnostics',
       'Standard processing speed',
@@ -53,15 +54,13 @@ const plans = [
     description: 'For writers, researchers, and professionals',
     features: [
       'Everything in Free, plus:',
-      '100,000 words per month',
+      'Higher usage limits',
       'Priority processing',
-      'Advanced diagnostics & style reports',
-      'Australian English support',
-      'Email support',
+      'Longer document support (up to 4,000 words)',
     ],
-    cta: 'Go Pro',
+    cta: 'Coming Soon',
     highlighted: true,
-    icon: Sparkles,
+    icon: Crown,
   },
   {
     name: 'Enterprise',
@@ -69,14 +68,11 @@ const plans = [
     description: 'For teams and organizations',
     features: [
       'Everything in Pro, plus:',
-      'Unlimited words',
-      'Custom dialect profiles',
+      'Unlimited usage',
       'API access',
-      'Priority support',
-      'Team management',
       'Custom lexicon integration',
     ],
-    cta: 'Contact Sales',
+    cta: 'Coming Soon',
     highlighted: false,
     icon: Shield,
   },
@@ -89,19 +85,15 @@ const faqs = [
   },
   {
     q: 'How does dialect detection work?',
-    a: "IdiomOptima analyzes your spelling patterns, vocabulary choices, and grammatical structures to detect whether you're writing in American, British, Canadian, or Australian English. It then applies the correct conventions for your chosen dialect.",
+    a: "IdiomOptima detects the dialect in your text and lets you choose a target dialect (American, British, Canadian, or Australian English). It then applies the correct spelling and lexical conventions for your chosen dialect.",
   },
   {
     q: 'Can I undo changes?',
-    a: 'Yes. Every transformation shows a side-by-side comparison. You can see exactly what changed, why it changed, and choose to keep or revert any individual modification.',
+    a: 'Yes. Every transformation shows a side-by-side comparison of each sentence. You can see exactly what changed and why, then apply or discard the full result.',
   },
   {
     q: 'Is my text stored on your servers?',
     a: "No. Your text is processed in memory and never stored. We don't use your writing to train models or for any other purpose. Your words stay yours.",
-  },
-  {
-    q: 'What file formats are supported?',
-    a: 'You can paste plain text, upload .txt files, or export your refined text as Word (.docx), PDF, or plain text.',
   },
   {
     q: 'How is this different from Grammarly?',
@@ -127,7 +119,7 @@ const registers = [
     example: 'Optimizes for clarity, directness, and corporate tone',
   },
   {
-    name: 'Creative',
+    name: 'Literary',
     icon: Pen,
     color: 'from-rose-500 to-pink-500',
     bgLight: 'bg-rose-500/10',
@@ -154,14 +146,14 @@ const steps = [
   {
     number: '02',
     title: 'Choose Your Mode',
-    description: 'Select your register (Academic, Business, Creative, General) and target dialect.',
+    description: 'Select your register (Academic, Business, Literary, General) and target dialect.',
     icon: Globe,
   },
   {
     number: '03',
     title: 'Nativize',
     description: 'Click Nativize. Our engine analyzes every sentence, corrects errors, and preserves your voice.',
-    icon: Sparkles,
+    icon: PenTool,
   },
 ];
 
@@ -179,10 +171,10 @@ const beforeAfterExamples = [
     mode: 'Business',
   },
   {
-    original: 'The sun was setting behind the mountains and it was really beautiful and she felt very emotional about it.',
-    refined: 'The sun dipped behind the mountains, painting the sky in amber and rose. She felt the ache of it.',
+    original: 'The rain fell softly, it reminded her of childhood summers spent at her grandmother\'s house.',
+    refined: "The rain fell softly; it reminded her of childhood summers spent at her grandmother's house.",
     label: 'Voice Preservation',
-    mode: 'Creative',
+    mode: 'Literary',
   },
 ];
 
@@ -209,8 +201,6 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [activeExample, setActiveExample] = useState(0);
   const [authModal, setAuthModal] = useState<'login' | 'signup' | null>(null);
-  const [paymentModal, setPaymentModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [policyModal, setPolicyModal] = useState<'terms' | 'privacy' | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -228,11 +218,6 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
     }, 1500);
   };
 
-  const handlePayment = () => {
-    setPaymentModal(false);
-    setAuthModal('signup');
-  };
-
   return (
     <div className="min-h-screen bg-[#0B1120] text-white font-sans selection:bg-indigo-500/30">
       {/* Header */}
@@ -240,7 +225,7 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+              <Feather className="w-4 h-4 text-white" />
             </div>
             <span className="font-serif text-xl font-bold tracking-tight">IdiomOptima</span>
           </a>
@@ -321,7 +306,7 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
               See How It Works
             </button>
           </div>
-          <p className="text-xs text-slate-500 mt-4">No account required. 3,000 words free every month.</p>
+          <p className="text-xs text-slate-500 mt-4">No account required. Free to use.</p>
         </div>
       </section>
 
@@ -533,19 +518,16 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
                   <button
                     onClick={() => {
                       if (plan.name === 'Enterprise') {
-                        window.location.href = 'mailto:sales@idiomoptima.com';
+                        window.location.href = 'mailto:contact@idiomoptima.com';
                       } else if (plan.name === 'Free') {
                         onStartFree();
-                      } else {
-                        setSelectedPlan(plan.name);
-                        setPaymentModal(true);
                       }
                     }}
                     className={`w-full py-2.5 rounded-full text-sm font-semibold transition-all ${
                       plan.highlighted
                         ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-lg shadow-indigo-500/25'
                         : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
-                    }`}
+                    } ${plan.cta === 'Coming Soon' ? 'opacity-60 cursor-default' : ''}`}
                   >
                     {plan.cta}
                   </button>
@@ -612,12 +594,22 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
         </div>
       </section>
 
+      {/* TOS Acceptance */}
+      <div className="border-t border-white/5 py-4 px-6">
+        <p className="text-center text-[11px] text-slate-500 max-w-xl mx-auto leading-relaxed">
+          By using IdiomOptima, you agree to our{" "}
+          <button onClick={() => setPolicyModal('terms')} className="text-slate-400 hover:text-white underline underline-offset-2 transition-colors">Terms of Service</button>
+          {" "}and{" "}
+          <button onClick={() => setPolicyModal('privacy')} className="text-slate-400 hover:text-white underline underline-offset-2 transition-colors">Privacy Policy</button>.
+        </p>
+      </div>
+
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-md flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-white" />
+              <Feather className="w-3 h-3 text-white" />
             </div>
             <span className="font-serif text-sm font-bold">IdiomOptima</span>
             <span className="text-xs text-slate-500">&copy; {new Date().getFullYear()}</span>
@@ -680,37 +672,6 @@ export default function LandingPage({ onStartFree }: LandingPageProps) {
                 <>Already have an account? <button onClick={() => setAuthModal('login')} className="text-indigo-400 hover:text-indigo-300">Log in</button></>
               )}
             </p>
-          </div>
-        </div>
-      )}
-
-      {/* Payment Modal */}
-      {paymentModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4" onClick={() => setPaymentModal(false)}>
-          <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-md p-8 relative" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setPaymentModal(false)} className="absolute top-4 right-4 text-slate-500 hover:text-white"><X className="w-5 h-5" /></button>
-            <h3 className="text-xl font-bold mb-1">Upgrade to {selectedPlan}</h3>
-            <p className="text-sm text-slate-400 mb-6">Secure payment processed by Stripe.</p>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Card Number</label>
-                <input type="text" className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="4242 4242 4242 4242" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">Expiry</label>
-                  <input type="text" className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="MM / YY" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1.5">CVC</label>
-                  <input type="text" className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition-colors" placeholder="123" />
-                </div>
-              </div>
-              <button onClick={handlePayment} className="w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all flex items-center justify-center gap-2">
-                <Lock className="w-4 h-4" /> Pay ${selectedPlan === 'Pro' ? '9' : '49'}/month
-              </button>
-            </div>
-            <p className="text-center text-[11px] text-slate-500 mt-4">Demo mode. No real payment will be processed.</p>
           </div>
         </div>
       )}
