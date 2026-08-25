@@ -299,36 +299,48 @@ function parseJsonFromModel(text) {
 
 function postProcessText(text) {
   if (!text) return text;
-  // Replace em dashes with commas or periods depending on context
+  // Strip Gemini preamble/explanation text that leaks into finalVersion
+  text = text.replace(/^Here is the (full )?nativized text[:\s]*/i, "");
+  text = text.replace(/^Full text[:\s]*/i, "");
+  text = text.replace(/^Here is the (refined|edited|corrected|revised) (version|text)[:\s]*/i, "");
+  text = text.replace(/^Refined text[:\s]*/i, "");
+  text = text.replace(/^\d+%\s*$/gm, "");
+  // Replace em dashes with commas
   text = text.replace(/\s*[—–]\s*/g, ", ");
   // Clean up double commas
   text = text.replace(/,\s*,/g, ",");
   // Clean up comma before period
   text = text.replace(/,\./g, ".");
-  // Strip leading non-alpha garbage (like "Q" before a word)
+  // Strip leading non-alpha garbage
   text = text.replace(/^[^A-Za-z\u00C0-\u024F]*/, "");
   return text;
 }
 
 function protectQuotes(original, revised) {
   // Find all quoted text in original and restore them in revised if changed
-  var quoteRegex = /['']([^'']+)['']/g;
+  // Use double quotes and curly single quotes only — skip Keywords, headings, labels
+  var quoteRegex = /[""\u201C]([^""\u201D]+)[""\u201D]/g;
   var match;
   var result = revised;
   while ((match = quoteRegex.exec(original)) !== null) {
     var origQuote = match[0];
     var quoteContent = match[1];
+    // Skip very short quotes (likely not real quotes)
+    if (quoteContent.length < 4) continue;
+    // Skip if this looks like a heading or label (no spaces before colon)
+    if (/^['"]?[A-Z][a-z]+:/.test(quoteContent)) continue;
     // Check if this exact quote exists in revised
     if (result.indexOf(origQuote) === -1) {
       // Try to find a similar quote in revised and replace it
-      var revisedQuoteRegex = new RegExp("[''\"]([^'\"]{0," + (quoteContent.length + 20) + "})['\"]", "g");
+      var revisedQuoteRegex = /[""\u201C]([^""\u201D]+)[""\u201D]/g;
       var rMatch;
       while ((rMatch = revisedQuoteRegex.exec(result)) !== null) {
-        // If the revised quote is similar (60%+ word overlap) but different, restore original
-        var rWords = rMatch[1].split(/\s+/);
+        var rContent = rMatch[1];
+        // If word overlap is 50-99%, restore original
+        var rWords = rContent.split(/\s+/);
         var oWords = quoteContent.split(/\s+/);
         var overlap = rWords.filter(function(w) { return oWords.indexOf(w) !== -1; }).length;
-        var similarity = overlap / Math.max(rWords.length, oWords.length);
+        var similarity = overlap / Math.max(rWords.length, oWords.length, 1);
         if (similarity > 0.5 && similarity < 1.0) {
           result = result.substring(0, rMatch.index) + origQuote + result.substring(rMatch.index + rMatch[0].length);
           break;
@@ -584,6 +596,69 @@ function safeScore(val, fallback) {
   return n;
 }
 
+function rebuildFinalVersion(originalText, sentences) {
+  if (!originalText || !sentences || sentences.length === 0) return originalText;
+  
+  // Split original into paragraphs
+  var paragraphs = originalText.split(/\n\n+/);
+  
+  // For each paragraph, find sentences that belong to it
+  var result = [];
+  var sentenceIdx = 0;
+  
+  for (var p = 0; p < paragraphs.length; p++) {
+    var para = paragraphs[p].trim();
+    if (!para) continue;
+    
+    // Collect sentences for this paragraph
+    var paraSentences = [];
+    var paraLower = para.toLowerCase().replace(/\s+/g, " ").substring(0, 60);
+    
+    while (sentenceIdx < sentences.length) {
+      var s = sentences[sentenceIdx];
+      var origText = (s.original || "").trim();
+      if (!origText) { sentenceIdx++; continue; }
+      
+      // Check if this sentence starts within this paragraph
+      var origLower = origText.toLowerCase().substring(0, 40);
+      if (paraLower.indexOf(origLower) !== -1 || para.indexOf(origText.substring(0, Math.min(30, origText.length))) !== -1) {
+        paraSentences.push(s);
+        sentenceIdx++;
+        // If sentence ends with period and next sentence starts a new paragraph, stop
+        if (origText.match(/[.!?]$/) && sentenceIdx < sentences.length) {
+          var nextOrig = (sentences[sentenceIdx].original || "").trim().substring(0, 30);
+          if (nextOrig && para.indexOf(nextOrig) === -1) break;
+        }
+      } else {
+        break;
+      }
+    }
+    
+    // If we found matching sentences, use their revised versions
+    if (paraSentences.length > 0) {
+      result.push(paraSentences.map(function(s) { return s.revised || s.original || ""; }).join(" "));
+    } else {
+      // No sentence matches — keep original paragraph
+      result.push(para);
+    }
+  }
+  
+  // Append any remaining sentences
+  while (sentenceIdx < sentences.length) {
+    var remaining = sentences[sentenceIdx].revised || sentences[sentenceIdx].original || "";
+    if (remaining.trim()) {
+      if (result.length > 0) {
+        result.push(remaining);
+      } else {
+        result.push(remaining);
+      }
+    }
+    sentenceIdx++;
+  }
+  
+  return result.join("\n\n");
+}
+
 function ensureValidResult(parsed, originalText, options) {
   if (!parsed || typeof parsed !== "object") return null;
 
@@ -644,12 +719,18 @@ function ensureValidResult(parsed, originalText, options) {
   finalVersion = protectQuotes(originalText, finalVersion);
   sentences = sentences.map(function(s) {
     s.revised = postProcessText(s.revised);
-    // Also protect quotes at sentence level
     if (s.original && s.revised) {
       s.revised = protectQuotes(s.original, s.revised);
     }
     return s;
   });
+
+  // REBUILD finalVersion from original paragraph structure + revised sentences
+  // This is more reliable than trusting Gemini's flat finalVersion
+  var rebuiltVersion = rebuildFinalVersion(originalText, sentences);
+  if (rebuiltVersion && rebuiltVersion.length > finalVersion.length * 0.8) {
+    finalVersion = rebuiltVersion;
+  }
 
   var suggestions = postProcessSuggestions(
     Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
