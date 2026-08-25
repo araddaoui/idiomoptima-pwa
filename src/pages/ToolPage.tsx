@@ -258,7 +258,7 @@ export default function ToolPage() {
       doc.text(`IdiomOptima - ${domain.toUpperCase()}`, 20, 20);
       doc.setFont("Helvetica", "normal");
       doc.setFontSize(10);
-      doc.text(`Dialect: ${result.detectedDialect || forcedDialect} | Voice: 100% preserved`, 20, 27);
+      doc.text(`Dialect: ${result.detectedDialect || forcedDialect} | Score: ${result.originalScore}% → ${result.revisedScore}%`, 20, 27);
       doc.setFont("Times", "normal");
       doc.setFontSize(11);
       doc.text(doc.splitTextToSize(result.finalVersion, 170), 20, 40);
@@ -492,8 +492,8 @@ export default function ToolPage() {
                       <span className="text-xl font-serif font-bold text-emerald-300">{result.revisedScore}%</span>
                     </div>
                     <div className="space-y-0.5">
-                      <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Voice</span>
-                      <span className="text-xl font-serif font-bold text-blue-300">100%</span>
+                      <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Dialect</span>
+                      <span className="text-xl font-serif font-bold text-blue-300">{result.detectedDialect || "US"}</span>
                     </div>
                   </div>
 
@@ -508,20 +508,8 @@ export default function ToolPage() {
                           </span>
                           <span className="text-xs text-blue-300 font-semibold">{wordCount(result.finalVersion)} words</span>
                         </div>
-                        <div className="font-serif text-lg leading-relaxed text-slate-100 border-l-2 border-blue-500 pl-4 py-2">
-                          {result.sentences.map((s, i) => (
-                            <span
-                              key={i}
-                              onClick={() => { setSelectedSentenceIdx(i); setOutputViewMode("comparison"); }}
-                              className={`inline px-1 py-0.5 rounded transition-all cursor-pointer ${
-                                selectedSentenceIdx === i ? "bg-amber-400/30 text-amber-200 font-medium underline"
-                                : s.original.trim() !== s.revised.trim() ? "bg-blue-500/20 text-blue-100 hover:bg-blue-500/30"
-                                : "hover:bg-white/10"
-                              }`}
-                            >
-                              {s.revised}{" "}
-                            </span>
-                          ))}
+                        <div className="font-serif text-lg leading-relaxed text-slate-100 border-l-2 border-blue-500 pl-4 py-2 whitespace-pre-wrap">
+                          {result.finalVersion}
                         </div>
                       </div>
                       <div className="bg-black/20 border border-white/10 rounded-2xl p-4">
