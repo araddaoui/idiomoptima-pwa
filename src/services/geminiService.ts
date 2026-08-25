@@ -100,6 +100,12 @@ export interface TransformationResult {
   explanation: string;
   detectedDialect: string;
   appliedMode?: string;
+  databaseStats?: {
+    idiomReplacements: number;
+    aiPhraseReplacements: number;
+    lexicalReplacements: number;
+    totalReplacements: number;
+  };
 }
 
 const WORKER_URL = (import.meta as any).env?.VITE_WORKER_URL || "https://nativewrite-api.nativewrite-api.workers.dev";
@@ -255,6 +261,11 @@ export async function transformText(
 
     const data: TransformationResult = await response.json();
 
+    // Track database replacement counts
+    let idiomReplacements = 0;
+    let aiPhraseReplacements = 0;
+    let lexicalReplacements = 0;
+
     // Post-Worker replacements: idiom + AI phrases (applied to .revised only, .original untouched)
     if (databases?.idiomDatabase && databases.idiomDatabase.length > 0) {
       const unified = normalizeToUnified(databases.idiomDatabase);
@@ -262,10 +273,13 @@ export async function transformText(
         data.sentences = data.sentences.map(sentence => {
           if (sentence.isImmutableFootnote) return sentence;
           const result = applyReplacements(sentence.revised, unified);
+          idiomReplacements += result.count;
           return { ...sentence, revised: result.text };
         });
       }
-      data.finalVersion = applyReplacements(data.finalVersion, normalizeToUnified(databases.idiomDatabase)).text;
+      const finalResult = applyReplacements(data.finalVersion, normalizeToUnified(databases.idiomDatabase));
+      idiomReplacements += finalResult.count;
+      data.finalVersion = finalResult.text;
     }
 
     if (databases?.aiPhraseMap && databases.aiPhraseMap.length > 0) {
@@ -274,10 +288,13 @@ export async function transformText(
         data.sentences = data.sentences.map(sentence => {
           if (sentence.isImmutableFootnote) return sentence;
           const result = applyReplacements(sentence.revised, unified);
+          aiPhraseReplacements += result.count;
           return { ...sentence, revised: result.text };
         });
       }
-      data.finalVersion = applyReplacements(data.finalVersion, unified).text;
+      const finalResult = applyReplacements(data.finalVersion, unified);
+      aiPhraseReplacements += finalResult.count;
+      data.finalVersion = finalResult.text;
     }
 
     // Activate lexical databases for the detected domain
@@ -287,10 +304,23 @@ export async function transformText(
         data.sentences = data.sentences.map(sentence => {
           if (sentence.isImmutableFootnote) return sentence;
           const result = applyReplacements(sentence.revised, unified);
+          lexicalReplacements += result.count;
           return { ...sentence, revised: result.text };
         });
       }
-      data.finalVersion = applyReplacements(data.finalVersion, unified).text;
+      const finalResult = applyReplacements(data.finalVersion, unified);
+      lexicalReplacements += finalResult.count;
+      data.finalVersion = finalResult.text;
+    }
+
+    // Attach database stats
+    const totalReplacements = idiomReplacements + aiPhraseReplacements + lexicalReplacements;
+    data.databaseStats = { idiomReplacements, aiPhraseReplacements, lexicalReplacements, totalReplacements };
+
+    // Add database stats to suggestions
+    if (totalReplacements > 0) {
+      const dbLine = `Database: ${aiPhraseReplacements} AI-ese phrase(s), ${idiomReplacements} idiom(s), ${lexicalReplacements} lexical replacement(s) applied.`;
+      data.suggestions = [...(data.suggestions || []), dbLine];
     }
 
     if (onProgress) onProgress(100, 1, 1, "Complete!");

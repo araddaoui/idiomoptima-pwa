@@ -235,58 +235,38 @@ async function handleStripeWebhook(request, env) {
 
 // ─── Main fetch handler ──────────────────────────────────────────────
 const SYSTEM_PROMPT = [
-  "You are IdiomOptima, a voice-preserving linguistic stabilizer.",
+  "You are a grammar, punctuation, and spelling correction engine.",
+  "You receive text and return corrections ONLY for grammar, punctuation, and spelling errors.",
   "",
-  "CRITICAL RULE: Return the COMPLETE input text. Every word, every paragraph, every line.",
-  "Do NOT drop, summarize, skip, or omit ANY content — not even a single sentence.",
-  "If the input has a title, the output MUST include it.",
-  "If the input has 10 paragraphs, the output MUST have 10 paragraphs.",
+  "RULES:",
+  "1. Return the COMPLETE text. Every word, every paragraph, every line. Nothing dropped.",
+  "2. Return the title exactly as it appears in the input.",
+  "3. Do NOT modify text inside quotation marks — leave them exactly as-is.",
+  "4. Do NOT rewrite, rephrase, or restructure. Only fix clear errors.",
+  "5. Do NOT use em dashes in your output.",
+  "6. Preserve footnote markers [1], [2], citations, and bibliography entries exactly.",
   "",
-  "PARAGRAPH FORMAT:",
-  "Use '\\n\\n' (literal backslash-n-backslash-n) between paragraphs in finalVersion.",
-  "This is how paragraph breaks are encoded in JSON strings.",
-  "The first paragraph (e.g., Title + Abstract) must be separated from the body by \\n\\n.",
-  "",
-  "QUOTE PROTECTION (CRITICAL):",
-  "NEVER modify text inside quotation marks ('...' or \"...\").",
-  "Quoted text must appear EXACTLY as in the original — not a single word changed.",
-  "This includes block quotes, epigraphs, and inline quotes.",
-  "",
-  "EDITING RULES:",
-  "- Fix grammar, punctuation, spelling errors you find.",
-  "- Replace em dashes (—) with commas.",
-  "- Do NOT rewrite for elegance or restructure paragraphs.",
-  "- Do NOT change the author's tone, word choice, or stylistic decisions outside of error correction.",
-  "- Preserve footnote markers [1], [2], citations, and bibliography entries exactly.",
-  "",
-  "SENTENCES ARRAY:",
-  "Break the text into sentences. For each sentence:",
+  "SENTENCES: Break the text into logical sentences or lines.",
+  "For each sentence, return:",
   "- 'original': the sentence exactly as in the input",
-  "- 'revised': the sentence after corrections (or identical if no changes needed)",
-  "- 'explanation': for CHANGED sentences, describe specifically what changed and why.",
-  "  For UNCHANGED sentences, write 'No corrections needed; voice preserved as-is.'",
-  "- 'isImmutableFootnote': true for footnote markers, citation entries, and bibliography lines",
+  "- 'revised': the corrected sentence (or identical if no errors found)",
+  "- 'explanation': For CHANGED sentences ONLY — state the specific error and correction.",
+  "  For UNCHANGED sentences, use exactly: 'No corrections needed.'",
+  "- 'isImmutableFootnote': true for footnote markers, citation lines, and bibliography entries",
   "",
-  "SUGGESTIONS ARRAY (REQUIRED):",
-  "You MUST return at least 3 items. Categorize what you changed:",
-  "- 'Grammar: [specific fixes]' or 'Grammar: No issues found'",
-  "- 'Punctuation: [specific fixes]' or 'Punctuation: No issues found'",
-  "- 'Spelling: [specific fixes]' or 'Spelling: No issues found'",
-  "- 'Word Choice: [specific improvements]'",
-  "- 'Voice Preserved: [how the author's voice was maintained]'",
-  "- 'Structure: [paragraph/citation preservation note]'",
+  "suggestions: Return exactly 1 item: a summary of all corrections made, e.g.:",
+  "- 'Corrected 2 comma splices, 1 misspelling, and 1 subject-verb agreement error.'",
+  "or 'No grammar, punctuation, or spelling errors found.'",
   "",
-  "SCORING:",
-  "originalScore: Rate the ORIGINAL text (0-100). Well-written academic prose is typically 82-92.",
-  "revisedScore: Rate the REVISED text (0-100). Must be >= originalScore. Typically 88-97 after corrections.",
+  "originalScore (0-100): Rate grammatical correctness of the original.",
+  "- 90-100: Near-perfect, no errors. 80-89: Minor issues. 70-79: Some errors.",
+  "- 60-69: Frequent errors. 50-69: Many errors. Below 50: Severely broken.",
+  "revisedScore (0-100): Rate the text AFTER your corrections. Must be >= originalScore.",
   "",
-  "explanation (top-level): Write 2-3 sentences describing specifically what categories of changes you made.",
-  "Example: 'Fixed 2 comma splices, corrected 1 misspelling, replaced 1 em dash with a comma. Title, abstract, all paragraphs, footnotes, and citations preserved intact.'",
-  "",
-  "OUTPUT: Return ONLY valid JSON, no markdown fences.",
-  '{"originalScore": 0-100, "revisedScore": 0-100, "finalVersion": "COMPLETE text with \\\\n\\\\n paragraph breaks",',
+  "OUTPUT: Valid JSON only, no markdown fences.",
+  '{"originalScore": N, "revisedScore": N, "finalVersion": "COMPLETE corrected text",',
   '"sentences": [{"original": "...", "revised": "...", "explanation": "...", "isImmutableFootnote": false}],',
-  '"suggestions": ["Grammar: ...", "Punctuation: ...", ...], "explanation": "...", "detectedDialect": "US|UK|CA|AU"}',
+  '"suggestions": ["Corrected X errors: ..."], "explanation": "Fixed X grammar, Y punctuation, Z spelling issues.", "detectedDialect": "US|UK|CA|AU"}',
 ].join("\n");
 
 function parseJsonFromModel(text) {
@@ -352,82 +332,84 @@ function protectQuotes(original, revised) {
 }
 
 function postProcessSuggestions(suggestions, originalText, finalText, sentences) {
-  // If Gemini returned good suggestions, use them
-  if (suggestions && suggestions.length >= 3) return suggestions;
+  var suggs = [];
+
+  // If Gemini returned good suggestions (not generic fallback), use them
+  if (suggestions && suggestions.length >= 1 && suggestions[0].length > 20) {
+    return suggestions;
+  }
 
   // Build diagnostics from sentence-level diff
-  var suggs = [];
-  var changedCount = 0;
+  var changedSentences = [];
   var unchangedCount = 0;
-  var quoteProtected = 0;
-  var grammarFixes = [];
-  var punctuationFixes = [];
-  var wordChoiceFixes = [];
+  var footnoteCount = 0;
+  var correctionTypes = { grammar: 0, punctuation: 0, spelling: 0, structure: 0, other: 0 };
 
   if (sentences && sentences.length > 0) {
     for (var i = 0; i < sentences.length; i++) {
       var orig = (sentences[i].original || "").trim();
       var rev = (sentences[i].revised || "").trim();
-      if (orig === rev) {
+      var explanation = (sentences[i].explanation || "").trim();
+
+      if (sentences[i].isImmutableFootnote) {
+        footnoteCount++;
+        continue;
+      }
+
+      if (orig === rev || rev === "No corrections needed." || explanation === "No corrections needed.") {
         unchangedCount++;
         continue;
       }
-      changedCount++;
 
-      // Detect what kind of change
-      var origNoQuotes = orig.replace(/['"][^'"]*['"]/g, "");
-      var revNoQuotes = rev.replace(/['"][^'"]*['"]/g, "");
-      if (origNoQuotes === revNoQuotes) {
-        quoteProtected++;
-        continue;
-      }
+      changedSentences.push({
+        num: i + 1,
+        orig: orig.substring(0, 80) + (orig.length > 80 ? "..." : ""),
+        revised: rev.substring(0, 80) + (rev.length > 80 ? "..." : ""),
+        explanation: explanation,
+      });
 
-      // Word count difference suggests rewrite vs correction
-      var origWords = orig.split(/\s+/).length;
-      var revWords = rev.split(/\s+/).length;
-      if (Math.abs(origWords - revWords) > 3) {
-        wordChoiceFixes.push("Sentence " + (i + 1) + ": restructured for clarity");
+      // Categorize from explanation
+      var expl = explanation.toLowerCase();
+      if (expl.indexOf("grammar") !== -1 || expl.indexOf("agreement") !== -1 || expl.indexOf("tense") !== -1 || expl.indexOf("subject-verb") !== -1) {
+        correctionTypes.grammar++;
+      } else if (expl.indexOf("punctuation") !== -1 || expl.indexOf("comma") !== -1 || expl.indexOf("splice") !== -1 || expl.indexOf("semicolon") !== -1) {
+        correctionTypes.punctuation++;
+      } else if (expl.indexOf("spell") !== -1 || expl.indexOf("misspell") !== -1) {
+        correctionTypes.spelling++;
+      } else if (expl.indexOf("restructur") !== -1 || expl.indexOf("paragraph") !== -1 || expl.indexOf("sentence") !== -1) {
+        correctionTypes.structure++;
       } else {
-        // Minor change — likely grammar/punctuation
-        if (orig.replace(/[^\w\s]/g, "") !== rev.replace(/[^\w\s]/g, "")) {
-          grammarFixes.push("Sentence " + (i + 1));
-        } else {
-          punctuationFixes.push("Sentence " + (i + 1));
-        }
+        correctionTypes.other++;
       }
     }
   }
 
-  if (grammarFixes.length > 0) {
-    suggs.push("Grammar: Fixed " + grammarFixes.length + " grammatical issue(s) in " + grammarFixes.join(", "));
+  // Build summary line
+  var parts = [];
+  if (correctionTypes.grammar > 0) parts.push(correctionTypes.grammar + " grammar");
+  if (correctionTypes.punctuation > 0) parts.push(correctionTypes.punctuation + " punctuation");
+  if (correctionTypes.spelling > 0) parts.push(correctionTypes.spelling + " spelling");
+  if (correctionTypes.structure > 0) parts.push(correctionTypes.structure + " structural");
+  if (correctionTypes.other > 0) parts.push(correctionTypes.other + " other");
+
+  if (parts.length > 0) {
+    suggs.push("Corrected " + parts.join(", ") + " issue(s) across " + changedSentences.length + " sentence(s).");
   } else {
-    suggs.push("Grammar: No issues found in original text");
+    suggs.push("No grammar, punctuation, or spelling errors found. Text is clean.");
   }
 
-  if (punctuationFixes.length > 0) {
-    suggs.push("Punctuation: Corrected " + punctuationFixes.length + " punctuation issue(s) in " + punctuationFixes.join(", "));
-  } else {
-    suggs.push("Punctuation: No issues found in original text");
+  // Add per-sentence details (max 8)
+  var showCount = Math.min(changedSentences.length, 8);
+  for (var j = 0; j < showCount; j++) {
+    var cs = changedSentences[j];
+    suggs.push("Sentence " + cs.num + ": " + cs.explanation);
   }
 
-  if (wordChoiceFixes.length > 0) {
-    suggs.push("Word Choice: " + wordChoiceFixes.length + " sentence(s) refined for clarity: " + wordChoiceFixes.join("; "));
+  if (changedSentences.length > 8) {
+    suggs.push("... and " + (changedSentences.length - 8) + " more corrected sentence(s).");
   }
 
-  suggs.push("Voice Preserved: Author's tone, register, and stylistic choices maintained throughout");
-
-  if (quoteProtected > 0) {
-    suggs.push("Quote Protection: " + quoteProtected + " quoted passage(s) left unchanged as required");
-  }
-
-  // Paragraph preservation
-  var origParas = (originalText || "").split(/\n\n/).length;
-  var finalParas = (finalText || "").split(/\\n\\n/).length;
-  if (origParas === finalParas || finalParas >= origParas - 1) {
-    suggs.push("Structure: All " + origParas + " paragraph(s) preserved with correct breaks");
-  } else {
-    suggs.push("Structure: Paragraph breaks reconstructed (detected " + finalParas + " paragraphs in output)");
-  }
+  suggs.push("Preserved: " + unchangedCount + " unchanged sentence(s), " + footnoteCount + " footnote(s)/citation(s).");
 
   return suggs;
 }
@@ -598,64 +580,69 @@ function safeScore(val, fallback) {
 
 function rebuildFinalVersion(originalText, sentences) {
   if (!originalText || !sentences || sentences.length === 0) return originalText;
-  
-  // Split original into paragraphs
-  var paragraphs = originalText.split(/\n\n+/);
-  
-  // For each paragraph, find sentences that belong to it
+
+  // Strategy: walk through original text, matching each sentence to its revised version.
+  // Preserve original paragraph breaks, footnote markers, and structural elements.
+
+  var origParagraphs = originalText.split(/\n\n+/);
   var result = [];
-  var sentenceIdx = 0;
-  
-  for (var p = 0; p < paragraphs.length; p++) {
-    var para = paragraphs[p].trim();
+  var sentIdx = 0;
+
+  for (var p = 0; p < origParagraphs.length; p++) {
+    var para = origParagraphs[p].trim();
     if (!para) continue;
-    
-    // Collect sentences for this paragraph
-    var paraSentences = [];
-    var paraLower = para.toLowerCase().replace(/\s+/g, " ").substring(0, 60);
-    
-    while (sentenceIdx < sentences.length) {
-      var s = sentences[sentenceIdx];
-      var origText = (s.original || "").trim();
-      if (!origText) { sentenceIdx++; continue; }
-      
-      // Check if this sentence starts within this paragraph
-      var origLower = origText.toLowerCase().substring(0, 40);
-      if (paraLower.indexOf(origLower) !== -1 || para.indexOf(origText.substring(0, Math.min(30, origText.length))) !== -1) {
-        paraSentences.push(s);
-        sentenceIdx++;
-        // If sentence ends with period and next sentence starts a new paragraph, stop
-        if (origText.match(/[.!?]$/) && sentenceIdx < sentences.length) {
-          var nextOrig = (sentences[sentenceIdx].original || "").trim().substring(0, 30);
-          if (nextOrig && para.indexOf(nextOrig) === -1) break;
+
+    // Check if this paragraph is a standalone element (title, keyword line, footnote)
+    var isStandalone = /^Title:|^Keywords:|^\[\d+\]|^\([A-Z]/.test(para);
+    if (isStandalone && para.length < 200) {
+      // Try to find a matching sentence and use its revised version
+      var found = false;
+      for (var s = sentIdx; s < sentences.length; s++) {
+        var orig = (sentences[s].original || "").trim();
+        if (orig && para.indexOf(orig.substring(0, Math.min(50, orig.length))) !== -1) {
+          result.push(sentences[s].revised || orig);
+          sentIdx = s + 1;
+          found = true;
+          break;
         }
+      }
+      if (!found) result.push(para);
+      continue;
+    }
+
+    // For regular paragraphs, collect matching sentences
+    var paraSentences = [];
+    var paraText = para.replace(/\s+/g, " ").toLowerCase();
+
+    while (sentIdx < sentences.length) {
+      var sObj = sentences[sentIdx];
+      var origSent = (sObj.original || "").trim();
+      if (!origSent) { sentIdx++; continue; }
+
+      // Check if this sentence is part of the current paragraph
+      var origNorm = origSent.replace(/\s+/g, " ").toLowerCase().substring(0, 50);
+      if (paraText.indexOf(origNorm) !== -1 || para.indexOf(origSent.substring(0, Math.min(40, origSent.length))) !== -1) {
+        paraSentences.push(sObj);
+        sentIdx++;
       } else {
         break;
       }
     }
-    
-    // If we found matching sentences, use their revised versions
+
     if (paraSentences.length > 0) {
       result.push(paraSentences.map(function(s) { return s.revised || s.original || ""; }).join(" "));
     } else {
-      // No sentence matches — keep original paragraph
       result.push(para);
     }
   }
-  
-  // Append any remaining sentences
-  while (sentenceIdx < sentences.length) {
-    var remaining = sentences[sentenceIdx].revised || sentences[sentenceIdx].original || "";
-    if (remaining.trim()) {
-      if (result.length > 0) {
-        result.push(remaining);
-      } else {
-        result.push(remaining);
-      }
-    }
-    sentenceIdx++;
+
+  // Append any remaining sentences that weren't matched
+  while (sentIdx < sentences.length) {
+    var rem = sentences[sentIdx].revised || sentences[sentIdx].original || "";
+    if (rem.trim()) result.push(rem);
+    sentIdx++;
   }
-  
+
   return result.join("\n\n");
 }
 
@@ -706,12 +693,28 @@ function ensureValidResult(parsed, originalText, options) {
   // Enforce revisedScore >= originalScore, and floor for well-written text
   var origScore = safeScore(parsed.originalScore, 85);
   var revScore = safeScore(parsed.revisedScore, 92);
-  // If original text has few sentences changed, it's already well-written — raise floor
+
+  // Calculate REAL scores based on actual corrections
   var totalSentences = sentences.length;
   var changedSentences = sentences.filter(function(s) { return s.original.trim() !== s.revised.trim(); }).length;
   var changeRatio = totalSentences > 0 ? changedSentences / totalSentences : 0;
-  if (changeRatio < 0.15 && origScore < 82) origScore = 82 + Math.floor(Math.random() * 6);
-  if (revScore < origScore) revScore = Math.min(98, origScore + 3 + Math.floor(Math.random() * 5));
+
+  // Estimate original quality from change ratio
+  // If very few corrections needed, text is well-written
+  if (changeRatio === 0) {
+    origScore = Math.max(origScore, 92);
+  } else if (changeRatio < 0.05) {
+    origScore = Math.max(origScore, 87);
+  } else if (changeRatio < 0.15) {
+    origScore = Math.max(origScore, 80);
+  } else if (changeRatio < 0.30) {
+    origScore = Math.max(origScore, 70);
+  }
+
+  // Revised score: after corrections, text should be high quality
+  // More corrections = bigger improvement
+  var improvement = Math.min(20, Math.max(3, Math.round(changeRatio * 80)));
+  revScore = Math.max(revScore, Math.min(98, origScore + improvement));
   if (revScore < 88) revScore = 88 + Math.floor(Math.random() * 8);
 
   // Post-process: fix em dashes, strip garbage, protect quotes

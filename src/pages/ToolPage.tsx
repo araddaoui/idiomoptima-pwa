@@ -542,10 +542,6 @@ export default function ToolPage() {
                           })}
                         </div>
                       </div>
-                      <div className="bg-black/20 border border-white/10 rounded-2xl p-4">
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">Overview</span>
-                        <p className="text-xs text-slate-300 leading-relaxed">{result.explanation}</p>
-                      </div>
                     </div>
                   )}
 
@@ -612,7 +608,7 @@ export default function ToolPage() {
 
                   {/* Notes view */}
                   {outputViewMode === "notes" && (
-                    <div className="p-4 bg-black/30 border border-white/10 rounded-2xl flex-1">
+                    <div className="p-4 bg-black/30 border border-white/10 rounded-2xl flex-1 overflow-y-auto">
                       <h4 className="text-xs uppercase font-bold tracking-wider text-white mb-3 flex items-center gap-2">
                         <FileText className="w-4 h-4 text-amber-400" /> Diagnostics
                       </h4>
@@ -625,23 +621,24 @@ export default function ToolPage() {
                             </div>
                           ))
                         ) : (
-                          <>
-                            <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-slate-200 flex gap-2.5">
-                              <span className="text-blue-400 font-bold">1.</span>
-                              <p className="leading-relaxed">Score improved: {result.originalScore}% → {result.revisedScore}%</p>
-                            </div>
-                            <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-slate-200 flex gap-2.5">
-                              <span className="text-blue-400 font-bold">2.</span>
-                              <p className="leading-relaxed">Voice Preserved: Author's tone, register, and stylistic choices maintained</p>
-                            </div>
-                            <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-slate-200 flex gap-2.5">
-                              <span className="text-blue-400 font-bold">3.</span>
-                              <p className="leading-relaxed">Structure: Paragraph breaks, citations, and footnote markers retained</p>
-                            </div>
-                          </>
+                          <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-xs text-slate-200">
+                            <p className="leading-relaxed">No diagnostics available.</p>
+                          </div>
                         )}
+
+                        {result.databaseStats && result.databaseStats.totalReplacements > 0 && (
+                          <div className="p-3 bg-amber-950/30 border border-amber-500/20 rounded-xl text-xs">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 block mb-1.5">Database Activity</span>
+                            <div className="space-y-1 text-slate-300">
+                              {result.databaseStats.aiPhraseReplacements > 0 && <p>AI-ese phrases replaced: {result.databaseStats.aiPhraseReplacements}</p>}
+                              {result.databaseStats.idiomReplacements > 0 && <p>Idiom improvements: {result.databaseStats.idiomReplacements}</p>}
+                              {result.databaseStats.lexicalReplacements > 0 && <p>Lexical replacements ({domain}): {result.databaseStats.lexicalReplacements}</p>}
+                            </div>
+                          </div>
+                        )}
+
                         {result.explanation && (
-                          <div className="mt-4 p-3 bg-indigo-950/30 border border-indigo-500/20 rounded-xl">
+                          <div className="p-3 bg-indigo-950/30 border border-indigo-500/20 rounded-xl">
                             <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400 block mb-1">Summary</span>
                             <p className="text-xs text-slate-300 leading-relaxed">{result.explanation}</p>
                           </div>
