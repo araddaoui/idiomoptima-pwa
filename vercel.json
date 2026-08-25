@@ -1,7 +1,11 @@
 {
   "rewrites": [
     { "source": "/app", "destination": "/index.html" },
-    { "source": "/app/(.*)", "destination": "/index.html" }
+    { "source": "/app/(.*)", "destination": "/index.html" },
+    { "source": "/sign-in", "destination": "/index.html" },
+    { "source": "/sign-in/(.*)", "destination": "/index.html" },
+    { "source": "/sign-up", "destination": "/index.html" },
+    { "source": "/sign-up/(.*)", "destination": "/index.html" }
   ],
   "redirects": [
     {

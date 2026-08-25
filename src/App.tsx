@@ -11,8 +11,8 @@ const clerkAppearance = {
     colorPrimary: "#6366f1",
     colorBackground: "#111827",
     colorText: "#e2e8f0",
-    colorInputBackground: "rgba(255,255,255,0.05)",
-    colorInputText: "#e2e8f0",
+    colorInputBackground: "rgba(255,255,255,0.08)",
+    colorInputText: "#ffffff",
     borderRadius: "0.75rem",
   },
   elements: {
@@ -21,11 +21,12 @@ const clerkAppearance = {
     headerTitle: "text-white",
     headerSubtitle: "text-slate-400",
     formFieldLabel: "text-slate-400",
-    formFieldInput: "bg-white/5 border-white/10 text-white",
+    formFieldInput: "bg-white/10 border-white/20 text-white placeholder-slate-500",
     footerActionLink: "text-indigo-400 hover:text-indigo-300",
     socialButtonsBlockButton: "bg-white/5 border-white/10 text-white hover:bg-white/10",
     dividerLine: "bg-white/10",
     dividerText: "text-slate-500",
+    otpInputField: "bg-white/10 border-white/20 text-white text-center text-lg font-mono",
   },
 };
 
