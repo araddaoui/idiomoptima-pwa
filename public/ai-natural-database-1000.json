@@ -120,10 +120,6 @@
     "native": "especially"
   },
   {
-    "clunky": "specifically",
-    "native": "especially"
-  },
-  {
     "clunky": "more specifically",
     "native": "especially"
   },
@@ -379,30 +375,30 @@
     "clunky": "it is worth mentioning that",
     "native": ""
   },
-{
+  {
     "clunky": "it is interesting to note that",
     "native": "interestingly"
-},
-{
+  },
+  {
     "clunky": "it is useful to note that",
     "native": "note that"
-},
-{
+  },
+  {
     "clunky": "it is clear that",
     "native": "clearly"
-},
-{
+  },
+  {
     "clunky": "it is evident that",
     "native": "evidently"
-},
-{
+  },
+  {
     "clunky": "a testament to",
     "native": "a sign of"
-},
-{
+  },
+  {
     "clunky": "it is obvious that",
     "native": "clearly"
-},
+  },
   {
     "clunky": "it is fair to say that",
     "native": ""
@@ -1272,10 +1268,6 @@
     "native": "meaningful"
   },
   {
-    "clunky": "highly significant",
-    "native": "significant"
-  },
-  {
     "clunky": "particularly noteworthy",
     "native": "noteworthy"
   },
@@ -1576,10 +1568,6 @@
     "native": "access the potential"
   },
   {
-    "clunky": "leverage",
-    "native": "use"
-  },
-  {
     "clunky": "leverage the value of",
     "native": "use"
   },
@@ -1608,16 +1596,8 @@
     "native": "simplify the workflow"
   },
   {
-    "clunky": "facilitate",
-    "native": "help"
-  },
-  {
     "clunky": "facilitate the work",
     "native": "help the work"
-  },
-  {
-    "clunky": "utilize",
-    "native": "use"
   },
   {
     "clunky": "utilize the system",
@@ -2012,20 +1992,12 @@
     "native": "important"
   },
   {
-    "clunky": "transformative",
-    "native": "meaningful"
-  },
-  {
     "clunky": "unparalleled",
     "native": "exceptional"
   },
   {
     "clunky": "seamless",
     "native": "smooth"
-  },
-  {
-    "clunky": "robust",
-    "native": "strong"
   },
   {
     "clunky": "cutting-edge",
@@ -2454,10 +2426,6 @@
   {
     "clunky": "in the narrow sense",
     "native": "strictly"
-  },
-  {
-    "clunky": "in concrete terms",
-    "native": "specifically"
   },
   {
     "clunky": "on a regular basis",

@@ -120,10 +120,6 @@
     "natural": "especially"
   },
   {
-    "ai": "specifically",
-    "natural": "especially"
-  },
-  {
     "ai": "more specifically",
     "natural": "especially"
   },
@@ -1268,10 +1264,6 @@
     "natural": "meaningful"
   },
   {
-    "ai": "highly significant",
-    "natural": "significant"
-  },
-  {
     "ai": "particularly noteworthy",
     "natural": "noteworthy"
   },
@@ -1572,10 +1564,6 @@
     "natural": "access the potential"
   },
   {
-    "ai": "leverage",
-    "natural": "use"
-  },
-  {
     "ai": "leverage the value of",
     "natural": "use"
   },
@@ -1604,16 +1592,8 @@
     "natural": "simplify the workflow"
   },
   {
-    "ai": "facilitate",
-    "natural": "help"
-  },
-  {
     "ai": "facilitate the work",
     "natural": "help the work"
-  },
-  {
-    "ai": "utilize",
-    "natural": "use"
   },
   {
     "ai": "utilize the system",
@@ -2008,20 +1988,12 @@
     "natural": "important"
   },
   {
-    "ai": "transformative",
-    "natural": "meaningful"
-  },
-  {
     "ai": "unparalleled",
     "natural": "exceptional"
   },
   {
     "ai": "seamless",
     "natural": "smooth"
-  },
-  {
-    "ai": "robust",
-    "natural": "strong"
   },
   {
     "ai": "cutting-edge",
@@ -2450,10 +2422,6 @@
   {
     "ai": "in the narrow sense",
     "natural": "strictly"
-  },
-  {
-    "ai": "in concrete terms",
-    "natural": "specifically"
   },
   {
     "ai": "on a regular basis",

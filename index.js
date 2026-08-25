@@ -279,26 +279,21 @@ function parseJsonFromModel(text) {
 
 function postProcessText(text) {
   if (!text) return text;
-  // Strip Gemini preamble/explanation text that leaks into finalVersion
   text = text.replace(/^Here is the (full )?nativized text[:\s]*/i, "");
   text = text.replace(/^Full text[:\s]*/i, "");
   text = text.replace(/^Here is the (refined|edited|corrected|revised) (version|text)[:\s]*/i, "");
   text = text.replace(/^Refined text[:\s]*/i, "");
   text = text.replace(/^\d+%\s*$/gm, "");
-  // Replace em dashes with commas
   text = text.replace(/\s*[—–]\s*/g, ", ");
-  // Clean up double commas
   text = text.replace(/,\s*,/g, ",");
-  // Clean up comma before period
   text = text.replace(/,\./g, ".");
-  // Fix lowercase at sentence start (e.g., ". also" → ". Also")
   text = text.replace(/([.!?]\s+)([a-z])/g, function(m, pre, ch) { return pre + ch.toUpperCase(); });
-  // Fix lowercase at very start of text
+  text = text.replace(/(\[\d+\]\s+)([a-z])/g, function(m, pre, ch) { return pre + ch.toUpperCase(); });
   if (text.length > 0 && text[0] === text[0].toLowerCase() && text[0] !== text[0].toUpperCase()) {
     text = text[0].toUpperCase() + text.substring(1);
   }
-  // Strip leading non-alpha garbage
   text = text.replace(/^[^A-Za-z\u00C0-\u024F]*/, "");
+  text = text.replace(/\bIn additional to\b/g, "In addition to");
   return text;
 }
 
@@ -311,21 +306,27 @@ var academicPreserve = {
 };
 
 function protectAcademicRegister(original, revised) {
-  // If original is academic text, prevent downgrading formal words to informal ones
   if (!original || !revised) return revised;
   var formalToInformal = {
-    "utilizing": "using", "demonstrating": "showing", "facilitating": "helping",
-    "implementing": "setting up", "subsequently": "then", "furthermore": "also",
-    "moreover": "also", "consequently": "so", "herein": "here",
+    "utilizing": "using", "utilize": "use", "utilised": "used",
+    "demonstrating": "showing", "demonstrate": "show",
+    "facilitating": "helping", "facilitate": "help",
+    "implementing": "setting up", "implement": "set up",
+    "subsequently": "then", "furthermore": "also",
+    "moreover": "also", "consequently": "so",
+    "herein": "here", "notwithstanding": "despite",
+    "robust": "strong", "transformative": "meaningful",
+    "specifically": "especially", "particularly": "especially",
+    "substantial": "large", "significant": "large",
+    "numerous": "many", "enhance": "improve",
+    "leverage": "use",
   };
   var result = revised;
   for (var formal in formalToInformal) {
     var informal = formalToInformal[formal];
-    // If original had the formal word and revised replaced it with informal
     var formalRegex = new RegExp("\\b" + formal + "\\b", "gi");
     var informalRegex = new RegExp("\\b" + informal + "\\b", "gi");
     if (formalRegex.test(original) && informalRegex.test(result) && !formalRegex.test(result)) {
-      // Restore the formal word
       result = result.replace(informalRegex, formal);
     }
   }
@@ -370,12 +371,6 @@ function protectQuotes(original, revised) {
 function postProcessSuggestions(suggestions, originalText, finalText, sentences) {
   var suggs = [];
 
-  // If Gemini returned good suggestions (not generic fallback), use them
-  if (suggestions && suggestions.length >= 1 && suggestions[0].length > 20) {
-    return suggestions;
-  }
-
-  // Build diagnostics from sentence-level diff
   var changedSentences = [];
   var unchangedCount = 0;
   var footnoteCount = 0;
@@ -385,14 +380,13 @@ function postProcessSuggestions(suggestions, originalText, finalText, sentences)
     for (var i = 0; i < sentences.length; i++) {
       var orig = (sentences[i].original || "").trim();
       var rev = (sentences[i].revised || "").trim();
-      var explanation = (sentences[i].explanation || "").trim();
 
-      if (sentences[i].isImmutableFootnote) {
+      if (sentences[i].isImmutableFootnote || /^\[\d+\]/.test(orig) || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig)) {
         footnoteCount++;
         continue;
       }
 
-      if (orig === rev || rev === "No corrections needed." || explanation === "No corrections needed.") {
+      if (orig === rev) {
         unchangedCount++;
         continue;
       }
@@ -401,46 +395,37 @@ function postProcessSuggestions(suggestions, originalText, finalText, sentences)
         num: i + 1,
         orig: orig.substring(0, 80) + (orig.length > 80 ? "..." : ""),
         revised: rev.substring(0, 80) + (rev.length > 80 ? "..." : ""),
-        explanation: explanation,
+        explanation: (sentences[i].explanation || ""),
       });
 
-      // Categorize from explanation
-      var expl = explanation.toLowerCase();
-      if (expl.indexOf("grammar") !== -1 || expl.indexOf("agreement") !== -1 || expl.indexOf("tense") !== -1 || expl.indexOf("subject-verb") !== -1) {
-        correctionTypes.grammar++;
-      } else if (expl.indexOf("punctuation") !== -1 || expl.indexOf("comma") !== -1 || expl.indexOf("splice") !== -1 || expl.indexOf("semicolon") !== -1) {
-        correctionTypes.punctuation++;
-      } else if (expl.indexOf("spell") !== -1 || expl.indexOf("misspell") !== -1) {
-        correctionTypes.spelling++;
-      } else if (expl.indexOf("restructur") !== -1 || expl.indexOf("paragraph") !== -1 || expl.indexOf("sentence") !== -1) {
-        correctionTypes.structure++;
-      } else {
-        correctionTypes.other++;
-      }
+      var expl = (sentences[i].explanation || "").toLowerCase();
+      if (expl.indexOf("grammar") !== -1 || expl.indexOf("agreement") !== -1 || expl.indexOf("tense") !== -1) correctionTypes.grammar++;
+      else if (expl.indexOf("punctuation") !== -1 || expl.indexOf("comma") !== -1 || expl.indexOf("splice") !== -1) correctionTypes.punctuation++;
+      else if (expl.indexOf("spell") !== -1 || expl.indexOf("misspell") !== -1) correctionTypes.spelling++;
+      else if (expl.indexOf("replac") !== -1 || expl.indexOf("word") !== -1 || expl.indexOf("phras") !== -1) correctionTypes.other++;
+      else correctionTypes.other++;
     }
   }
 
-  // Build summary line
   var parts = [];
   if (correctionTypes.grammar > 0) parts.push(correctionTypes.grammar + " grammar");
   if (correctionTypes.punctuation > 0) parts.push(correctionTypes.punctuation + " punctuation");
   if (correctionTypes.spelling > 0) parts.push(correctionTypes.spelling + " spelling");
-  if (correctionTypes.structure > 0) parts.push(correctionTypes.structure + " structural");
   if (correctionTypes.other > 0) parts.push(correctionTypes.other + " other");
 
   if (parts.length > 0) {
     suggs.push("Corrected " + parts.join(", ") + " issue(s) across " + changedSentences.length + " sentence(s).");
+  } else if (changedSentences.length > 0) {
+    suggs.push(changedSentences.length + " sentence(s) refined for clarity and natural flow.");
   } else {
     suggs.push("No grammar, punctuation, or spelling errors found. Text is clean.");
   }
 
-  // Add per-sentence details (max 8)
   var showCount = Math.min(changedSentences.length, 8);
   for (var j = 0; j < showCount; j++) {
     var cs = changedSentences[j];
     suggs.push("Sentence " + cs.num + ": " + cs.explanation);
   }
-
   if (changedSentences.length > 8) {
     suggs.push("... and " + (changedSentences.length - 8) + " more corrected sentence(s).");
   }
@@ -625,11 +610,8 @@ function rebuildFinalVersion(originalText, sentences) {
   function isStandaloneElement(text) {
     var t = text.trim();
     if (t.length > 150) return false;
-    // Common academic headings
-    if (/^(Abstract|Introduction|Conclusion|Discussion|Results|Methods|References|Bibliography|Acknowledgments|Appendix|Key\s*[wW]ords?)\s*$/i.test(t)) return true;
-    // Title-like: starts with Title: or is short and ends with specific patterns
-    if (/^Title:|^Keywords?:|^\[\d+\]|^\([A-Z]/.test(t)) return true;
-    // Very short lines (< 20 words, no verb) are likely headings
+    if (/^(Chapter\s+\d+|Abstract|Introduction|Conclusion|Discussion|Results|Methods|References|Bibliography|Acknowledgments|Appendix|Key\s*[wW]ords?)\s*[:.]?\s*$/i.test(t)) return true;
+    if (/^Title:|^Keywords?:|^\([A-Z]/.test(t)) return true;
     if (t.split(/\s+/).length < 15 && !/\b(is|are|was|were|has|have|had|the|a|an)\b/i.test(t)) return true;
     return false;
   }
@@ -703,158 +685,150 @@ function rebuildFinalVersion(originalText, sentences) {
   return result.join("\n\n");
 }
 
+function extractFootnoteBlock(text) {
+  var lines = text.split("\n");
+  var footnoteStart = -1;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (/^\[\d+\]\s+[A-Z]/.test(line)) {
+      if (footnoteStart === -1) footnoteStart = i;
+    }
+  }
+  if (footnoteStart === -1) return { body: text, footnotes: "" };
+  return {
+    body: lines.slice(0, footnoteStart).join("\n").trim(),
+    footnotes: lines.slice(footnoteStart).join("\n").trim(),
+  };
+}
+
+function deriveSentencesFromTexts(originalText, finalVersion) {
+  function toSentences(text) {
+    return text.split(/(?<=[.!?])\s+/).filter(function(s) { return s.trim().length > 0; }).map(function(s) { return s.trim(); });
+  }
+  var origSents = toSentences(originalText);
+  var revSents = toSentences(finalVersion);
+  var result = [];
+  var maxLen = Math.max(origSents.length, revSents.length);
+  for (var i = 0; i < maxLen; i++) {
+    var orig = origSents[i] || "";
+    var rev = revSents[i] || orig;
+    result.push({
+      original: orig,
+      revised: rev,
+      explanation: "",
+      isImmutableFootnote: /^\[\d+\]/.test(orig) || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig),
+    });
+  }
+  return result;
+}
+
+function capitalizeEnhanced(str) {
+  if (!str) return str;
+  str = str.replace(/([.!?]\s+)([a-z])/g, function(m, pre, ch) { return pre + ch.toUpperCase(); });
+  str = str.replace(/(\[\d+\]\s+)([a-z])/g, function(m, pre, ch) { return pre + ch.toUpperCase(); });
+  if (str.length > 0 && str[0] !== str[0].toUpperCase() && str[0] === str[0].toLowerCase()) {
+    str = str[0].toUpperCase() + str.substring(1);
+  }
+  return str;
+}
+
 function ensureValidResult(parsed, originalText, options) {
   if (!parsed || typeof parsed !== "object") return null;
 
   var finalVersion = parsed.finalVersion || parsed.final || parsed.text || "";
-  
-  // If no finalVersion but we have sentences, reconstruct it
   if ((!finalVersion || finalVersion.length < 10) && Array.isArray(parsed.sentences) && parsed.sentences.length > 0) {
     finalVersion = parsed.sentences.map(function(s) { return s.revised || s.native || s.original || s.source || ""; }).filter(function(s) { return s.length > 0; }).join(" ");
   }
-  
-  // Last resort: use the original text
-  if (!finalVersion || finalVersion.length < 10) {
-    finalVersion = originalText;
-  }
-
+  if (!finalVersion || finalVersion.length < 10) finalVersion = originalText;
   if (!finalVersion || finalVersion.length < 10) return null;
 
-  var sentences = Array.isArray(parsed.sentences) ? parsed.sentences : [];
-  if (sentences.length === 0) {
-    var parts = finalVersion.split(/(?<=[.!?])\s+/);
-    sentences = parts.map(function(s) { return { original: s, revised: s, suggestions: [], explanation: "", isImmutableFootnote: false }; });
+  // Post-process finalVersion first
+  finalVersion = postProcessText(finalVersion);
+
+  // Preserve original footnote block — Gemini mangles it
+  var origFootnotes = extractFootnoteBlock(originalText);
+  var finalFootnotes = extractFootnoteBlock(finalVersion);
+  if (origFootnotes.footnotes) {
+    finalVersion = (finalFootnotes.body || finalVersion) + "\n\n" + origFootnotes.footnotes;
   }
 
-  // Capitalize first letter after sentence-ending punctuation
-  // Do NOT use on finalVersion — only on individual sentence.revised fields
-  function capitalizeAfterPunctuation(str) {
-    if (!str) return str;
-    return str.replace(/([.!?]\s+)([a-z])/gm, function(match, pre, letter) {
-      return pre + letter.toUpperCase();
-    });
-  }
+  // Re-derive sentences by diffing original vs finalVersion
+  // This is more reliable than trusting Gemini's sentences array
+  var sentences = deriveSentencesFromTexts(originalText, finalVersion);
 
+  // Post-process each sentence
   sentences = sentences.map(function(s) {
-    return {
-      original: String(s.original || s.source || ""),
-      revised: capitalizeAfterPunctuation(String(s.revised || s.native || s.final || s.original || s.source || "")),
-      suggestions: Array.isArray(s.suggestions) ? s.suggestions : [],
-      explanation: String(s.explanation || ""),
-      isImmutableFootnote: Boolean(s.isImmutableFootnote),
-    };
+    s.revised = postProcessText(s.revised);
+    if (s.original && s.revised && s.original !== s.revised) {
+      s.revised = protectQuotes(s.original, s.revised);
+      s.revised = protectAcademicRegister(s.original, s.revised);
+    }
+    s.revised = capitalizeEnhanced(s.revised);
+    return s;
   });
 
-  // Build REAL explanations by diffing original vs revised
+  // Build explanations
   function buildDiffExplanation(orig, revised) {
     if (orig === revised) return "No corrections needed.";
     var changes = [];
-    var origWords = orig.split(/\s+/);
-    var revWords = revised.split(/\s+/);
-
-    // Detect duplicate word removal (e.g., "memory memory" → "memory")
     var origLower = orig.toLowerCase();
     var revLower = revised.toLowerCase();
     var dupeMatch = origLower.match(/\b(\w+)\s+\1\b/);
     if (dupeMatch && revLower.indexOf(dupeMatch[1] + " " + dupeMatch[1]) === -1) {
       changes.push("removed duplicate '" + dupeMatch[1] + "'");
     }
-
-    // Detect comma changes
     var origCommas = (orig.match(/,/g) || []).length;
     var revCommas = (revised.match(/,/g) || []).length;
     if (revCommas < origCommas) changes.push("removed unnecessary comma(s)");
     if (revCommas > origCommas) changes.push("added missing comma(s)");
-
-    // Detect word replacements (significant changes, not just articles)
     var stopWords = /^(a|an|the|is|are|was|were|of|in|on|at|to|for|and|but|or|not|with|from|by|that|this|these|those|it|its|as|also|than|more|most|such|been|being|have|has|had|do|does|did|will|would|can|could|should|may|might|shall)$/i;
-    var origContent = origWords.filter(function(w) { return !stopWords.test(w.replace(/[^a-zA-Z]/g, "")); });
-    var revContent = revWords.filter(function(w) { return !stopWords.test(w.replace(/[^a-zA-Z]/g, "")); });
+    var origContent = orig.split(/\s+/).filter(function(w) { return !stopWords.test(w.replace(/[^a-zA-Z]/g, "")); });
+    var revContent = revised.split(/\s+/).filter(function(w) { return !stopWords.test(w.replace(/[^a-zA-Z]/g, "")); });
     var removed = origContent.filter(function(w) { return revContent.indexOf(w) === -1; });
     var added = revContent.filter(function(w) { return origContent.indexOf(w) === -1; });
     if (removed.length > 0 && added.length > 0) {
       changes.push("replaced '" + removed.slice(0, 3).join("', '") + "' with '" + added.slice(0, 3).join("', '") + "'");
-    } else if (removed.length > 0 && added.length === 0) {
+    } else if (removed.length > 0) {
       changes.push("removed " + removed.length + " word(s)");
-    } else if (added.length > 0 && removed.length === 0) {
+    } else if (added.length > 0) {
       changes.push("added " + added.length + " word(s) for clarity");
     }
-
-    // Detect structural changes
     if (orig.length - revised.length > 20) changes.push("tightened phrasing");
     if (revised.length - orig.length > 20) changes.push("expanded for clarity");
-
     if (changes.length === 0) changes.push("minor phrasing adjustment");
     return changes.join("; ");
   }
 
   sentences = sentences.map(function(s) {
-    // Only override if Gemini's explanation is generic/useless
-    var expl = (s.explanation || "").trim();
-    if (!expl || expl === "No corrections needed." || expl.indexOf("natural flow") !== -1 || expl.length < 10) {
-      s.explanation = buildDiffExplanation(s.original, s.revised);
-    }
+    s.explanation = buildDiffExplanation(s.original, s.revised);
     return s;
   });
 
   var dialect = parsed.detectedDialect || detectDialect(originalText);
 
-  // Enforce revisedScore >= originalScore, and floor for well-written text
+  // Scoring based on text quality
   var origScore = safeScore(parsed.originalScore, 85);
   var revScore = safeScore(parsed.revisedScore, 92);
-
-  // Calculate REAL scores based on actual corrections
-  var totalSentences = sentences.length;
   var changedSentences = sentences.filter(function(s) { return s.original.trim() !== s.revised.trim(); }).length;
 
-  // Estimate original quality from the TEXT ITSELF, not from how many changes Gemini made
   var qualityIndicators = 0;
   var textLower = originalText.toLowerCase();
-  // Academic markers
-  if (/\(\d{4}\)/.test(originalText)) qualityIndicators++; // has citations
-  if (/\bet al\./i.test(originalText)) qualityIndicators++; // academic citation style
-  if (originalText.split(/[.!?]+/).length > 5) qualityIndicators++; // complex sentences
-  if (originalText.split(/\n\n/).length >= 3) qualityIndicators++; // structured paragraphs
-  if (/\b(framework|methodology|analysis|empirical)\b/.test(textLower)) qualityIndicators++; // academic vocab
-  if (/^[A-Z]/.test(originalText.trim()) && originalText.trim().length > 500) qualityIndicators++; // substantial text
-  // Check for errors to penalize
-  var hasDuplicateWords = /\b(\w+)\s+\1\b/.test(originalText); // "memory memory"
-  var hasGrammarErrors = /\b(their|there|they're|your|you're|its|it's)\b/.test(textLower); // homophones (rough check)
+  if (/\(\d{4}\)/.test(originalText)) qualityIndicators++;
+  if (/\bet al\./i.test(originalText)) qualityIndicators++;
+  if (originalText.split(/[.!?]+/).length > 5) qualityIndicators++;
+  if (originalText.split(/\n\n/).length >= 3) qualityIndicators++;
+  if (/\b(framework|methodology|analysis|empirical)\b/.test(textLower)) qualityIndicators++;
+  if (/^[A-Z]/.test(originalText.trim()) && originalText.trim().length > 500) qualityIndicators++;
+  var hasDuplicateWords = /\b(\w+)\s+\1\b/.test(originalText);
 
-  // Set original score based on quality indicators
-  if (qualityIndicators >= 5 && !hasDuplicateWords) {
-    origScore = Math.max(origScore, 88);
-  } else if (qualityIndicators >= 4) {
-    origScore = Math.max(origScore, 82);
-  } else if (qualityIndicators >= 3) {
-    origScore = Math.max(origScore, 75);
-  }
-  // Penalize for actual errors found
+  if (qualityIndicators >= 5 && !hasDuplicateWords) origScore = Math.max(origScore, 88);
+  else if (qualityIndicators >= 4) origScore = Math.max(origScore, 82);
+  else if (qualityIndicators >= 3) origScore = Math.max(origScore, 75);
   if (hasDuplicateWords) origScore = Math.min(origScore, 85);
 
-  // Revised score: after corrections, text should be high quality
   var improvement = Math.min(15, Math.max(2, changedSentences * 2));
   revScore = Math.max(revScore, Math.min(98, origScore + improvement));
   if (revScore < 90) revScore = 90 + Math.floor(Math.random() * 6);
-
-  // Post-process: fix em dashes, strip garbage, protect quotes, protect academic register
-  finalVersion = postProcessText(finalVersion);
-  finalVersion = protectQuotes(originalText, finalVersion);
-  sentences = sentences.map(function(s) {
-    s.revised = postProcessText(s.revised);
-    if (s.original && s.revised) {
-      s.revised = protectQuotes(s.original, s.revised);
-      s.revised = protectAcademicRegister(s.original, s.revised);
-    }
-    return s;
-  });
-
-  // REBUILD finalVersion from original paragraph structure + revised sentences
-  // This is more reliable than trusting Gemini's flat finalVersion
-  var rebuiltVersion = rebuildFinalVersion(originalText, sentences);
-  if (rebuiltVersion && rebuiltVersion.length > finalVersion.length * 0.8) {
-    finalVersion = rebuiltVersion;
-  }
 
   var suggestions = postProcessSuggestions(
     Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
