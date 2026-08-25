@@ -356,7 +356,7 @@ async function callGemini(text, options, apiKey) {
     },
     body: JSON.stringify({
       contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\n" + prompt }] }],
-      generationConfig: { temperature: 0.25, topP: 0.9, responseMimeType: "application/json" },
+      generationConfig: { temperature: 0.25, topP: 0.9, responseMimeType: "application/json", maxOutputTokens: 65536, thinkingConfig: { thinkingBudget: 0 } },
     }),
   });
 
@@ -366,7 +366,28 @@ async function callGemini(text, options, apiKey) {
   }
 
   var data = await response.json();
-  var raw = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+  var candidates = data && data.candidates;
+  if (!candidates || candidates.length === 0) {
+    var blockReason = data && data.promptFeedback && data.promptFeedback.blockReason;
+    throw new Error("Gemini returned no candidates" + (blockReason ? " (blocked: " + blockReason + ")" : "") + ". Response: " + JSON.stringify(data).substring(0, 300));
+  }
+  var finishReason = candidates[0] && candidates[0].finishReason;
+  var parts = candidates[0] && candidates[0].content && candidates[0].content.parts;
+  var raw = "";
+  if (parts && parts.length > 0) {
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].text && !parts[i].thought) {
+        raw = parts[i].text;
+        break;
+      }
+    }
+    if (!raw && parts[0] && parts[0].text) {
+      raw = parts[0].text;
+    }
+  }
+  if (finishReason === "MAX_TOKENS") {
+    console.warn("Gemini response truncated at max tokens. Output may be incomplete JSON.");
+  }
   return String(raw || "");
 }
 
@@ -475,6 +496,17 @@ function ensureValidResult(parsed, originalText, options) {
   if (!parsed || typeof parsed !== "object") return null;
 
   var finalVersion = parsed.finalVersion || parsed.final || parsed.text || "";
+  
+  // If no finalVersion but we have sentences, reconstruct it
+  if ((!finalVersion || finalVersion.length < 10) && Array.isArray(parsed.sentences) && parsed.sentences.length > 0) {
+    finalVersion = parsed.sentences.map(function(s) { return s.revised || s.native || s.original || s.source || ""; }).filter(function(s) { return s.length > 0; }).join(" ");
+  }
+  
+  // Last resort: use the original text
+  if (!finalVersion || finalVersion.length < 10) {
+    finalVersion = originalText;
+  }
+
   if (!finalVersion || finalVersion.length < 10) return null;
 
   var sentences = Array.isArray(parsed.sentences) ? parsed.sentences : [];
@@ -623,6 +655,9 @@ export default {
           try {
             var raw = await callGemini(text, options, env.GEMINI_API_KEY);
             parsed = parseJsonFromModel(raw);
+            if (!parsed) {
+              console.error("Gemini returned unparseable JSON. Length: " + raw.length + ". First 200 chars: " + raw.substring(0, 200));
+            }
             provider = "gemini";
           } catch (e) { console.error("Gemini failed:", e.message); }
         }

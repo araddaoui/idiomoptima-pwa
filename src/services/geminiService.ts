@@ -212,6 +212,19 @@ export async function transformText(
 
   if (onProgress) onProgress(10, 0, 1, "Connecting to server...");
 
+  let progressTimer: ReturnType<typeof setInterval> | null = null;
+  let progressValue = 10;
+
+  if (onProgress) {
+    progressTimer = setInterval(() => {
+      if (progressValue < 90) {
+        progressValue += Math.random() * 4 + 1;
+        if (progressValue > 90) progressValue = 90;
+        onProgress(Math.round(progressValue), 0, 1, progressValue < 30 ? "Connecting to server..." : progressValue < 60 ? "Nativizing text..." : "Refining output...");
+      }
+    }, 800);
+  }
+
   try {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -232,7 +245,8 @@ export async function transformText(
       }),
     });
 
-    if (onProgress) onProgress(50, 0, 1, "Processing...");
+    if (progressTimer) clearInterval(progressTimer);
+    if (onProgress) onProgress(95, 0, 1, "Finalizing...");
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -288,6 +302,7 @@ export async function transformText(
 
     return data;
   } catch (error: any) {
+    if (progressTimer) clearInterval(progressTimer);
     console.error("Worker request failed:", error);
     throw new Error(`Transformation failed: ${error.message || "Server unavailable"}`);
   }
