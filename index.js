@@ -242,9 +242,12 @@ const SYSTEM_PROMPT = [
   "1. Return the COMPLETE text. Every word, every paragraph, every line. Nothing dropped.",
   "2. Return the title exactly as it appears in the input.",
   "3. Do NOT modify text inside quotation marks — leave them exactly as-is.",
-  "4. Do NOT rewrite, rephrase, or restructure. Only fix clear errors.",
+  "4. Do NOT rewrite, rephrase, restructure, or reorganize. Only fix clear errors.",
   "5. Do NOT use em dashes in your output.",
   "6. Preserve footnote markers [1], [2], citations, and bibliography entries exactly.",
+  "7. Preserve paragraph breaks exactly as in the input — do NOT merge or split paragraphs.",
+  "8. Do NOT change word choice unless it is a clear spelling error.",
+  "9. Do NOT change 'In additional to' to anything other than 'In addition to'.",
   "",
   "SENTENCES: Break the text into logical sentences or lines.",
   "For each sentence, return:",
@@ -287,8 +290,8 @@ function postProcessText(text) {
   text = text.replace(/\s*[—–]\s*/g, ", ");
   text = text.replace(/,\s*,/g, ",");
   text = text.replace(/,\./g, ".");
+  text = text.replace(/\s{2,}/g, " ");
   text = text.replace(/([.!?]\s+)([a-z])/g, function(m, pre, ch) { return pre + ch.toUpperCase(); });
-  text = text.replace(/(\[\d+\]\s+)([a-z])/g, function(m, pre, ch) { return pre + ch.toUpperCase(); });
   if (text.length > 0 && text[0] === text[0].toLowerCase() && text[0] !== text[0].toUpperCase()) {
     text = text[0].toUpperCase() + text.substring(1);
   }
@@ -446,9 +449,12 @@ function detectDialect(text) {
 async function callGemini(text, options, apiKey) {
   var dialect = options.forcedDialect || "the most likely";
   var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\n" +
-    "TASK: Edit the following text for grammar, punctuation, spelling, and natural phrasing. " +
-    "CRITICAL: Return the COMPLETE text from title to final footnote. Do NOT drop any content. " +
-    "Do NOT modify text inside quotation marks — leave quoted text exactly as-is. " +
+    "TASK: Fix ONLY grammar, punctuation, and spelling errors in the text below. " +
+    "CRITICAL RULES: " +
+    "Return the COMPLETE text from title to final footnote. Do NOT drop any content. " +
+    "Do NOT modify text inside quotation marks. " +
+    "Do NOT rewrite, rephrase, or change word choice. " +
+    "Do NOT merge or split paragraphs — preserve paragraph breaks exactly. " +
     "Replace em dashes with commas. " +
     "Use '\\n\\n' between paragraphs in finalVersion. " +
     "The suggestions array MUST contain at least 3 categorized items. " +
@@ -702,22 +708,45 @@ function extractFootnoteBlock(text) {
 }
 
 function deriveSentencesFromTexts(originalText, finalVersion) {
+  function toParagraphs(text) {
+    return text.split(/\n\n+/).filter(function(p) { return p.trim().length > 0; }).map(function(p) { return p.trim(); });
+  }
   function toSentences(text) {
     return text.split(/(?<=[.!?])\s+/).filter(function(s) { return s.trim().length > 0; }).map(function(s) { return s.trim(); });
   }
-  var origSents = toSentences(originalText);
-  var revSents = toSentences(finalVersion);
+  var origParas = toParagraphs(originalText);
+  var revParas = toParagraphs(finalVersion);
   var result = [];
-  var maxLen = Math.max(origSents.length, revSents.length);
-  for (var i = 0; i < maxLen; i++) {
-    var orig = origSents[i] || "";
-    var rev = revSents[i] || orig;
-    result.push({
-      original: orig,
-      revised: rev,
-      explanation: "",
-      isImmutableFootnote: /^\[\d+\]/.test(orig) || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig),
-    });
+  var revParaIdx = 0;
+  for (var p = 0; p < origParas.length; p++) {
+    var origPara = origParas[p];
+    var origSents = toSentences(origPara);
+    var revPara = "";
+    var origStart = origPara.substring(0, Math.min(60, origPara.length)).toLowerCase().replace(/\s+/g, " ");
+    for (var j = revParaIdx; j < revParas.length; j++) {
+      var revStart = revParas[j].substring(0, Math.min(60, revParas[j].length)).toLowerCase().replace(/\s+/g, " ");
+      if (origStart === revStart || origStart.substring(0, 30) === revStart.substring(0, 30)) {
+        revPara = revParas[j];
+        revParaIdx = j + 1;
+        break;
+      }
+    }
+    if (!revPara) revPara = origPara;
+    var revSents = toSentences(revPara);
+    var maxLen = Math.max(origSents.length, revSents.length);
+    for (var s = 0; s < maxLen; s++) {
+      var orig = origSents[s] || "";
+      var rev = revSents[s] || orig;
+      if (rev.length > 0 && rev[0] !== rev[0].toUpperCase() && rev[0] === rev[0].toLowerCase()) {
+        rev = rev[0].toUpperCase() + rev.substring(1);
+      }
+      result.push({
+        original: orig,
+        revised: rev,
+        explanation: "",
+        isImmutableFootnote: /^\[\d+\]/.test(orig) || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig),
+      });
+    }
   }
   return result;
 }
@@ -725,11 +754,14 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
 function capitalizeEnhanced(str) {
   if (!str) return str;
   str = str.replace(/([.!?]\s+)([a-z])/g, function(m, pre, ch) { return pre + ch.toUpperCase(); });
-  str = str.replace(/(\[\d+\]\s+)([a-z])/g, function(m, pre, ch) { return pre + ch.toUpperCase(); });
   if (str.length > 0 && str[0] !== str[0].toUpperCase() && str[0] === str[0].toLowerCase()) {
     str = str[0].toUpperCase() + str.substring(1);
   }
   return str;
+}
+
+function normalizeTitleBreaks(text) {
+  return text.replace(/\n((?:Chapter\s+\d+|Abstract|Introduction|Conclusion|Discussion|Results|Methods|References|Bibliography|Acknowledgments|Appendix|Key\s*[wW]ords?)\s*[:.]?\s*)\n/g, "\n\n$1\n");
 }
 
 function ensureValidResult(parsed, originalText, options) {
@@ -742,18 +774,16 @@ function ensureValidResult(parsed, originalText, options) {
   if (!finalVersion || finalVersion.length < 10) finalVersion = originalText;
   if (!finalVersion || finalVersion.length < 10) return null;
 
-  // Post-process finalVersion first
+  // Post-process finalVersion
   finalVersion = postProcessText(finalVersion);
 
-  // Preserve original footnote block — Gemini mangles it
-  var origFootnotes = extractFootnoteBlock(originalText);
-  var finalFootnotes = extractFootnoteBlock(finalVersion);
-  if (origFootnotes.footnotes) {
-    finalVersion = (finalFootnotes.body || finalVersion) + "\n\n" + origFootnotes.footnotes;
+  // Append original footnotes (pre-extracted in main handler, untouched by Gemini)
+  var savedFootnotes = parsed._originalFootnotes || "";
+  if (savedFootnotes) {
+    finalVersion = finalVersion + "\n\n" + savedFootnotes;
   }
 
-  // Re-derive sentences by diffing original vs finalVersion
-  // This is more reliable than trusting Gemini's sentences array
+  // Re-derive sentences from paragraph-matched diff
   var sentences = deriveSentencesFromTexts(originalText, finalVersion);
 
   // Post-process each sentence
@@ -815,6 +845,7 @@ function ensureValidResult(parsed, originalText, options) {
   var textLower = originalText.toLowerCase();
   if (/\(\d{4}\)/.test(originalText)) qualityIndicators++;
   if (/\bet al\./i.test(originalText)) qualityIndicators++;
+  if (/\[\d+\]/.test(originalText)) qualityIndicators++;
   if (originalText.split(/[.!?]+/).length > 5) qualityIndicators++;
   if (originalText.split(/\n\n/).length >= 3) qualityIndicators++;
   if (/\b(framework|methodology|analysis|empirical)\b/.test(textLower)) qualityIndicators++;
@@ -925,6 +956,11 @@ export default {
         return jsonResponse({ error: "No text provided" }, 400);
       }
 
+      // ── Pre-process: extract footnotes, normalize titles ──────────
+      var extracted = extractFootnoteBlock(text);
+      var bodyText = normalizeTitleBreaks(extracted.body);
+      var savedFootnotes = extracted.footnotes;
+
       // ── Auth + tier check ────────────────────────────────────────
       var clerkDomain = env.CLERK_DOMAIN || "";
       var userId = await getUserIdFromRequest(request, clerkDomain);
@@ -956,7 +992,7 @@ export default {
         // Pro: Gemini first (best quality + long docs)
         if (env.GEMINI_API_KEY) {
           try {
-            var raw = await callGemini(text, options, env.GEMINI_API_KEY);
+            var raw = await callGemini(bodyText, options, env.GEMINI_API_KEY);
             parsed = parseJsonFromModel(raw);
             if (!parsed) {
               console.error("Gemini returned unparseable JSON. Length: " + raw.length + ". First 200 chars: " + raw.substring(0, 200));
@@ -966,7 +1002,7 @@ export default {
         }
         if (!parsed && env.OPENROUTER_API_KEY) {
           try {
-            var raw3 = await callOpenRouter(text, options, env.OPENROUTER_API_KEY);
+            var raw3 = await callOpenRouter(bodyText, options, env.OPENROUTER_API_KEY);
             parsed = parseJsonFromModel(raw3);
             provider = "openrouter";
           } catch (e) { console.error("OpenRouter failed:", e.message); }
@@ -975,14 +1011,14 @@ export default {
         // Free: OpenRouter first (cheapest), then Cloudflare fallback
         if (env.OPENROUTER_API_KEY) {
           try {
-            var raw3 = await callOpenRouter(text, options, env.OPENROUTER_API_KEY);
+            var raw3 = await callOpenRouter(bodyText, options, env.OPENROUTER_API_KEY);
             parsed = parseJsonFromModel(raw3);
             provider = "openrouter";
           } catch (e) { console.error("OpenRouter failed:", e.message); }
         }
         if (!parsed && env.AI) {
           try {
-            var raw4 = await callCloudflareAI(text, options, env.AI);
+            var raw4 = await callCloudflareAI(bodyText, options, env.AI);
             parsed = parseJsonFromModel(raw4);
             provider = "cloudflare";
           } catch (e) { console.error("Cloudflare AI failed:", e.message); }
@@ -990,7 +1026,7 @@ export default {
         // Fallback: try Gemini even for free if OpenRouter/CF failed
         if (!parsed && env.GEMINI_API_KEY) {
           try {
-            var raw = await callGemini(text, options, env.GEMINI_API_KEY);
+            var raw = await callGemini(bodyText, options, env.GEMINI_API_KEY);
             parsed = parseJsonFromModel(raw);
             provider = "gemini";
           } catch (e) { console.error("Gemini fallback failed:", e.message); }
@@ -1000,6 +1036,9 @@ export default {
       if (!parsed) {
         return jsonResponse({ error: "All providers failed. Please retry." }, 502);
       }
+
+      // Pass saved footnotes through for preservation
+      if (savedFootnotes) parsed._originalFootnotes = savedFootnotes;
 
       var result = ensureValidResult(parsed, text, options);
       if (!result) {
