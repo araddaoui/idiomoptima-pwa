@@ -18,9 +18,7 @@ import {
   ShieldCheck,
   SplitSquareVertical,
   Layers,
-  Copy,
   CheckCircle2,
-  Feather,
 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { jsPDF } from "jspdf";
@@ -97,8 +95,12 @@ export default function ToolPage() {
 
   const [selectedSentenceIdx, setSelectedSentenceIdx] = useState<number | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
-  const [copiedSentenceIdx, setCopiedSentenceIdx] = useState<number | null>(null);
-  const [outputViewMode, setOutputViewMode] = useState<"comparison" | "fulltext" | "notes">("fulltext");
+  const [outputViewMode, setOutputViewMode] = useState<"fulltext" | "diff" | "notes">("fulltext");
+  // Hover + editing state for the unified output panel.
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [drafts, setDrafts] = useState<Record<number, string>>({});
+  const [overrides, setOverrides] = useState<Record<number, string>>({});
 
   const [idiomDatabase, setIdiomDatabase] = useState<any[]>([]);
   const [aiPhraseMap, setAiPhraseMap] = useState<any[]>([]);
@@ -145,7 +147,18 @@ export default function ToolPage() {
   const handleTransform = async () => {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = inputHtml;
-    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    // Preserve paragraph breaks from HTML — textContent alone loses them
+    const blocks = tempDiv.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, div');
+    let plainText: string;
+    if (blocks.length > 0) {
+      plainText = Array.from(blocks).map(el => (el.textContent || '').trim()).filter(Boolean).join('\n\n');
+    } else {
+      plainText = tempDiv.textContent || tempDiv.innerText || "";
+    }
+    // Fallback for stray line breaks
+    if (!plainText.includes('\n') && tempDiv.innerText && tempDiv.innerText.includes('\n')) {
+      plainText = tempDiv.innerText;
+    }
     if (!plainText.trim()) {
       setError("Please write or paste some text into the editor first.");
       return;
@@ -204,15 +217,25 @@ export default function ToolPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleCopySentence = (text: string, idx: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedSentenceIdx(idx);
-    setTimeout(() => setCopiedSentenceIdx(null), 2000);
-  };
-
   const handleApplyToEditor = () => {
     if (!result) return;
-    setInputHtml(`<p>${result.sentences.map((s) => s.revised).join(" ")}</p>`);
+    setInputHtml(`<p>${result.sentences.map((_, i) => effectiveRevised(i)).join(" ")}</p>`);
+  };
+
+  // Effective text for a sentence: an applied override (revert or user edit)
+  // wins over the model's revised text.
+  const effectiveRevised = (i: number) => {
+    const base = overrides[i] ?? result?.sentences[i]?.revised ?? "";
+    return base;
+  };
+  const applyOverride = (i: number, text: string) => {
+    setOverrides((prev) => {
+      const isSame = result && text.trim() === result.sentences[i]?.revised.trim();
+      const next = { ...prev };
+      if (isSame) delete next[i];
+      else next[i] = text;
+      return next;
+    });
   };
 
   const exportAsWord = async () => {
@@ -268,7 +291,18 @@ export default function ToolPage() {
     }
   };
 
-  const wordCount = (t: string) => (t ? t.trim().split(/\s+/).filter(Boolean).length : 0);
+  // Count real content words: strip markdown bold markers and exclude
+  // footnote/reference lines (e.g. "[1] Author, Year.") so headings and
+  // citations don't inflate the displayed total.
+  const wordCount = (t: string) => {
+    if (!t) return 0;
+    const cleaned = t
+      .replace(/\*\*/g, " ")
+      .split(/\r?\n/)
+      .filter((line) => line.trim() && !/^\s*\[\d+\]/.test(line))
+      .join(" ");
+    return cleaned.trim().split(/\s+/).filter(Boolean).length;
+  };
 
   const plainTextInput = (() => {
     const d = document.createElement("div");
@@ -421,13 +455,13 @@ export default function ToolPage() {
                 <div className="flex items-center gap-1">
                   {([
                     { key: "fulltext" as const, icon: Layers, label: "Full Prose" },
-                    { key: "comparison" as const, icon: SplitSquareVertical, label: "Comparison" },
+                    { key: "diff" as const, icon: SplitSquareVertical, label: "Track Changes" },
                     { key: "notes" as const, icon: FileText, label: "Notes" },
                   ]).map(({ key, icon: Icon, label }) => (
                     <button
                       key={key}
                       onClick={() => setOutputViewMode(key)}
-                      disabled={key !== "comparison" && !result}
+                      disabled={!result}
                       className={`h-12 px-3 text-xs font-bold uppercase tracking-wider relative transition-colors cursor-pointer flex items-center gap-1.5 ${
                         outputViewMode === key ? "text-blue-400" : "text-slate-400 hover:text-white"
                       } disabled:opacity-30`}
@@ -504,37 +538,113 @@ export default function ToolPage() {
                         <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/10">
                           <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1.5">
                             <Eye className="w-3.5 h-3.5 text-blue-400" />
-                            Hover to see original. Click to compare.
+                            Hover a highlighted sentence to see the original; click ✎ to edit, or revert.
                           </span>
                           <span className="text-xs text-blue-300 font-semibold">{wordCount(result.finalVersion)} words</span>
                         </div>
                         <div className="font-serif text-lg leading-relaxed text-slate-100 border-l-2 border-blue-500 pl-4 py-2">
                           {result.sentences.map((s, i) => {
                             const isFootnote = s.isImmutableFootnote;
-                            const isChanged = s.original.trim() !== s.revised.trim();
+                            const isBoldHeading = /^\*\*/.test(effectiveRevised(i)) || /^\*\*/.test(s.original);
+                            const rawDisplay = effectiveRevised(i);
+                            const displayRevised = rawDisplay.replace(/^\*\*/, "").replace(/\*\*$/, "");
+                            const isHeadingPara = (txt: string) => {
+                              const t = txt.trim().replace(/^\*\*/, "").replace(/\*\*$/, "").trim();
+                              // Allow headings up to 80, but also longer academic titles like "Mapping theories..."
+                              return t.length > 0 && t.length < 140 && /^[A-Z]/.test(t) && !/[.!?]$/.test(t) && !/^\[\d+\]/.test(t) && !t.includes("  ");
+                            };
+                            const rawChanged = s.original.trim() !== effectiveRevised(i).trim();
+                            const isChanged = rawChanged && !isBoldHeading && s.explanation !== "No corrections needed.";
                             const isLast = i === result.sentences.length - 1;
                             const nextSentence = result.sentences[i + 1];
+                            // Paragraph breaks: rely on the worker's explicit
+                            // paragraphIndex grouping when present (deterministic,
+                            // faithful to the source structure); fall back to the
+                            // old heading/footnote heuristic otherwise.
+                            const nextHasIdx = (n: any) => typeof (n && n.paragraphIndex) === "number";
+                            const breakByIndex = !isLast && typeof s.paragraphIndex === "number" && nextSentence && nextHasIdx(nextSentence) && nextSentence.paragraphIndex !== s.paragraphIndex;
                             const endsParagraph = !isLast && (
-                              s.revised.includes("\n\n") ||
-                              s.original.includes("\n\n") ||
-                              (nextSentence && /^\[?\d/.test(nextSentence.original)) ||
-                              (nextSentence && /^[A-Z][a-z]+:/.test(nextSentence.original)) ||
-                              (nextSentence && nextSentence.isImmutableFootnote)
+                              (typeof s.paragraphIndex === "number" && breakByIndex) ||
+                              (!nextHasIdx(s) && (
+                                effectiveRevised(i).includes("\n\n") ||
+                                s.original.includes("\n\n") ||
+                                isBoldHeading ||
+                                (nextSentence && isHeadingPara(nextSentence.original)) ||
+                                (nextSentence && isHeadingPara(nextSentence.revised)) ||
+                                (nextSentence && /^\[?\d/.test(nextSentence.original.trim())) ||
+                                (nextSentence && nextSentence.isImmutableFootnote)
+                              ))
                             );
                             return (
-                              <span key={i}>
+                              <span key={i} className="relative">
                                 <span
-                                  onClick={() => { setSelectedSentenceIdx(i); setOutputViewMode("comparison"); }}
-                                  title={s.original}
-                                  className={`inline px-1 py-0.5 rounded transition-all cursor-pointer ${
-                                    selectedSentenceIdx === i ? "bg-amber-400/30 text-amber-200 font-medium underline"
+                                  onMouseEnter={() => setHoverIdx(i)}
+                                  onMouseLeave={() => setHoverIdx((h) => (h === i ? null : h))}
+                                  onClick={() => {
+                                    if (!isChanged) return;
+                                    setEditingIdx((e) => (e === i ? null : i));
+                                    setDrafts((d) => ({ ...d, [i]: effectiveRevised(i) }));
+                                  }}
+                                  className={`cursor-pointer ${isBoldHeading ? "block font-bold text-white text-xl my-2 " : "inline "}px-0.5 py-0.5 rounded transition-all ${
+                                    isBoldHeading ? ""
+                                    : editingIdx === i ? "bg-amber-400/30 text-amber-200 font-medium"
                                     : isChanged ? "bg-blue-500/20 text-blue-100 hover:bg-blue-500/30"
-                                    : isFootnote ? "text-slate-400 text-base italic hover:bg-white/10"
+                                    : isFootnote ? "text-slate-400 text-base italic"
                                     : "hover:bg-white/10"
                                   }`}
                                 >
-                                  {s.revised}
+                                  {displayRevised}
                                 </span>
+                                {/* Hover overlay: show original + revert + inline edit */}
+                                {hoverIdx === i && isChanged && !isBoldHeading && (
+                                  <span
+                                    onMouseEnter={() => setHoverIdx(i)}
+                                    onMouseLeave={() => setHoverIdx(null)}
+                                    className="absolute z-30 -top-2 left-0 translate-y-[-100%] block w-[340px] max-w-[90vw] bg-[#0F172A] border border-white/15 rounded-xl shadow-2xl p-3 text-left"
+                                  >
+                                    <span className="block text-[10px] uppercase tracking-wider text-rose-400 font-bold mb-1">Original</span>
+                                    <span className="block text-xs italic font-sans text-slate-300 leading-relaxed mb-2">{s.original}</span>
+                                    {editingIdx === i ? (
+                                      <>
+                                        <textarea
+                                          autoFocus
+                                          value={drafts[i] ?? effectiveRevised(i)}
+                                          onChange={(e) => setDrafts((d) => ({ ...d, [i]: e.target.value }))}
+                                          className="w-full h-24 bg-black/40 border border-amber-400/40 rounded-lg p-2 text-xs font-sans text-amber-100 resize-y outline-none focus:ring-1 focus:ring-amber-500"
+                                        />
+                                        <span className="flex items-center gap-1.5 mt-2">
+                                          <button
+                                            onClick={(e) => { e.stopPropagation(); applyOverride(i, drafts[i] ?? effectiveRevised(i)); setEditingIdx(null); setHoverIdx(null); }}
+                                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[11px] font-bold cursor-pointer"
+                                          >
+                                            Save
+                                          </button>
+                                          <button
+                                            onClick={(e) => { e.stopPropagation(); setEditingIdx(null); }}
+                                            className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-slate-300 rounded-lg text-[11px] font-semibold cursor-pointer"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <span className="flex items-center gap-1.5">
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); setEditingIdx(i); setDrafts((d) => ({ ...d, [i]: effectiveRevised(i) })); }}
+                                          className="px-2.5 py-1 bg-white/10 hover:bg-white/20 text-blue-300 rounded-lg text-[11px] font-semibold cursor-pointer"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); applyOverride(i, s.original); setHoverIdx(null); }}
+                                          className="px-2.5 py-1 bg-rose-600/80 hover:bg-rose-500 text-white rounded-lg text-[11px] font-bold cursor-pointer"
+                                        >
+                                          Use original
+                                        </button>
+                                      </span>
+                                    )}
+                                  </span>
+                                )}
                                 {!isLast && !endsParagraph && " "}
                                 {endsParagraph && <><br /><br /></>}
                               </span>
@@ -546,60 +656,35 @@ export default function ToolPage() {
                   )}
 
                   {/* Comparison view */}
-                  {outputViewMode === "comparison" && (
-                    <div className="space-y-3 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                          Sentence Breakdown ({result.sentences.length})
+                  {outputViewMode === "diff" && (
+                    <div className="space-y-4 flex-1">
+                      <div className="flex items-center justify-between pb-2">
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 flex items-center gap-3">
+                          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-rose-500/60 inline-block" /> Removed</span>
+                          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/60 inline-block" /> Added / changed</span>
                         </span>
                         <button onClick={handleApplyToEditor} className="text-xs text-blue-400 hover:text-blue-300 font-semibold hover:underline cursor-pointer">
                           Apply All to Editor
                         </button>
                       </div>
-                      <div className="space-y-3">
+                      <div className="p-6 bg-black/30 border border-white/10 rounded-2xl font-serif text-lg leading-relaxed text-slate-100">
                         {result.sentences.map((sentence, idx) => {
-                          const hasChanged = sentence.original.trim() !== sentence.revised.trim();
+                          const o = (sentence.original || "").replace(/^\*\*/, "").replace(/\*\*$/, "");
+                          const r = (effectiveRevised(idx) || "").replace(/^\*\*/, "").replace(/\*\*$/, "");
+                          const isFootnote = sentence.isImmutableFootnote;
+                          if (isFootnote && o === r) {
+                            return <span key={idx} className="text-slate-400 italic text-base">{o}{idx < result.sentences.length - 1 ? " " : ""}</span>;
+                          }
+                          if (o === r) {
+                            return <span key={idx}>{r}{idx < result.sentences.length - 1 ? " " : ""}</span>;
+                          }
+                          // Changed sentence: show removed (original-only) struck-through
+                          // then added (revised) highlighted. Simple whole-sentence fallback.
                           return (
-                            <div
-                              key={idx}
-                              onClick={() => setSelectedSentenceIdx(idx)}
-                              className={`border rounded-2xl p-4 transition-all cursor-pointer ${
-                                selectedSentenceIdx === idx
-                                  ? "bg-blue-950/70 border-blue-400/60 shadow-lg shadow-blue-950/60"
-                                  : "bg-black/20 border-white/10 hover:border-white/20"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                  <span className="w-5 h-5 rounded-full bg-white/10 text-slate-300 text-[10px] font-bold flex items-center justify-center font-mono">{idx + 1}</span>
-                                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${hasChanged ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-white/10 text-slate-400"}`}>
-                                    {hasChanged ? "Nativized" : "Preserved"}
-                                  </span>
-                                </div>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleCopySentence(sentence.revised, idx); }}
-                                  className="p-1 px-2 rounded-md bg-white/5 hover:bg-white/15 text-[11px] text-slate-300 flex items-center gap-1 transition-all cursor-pointer"
-                                >
-                                  {copiedSentenceIdx === idx ? <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Copied</span></> : <><Copy className="w-3 h-3 text-slate-400" /><span>Copy</span></>}
-                                </button>
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                <div className="bg-black/40 border border-rose-500/20 rounded-xl p-3">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 block mb-1">Original:</span>
-                                  <p className="text-slate-300 text-xs italic font-serif leading-relaxed">"{sentence.original}"</p>
-                                </div>
-                                <div className="bg-blue-950/60 border border-emerald-400/30 rounded-xl p-3">
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">Refined:</span>
-                                  <p className="text-blue-50 text-sm font-medium font-serif leading-relaxed">"{sentence.revised}"</p>
-                                </div>
-                              </div>
-                              {sentence.explanation && (
-                                <div className="pt-2 border-t border-white/10 text-xs text-slate-300 flex items-start gap-2">
-                                  <Info className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
-                                  <span className="leading-relaxed">{sentence.explanation}</span>
-                                </div>
-                              )}
-                            </div>
+                            <span key={idx}>
+                              <span className="text-rose-300/80 line-through decoration-rose-500/60 px-0.5">{o}</span>
+                              <span className="text-emerald-200 bg-emerald-500/15 px-1 rounded">{r}{idx < result.sentences.length - 1 ? " " : ""}</span>
+                            </span>
                           );
                         })}
                       </div>
@@ -657,7 +742,7 @@ export default function ToolPage() {
                     Choose a sample above or paste your own text on the left, then click <strong className="text-blue-400">Nativize Prose</strong>.
                   </p>
                   <div className="space-y-2 w-full max-w-sm text-left bg-black/30 p-4 border border-white/10 rounded-2xl text-xs text-slate-300">
-                    <div className="flex gap-2.5 items-start"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /><span>Sentence-by-sentence comparison</span></div>
+                    <div className="flex gap-2.5 items-start"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /><span>Hover to edit, revert, or inspect each change inline</span></div>
                     <div className="flex gap-2.5 items-start"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /><span>Citations [1,2] & formulas preserved</span></div>
                     <div className="flex gap-2.5 items-start"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /><span>Word (.docx) & PDF export</span></div>
                   </div>

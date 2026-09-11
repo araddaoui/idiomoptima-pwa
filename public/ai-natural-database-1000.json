@@ -1,45 +1,5 @@
 [
   {
-    "clunky": "nevertheless",
-    "native": "still"
-  },
-  {
-    "clunky": "nonetheless",
-    "native": "even so"
-  },
-  {
-    "clunky": "consequently",
-    "native": "so"
-  },
-  {
-    "clunky": "therefore",
-    "native": "so"
-  },
-  {
-    "clunky": "accordingly",
-    "native": "so"
-  },
-  {
-    "clunky": "hence",
-    "native": "so"
-  },
-  {
-    "clunky": "thus",
-    "native": "so"
-  },
-  {
-    "clunky": "furthermore",
-    "native": "also"
-  },
-  {
-    "clunky": "moreover",
-    "native": "also"
-  },
-  {
-    "clunky": "in addition",
-    "native": "also"
-  },
-  {
     "clunky": "plus",
     "native": "also"
   },
@@ -60,32 +20,8 @@
     "native": "also"
   },
   {
-    "clunky": "likewise",
-    "native": "also"
-  },
-  {
-    "clunky": "by the same token",
-    "native": "also"
-  },
-  {
-    "clunky": "on the other hand",
-    "native": "but"
-  },
-  {
-    "clunky": "on the contrary",
-    "native": "but"
-  },
-  {
     "clunky": "in contrast",
     "native": "but"
-  },
-  {
-    "clunky": "at the same time",
-    "native": "still"
-  },
-  {
-    "clunky": "in the meantime",
-    "native": "meanwhile"
   },
   {
     "clunky": "meanwhile",
@@ -120,15 +56,15 @@
     "native": "especially"
   },
   {
+    "clunky": "specifically",
+    "native": "especially"
+  },
+  {
     "clunky": "more specifically",
     "native": "especially"
   },
   {
     "clunky": "that said",
-    "native": "still"
-  },
-  {
-    "clunky": "having said that",
     "native": "still"
   },
   {
@@ -160,19 +96,7 @@
     "native": "overall"
   },
   {
-    "clunky": "all things considered",
-    "native": "overall"
-  },
-  {
-    "clunky": "in summary",
-    "native": "overall"
-  },
-  {
     "clunky": "in brief",
-    "native": "in short"
-  },
-  {
-    "clunky": "to summarize",
     "native": "in short"
   },
   {
@@ -181,10 +105,6 @@
   },
   {
     "clunky": "to conclude",
-    "native": "in short"
-  },
-  {
-    "clunky": "in conclusion",
     "native": "in short"
   },
   {
@@ -208,10 +128,6 @@
     "native": "about the"
   },
   {
-    "clunky": "in light of",
-    "native": "because"
-  },
-  {
     "clunky": "due to",
     "native": "because"
   },
@@ -224,24 +140,8 @@
     "native": "because of"
   },
   {
-    "clunky": "for this reason",
-    "native": "because"
-  },
-  {
-    "clunky": "for that reason",
-    "native": "because"
-  },
-  {
-    "clunky": "as a consequence",
-    "native": "so"
-  },
-  {
     "clunky": "as a result of",
     "native": "because of"
-  },
-  {
-    "clunky": "subsequently",
-    "native": "then"
   },
   {
     "clunky": "then",
@@ -308,20 +208,12 @@
     "native": "by contrast"
   },
   {
-    "clunky": "as a final point",
-    "native": ""
-  },
-  {
     "clunky": "for the record",
     "native": ""
   },
   {
     "clunky": "as a side note",
     "native": "by the way"
-  },
-  {
-    "clunky": "in addition to",
-    "native": "and"
   },
   {
     "clunky": "as an aside",
@@ -334,10 +226,6 @@
   {
     "clunky": "more often than not",
     "native": "often"
-  },
-  {
-    "clunky": "at the same time",
-    "native": "also"
   },
   {
     "clunky": "on the positive side",
@@ -932,10 +820,6 @@
     "native": "this is worth noting"
   },
   {
-    "clunky": "this raises the question of",
-    "native": "this asks"
-  },
-  {
     "clunky": "this is evidence that",
     "native": "this shows"
   },
@@ -982,10 +866,6 @@
   {
     "clunky": "in order to",
     "native": "to"
-  },
-  {
-    "clunky": "in light of the fact that",
-    "native": "because"
   },
   {
     "clunky": "due to the fact that",
@@ -1266,6 +1146,10 @@
   {
     "clunky": "deeply meaningful",
     "native": "meaningful"
+  },
+  {
+    "clunky": "highly significant",
+    "native": "significant"
   },
   {
     "clunky": "particularly noteworthy",
@@ -1622,10 +1506,6 @@
   {
     "clunky": "drive",
     "native": "push"
-  },
-  {
-    "clunky": "scale",
-    "native": "grow"
   },
   {
     "clunky": "enable",
@@ -1992,6 +1872,10 @@
     "native": "important"
   },
   {
+    "clunky": "transformative",
+    "native": "meaningful"
+  },
+  {
     "clunky": "unparalleled",
     "native": "exceptional"
   },
@@ -2122,10 +2006,6 @@
   {
     "clunky": "high-value",
     "native": "valuable"
-  },
-  {
-    "clunky": "state of the art",
-    "native": "modern"
   },
   {
     "clunky": "future-ready",
@@ -2280,14 +2160,6 @@
     "native": ""
   },
   {
-    "clunky": "in the final analysis",
-    "native": "in the end"
-  },
-  {
-    "clunky": "when all is said and done",
-    "native": "in the end"
-  },
-  {
     "clunky": "to bring this together",
     "native": ""
   },
@@ -2426,6 +2298,10 @@
   {
     "clunky": "in the narrow sense",
     "native": "strictly"
+  },
+  {
+    "clunky": "in concrete terms",
+    "native": "specifically"
   },
   {
     "clunky": "on a regular basis",

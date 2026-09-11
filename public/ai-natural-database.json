@@ -1,45 +1,5 @@
 [
   {
-    "ai": "nevertheless",
-    "natural": "still"
-  },
-  {
-    "ai": "nonetheless",
-    "natural": "even so"
-  },
-  {
-    "ai": "consequently",
-    "natural": "so"
-  },
-  {
-    "ai": "therefore",
-    "natural": "so"
-  },
-  {
-    "ai": "accordingly",
-    "natural": "so"
-  },
-  {
-    "ai": "hence",
-    "natural": "so"
-  },
-  {
-    "ai": "thus",
-    "natural": "so"
-  },
-  {
-    "ai": "furthermore",
-    "natural": "also"
-  },
-  {
-    "ai": "moreover",
-    "natural": "also"
-  },
-  {
-    "ai": "in addition",
-    "natural": "also"
-  },
-  {
     "ai": "plus",
     "natural": "also"
   },
@@ -60,32 +20,8 @@
     "natural": "also"
   },
   {
-    "ai": "likewise",
-    "natural": "also"
-  },
-  {
-    "ai": "by the same token",
-    "natural": "also"
-  },
-  {
-    "ai": "on the other hand",
-    "natural": "but"
-  },
-  {
-    "ai": "on the contrary",
-    "natural": "but"
-  },
-  {
     "ai": "in contrast",
     "natural": "but"
-  },
-  {
-    "ai": "at the same time",
-    "natural": "still"
-  },
-  {
-    "ai": "in the meantime",
-    "natural": "meanwhile"
   },
   {
     "ai": "meanwhile",
@@ -120,15 +56,15 @@
     "natural": "especially"
   },
   {
+    "ai": "specifically",
+    "natural": "especially"
+  },
+  {
     "ai": "more specifically",
     "natural": "especially"
   },
   {
     "ai": "that said",
-    "natural": "still"
-  },
-  {
-    "ai": "having said that",
     "natural": "still"
   },
   {
@@ -160,19 +96,7 @@
     "natural": "overall"
   },
   {
-    "ai": "all things considered",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary",
-    "natural": "overall"
-  },
-  {
     "ai": "in brief",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize",
     "natural": "in short"
   },
   {
@@ -181,10 +105,6 @@
   },
   {
     "ai": "to conclude",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion",
     "natural": "in short"
   },
   {
@@ -208,10 +128,6 @@
     "natural": "about the"
   },
   {
-    "ai": "in light of",
-    "natural": "because"
-  },
-  {
     "ai": "due to",
     "natural": "because"
   },
@@ -224,24 +140,8 @@
     "natural": "because of"
   },
   {
-    "ai": "for this reason",
-    "natural": "because"
-  },
-  {
-    "ai": "for that reason",
-    "natural": "because"
-  },
-  {
-    "ai": "as a consequence",
-    "natural": "so"
-  },
-  {
     "ai": "as a result of",
     "natural": "because of"
-  },
-  {
-    "ai": "subsequently",
-    "natural": "then"
   },
   {
     "ai": "then",
@@ -308,20 +208,12 @@
     "natural": "by contrast"
   },
   {
-    "ai": "as a final point",
-    "natural": ""
-  },
-  {
     "ai": "for the record",
     "natural": ""
   },
   {
     "ai": "as a side note",
     "natural": "by the way"
-  },
-  {
-    "ai": "in addition to",
-    "natural": "and"
   },
   {
     "ai": "as an aside",
@@ -334,10 +226,6 @@
   {
     "ai": "more often than not",
     "natural": "often"
-  },
-  {
-    "ai": "at the same time",
-    "natural": "also"
   },
   {
     "ai": "on the positive side",
@@ -357,15 +245,15 @@
   },
   {
     "ai": "it is worth noting that",
-    "natural": ""
+    "natural": "note that"
   },
   {
     "ai": "it should be noted that",
-    "natural": ""
+    "natural": "note that"
   },
   {
     "ai": "it is important to note that",
-    "natural": ""
+    "natural": "note that"
   },
   {
     "ai": "it is important to understand that",
@@ -373,15 +261,15 @@
   },
   {
     "ai": "it is worth mentioning that",
-    "natural": ""
+    "natural": "note that"
   },
   {
     "ai": "it is interesting to note that",
-    "natural": ""
+    "natural": "worth noting:"
   },
   {
     "ai": "it is useful to note that",
-    "natural": ""
+    "natural": "note that"
   },
   {
     "ai": "it is clear that",
@@ -437,7 +325,7 @@
   },
   {
     "ai": "one should also note that",
-    "natural": ""
+    "natural": "also note that"
   },
   {
     "ai": "it may be helpful to note that",
@@ -445,7 +333,7 @@
   },
   {
     "ai": "it is worth pointing out that",
-    "natural": ""
+    "natural": "note that"
   },
   {
     "ai": "it is worth highlighting that",
@@ -453,15 +341,15 @@
   },
   {
     "ai": "it is important to emphasize that",
-    "natural": ""
+    "natural": "keep in mind that"
   },
   {
     "ai": "it is also important to note that",
-    "natural": ""
+    "natural": "note that"
   },
   {
     "ai": "it should also be noted that",
-    "natural": ""
+    "natural": "note that"
   },
   {
     "ai": "it is reasonable to expect that",
@@ -485,7 +373,7 @@
   },
   {
     "ai": "it is worth emphasizing that",
-    "natural": ""
+    "natural": "keep in mind that"
   },
   {
     "ai": "it is necessary to mention that",
@@ -493,7 +381,7 @@
   },
   {
     "ai": "it is worth stressing that",
-    "natural": ""
+    "natural": "keep in mind that"
   },
   {
     "ai": "it is worth clarifying that",
@@ -505,7 +393,7 @@
   },
   {
     "ai": "it should go without saying that",
-    "natural": ""
+    "natural": "of course"
   },
   {
     "ai": "it should go without saying",
@@ -513,7 +401,7 @@
   },
   {
     "ai": "it should be emphasized that",
-    "natural": ""
+    "natural": "keep in mind that"
   },
   {
     "ai": "it is important to point out",
@@ -928,10 +816,6 @@
     "natural": "this is worth noting"
   },
   {
-    "ai": "this raises the question of",
-    "natural": "this asks"
-  },
-  {
     "ai": "this is evidence that",
     "natural": "this shows"
   },
@@ -978,10 +862,6 @@
   {
     "ai": "in order to",
     "natural": "to"
-  },
-  {
-    "ai": "in light of the fact that",
-    "natural": "because"
   },
   {
     "ai": "due to the fact that",
@@ -1262,6 +1142,10 @@
   {
     "ai": "deeply meaningful",
     "natural": "meaningful"
+  },
+  {
+    "ai": "highly significant",
+    "natural": "significant"
   },
   {
     "ai": "particularly noteworthy",
@@ -1618,10 +1502,6 @@
   {
     "ai": "drive",
     "natural": "push"
-  },
-  {
-    "ai": "scale",
-    "natural": "grow"
   },
   {
     "ai": "enable",
@@ -1988,6 +1868,10 @@
     "natural": "important"
   },
   {
+    "ai": "transformative",
+    "natural": "meaningful"
+  },
+  {
     "ai": "unparalleled",
     "natural": "exceptional"
   },
@@ -2120,10 +2004,6 @@
     "natural": "valuable"
   },
   {
-    "ai": "state of the art",
-    "natural": "modern"
-  },
-  {
     "ai": "future-ready",
     "natural": "ready for the future"
   },
@@ -2173,11 +2053,11 @@
   },
   {
     "ai": "in the modern era",
-    "natural": ""
+    "natural": "today"
   },
   {
     "ai": "in the current climate",
-    "natural": ""
+    "natural": "today"
   },
   {
     "ai": "as technology advances",
@@ -2209,19 +2089,19 @@
   },
   {
     "ai": "in the digital age",
-    "natural": ""
+    "natural": "today"
   },
   {
     "ai": "in today's digital world",
-    "natural": ""
+    "natural": "today"
   },
   {
     "ai": "in the age of data",
-    "natural": ""
+    "natural": "today"
   },
   {
     "ai": "in the current era",
-    "natural": ""
+    "natural": "today"
   },
   {
     "ai": "as the world changes",
@@ -2245,55 +2125,47 @@
   },
   {
     "ai": "as a final note",
-    "natural": ""
+    "natural": "finally"
   },
   {
     "ai": "as a closing thought",
-    "natural": ""
+    "natural": "finally"
   },
   {
     "ai": "in closing",
-    "natural": ""
+    "natural": "finally"
   },
   {
     "ai": "to conclude",
-    "natural": ""
+    "natural": "in short"
   },
   {
     "ai": "to wrap up",
-    "natural": ""
+    "natural": "in short"
   },
   {
     "ai": "as we wrap up",
-    "natural": ""
+    "natural": "in short"
   },
   {
     "ai": "as we conclude",
-    "natural": ""
+    "natural": "in short"
   },
   {
     "ai": "to finish",
-    "natural": ""
-  },
-  {
-    "ai": "in the final analysis",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done",
-    "natural": "in the end"
+    "natural": "lastly"
   },
   {
     "ai": "to bring this together",
-    "natural": ""
+    "natural": "to sum up"
   },
   {
     "ai": "to tie this together",
-    "natural": ""
+    "natural": "to sum up"
   },
   {
     "ai": "to close",
-    "natural": ""
+    "natural": "finally"
   },
   {
     "ai": "it is worth emphasizing",
@@ -2424,6 +2296,10 @@
     "natural": "strictly"
   },
   {
+    "ai": "in concrete terms",
+    "natural": "specifically"
+  },
+  {
     "ai": "on a regular basis",
     "natural": "regularly"
   },
@@ -2525,1983 +2401,1983 @@
   },
   {
     "ai": "it is worth noting that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is worth noting that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is worth noting that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is worth noting that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is worth noting that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is worth noting that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is worth noting that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is worth noting that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is worth noting that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is worth noting that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is worth noting that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is worth noting that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is worth noting that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is worth noting that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is worth noting that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is worth noting that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is worth noting that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is worth noting that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is worth noting that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is worth noting that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is worth noting that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is worth noting that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is worth noting that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is worth noting that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is worth noting that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is worth noting that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is worth noting that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is worth noting that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is worth noting that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is worth noting that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is worth noting that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is worth noting that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is worth noting that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is worth noting that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is worth noting that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is worth noting that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is worth noting that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is worth noting that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is worth noting that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is worth noting that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is worth noting that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is worth noting that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is worth noting that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is worth noting that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is worth noting that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is worth mentioning that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is worth mentioning that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is worth mentioning that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is worth mentioning that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is worth mentioning that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is worth mentioning that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is worth mentioning that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is worth mentioning that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is worth mentioning that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is worth mentioning that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is worth mentioning that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is worth mentioning that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is worth mentioning that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is worth mentioning that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is worth mentioning that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is worth mentioning that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is worth mentioning that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is worth mentioning that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is worth mentioning that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is worth mentioning that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is worth mentioning that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is worth mentioning that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is worth mentioning that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is worth mentioning that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is worth mentioning that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is worth mentioning that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is worth mentioning that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is worth mentioning that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is worth mentioning that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is worth mentioning that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is worth mentioning that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is worth mentioning that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is worth mentioning that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is worth mentioning that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is worth mentioning that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is worth mentioning that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is worth mentioning that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is worth mentioning that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is worth mentioning that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is worth mentioning that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is worth mentioning that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is worth mentioning that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is worth mentioning that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is worth mentioning that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is worth mentioning that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is worth pointing out that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is worth pointing out that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is worth pointing out that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is worth pointing out that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is worth pointing out that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is worth pointing out that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is worth pointing out that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is worth pointing out that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is worth pointing out that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is worth pointing out that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is worth pointing out that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is worth pointing out that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is worth pointing out that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is worth pointing out that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is worth pointing out that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is worth pointing out that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is worth pointing out that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is worth pointing out that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is worth pointing out that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is worth pointing out that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is worth pointing out that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is worth pointing out that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is worth pointing out that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is worth pointing out that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is worth pointing out that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is worth pointing out that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is worth pointing out that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is worth pointing out that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is worth pointing out that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is worth pointing out that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is worth pointing out that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is worth pointing out that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is worth pointing out that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is worth pointing out that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is worth pointing out that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is worth pointing out that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is worth pointing out that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is worth pointing out that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is worth pointing out that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is worth pointing out that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is worth pointing out that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is worth pointing out that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is worth pointing out that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is worth pointing out that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is worth pointing out that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it should be noted that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it should be noted that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it should be noted that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it should be noted that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it should be noted that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it should be noted that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it should be noted that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it should be noted that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it should be noted that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it should be noted that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it should be noted that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it should be noted that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it should be noted that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it should be noted that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it should be noted that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it should be noted that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it should be noted that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it should be noted that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it should be noted that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it should be noted that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it should be noted that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it should be noted that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it should be noted that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it should be noted that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it should be noted that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it should be noted that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it should be noted that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it should be noted that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it should be noted that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it should be noted that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it should be noted that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it should be noted that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it should be noted that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it should be noted that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it should be noted that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it should be noted that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it should be noted that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it should be noted that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it should be noted that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it should be noted that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it should be noted that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it should be noted that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it should be noted that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it should be noted that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it should be noted that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is important to note that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is important to note that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is important to note that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is important to note that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is important to note that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is important to note that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is important to note that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is important to note that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is important to note that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is important to note that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is important to note that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is important to note that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is important to note that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is important to note that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is important to note that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is important to note that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is important to note that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is important to note that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is important to note that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is important to note that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is important to note that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is important to note that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is important to note that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is important to note that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is important to note that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is important to note that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is important to note that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is important to note that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is important to note that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is important to note that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is important to note that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is important to note that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is important to note that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is important to note that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is important to note that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is important to note that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is important to note that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is important to note that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is important to note that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is important to note that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is important to note that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is important to note that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is important to note that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is important to note that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is important to note that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is useful to note that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is useful to note that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is useful to note that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is useful to note that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is useful to note that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is useful to note that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is useful to note that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is useful to note that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is useful to note that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is useful to note that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is useful to note that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is useful to note that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is useful to note that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is useful to note that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is useful to note that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is useful to note that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is useful to note that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is useful to note that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is useful to note that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is useful to note that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is useful to note that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is useful to note that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is useful to note that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is useful to note that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is useful to note that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is useful to note that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is useful to note that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is useful to note that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is useful to note that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is useful to note that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is useful to note that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is useful to note that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is useful to note that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is useful to note that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is useful to note that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is useful to note that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is useful to note that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is useful to note that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is useful to note that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is useful to note that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is useful to note that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is useful to note that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is useful to note that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is useful to note that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is useful to note that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is helpful to note that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is helpful to note that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is helpful to note that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is helpful to note that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is helpful to note that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is helpful to note that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is helpful to note that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is helpful to note that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is helpful to note that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is helpful to note that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is helpful to note that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is helpful to note that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is helpful to note that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is helpful to note that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is helpful to note that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is helpful to note that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is helpful to note that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is helpful to note that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is helpful to note that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is helpful to note that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is helpful to note that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is helpful to note that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is helpful to note that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is helpful to note that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is helpful to note that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is helpful to note that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is helpful to note that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is helpful to note that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is helpful to note that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is helpful to note that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is helpful to note that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is helpful to note that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is helpful to note that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is helpful to note that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is helpful to note that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is helpful to note that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is helpful to note that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is helpful to note that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is helpful to note that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is helpful to note that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is helpful to note that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is helpful to note that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is helpful to note that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is helpful to note that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is helpful to note that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is fair to say that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is fair to say that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is fair to say that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is fair to say that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is fair to say that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is fair to say that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is fair to say that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is fair to say that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is fair to say that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is fair to say that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is fair to say that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is fair to say that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is fair to say that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is fair to say that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is fair to say that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is fair to say that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is fair to say that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is fair to say that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is fair to say that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is fair to say that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is fair to say that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is fair to say that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is fair to say that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is fair to say that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is fair to say that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is fair to say that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is fair to say that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is fair to say that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is fair to say that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is fair to say that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is fair to say that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is fair to say that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is fair to say that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is fair to say that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is fair to say that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is fair to say that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is fair to say that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is fair to say that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is fair to say that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is fair to say that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is fair to say that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is fair to say that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is fair to say that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is fair to say that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is fair to say that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is reasonable to say that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is reasonable to say that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is reasonable to say that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is reasonable to say that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is reasonable to say that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is reasonable to say that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is reasonable to say that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is reasonable to say that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is reasonable to say that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is reasonable to say that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is reasonable to say that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is reasonable to say that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is reasonable to say that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is reasonable to say that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is reasonable to say that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is reasonable to say that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is reasonable to say that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is reasonable to say that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is reasonable to say that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is reasonable to say that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is reasonable to say that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is reasonable to say that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is reasonable to say that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is reasonable to say that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is reasonable to say that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is reasonable to say that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is reasonable to say that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is reasonable to say that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is reasonable to say that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is reasonable to say that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is reasonable to say that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is reasonable to say that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is reasonable to say that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is reasonable to say that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is reasonable to say that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is reasonable to say that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is reasonable to say that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is reasonable to say that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is reasonable to say that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is reasonable to say that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is reasonable to say that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is reasonable to say that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is reasonable to say that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is reasonable to say that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is reasonable to say that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is safe to say that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is safe to say that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is safe to say that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is safe to say that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is safe to say that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is safe to say that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is safe to say that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is safe to say that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is safe to say that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is safe to say that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is safe to say that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is safe to say that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is safe to say that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is safe to say that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is safe to say that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is safe to say that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is safe to say that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is safe to say that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is safe to say that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is safe to say that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is safe to say that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is safe to say that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is safe to say that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is safe to say that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is safe to say that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is safe to say that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is safe to say that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is safe to say that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is safe to say that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is safe to say that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is safe to say that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is safe to say that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is safe to say that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is safe to say that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is safe to say that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is safe to say that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is safe to say that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is safe to say that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is safe to say that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is safe to say that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is safe to say that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is safe to say that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is safe to say that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is safe to say that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is safe to say that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is easy to see that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is easy to see that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is easy to see that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is easy to see that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is easy to see that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is easy to see that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is easy to see that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is easy to see that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is easy to see that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is easy to see that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is easy to see that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is easy to see that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is easy to see that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is easy to see that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is easy to see that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is easy to see that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is easy to see that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is easy to see that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is easy to see that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is easy to see that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is easy to see that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is easy to see that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is easy to see that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is easy to see that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is easy to see that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is easy to see that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is easy to see that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is easy to see that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is easy to see that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is easy to see that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is easy to see that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is easy to see that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is easy to see that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is easy to see that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is easy to see that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is easy to see that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is easy to see that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is easy to see that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is easy to see that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is easy to see that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is easy to see that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is easy to see that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is easy to see that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is easy to see that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is easy to see that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is clear that the result is positive",
@@ -5045,1083 +4921,1083 @@
   },
   {
     "ai": "it is worth emphasizing that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is worth emphasizing that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is worth emphasizing that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is worth emphasizing that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is worth emphasizing that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is worth emphasizing that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is worth emphasizing that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is worth emphasizing that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is worth emphasizing that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is worth emphasizing that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is worth emphasizing that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is worth emphasizing that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is worth emphasizing that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is worth emphasizing that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is worth emphasizing that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is worth emphasizing that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is worth emphasizing that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is worth emphasizing that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is worth emphasizing that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is worth emphasizing that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is worth emphasizing that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is worth emphasizing that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is worth emphasizing that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is worth emphasizing that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is worth emphasizing that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is worth emphasizing that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is worth emphasizing that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is worth emphasizing that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is worth emphasizing that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is worth emphasizing that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is worth emphasizing that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is worth emphasizing that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is worth emphasizing that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is worth emphasizing that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is worth emphasizing that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is worth emphasizing that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is worth emphasizing that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is worth emphasizing that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is worth emphasizing that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is worth emphasizing that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is worth emphasizing that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is worth emphasizing that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is worth emphasizing that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is worth emphasizing that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is worth emphasizing that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is worth underlining that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is worth underlining that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is worth underlining that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is worth underlining that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is worth underlining that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is worth underlining that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is worth underlining that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is worth underlining that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is worth underlining that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is worth underlining that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is worth underlining that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is worth underlining that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is worth underlining that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is worth underlining that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is worth underlining that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is worth underlining that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is worth underlining that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is worth underlining that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is worth underlining that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is worth underlining that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is worth underlining that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is worth underlining that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is worth underlining that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is worth underlining that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is worth underlining that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is worth underlining that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is worth underlining that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is worth underlining that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is worth underlining that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is worth underlining that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is worth underlining that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is worth underlining that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is worth underlining that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is worth underlining that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is worth underlining that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is worth underlining that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is worth underlining that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is worth underlining that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is worth underlining that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is worth underlining that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is worth underlining that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is worth underlining that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is worth underlining that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is worth underlining that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is worth underlining that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is worth stressing that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is worth stressing that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is worth stressing that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is worth stressing that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is worth stressing that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is worth stressing that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is worth stressing that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is worth stressing that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is worth stressing that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is worth stressing that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is worth stressing that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is worth stressing that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is worth stressing that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is worth stressing that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is worth stressing that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is worth stressing that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is worth stressing that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is worth stressing that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is worth stressing that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is worth stressing that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is worth stressing that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is worth stressing that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is worth stressing that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is worth stressing that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is worth stressing that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is worth stressing that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is worth stressing that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is worth stressing that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is worth stressing that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is worth stressing that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is worth stressing that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is worth stressing that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is worth stressing that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is worth stressing that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is worth stressing that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is worth stressing that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is worth stressing that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is worth stressing that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is worth stressing that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is worth stressing that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is worth stressing that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is worth stressing that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is worth stressing that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is worth stressing that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is worth stressing that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is worth explaining that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is worth explaining that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is worth explaining that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is worth explaining that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is worth explaining that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is worth explaining that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is worth explaining that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is worth explaining that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is worth explaining that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is worth explaining that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is worth explaining that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is worth explaining that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is worth explaining that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is worth explaining that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is worth explaining that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is worth explaining that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is worth explaining that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is worth explaining that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is worth explaining that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is worth explaining that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is worth explaining that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is worth explaining that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is worth explaining that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is worth explaining that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is worth explaining that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is worth explaining that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is worth explaining that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is worth explaining that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is worth explaining that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is worth explaining that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is worth explaining that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is worth explaining that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is worth explaining that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is worth explaining that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is worth explaining that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is worth explaining that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is worth explaining that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is worth explaining that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is worth explaining that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is worth explaining that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is worth explaining that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is worth explaining that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is worth explaining that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is worth explaining that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is worth explaining that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is important to emphasize that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is important to emphasize that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is important to emphasize that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is important to emphasize that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is important to emphasize that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is important to emphasize that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is important to emphasize that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is important to emphasize that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is important to emphasize that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is important to emphasize that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is important to emphasize that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is important to emphasize that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is important to emphasize that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is important to emphasize that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is important to emphasize that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is important to emphasize that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is important to emphasize that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is important to emphasize that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is important to emphasize that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is important to emphasize that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is important to emphasize that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is important to emphasize that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is important to emphasize that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is important to emphasize that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is important to emphasize that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is important to emphasize that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is important to emphasize that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is important to emphasize that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is important to emphasize that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is important to emphasize that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is important to emphasize that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is important to emphasize that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is important to emphasize that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is important to emphasize that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is important to emphasize that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is important to emphasize that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is important to emphasize that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is important to emphasize that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is important to emphasize that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is important to emphasize that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is important to emphasize that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is important to emphasize that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is important to emphasize that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is important to emphasize that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is important to emphasize that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it should be emphasized that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it should be emphasized that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it should be emphasized that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it should be emphasized that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it should be emphasized that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it should be emphasized that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it should be emphasized that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it should be emphasized that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it should be emphasized that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it should be emphasized that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it should be emphasized that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it should be emphasized that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it should be emphasized that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it should be emphasized that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it should be emphasized that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it should be emphasized that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it should be emphasized that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it should be emphasized that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it should be emphasized that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it should be emphasized that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it should be emphasized that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it should be emphasized that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it should be emphasized that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it should be emphasized that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it should be emphasized that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it should be emphasized that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it should be emphasized that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it should be emphasized that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it should be emphasized that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it should be emphasized that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it should be emphasized that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it should be emphasized that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it should be emphasized that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it should be emphasized that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it should be emphasized that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it should be emphasized that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it should be emphasized that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it should be emphasized that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it should be emphasized that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it should be emphasized that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it should be emphasized that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it should be emphasized that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it should be emphasized that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it should be emphasized that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it should be emphasized that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is important to remember that the result is positive",
@@ -6665,1083 +6541,1083 @@
   },
   {
     "ai": "it may be helpful to note that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it may be helpful to note that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it may be helpful to note that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it may be helpful to note that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it may be helpful to note that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it may be helpful to note that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it may be helpful to note that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it may be helpful to note that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it may be helpful to note that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it may be helpful to note that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it may be helpful to note that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it may be helpful to note that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it may be helpful to note that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it may be helpful to note that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it may be helpful to note that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it may be helpful to note that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it may be helpful to note that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it may be helpful to note that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it may be helpful to note that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it may be helpful to note that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it may be helpful to note that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it may be helpful to note that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it may be helpful to note that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it may be helpful to note that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it may be helpful to note that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it may be helpful to note that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it may be helpful to note that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it may be helpful to note that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it may be helpful to note that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it may be helpful to note that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it may be helpful to note that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it may be helpful to note that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it may be helpful to note that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it may be helpful to note that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it may be helpful to note that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it may be helpful to note that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it may be helpful to note that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it may be helpful to note that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it may be helpful to note that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it may be helpful to note that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it may be helpful to note that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it may be helpful to note that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it may be helpful to note that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it may be helpful to note that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it may be helpful to note that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it may be useful to note that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it may be useful to note that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it may be useful to note that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it may be useful to note that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it may be useful to note that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it may be useful to note that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it may be useful to note that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it may be useful to note that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it may be useful to note that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it may be useful to note that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it may be useful to note that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it may be useful to note that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it may be useful to note that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it may be useful to note that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it may be useful to note that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it may be useful to note that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it may be useful to note that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it may be useful to note that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it may be useful to note that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it may be useful to note that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it may be useful to note that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it may be useful to note that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it may be useful to note that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it may be useful to note that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it may be useful to note that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it may be useful to note that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it may be useful to note that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it may be useful to note that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it may be useful to note that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it may be useful to note that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it may be useful to note that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it may be useful to note that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it may be useful to note that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it may be useful to note that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it may be useful to note that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it may be useful to note that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it may be useful to note that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it may be useful to note that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it may be useful to note that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it may be useful to note that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it may be useful to note that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it may be useful to note that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it may be useful to note that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it may be useful to note that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it may be useful to note that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it may be useful to remember that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it may be useful to remember that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it may be useful to remember that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it may be useful to remember that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it may be useful to remember that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it may be useful to remember that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it may be useful to remember that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it may be useful to remember that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it may be useful to remember that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it may be useful to remember that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it may be useful to remember that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it may be useful to remember that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it may be useful to remember that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it may be useful to remember that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it may be useful to remember that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it may be useful to remember that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it may be useful to remember that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it may be useful to remember that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it may be useful to remember that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it may be useful to remember that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it may be useful to remember that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it may be useful to remember that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it may be useful to remember that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it may be useful to remember that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it may be useful to remember that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it may be useful to remember that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it may be useful to remember that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it may be useful to remember that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it may be useful to remember that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it may be useful to remember that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it may be useful to remember that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it may be useful to remember that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it may be useful to remember that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it may be useful to remember that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it may be useful to remember that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it may be useful to remember that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it may be useful to remember that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it may be useful to remember that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it may be useful to remember that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it may be useful to remember that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it may be useful to remember that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it may be useful to remember that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it may be useful to remember that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it may be useful to remember that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it may be useful to remember that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is worth observing that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is worth observing that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is worth observing that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is worth observing that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is worth observing that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is worth observing that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is worth observing that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is worth observing that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is worth observing that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is worth observing that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is worth observing that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is worth observing that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is worth observing that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is worth observing that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is worth observing that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is worth observing that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is worth observing that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is worth observing that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is worth observing that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is worth observing that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is worth observing that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is worth observing that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is worth observing that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is worth observing that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is worth observing that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is worth observing that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is worth observing that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is worth observing that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is worth observing that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is worth observing that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is worth observing that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is worth observing that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is worth observing that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is worth observing that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is worth observing that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is worth observing that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is worth observing that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is worth observing that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is worth observing that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is worth observing that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is worth observing that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is worth observing that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is worth observing that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is worth observing that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is worth observing that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is worth adding that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is worth adding that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is worth adding that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is worth adding that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is worth adding that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is worth adding that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is worth adding that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is worth adding that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is worth adding that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is worth adding that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is worth adding that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is worth adding that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is worth adding that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is worth adding that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is worth adding that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is worth adding that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is worth adding that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is worth adding that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is worth adding that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is worth adding that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is worth adding that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is worth adding that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is worth adding that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is worth adding that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is worth adding that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is worth adding that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is worth adding that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is worth adding that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is worth adding that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is worth adding that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is worth adding that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is worth adding that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is worth adding that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is worth adding that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is worth adding that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is worth adding that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is worth adding that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is worth adding that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is worth adding that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is worth adding that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is worth adding that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is worth adding that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is worth adding that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is worth adding that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is worth adding that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is helpful to remember that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "it is helpful to remember that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "it is helpful to remember that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "it is helpful to remember that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "it is helpful to remember that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "it is helpful to remember that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "it is helpful to remember that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "it is helpful to remember that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "it is helpful to remember that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "it is helpful to remember that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "it is helpful to remember that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "it is helpful to remember that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "it is helpful to remember that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "it is helpful to remember that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "it is helpful to remember that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "it is helpful to remember that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "it is helpful to remember that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "it is helpful to remember that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "it is helpful to remember that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "it is helpful to remember that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "it is helpful to remember that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "it is helpful to remember that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "it is helpful to remember that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "it is helpful to remember that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "it is helpful to remember that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "it is helpful to remember that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "it is helpful to remember that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "it is helpful to remember that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "it is helpful to remember that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "it is helpful to remember that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "it is helpful to remember that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "it is helpful to remember that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "it is helpful to remember that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "it is helpful to remember that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "it is helpful to remember that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "it is helpful to remember that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "it is helpful to remember that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "it is helpful to remember that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "it is helpful to remember that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "it is helpful to remember that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "it is helpful to remember that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "it is helpful to remember that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "it is helpful to remember that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "it is helpful to remember that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "it is helpful to remember that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "it is important to point out that the result is positive",
@@ -8465,183 +8341,183 @@
   },
   {
     "ai": "one should also note that the result is positive",
-    "natural": ""
+    "natural": "the result is positive"
   },
   {
     "ai": "one should also note that the project is ready",
-    "natural": ""
+    "natural": "the project is ready"
   },
   {
     "ai": "one should also note that the data supports this",
-    "natural": ""
+    "natural": "the data supports this"
   },
   {
     "ai": "one should also note that the plan will work",
-    "natural": ""
+    "natural": "the plan will work"
   },
   {
     "ai": "one should also note that the results are clear",
-    "natural": ""
+    "natural": "the results are clear"
   },
   {
     "ai": "one should also note that the change is necessary",
-    "natural": ""
+    "natural": "the change is necessary"
   },
   {
     "ai": "one should also note that the first step is familiar",
-    "natural": ""
+    "natural": "the first step is familiar"
   },
   {
     "ai": "one should also note that the next phase starts",
-    "natural": ""
+    "natural": "the next phase starts"
   },
   {
     "ai": "one should also note that the conclusion is valid",
-    "natural": ""
+    "natural": "the conclusion is valid"
   },
   {
     "ai": "one should also note that the trend is positive",
-    "natural": ""
+    "natural": "the trend is positive"
   },
   {
     "ai": "one should also note that this is the case",
-    "natural": ""
+    "natural": "this is the case"
   },
   {
     "ai": "one should also note that this is true",
-    "natural": ""
+    "natural": "this is true"
   },
   {
     "ai": "one should also note that this is an important point",
-    "natural": ""
+    "natural": "this is an important point"
   },
   {
     "ai": "one should also note that this is a useful observation",
-    "natural": ""
+    "natural": "this is a useful observation"
   },
   {
     "ai": "one should also note that this is a relevant example",
-    "natural": ""
+    "natural": "this is a relevant example"
   },
   {
     "ai": "one should also note that this is a common result",
-    "natural": ""
+    "natural": "this is a common result"
   },
   {
     "ai": "one should also note that this is an expected outcome",
-    "natural": ""
+    "natural": "this is an expected outcome"
   },
   {
     "ai": "one should also note that this is a reasonable assumption",
-    "natural": ""
+    "natural": "this is a reasonable assumption"
   },
   {
     "ai": "one should also note that this is an important factor",
-    "natural": ""
+    "natural": "this is an important factor"
   },
   {
     "ai": "one should also note that this is the main point",
-    "natural": ""
+    "natural": "this is the main point"
   },
   {
     "ai": "one should also note that this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "one should also note that this is a strong argument",
-    "natural": ""
+    "natural": "this is a strong argument"
   },
   {
     "ai": "one should also note that this is the best option",
-    "natural": ""
+    "natural": "this is the best option"
   },
   {
     "ai": "one should also note that this is the right answer",
-    "natural": ""
+    "natural": "this is the right answer"
   },
   {
     "ai": "one should also note that this is the best choice",
-    "natural": ""
+    "natural": "this is the best choice"
   },
   {
     "ai": "one should also note that this is the most likely outcome",
-    "natural": ""
+    "natural": "this is the most likely outcome"
   },
   {
     "ai": "one should also note that this is the most important factor",
-    "natural": ""
+    "natural": "this is the most important factor"
   },
   {
     "ai": "one should also note that this is a key conclusion",
-    "natural": ""
+    "natural": "this is a key conclusion"
   },
   {
     "ai": "one should also note that this is the likely result",
-    "natural": ""
+    "natural": "this is the likely result"
   },
   {
     "ai": "one should also note that this is a valid example",
-    "natural": ""
+    "natural": "this is a valid example"
   },
   {
     "ai": "one should also note that the evidence is strong",
-    "natural": ""
+    "natural": "the evidence is strong"
   },
   {
     "ai": "one should also note that the finding is clear",
-    "natural": ""
+    "natural": "the finding is clear"
   },
   {
     "ai": "one should also note that the statement is accurate",
-    "natural": ""
+    "natural": "the statement is accurate"
   },
   {
     "ai": "one should also note that the point is clear",
-    "natural": ""
+    "natural": "the point is clear"
   },
   {
     "ai": "one should also note that the key idea is obvious",
-    "natural": ""
+    "natural": "the key idea is obvious"
   },
   {
     "ai": "one should also note that the outcome is expected",
-    "natural": ""
+    "natural": "the outcome is expected"
   },
   {
     "ai": "one should also note that the response is positive",
-    "natural": ""
+    "natural": "the response is positive"
   },
   {
     "ai": "one should also note that the outcome is credible",
-    "natural": ""
+    "natural": "the outcome is credible"
   },
   {
     "ai": "one should also note that the pattern is obvious",
-    "natural": ""
+    "natural": "the pattern is obvious"
   },
   {
     "ai": "one should also note that the issue is solved",
-    "natural": ""
+    "natural": "the issue is solved"
   },
   {
     "ai": "one should also note that the process is underway",
-    "natural": ""
+    "natural": "the process is underway"
   },
   {
     "ai": "one should also note that the discussion is useful",
-    "natural": ""
+    "natural": "the discussion is useful"
   },
   {
     "ai": "one should also note that the example is helpful",
-    "natural": ""
+    "natural": "the example is helpful"
   },
   {
     "ai": "one should also note that the conclusion is supported",
-    "natural": ""
+    "natural": "the conclusion is supported"
   },
   {
     "ai": "one should also note that the reason is obvious",
-    "natural": ""
+    "natural": "the reason is obvious"
   },
   {
     "ai": "here are the reasons why",
@@ -8997,7 +8873,7 @@
   },
   {
     "ai": "in the current environment",
-    "natural": ""
+    "natural": "today"
   },
   {
     "ai": "in the technology age",
@@ -13924,86 +13800,6 @@
     "natural": "because"
   },
   {
-    "ai": "in light of the fact that the plan succeeds",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the team moves forward",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the results improve",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the project continues",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the system works",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the process changes",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the effort progresses",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the outcome is better",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the idea is clear",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the analysis is valid",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the report is complete",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the proposal is ready",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the study is thorough",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the data is accurate",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the decision is correct",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the strategy is effective",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the approach is sound",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the feedback is useful",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the lesson is clear",
-    "natural": "because"
-  },
-  {
-    "ai": "in light of the fact that the objective is met",
-    "natural": "because"
-  },
-  {
     "ai": "by virtue of the fact that the plan succeeds",
     "natural": "because"
   },
@@ -15284,166 +15080,6 @@
     "natural": "about"
   },
   {
-    "ai": "in conclusion the main point is clear",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion the main idea is this",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion the main lesson is this",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the bottom line",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the key takeaway",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is what matters",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the main conclusion",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the final point",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the main takeaway",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the core idea",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the central message",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the main result",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the main outcome",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the important lesson",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the best summary",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the final fact",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the most important point",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is what matters most",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the key message",
-    "natural": "in short"
-  },
-  {
-    "ai": "in conclusion this is the main point to remember",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize the main point is clear",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize the main idea is this",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize the main lesson is this",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the bottom line",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the key takeaway",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is what matters",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the main conclusion",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the final point",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the main takeaway",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the core idea",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the central message",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the main result",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the main outcome",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the important lesson",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the best summary",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the final fact",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the most important point",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is what matters most",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the key message",
-    "natural": "in short"
-  },
-  {
-    "ai": "to summarize this is the main point to remember",
-    "natural": "in short"
-  },
-  {
     "ai": "to recap the main point is clear",
     "natural": "in short"
   },
@@ -15524,723 +15160,403 @@
     "natural": "in short"
   },
   {
-    "ai": "in summary the main point is clear",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary the main idea is this",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary the main lesson is this",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the bottom line",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the key takeaway",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is what matters",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the main conclusion",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the final point",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the main takeaway",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the core idea",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the central message",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the main result",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the main outcome",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the important lesson",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the best summary",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the final fact",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the most important point",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is what matters most",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the key message",
-    "natural": "overall"
-  },
-  {
-    "ai": "in summary this is the main point to remember",
-    "natural": "overall"
-  },
-  {
     "ai": "as a final note the main point is clear",
-    "natural": ""
+    "natural": "the main point is clear"
   },
   {
     "ai": "as a final note the main idea is this",
-    "natural": ""
+    "natural": "the main idea is this"
   },
   {
     "ai": "as a final note the main lesson is this",
-    "natural": ""
+    "natural": "the main lesson is this"
   },
   {
     "ai": "as a final note this is the bottom line",
-    "natural": ""
+    "natural": "this is the bottom line"
   },
   {
     "ai": "as a final note this is the key takeaway",
-    "natural": ""
+    "natural": "this is the key takeaway"
   },
   {
     "ai": "as a final note this is what matters",
-    "natural": ""
+    "natural": "this is what matters"
   },
   {
     "ai": "as a final note this is the main conclusion",
-    "natural": ""
+    "natural": "this is the main conclusion"
   },
   {
     "ai": "as a final note this is the final point",
-    "natural": ""
+    "natural": "this is the final point"
   },
   {
     "ai": "as a final note this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "as a final note this is the core idea",
-    "natural": ""
+    "natural": "this is the core idea"
   },
   {
     "ai": "as a final note this is the central message",
-    "natural": ""
+    "natural": "this is the central message"
   },
   {
     "ai": "as a final note this is the main result",
-    "natural": ""
+    "natural": "this is the main result"
   },
   {
     "ai": "as a final note this is the main outcome",
-    "natural": ""
+    "natural": "this is the main outcome"
   },
   {
     "ai": "as a final note this is the important lesson",
-    "natural": ""
+    "natural": "this is the important lesson"
   },
   {
     "ai": "as a final note this is the best summary",
-    "natural": ""
+    "natural": "this is the best summary"
   },
   {
     "ai": "as a final note this is the final fact",
-    "natural": ""
+    "natural": "this is the final fact"
   },
   {
     "ai": "as a final note this is the most important point",
-    "natural": ""
+    "natural": "this is the most important point"
   },
   {
     "ai": "as a final note this is what matters most",
-    "natural": ""
+    "natural": "this is what matters most"
   },
   {
     "ai": "as a final note this is the key message",
-    "natural": ""
+    "natural": "this is the key message"
   },
   {
     "ai": "as a final note this is the main point to remember",
-    "natural": ""
+    "natural": "this is the main point to remember"
   },
   {
     "ai": "to wrap up the main point is clear",
-    "natural": ""
+    "natural": "the main point is clear"
   },
   {
     "ai": "to wrap up the main idea is this",
-    "natural": ""
+    "natural": "the main idea is this"
   },
   {
     "ai": "to wrap up the main lesson is this",
-    "natural": ""
+    "natural": "the main lesson is this"
   },
   {
     "ai": "to wrap up this is the bottom line",
-    "natural": ""
+    "natural": "this is the bottom line"
   },
   {
     "ai": "to wrap up this is the key takeaway",
-    "natural": ""
+    "natural": "this is the key takeaway"
   },
   {
     "ai": "to wrap up this is what matters",
-    "natural": ""
+    "natural": "this is what matters"
   },
   {
     "ai": "to wrap up this is the main conclusion",
-    "natural": ""
+    "natural": "this is the main conclusion"
   },
   {
     "ai": "to wrap up this is the final point",
-    "natural": ""
+    "natural": "this is the final point"
   },
   {
     "ai": "to wrap up this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "to wrap up this is the core idea",
-    "natural": ""
+    "natural": "this is the core idea"
   },
   {
     "ai": "to wrap up this is the central message",
-    "natural": ""
+    "natural": "this is the central message"
   },
   {
     "ai": "to wrap up this is the main result",
-    "natural": ""
+    "natural": "this is the main result"
   },
   {
     "ai": "to wrap up this is the main outcome",
-    "natural": ""
+    "natural": "this is the main outcome"
   },
   {
     "ai": "to wrap up this is the important lesson",
-    "natural": ""
+    "natural": "this is the important lesson"
   },
   {
     "ai": "to wrap up this is the best summary",
-    "natural": ""
+    "natural": "this is the best summary"
   },
   {
     "ai": "to wrap up this is the final fact",
-    "natural": ""
+    "natural": "this is the final fact"
   },
   {
     "ai": "to wrap up this is the most important point",
-    "natural": ""
+    "natural": "this is the most important point"
   },
   {
     "ai": "to wrap up this is what matters most",
-    "natural": ""
+    "natural": "this is what matters most"
   },
   {
     "ai": "to wrap up this is the key message",
-    "natural": ""
+    "natural": "this is the key message"
   },
   {
     "ai": "to wrap up this is the main point to remember",
-    "natural": ""
+    "natural": "this is the main point to remember"
   },
   {
     "ai": "as a closing thought the main point is clear",
-    "natural": ""
+    "natural": "the main point is clear"
   },
   {
     "ai": "as a closing thought the main idea is this",
-    "natural": ""
+    "natural": "the main idea is this"
   },
   {
     "ai": "as a closing thought the main lesson is this",
-    "natural": ""
+    "natural": "the main lesson is this"
   },
   {
     "ai": "as a closing thought this is the bottom line",
-    "natural": ""
+    "natural": "this is the bottom line"
   },
   {
     "ai": "as a closing thought this is the key takeaway",
-    "natural": ""
+    "natural": "this is the key takeaway"
   },
   {
     "ai": "as a closing thought this is what matters",
-    "natural": ""
+    "natural": "this is what matters"
   },
   {
     "ai": "as a closing thought this is the main conclusion",
-    "natural": ""
+    "natural": "this is the main conclusion"
   },
   {
     "ai": "as a closing thought this is the final point",
-    "natural": ""
+    "natural": "this is the final point"
   },
   {
     "ai": "as a closing thought this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "as a closing thought this is the core idea",
-    "natural": ""
+    "natural": "this is the core idea"
   },
   {
     "ai": "as a closing thought this is the central message",
-    "natural": ""
+    "natural": "this is the central message"
   },
   {
     "ai": "as a closing thought this is the main result",
-    "natural": ""
+    "natural": "this is the main result"
   },
   {
     "ai": "as a closing thought this is the main outcome",
-    "natural": ""
+    "natural": "this is the main outcome"
   },
   {
     "ai": "as a closing thought this is the important lesson",
-    "natural": ""
+    "natural": "this is the important lesson"
   },
   {
     "ai": "as a closing thought this is the best summary",
-    "natural": ""
+    "natural": "this is the best summary"
   },
   {
     "ai": "as a closing thought this is the final fact",
-    "natural": ""
+    "natural": "this is the final fact"
   },
   {
     "ai": "as a closing thought this is the most important point",
-    "natural": ""
+    "natural": "this is the most important point"
   },
   {
     "ai": "as a closing thought this is what matters most",
-    "natural": ""
+    "natural": "this is what matters most"
   },
   {
     "ai": "as a closing thought this is the key message",
-    "natural": ""
+    "natural": "this is the key message"
   },
   {
     "ai": "as a closing thought this is the main point to remember",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point the main point is clear",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point the main idea is this",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point the main lesson is this",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the bottom line",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the key takeaway",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is what matters",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the main conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the final point",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the main takeaway",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the core idea",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the central message",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the main result",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the main outcome",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the important lesson",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the best summary",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the final fact",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the most important point",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is what matters most",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the key message",
-    "natural": ""
-  },
-  {
-    "ai": "as a final point this is the main point to remember",
-    "natural": ""
+    "natural": "this is the main point to remember"
   },
   {
     "ai": "as we conclude the main point is clear",
-    "natural": ""
+    "natural": "the main point is clear"
   },
   {
     "ai": "as we conclude the main idea is this",
-    "natural": ""
+    "natural": "the main idea is this"
   },
   {
     "ai": "as we conclude the main lesson is this",
-    "natural": ""
+    "natural": "the main lesson is this"
   },
   {
     "ai": "as we conclude this is the bottom line",
-    "natural": ""
+    "natural": "this is the bottom line"
   },
   {
     "ai": "as we conclude this is the key takeaway",
-    "natural": ""
+    "natural": "this is the key takeaway"
   },
   {
     "ai": "as we conclude this is what matters",
-    "natural": ""
+    "natural": "this is what matters"
   },
   {
     "ai": "as we conclude this is the main conclusion",
-    "natural": ""
+    "natural": "this is the main conclusion"
   },
   {
     "ai": "as we conclude this is the final point",
-    "natural": ""
+    "natural": "this is the final point"
   },
   {
     "ai": "as we conclude this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "as we conclude this is the core idea",
-    "natural": ""
+    "natural": "this is the core idea"
   },
   {
     "ai": "as we conclude this is the central message",
-    "natural": ""
+    "natural": "this is the central message"
   },
   {
     "ai": "as we conclude this is the main result",
-    "natural": ""
+    "natural": "this is the main result"
   },
   {
     "ai": "as we conclude this is the main outcome",
-    "natural": ""
+    "natural": "this is the main outcome"
   },
   {
     "ai": "as we conclude this is the important lesson",
-    "natural": ""
+    "natural": "this is the important lesson"
   },
   {
     "ai": "as we conclude this is the best summary",
-    "natural": ""
+    "natural": "this is the best summary"
   },
   {
     "ai": "as we conclude this is the final fact",
-    "natural": ""
+    "natural": "this is the final fact"
   },
   {
     "ai": "as we conclude this is the most important point",
-    "natural": ""
+    "natural": "this is the most important point"
   },
   {
     "ai": "as we conclude this is what matters most",
-    "natural": ""
+    "natural": "this is what matters most"
   },
   {
     "ai": "as we conclude this is the key message",
-    "natural": ""
+    "natural": "this is the key message"
   },
   {
     "ai": "as we conclude this is the main point to remember",
-    "natural": ""
+    "natural": "this is the main point to remember"
   },
   {
     "ai": "to close the main point is clear",
-    "natural": ""
+    "natural": "main point is clear"
   },
   {
     "ai": "to close the main idea is this",
-    "natural": ""
+    "natural": "main idea is this"
   },
   {
     "ai": "to close the main lesson is this",
-    "natural": ""
+    "natural": "main lesson is this"
   },
   {
     "ai": "to close this is the bottom line",
-    "natural": ""
+    "natural": "this is the bottom line"
   },
   {
     "ai": "to close this is the key takeaway",
-    "natural": ""
+    "natural": "this is the key takeaway"
   },
   {
     "ai": "to close this is what matters",
-    "natural": ""
+    "natural": "this is what matters"
   },
   {
     "ai": "to close this is the main conclusion",
-    "natural": ""
+    "natural": "this is the main conclusion"
   },
   {
     "ai": "to close this is the final point",
-    "natural": ""
+    "natural": "this is the final point"
   },
   {
     "ai": "to close this is the main takeaway",
-    "natural": ""
+    "natural": "this is the main takeaway"
   },
   {
     "ai": "to close this is the core idea",
-    "natural": ""
+    "natural": "this is the core idea"
   },
   {
     "ai": "to close this is the central message",
-    "natural": ""
+    "natural": "this is the central message"
   },
   {
     "ai": "to close this is the main result",
-    "natural": ""
+    "natural": "this is the main result"
   },
   {
     "ai": "to close this is the main outcome",
-    "natural": ""
+    "natural": "this is the main outcome"
   },
   {
     "ai": "to close this is the important lesson",
-    "natural": ""
+    "natural": "this is the important lesson"
   },
   {
     "ai": "to close this is the best summary",
-    "natural": ""
+    "natural": "this is the best summary"
   },
   {
     "ai": "to close this is the final fact",
-    "natural": ""
+    "natural": "this is the final fact"
   },
   {
     "ai": "to close this is the most important point",
-    "natural": ""
+    "natural": "this is the most important point"
   },
   {
     "ai": "to close this is what matters most",
-    "natural": ""
+    "natural": "this is what matters most"
   },
   {
     "ai": "to close this is the key message",
-    "natural": ""
+    "natural": "this is the key message"
   },
   {
     "ai": "to close this is the main point to remember",
-    "natural": ""
-  },
-  {
-    "ai": "in the final analysis the main point is clear",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis the main idea is this",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis the main lesson is this",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the bottom line",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the key takeaway",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is what matters",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the main conclusion",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the final point",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the main takeaway",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the core idea",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the central message",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the main result",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the main outcome",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the important lesson",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the best summary",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the final fact",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the most important point",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is what matters most",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the key message",
-    "natural": "in the end"
-  },
-  {
-    "ai": "in the final analysis this is the main point to remember",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done the main point is clear",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done the main idea is this",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done the main lesson is this",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the bottom line",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the key takeaway",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is what matters",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the main conclusion",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the final point",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the main takeaway",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the core idea",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the central message",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the main result",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the main outcome",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the important lesson",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the best summary",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the final fact",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the most important point",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is what matters most",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the key message",
-    "natural": "in the end"
-  },
-  {
-    "ai": "when all is said and done this is the main point to remember",
-    "natural": "in the end"
+    "natural": "this is the main point to remember"
   }
 ]
