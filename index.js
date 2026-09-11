@@ -229,24 +229,29 @@ const SYSTEM_PROMPT = [
   "RULES:",
   "1. Return the COMPLETE text. Every word, every paragraph, every line. Nothing dropped.",
   "2. Return the title exactly as it appears in the input.",
-  "3. Do NOT modify text inside quotation marks — leave them exactly as-is.",
-  "4. Do NOT rewrite, rephrase, restructure, or reorganize. Only fix clear errors,",
-  "   AND reword stiff/AI-sounding phrasing that the NATIVIZATION RULES ask you to nativize.",
-  "   When the NATIVIZATION RULES list a natural native equivalent, use it.",
-  "   Never change meaning; keep the register (academic/business/creative/general) and tone.",
+  "3. Do NOT modify text inside quotation marks — leave quoted passages exactly as-is.",
+  "4. ACTIVELY NATIVIZE. Rework stiff, wordy, formulaic, non-native, or AI-sounding",
+  "   phrasing into natural, fluent native English. Tighten wordiness and redundancy.",
+  "   Improve readability and flow. When the NATIVIZATION RULES list a natural native",
+  "   equivalent for a phrase, use it. Never change meaning; keep the register",
+  "   (academic/business/creative/general), tone, and voice.",
   "5. Do NOT use em dashes in your output.",
   "6. Preserve footnote markers [1], [2], citations, and bibliography entries exactly.",
   "7. Preserve paragraph breaks exactly as in the input — do NOT merge or split paragraphs.",
-  "8. Do NOT change word choice unless it is a clear spelling/grammar error or the",
-  "   NATIVIZATION RULES explicitly list the phrase as clunky/AI-sounding.",
+  "8. Rephrase any sentence that is stiff, awkward, redundant, or reads like it was",
+  "   written by an AI or a non-native writer. Only leave a sentence identical when",
+  "   its wording is already clear, natural, and native.",
   "9. Do NOT change 'In additional to' to anything other than 'In addition to'.",
-  "10. NEVER add, append, duplicate, or echo sentences that are not in the input. finalVersion must contain exactly the same sentences as the input, in the same order.",
+  "10. NEVER invent, append, or echo content that is not in the input — do not pad the",
+  "    output or repeat sentences the model already produced.",
   "",
   "SENTENCES: Break the text into logical sentences or lines.",
   "For each sentence, return:",
   "- 'original': the sentence exactly as in the input",
-  "- 'revised': the corrected sentence (or identical if no errors found)",
-  "- 'explanation': For CHANGED sentences ONLY — state the specific error/correction.",
+  "- 'revised': the nativized/improved sentence. Polish stiff phrasing, tighten wording,",
+  "  and fix errors. Identical only if the sentence is already perfectly natural.",
+  "- 'explanation': For CHANGED sentences ONLY — state the improvement",
+  "  (e.g. 'Nativized stiff phrasing', 'Tightened wordiness', 'Fixed subject-verb agreement').",
   "  For UNCHANGED sentences, use exactly: 'No corrections needed.'",
   "- 'isImmutableFootnote': true for footnote markers, citation lines, and bibliography entries",
   "",
@@ -888,12 +893,15 @@ function detectDialect(text) {
 async function callGemini(text, options, apiKey) {
   var dialect = options.forcedDialect || "the most likely";
   var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\n" +
-    "TASK: Fix grammar, punctuation, and spelling errors in the text below AND nativize stiff, " +
-    "AI-sounding, or clunky phrasing into natural native English per the NATIVIZATION RULES. " +
+    "TASK: Fix grammar, punctuation, and spelling errors in the text below AND ACTIVELY NATIVIZE — " +
+    "rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing into natural, fluent native " +
+    "English, tighten unnecessary words, and improve flow, while never changing meaning, register, tone, or voice. " +
     "CRITICAL RULES: " +
     "Return the COMPLETE text from title to final footnote. Do NOT drop any content. " +
     "Do NOT modify text inside quotation marks. " +
-    "Do NOT rewrite, rephrase, or change word choice unless it is a clear error or an entry in the NATIVIZATION RULES. " +
+    "Preserve footnote markers [N], citations, and bibliography entries exactly. " +
+    "Rephrase any sentence that is stiff, awkward, redundant, or AI/non-native-sounding; " +
+    "leave a sentence identical only when it is already perfectly natural. " +
     "Do NOT merge or split paragraphs — preserve paragraph breaks exactly. " +
     "Replace em dashes with commas. " +
     "Use '\\n\\n' between paragraphs in finalVersion. " +
@@ -919,7 +927,7 @@ async function callGemini(text, options, apiKey) {
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\n" + prompt }] }],
-          generationConfig: { temperature: 0.25, topP: 0.9, responseMimeType: "application/json", maxOutputTokens: 65536, thinkingConfig: { thinkingBudget: 0 } },
+          generationConfig: { temperature: 0.4, topP: 0.9, responseMimeType: "application/json", maxOutputTokens: 65536, thinkingConfig: { thinkingBudget: 0 } },
         }),
         signal: AbortSignal.timeout(90000),
       });
@@ -975,7 +983,7 @@ var OPENROUTER_FREE_MODELS = [
 
 async function callOpenRouter(text, options, apiKey) {
   var dialect = options.forcedDialect || detectDialect(text);
-  var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\nTASK: Fix grammar, punctuation, and spelling errors AND nativize stiff/AI-sounding or clunky phrasing into natural native English per the NATIVIZATION RULES. CRITICAL: Return COMPLETE text, preserve footnote markers [N] and headings exactly, preserve paragraph breaks exactly (use \\n\\n), do NOT change word choice unless it is a clear error or an entry in the NATIVIZATION RULES, do NOT rewrite or rephrase otherwise. Return ONLY valid JSON.\n" + (options.nativizationInstruction || "") + "\nText:\n" + text;
+  var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\nTASK: Fix grammar, punctuation, and spelling errors AND ACTIVELY NATIVIZE — rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing into natural, fluent native English, tighten unnecessary words, and improve flow, while never changing meaning, register, tone, or voice. CRITICAL: Return COMPLETE text, preserve footnote markers [N], citations, quoted passages, and headings exactly, preserve paragraph breaks exactly (use \\n\\n), never invent or echo content. Return ONLY valid JSON.\n" + (options.nativizationInstruction || "") + "\nText:\n" + text;
 
   var queue = OPENROUTER_FREE_MODELS.slice();
   var tried = {};
@@ -1002,7 +1010,7 @@ async function callOpenRouter(text, options, apiKey) {
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: prompt },
           ],
-          temperature: 0.25,
+          temperature: 0.4,
           max_tokens: 16384,
         }),
         signal: ctrl.signal,
@@ -1050,7 +1058,7 @@ async function callOpenRouter(text, options, apiKey) {
 
 async function callDeepSeek(text, options, apiKey) {
   var dialect = options.forcedDialect || detectDialect(text);
-  var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\nTASK: Fix grammar, punctuation, and spelling errors AND nativize stiff/AI-sounding or clunky phrasing into natural native English per the NATIVIZATION RULES. CRITICAL: Return COMPLETE text, preserve footnote markers [N] and headings exactly, preserve paragraph breaks exactly (use \\n\\n), do NOT change word choice unless it is a clear error or an entry in the NATIVIZATION RULES, do NOT rewrite or rephrase otherwise. Return ONLY valid JSON.\n" + (options.nativizationInstruction || "") + "\nText:\n" + text;
+  var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\nTASK: Fix grammar, punctuation, and spelling errors AND ACTIVELY NATIVIZE — rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing into natural, fluent native English, tighten unnecessary words, and improve flow, while never changing meaning, register, tone, or voice. CRITICAL: Return COMPLETE text, preserve footnote markers [N], citations, quoted passages, and headings exactly, preserve paragraph breaks exactly (use \\n\\n), never invent or echo content. Return ONLY valid JSON.\n" + (options.nativizationInstruction || "") + "\nText:\n" + text;
 
   var response = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
@@ -1064,7 +1072,7 @@ async function callDeepSeek(text, options, apiKey) {
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: prompt },
       ],
-      temperature: 0.25,
+      temperature: 0.4,
       max_tokens: 16384,
     }),
     signal: AbortSignal.timeout(90000),
@@ -1089,7 +1097,9 @@ async function callCloudflareAI(text, options, ai) {
     "- Preserve footnote markers [N], citations, bibliography exactly — verbatim.\n" +
     "- Preserve paragraph breaks exactly — use \\n\\n between paragraphs.\n" +
     "- Preserve headings exactly — do NOT merge with body.\n" +
-    "- Do NOT rewrite, rephrase, or change word choice unless it is a clear error or an entry in the NATIVIZATION RULES.\n" +
+    "- ACTIVELY NATIVIZE: rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing\n" +
+    "  into natural, fluent native English; tighten wordiness; improve flow. Never change meaning,\n" +
+    "  register, tone, or voice. Leave a sentence identical only when it is already natural.\n" +
     "- Do NOT use em dashes.\n" +
     "- Do NOT invent citations.\n" +
     "- Return ONLY valid JSON. No markdown fences.\n\n" +
@@ -1103,7 +1113,7 @@ async function callCloudflareAI(text, options, ai) {
         { role: "system", content: "You are IdiomOptima. Return only valid JSON." },
         { role: "user", content: prompt },
       ],
-      temperature: 0.2,
+      temperature: 0.4,
       max_tokens: 16384,
     }),
     new Promise(function (_, reject) {
@@ -1828,17 +1838,37 @@ function buildNativizationInstruction(dbs, domain) {
     lines.join("\n");
 }
 
+// Built-in nativization rules that ALWAYS run (quote-safe via replaceOutsideQuotes,
+// never on footnotes/citations/Ibid lines), so a real transformation happens even
+// when the client database ships no matching phrases or the model is conservative.
+// Only unambiguous constructions: clear misuse ("Despite of"), wordy filler
+// ("due to the fact that"), and safe register swaps ("utilize" -> "use") that can
+// never change the intended meaning.
+var BUILTIN_NATIVIZATION = [
+  { re: /\bdespite\s+of\b/gi, lower: "despite" },
+  { re: /\bin\s+spite\s+of\s+the\s+fact\s+that\b/gi, lower: "although" },
+  { re: /\bdue\s+to\s+the\s+fact\s+that\b/gi, lower: "because" },
+  { re: /\bthe\s+reason\s+is\s+because\b/gi, lower: "the reason is that" },
+  { re: /\butilize\b/gi, lower: "use" },
+  { re: /\butilizes\b/gi, lower: "uses" },
+  { re: /\butilized\b/gi, lower: "used" },
+  { re: /\butilizing\b/gi, lower: "using" },
+  { re: /\butilises\b/gi, lower: "uses" },
+  { re: /\butilised\b/gi, lower: "used" },
+  { re: /\butilising\b/gi, lower: "using" },
+  { re: /\butilisation\b/gi, lower: "use" },
+  { re: /\butilization\b/gi, lower: "use" },
+  { re: /\bin\s+additional\s+to\b/gi, lower: "in addition to" },
+];
+
 // Deterministic enforcement layer: applies the exact DB replacements to each
 // sentence (recap-safe via replaceOutsideQuotes, footnote/citation-safe), then
-// reports honest statistics for the suggestions and score.
+// applies the built-in nativization rules, and reports honest statistics for the
+// suggestions and score.
 function applyDatabaseNativization(sentences, dbs, domain) {
   var stats = { totalMatches: 0, sentencesChanged: 0, aiPhrases: 0, idioms: 0, lexical: 0 };
-  if (!dbs || typeof dbs !== "object") return { sentences: sentences || [], stats: stats };
-  var maps = buildNativizationMaps(dbs, domain);
+  var maps = dbs && typeof dbs === "object" ? buildNativizationMaps(dbs, domain) : buildNativizationMaps({}, domain);
   if (!sentences || !sentences.length) return { sentences: sentences || [], stats: stats };
-  if (maps.phraseList.length === 0 && Object.keys(maps.sentenceMap).length === 0) {
-    return { sentences: sentences, stats: stats };
-  }
 
   function bump(matchKind) {
     stats.totalMatches++;
@@ -1891,6 +1921,27 @@ function applyDatabaseNativization(sentences, dbs, domain) {
         return out;
       });
     }
+
+    // 3) Built-in always-on nativization rules (quote-safe, counted as AI-style
+    //    phrasing so the stats and diagnostics reflect the real transformation,
+    //    even when the client DB had no matches).
+    s.revised = replaceOutsideQuotes(s.revised, function (seg) {
+      var out = seg;
+      for (var b = 0; b < BUILTIN_NATIVIZATION.length; b++) {
+        var rule = BUILTIN_NATIVIZATION[b];
+        var res;
+        while ((res = rule.re.exec(out)) !== null) {
+          var first = res[0].charAt(0);
+          var startCap = first === first.toUpperCase() && first !== first.toLowerCase();
+          var rep = startCap ? rule.lower.charAt(0).toUpperCase() + rule.lower.slice(1) : rule.lower;
+          out = out.substring(0, res.index) + rep + out.substring(res.index + res[0].length);
+          rule.re.lastIndex = res.index + rep.length;
+          bump("ai");
+          changedHere = true;
+        }
+      }
+      return out;
+    });
 
     if (changedHere) stats.sentencesChanged++;
   });
@@ -2033,8 +2084,11 @@ function ensureValidResult(parsed, originalText, options) {
   // sentence, then reports honest stats so the diff, suggestions, and score all
   // reflect the nativization instead of double-counting on the client.
   var databaseStats = { totalMatches: 0, sentencesChanged: 0, aiPhrases: 0, idioms: 0, lexical: 0 };
-  if (options && options.databases && sentences.length) {
-    var dbPass = applyDatabaseNativization(sentences, options.databases, (options && options.domain) || "general");
+  if (sentences.length) {
+    // Always enforced: DB phrase rules (when provided) PLUS the built-in
+    // nativization rules, so a real transformation and honest stats are
+    // produced even with an empty database or a conservative model.
+    var dbPass = applyDatabaseNativization(sentences, options && options.databases, (options && options.domain) || "general");
     sentences = dbPass.sentences;
     databaseStats = dbPass.stats;
   }
@@ -2310,9 +2364,9 @@ function ensureValidResult(parsed, originalText, options) {
   );
 
   // Surface the deterministic nativization work as the FIRST summary line so the
-  // panel text can never contradict the applied DB replacements.
+  // panel text can never contradict the applied transformations.
   if (databaseStats.totalMatches > 0) {
-    suggestions.unshift(databaseStats.totalMatches + " stiff/AI-sounding phrase(s) nativized using IdiomOptima's phrase database.");
+    suggestions.unshift(databaseStats.totalMatches + " stiff/AI-sounding phrase(s) nativized using IdiomOptima's nativization rules.");
   }
 
   // Deterministic summary, derived from the SAME real-change/spelling signals the
@@ -2324,7 +2378,7 @@ function ensureValidResult(parsed, originalText, options) {
     summary = "The revision corrected several issues, but " + remainingSpelling + " spelling error(s) remain in the output.";
   } else if (realChangeCount > 0) {
     summary = "The revision made " + realChangeCount + " real improvement" + (realChangeCount === 1 ? "" : "s") +
-      " across the text, raising the native-level quality of the writing.";
+      ", nativizing and refining the writing to native-level English.";
   } else {
     summary = "The original text needed no corrections.";
   }
