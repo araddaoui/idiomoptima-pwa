@@ -352,7 +352,7 @@ export default function ToolPage() {
     const cleaned = t
       .replace(/\*\*/g, " ")
       .split(/\r?\n/)
-      .filter((line) => line.trim() && !/^\s*\[\d+\]/.test(line))
+      .filter((line) => line.trim() && !/^\s*(\[\d+\]|Ibid\.?)\b/i.test(line))
       .join(" ");
     return cleaned.trim().split(/\s+/).filter(Boolean).length;
   };

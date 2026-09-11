@@ -1262,6 +1262,54 @@ function rebuildFinalVersion(originalText, sentences) {
   return result.join("\n\n");
 }
 
+function isFootnoteRefLine(line) {
+  var t = String(line == null ? "" : line).trim().replace(/\r$/, "");
+  return !!t && (/^\[\d+\]\s*/.test(t) || /^Ibid\.?/i.test(t));
+}
+
+// A wrapped piece of a multi-line citation (URL/DOI/ISSN on its own line,
+// publisher/page/editor continuation, or an indented line) stays part of the
+// footnote run; a real body paragraph does not.
+function isFootnoteContinuationLine(line) {
+  var raw = String(line == null ? "" : line);
+  var t = raw.trim();
+  if (!t) return false;
+  if (/^https?:\/\//i.test(t)) return true;
+  if (/^10\.\d{4,9}\//.test(t)) return true;
+  if (/^(doi|issn|isbn)\s*:/i.test(t)) return true;
+  if (/^(retrieved|accessed|available)\b/i.test(t)) return true;
+  if (/^\s{2,}/.test(raw)) return true;
+  if (/^[a-z]/.test(t)) return true;
+  if (/^(p\.|pp\.|vol\.|vols\.|ed\.|eds\.|edn\.|no\.)\s*\d/i.test(t)) return true;
+  // Publisher / venue continuation ("Cambridge University Press. P. 5.",
+  // "Journal of Peace Research.") as the first word of a short line.
+  if (/^(University|Univ\.|Press|Routledge|Springer|Wiley|Elsevier|Oxford|Cambridge|Harvard|Princeton|Chicago|M\.?I\.?T|Sage|Emerald|Palgrave|Columbia|Yale|Stanford|Journal|Review|Institute|Annual)\b/i.test(t) &&
+      t.split(/\s+/).length <= 16) {
+    return true;
+  }
+  return false;
+}
+
+// Given a tail that begins at (or with) the first footnote marker, consume the
+// contiguous reference run (markers, blank gaps, wrapped continuations) and
+// return the leftover as trailing body content.
+function splitRefRun(tail) {
+  var lines = String(tail || "").split("\n");
+  var end = -1;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    if (/^\s*$/.test(line)) continue;
+    if (isFootnoteRefLine(line)) { end = i; continue; }
+    if (end !== -1 && isFootnoteContinuationLine(line)) { end = i; continue; }
+    break;
+  }
+  if (end === -1) return { refs: "", trailing: lines.join("\n").trim() };
+  return {
+    refs: lines.slice(0, end + 1).join("\n").trim(),
+    trailing: lines.slice(end + 1).join("\n").trim(),
+  };
+}
+
 function extractFootnoteBlock(text) {
   // Handle footnotes that start mid-line as "  [N] Author" at end of body paragraph
   var midFootnote = text.match(/\s{2,}\[\d+\]\s+[A-Z][^\n]*\n/);
@@ -1270,22 +1318,37 @@ function extractFootnoteBlock(text) {
     var before = text.substring(0, idx).trim();
     var after = text.substring(idx).trim();
     // If after looks like footnote block, split there
-    if (/^\s*\[\d+\]/.test(after.trim())) {
-      return { body: before, footnotes: after };
+    if (/^\s*\[\d+\]/.test(after)) {
+      var midSplit = splitRefRun(after);
+      return {
+        body: (before + (midSplit.trailing ? "\n\n" + midSplit.trailing : "")).trim(),
+        footnotes: midSplit.refs,
+      };
     }
   }
   var lines = text.split("\n");
   var footnoteStart = -1;
   for (var i = 0; i < lines.length; i++) {
     var line = lines[i].trim().replace(/\r$/, "");
-    if (/^\[\d+\]\s+/.test(line) || /^\s*Ibid\.?/i.test(line)) {
+    if (isFootnoteRefLine(line)) {
       if (footnoteStart === -1) footnoteStart = i;
     } else if (footnoteStart !== -1) {
-      if (line.length === 0) continue;
+      // Once a real, non-blank line follows the reference run, the run is over —
+      // anything past it is body content (e.g. a paragraph the author placed
+      // after the reference list). Previously the entire remainder was treated
+      // as footnotes, hiding that paragraph from nativization.
+      if (line.length > 0) break;
     }
   }
-  var body = footnoteStart === -1 ? text : lines.slice(0, footnoteStart).join("\n").trim();
-  var footnotes = footnoteStart === -1 ? "" : lines.slice(footnoteStart).join("\n").trim();
+  var body;
+  var footnotes = "";
+  if (footnoteStart !== -1) {
+    var mainSplit = splitRefRun(lines.slice(footnoteStart).join("\n"));
+    footnotes = mainSplit.refs;
+    body = lines.slice(0, footnoteStart).concat(mainSplit.trailing ? [mainSplit.trailing] : []).join("\n").trim();
+  } else {
+    body = text;
+  }
 
   // Footnote glued to the END of a body paragraph (same line / end of input):
   // " ...theories.    [1] Ibid."  or  " ...text.[1] Author (2020)."  is NOT at
@@ -1299,8 +1362,10 @@ function extractFootnoteBlock(text) {
     // sitting mid-prose (not after sentence-ending punctuation) are left alone.
     var mBody = body.match(/([.!?:])[\s\n]*(\[\d+\][\s\S]*)$/);
     if (mBody && /^\[\d+\]/.test(mBody[2].trim())) {
-      footnotes = mBody[2].trim();
+      var gluedSplit = splitRefRun(mBody[2]);
+      footnotes = gluedSplit.refs;
       body = body.substring(0, body.length - mBody[2].length).trimEnd();
+      if (gluedSplit.trailing) body = (body + "\n\n" + gluedSplit.trailing).trim();
     }
   }
   return { body: (body || "").trim(), footnotes: (footnotes || "").trim() };
