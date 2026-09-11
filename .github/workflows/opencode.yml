@@ -1,0 +1,35 @@
+﻿name: OpenCode Auto-Fix
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  opencode:
+    if: contains(github.event.comment.body, '/opencode') || contains(github.event.comment.body, '/oc')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run OpenCode Agent
+        uses: anomalyco/opencode/github@latest
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        with:
+          model: openrouter/anthropic/claude-3.5-sonnet
+
+      - name: Push Changes
+        run: |
+          git config user.name "opencode-bot"
+          git config user.email "bot@opencode.ai"
+          git add .
+          git commit -m "fix: automatic patch via OpenCode" || exit 0
+          git push
