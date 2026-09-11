@@ -1433,7 +1433,29 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
         var addText = revSents[r].trim();
         var normAdd = normalizeText(addText);
         var isHeading = /^\*\*/.test(addText);
-        if (!isHeading && normAdd.length > 0 && covered.indexOf(normAdd) !== -1) {
+        var isEcho = false;
+        if (!isHeading && normAdd.length > 0) {
+          // (a) Verbatim/substring copy of something already covered.
+          if (covered.indexOf(normAdd) !== -1) {
+            isEcho = true;
+          } else {
+            // (b) Near-duplicate echo: most of this sentence's tokens already
+            // live inside a single earlier original/revised sentence (catches
+            // restatements like "Importantly, the results are clear." echoing
+            // "It is important to note that the results are clear.").
+            var addTokens = normAdd.split(/\s+/).filter(function (w) { return w; });
+            if (addTokens.length >= 3) {
+              var bestCover = 0;
+              for (var ei = 0; ei < result.length; ei++) {
+                var pairText = (result[ei].original || "") + " " + (result[ei].revised || "");
+                var cov = tokenCoverage(addText, pairText);
+                if (cov > bestCover) bestCover = cov;
+              }
+              if (bestCover >= 0.75) isEcho = true;
+            }
+          }
+        }
+        if (isEcho) {
           stripped.push(addText);
           continue;
         }
@@ -1620,6 +1642,29 @@ function normalizeSentenceKey(s) {
     .replace(/[""\u201C\u201D\u2018\u2019]/g, "'")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+// Echo-detection helpers: measure how much of a child sentence's meaningful
+// tokens already appear in a parent sentence or a concatenated blob.
+function _echoTokenSet(text) {
+  var set = {};
+  String(text || "")
+    .toLowerCase()
+    .split(/\s+/)
+    .forEach(function (w) { if (w) set[w] = true; });
+  return set;
+}
+function tokenCoverage(childText, parentText) {
+  var c = _echoTokenSet(childText);
+  var p = _echoTokenSet(parentText);
+  var overlapped = 0;
+  var total = 0;
+  for (var k in c) {
+    if (!Object.prototype.hasOwnProperty.call(c, k)) continue;
+    total++;
+    if (Object.prototype.hasOwnProperty.call(p, k)) overlapped++;
+  }
+  return total === 0 ? 0 : overlapped / total;
 }
 
 // Builds deterministic nativization maps from the databases the client sends.
@@ -2006,6 +2051,19 @@ function ensureValidResult(parsed, originalText, options) {
         if (seenRef[key]) return "\uFFFF"; // marker to drop
         seenRef[key] = true;
       }
+      return p;
+    }).filter(function (p) { return p !== "\uFFFF"; }).join("\n\n");
+    // 1b) Drop VERBATIM repeated BODY paragraphs (headings and footnote lines
+    // are protected; a body paragraph repeating itself is a model echo).
+    blocks = finalVersion.split(/\n\n+/).filter(function (p) { return p && p.trim(); });
+    var seenBody = {};
+    finalVersion = blocks.map(function (p) {
+      var t = p.trim();
+      if (/^\*\*/.test(t)) return p;
+      if (/^\[\d+\]/.test(t) || /^Ibid\.?/i.test(t) || /^\[?\d+[.\]]?\s+[A-Z].*\(\d{4}\)/.test(t)) return p;
+      var key = "body:" + t;
+      if (seenBody[key]) return "\uFFFF"; // marker to drop
+      seenBody[key] = true;
       return p;
     }).filter(function (p) { return p !== "\uFFFF"; }).join("\n\n");
     // 2) Collapse 3+ newlines.
