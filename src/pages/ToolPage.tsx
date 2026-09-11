@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserButton, useUser, useAuth } from "@clerk/clerk-react";
 import {
@@ -48,6 +48,53 @@ const TONES = [
   { value: "empathetic", label: "Empathetic" },
 ];
 
+// Word-level diff (LCS) so "what changed" is visible even for subtle edits.
+type WordDiffPart = { text: string; type: "same" | "add" | "del" };
+const wordDiff = (a: string, b: string): WordDiffPart[] => {
+  const aa = a.split(/\s+/).filter(Boolean);
+  const bb = b.split(/\s+/).filter(Boolean);
+  const n = aa.length;
+  const m = bb.length;
+  const dp: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] = aa[i] === bb[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const parts: WordDiffPart[] = [];
+  let i = 0;
+  let j = 0;
+  while (i < n && j < m) {
+    if (aa[i] === bb[j]) { parts.push({ text: aa[i], type: "same" }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { parts.push({ text: aa[i], type: "del" }); i++; }
+    else { parts.push({ text: bb[j], type: "add" }); j++; }
+  }
+  while (i < n) { parts.push({ text: aa[i], type: "del" }); i++; }
+  while (j < m) { parts.push({ text: bb[j], type: "add" }); j++; }
+  return parts;
+};
+
+const DiffSpans = ({ orig, rev }: { orig: string; rev: string }) => {
+  const parts = wordDiff(orig, rev);
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.type === "del" ? (
+          <span key={i} className="text-rose-300 line-through decoration-rose-500/80">
+            {p.text}{" "}
+          </span>
+        ) : p.type === "add" ? (
+          <span key={i} className="text-emerald-200 bg-emerald-500/20 px-0.5 rounded">
+            {p.text}{" "}
+          </span>
+        ) : (
+          <span key={i}>{p.text} </span>
+        )
+      )}
+    </>
+  );
+};
+
 const PRESETS = [
   {
     name: "Academic",
@@ -83,7 +130,13 @@ export default function ToolPage() {
   const navigate = useNavigate();
   const { getToken } = useAuth();
   const [inputHtml, setInputHtml] = useState<string>(PRESETS[0].html);
-  const [forcedDialect, setForcedDialect] = useState<string>("auto");
+  const [forcedDialect, setForcedDialect] = useState<string>(() => {
+    try {
+      return localStorage.getItem("idiomoptima.dialect") || "auto";
+    } catch {
+      return "auto";
+    }
+  });
   const [domain, setDomain] = useState<string>("academic");
   const [tone, setTone] = useState<string>("neutral");
 
@@ -371,7 +424,11 @@ export default function ToolPage() {
             <Languages className="w-3.5 h-3.5 text-blue-400" />
             <select
               value={forcedDialect}
-              onChange={(e) => setForcedDialect(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setForcedDialect(v);
+                try { localStorage.setItem("idiomoptima.dialect", v); } catch {}
+              }}
               className="h-8 text-xs font-semibold bg-[#0A192F] border border-white/20 rounded-lg px-2 text-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               {DIALECTS.map((d) => (
@@ -604,6 +661,13 @@ export default function ToolPage() {
                                   >
                                     <span className="block text-[10px] uppercase tracking-wider text-rose-400 font-bold mb-1">Original</span>
                                     <span className="block text-xs italic font-sans text-slate-300 leading-relaxed mb-2">{s.original}</span>
+                                    <span className="block text-[10px] uppercase tracking-wider text-emerald-400 font-bold mb-1 mt-2">Revised</span>
+                                    <span className="block text-xs font-sans leading-relaxed mb-2 text-emerald-100">
+                                      <DiffSpans
+                                        orig={(s.original || "").replace(/^\*\*/, "").replace(/\*\*$/, "")}
+                                        rev={(drafts[i] ?? effectiveRevised(i)).replace(/^\*\*/, "").replace(/\*\*$/, "")}
+                                      />
+                                    </span>
                                     {editingIdx === i ? (
                                       <>
                                         <textarea
@@ -672,19 +736,35 @@ export default function ToolPage() {
                           const o = (sentence.original || "").replace(/^\*\*/, "").replace(/\*\*$/, "");
                           const r = (effectiveRevised(idx) || "").replace(/^\*\*/, "").replace(/\*\*$/, "");
                           const isFootnote = sentence.isImmutableFootnote;
+                          const isNewPara =
+                            idx > 0 &&
+                            typeof sentence.paragraphIndex === "number" &&
+                            typeof (result.sentences[idx - 1] && result.sentences[idx - 1].paragraphIndex) === "number" &&
+                            sentence.paragraphIndex !== result.sentences[idx - 1].paragraphIndex;
                           if (isFootnote && o === r) {
-                            return <span key={idx} className="text-slate-400 italic text-base">{o}{idx < result.sentences.length - 1 ? " " : ""}</span>;
+                            return (
+                              <Fragment key={idx}>
+                                {isNewPara && <><br /><br /></>}
+                                <span className="text-slate-400 italic text-base">{o}{idx < result.sentences.length - 1 ? " " : ""}</span>
+                              </Fragment>
+                            );
                           }
                           if (o === r) {
-                            return <span key={idx}>{r}{idx < result.sentences.length - 1 ? " " : ""}</span>;
+                            return (
+                              <Fragment key={idx}>
+                                {isNewPara && <><br /><br /></>}
+                                <span>{r}{idx < result.sentences.length - 1 ? " " : ""}</span>
+                              </Fragment>
+                            );
                           }
-                          // Changed sentence: show removed (original-only) struck-through
-                          // then added (revised) highlighted. Simple whole-sentence fallback.
+                          // Changed sentence: word-level diff (removed struck-through,
+                          // added highlighted) so subtle edits are visible.
                           return (
-                            <span key={idx}>
-                              <span className="text-rose-300/80 line-through decoration-rose-500/60 px-0.5">{o}</span>
-                              <span className="text-emerald-200 bg-emerald-500/15 px-1 rounded">{r}{idx < result.sentences.length - 1 ? " " : ""}</span>
-                            </span>
+                            <Fragment key={idx}>
+                              {isNewPara && <><br /><br /></>}
+                              <DiffSpans orig={o} rev={r} />
+                              {idx < result.sentences.length - 1 ? " " : ""}
+                            </Fragment>
                           );
                         })}
                       </div>

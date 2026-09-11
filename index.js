@@ -825,6 +825,12 @@ function postProcessSuggestions(suggestions, originalText, finalText, sentences,
         unchangedCount++;
         continue;
       }
+      // Mark punctuation/citation-marker-only rewrites as unchanged (consistent
+      // with the explanation/score classification).
+      if (contentTokenSeq(origCleanH) === contentTokenSeq(revCleanH)) {
+        unchangedCount++;
+        continue;
+      }
 
       changedSentences.push({
         num: i + 1,
@@ -1667,6 +1673,22 @@ function tokenCoverage(childText, parentText) {
   return total === 0 ? 0 : overlapped / total;
 }
 
+// Reduces a sentence to its UNDERLYING content words: citation markers ([1]),
+// quote marks, and punctuation are removed so marker moves / spacing / case-only
+// rewrites compare equal. Used to keep scoring and explanations honest (a moved
+// "[1]" or a collapsed double space is NOT a "real improvement").
+function contentTokenSeq(text) {
+  return String(text || "")
+    .replace(/^\*\*/, "")
+    .replace(/\*\*$/, "")
+    .replace(/\[\s*\d+[a-z]*\s*\]/g, " ")
+    .toLowerCase()
+    .split(/\s+/)
+    .map(function (t) { return t.replace(/^[^a-z]+|[^a-z]+$/g, ""); })
+    .filter(function (t) { return /^[a-z]/.test(t); })
+    .join(" ");
+}
+
 // Builds deterministic nativization maps from the databases the client sends.
 // Only MULTI-WORD sources participate in phrase-level matching (a bare single
 // common word like "plus" -> "also" is far too risky and changes meaning);
@@ -2088,6 +2110,9 @@ function ensureValidResult(parsed, originalText, options) {
     var oOut = stripQuotes(origClean).toLowerCase().replace(/\s+/g, " ").trim();
     var rOut = stripQuotes(revClean).toLowerCase().replace(/\s+/g, " ").trim();
     if (oOut === rOut) return "No corrections needed.";
+    // A citation-marker move / spacing / punctuation-only rewrite is not a real
+    // correction: the underlying content words are identical.
+    if (contentTokenSeq(origClean) === contentTokenSeq(revClean)) return "No corrections needed.";
     if (/\(\d{4}\)/.test(orig) && !/\(\d{4}\)/.test(revised)) return "No corrections needed.";
     if (orig.replace(/[-–—]/g, "-").replace(/\s+/g, " ").trim() === revised.replace(/[-–—]/g, "-").replace(/\s+/g, " ").trim()) return "No corrections needed.";
     if (orig === revised) return "No corrections needed.";
@@ -2163,6 +2188,9 @@ function ensureValidResult(parsed, originalText, options) {
     var oq = stripQuotes(o).replace(/\s+/g, " ").trim();
     var rq = stripQuotes(r).replace(/\s+/g, " ").trim();
     if (oq === rq) return false;
+    // A citation-marker move / spacing / punctuation-only rewrite (same content
+    // words, different markers) is NOT a real improvement.
+    if (contentTokenSeq(before) === contentTokenSeq(after)) return false;
     return true;
   }).length;
 
@@ -2234,6 +2262,32 @@ function ensureValidResult(parsed, originalText, options) {
       " across the text, raising the native-level quality of the writing.";
   } else {
     summary = "The original text needed no corrections.";
+  }
+
+  // Surface the preserved reference block as explicit sentences so the UI
+  // (which renders `sentences` for fulltext/diff/Apply-to-Editor/notes) shows
+  // the footnotes too. finalVersion already carries them; the sentence list
+  // must match. Entries already present from the derive pass are not re-added.
+  if (savedFootnotes && savedFootnotes.trim()) {
+    var fnStarPara = 9000;
+    var seenFn = {};
+    sentences.forEach(function (s) {
+      var fk = normalizeSentenceKey((s && (s.original || s.revised)) || "");
+      if (fk) seenFn[fk] = true;
+    });
+    savedFootnotes.split(/\n\n+/).map(function (p) { return p.trim(); }).filter(function (p) { return p; })
+      .forEach(function (fnText, fi) {
+        var fk = normalizeSentenceKey(fnText);
+        if (fk && seenFn[fk]) return;
+        if (fk) seenFn[fk] = true;
+        sentences.push({
+          original: fnText,
+          revised: fnText,
+          explanation: "No corrections needed.",
+          isImmutableFootnote: true,
+          paragraphIndex: fnStarPara + fi,
+        });
+      });
   }
 
   return {

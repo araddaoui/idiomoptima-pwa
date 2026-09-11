@@ -271,7 +271,7 @@ export async function transformText(
     const aiTotal = databases?.aiPhraseMap?.length || 0;
     const lexTotal = databases?.lexicalDatabases?.[domain]?.length || 0;
     const dbLine = serverStats
-      ? `Database: worker enforced ${aiTotal} AI-ese, ${idiomTotal} idiom(s), ${lexTotal} lexical (${domain}) — applied ${aiPhraseReplacements}/${idiomReplacements}/${lexicalReplacements}.`
+      ? `Nativization: ${aiTotal} AI-ese, ${idiomTotal} idiom(s), ${lexTotal} lexical (${domain}) phrase rules sent to the model; deterministic backstop applied ${aiPhraseReplacements}/${idiomReplacements}/${lexicalReplacements} (model handled the rest).`
       : `Database: checked ${aiTotal} AI-ese, ${idiomTotal} idiom(s), ${lexTotal} lexical (${domain}) — applied ${aiPhraseReplacements}/${idiomReplacements}/${lexicalReplacements} (total ${totalReplacements}).`;
     data.suggestions = [...(data.suggestions || []), dbLine];
 
