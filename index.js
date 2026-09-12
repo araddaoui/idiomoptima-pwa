@@ -1005,10 +1005,16 @@ async function callOpenRouter(text, options, apiKey) {
   var queue = OPENROUTER_FREE_MODELS.slice();
   var tried = {};
   var lastError = "";
-  while (queue.length > 0) {
+  // Cap how many free models we rotate through so a long tail of
+  // rate-limited/hanging models can't pin the free tier at OpenRouter for
+  // minutes before falling through to the next provider.
+  var MAX_OPENROUTER_MODELS = 4;
+  var attempts = 0;
+  while (queue.length > 0 && attempts < MAX_OPENROUTER_MODELS) {
     var model = queue.shift();
     if (tried[model]) continue;
     tried[model] = true;
+    attempts++;
     // Per-model timeout so a hanging/rate-limited free model rotates to the
     // next instead of blocking the request for minutes (client was stuck at 90%).
     var ctrl = new AbortController();
@@ -1566,6 +1572,7 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
         var normAdd = normalizeText(addText);
         var isHeading = /^\*\*/.test(addText);
         var isEcho = false;
+        covered = normalizeText(result.map(function (s) { return (s.original || "") + " " + (s.revised || ""); }).join(" "));
         if (!isHeading && normAdd.length > 0) {
           // (a) Verbatim/substring copy of something already covered.
           if (covered.indexOf(normAdd) !== -1) {
@@ -1584,6 +1591,7 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
                 if (cov > bestCover) bestCover = cov;
               }
               if (bestCover >= 0.75) isEcho = true;
+              if (!isEcho && tokenCoverage(normAdd, covered) >= 0.75) isEcho = true;
             }
           }
         }
