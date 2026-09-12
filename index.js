@@ -1656,6 +1656,7 @@ function normalizeTitleBreaks(text) {
     if (trimmed.length > 0 && trimmed.length < 80
         && !/[.!?]\s*$/.test(trimmed)
         && !/[,;:?!]\s*$/.test(trimmed)
+        && !/[)\]]["\u201D\u2019]?\s*$/.test(trimmed)
         && !continuationWords.test(trimmed)
         && /^[A-Z]/.test(trimmed)
         && !/^\*\*/.test(trimmed)
@@ -1671,6 +1672,7 @@ function normalizeTitleBreaks(text) {
     if (trimmed.length > 0 && trimmed.length < 80
         && !/[.!?]$/.test(trimmed)
         && !/[,;:?!]$/.test(trimmed)
+        && !/[)\]]["\u201D\u2019]?\s*$/.test(trimmed)
         && !continuationWords.test(trimmed)
         && /^[A-Z]/.test(trimmed)
         && !/^\*\*/.test(trimmed)
@@ -1818,6 +1820,41 @@ function tokenCoverage(childText, parentText) {
   return total === 0 ? 0 : overlapped / total;
 }
 
+function isEchoOfOutput(output, input) {
+  if (!output || !input) return false;
+  var f = String(output).toLowerCase().replace(/\s+/g, " ").trim();
+  var i = String(input).toLowerCase().replace(/\s+/g, " ").trim();
+  if (!f || !i) return false;
+  if (f === i) return true;
+  var lenRatio = f.length / Math.max(1, i.length);
+  if (lenRatio < 0.7 || lenRatio > 1.05) return false;
+  return tokenCoverage(f, i) >= 0.97;
+}
+
+// A provider result is only treated as "transformable input" when at least
+// one built-in or DB nativization rule could genuinely fire on it. This keeps
+// the echo-rotation honest: a text that is already fully native (nothing to
+// change) is NOT re-attempted, so scores stay flat only when flat is correct.
+function inputIsTransformable(text, dbs, domain) {
+  if (!text || String(text).length < 8) return false;
+  var lower = String(text).toLowerCase();
+  if (typeof BUILTIN_NATIVIZATION !== "undefined") {
+    for (var b = 0; b < BUILTIN_NATIVIZATION.length; b++) {
+      var rule = BUILTIN_NATIVIZATION[b];
+      if (rule && rule.re) {
+        var res = rule.re.exec(String(text));
+        if (res) { rule.re.lastIndex = 0; return true; }
+      }
+    }
+  }
+  var maps = dbs && typeof dbs === "object" ? buildNativizationMaps(dbs, domain) : buildNativizationMaps({}, domain);
+  for (var i = 0; i < maps.phraseList.length; i++) {
+    var src = maps.phraseList[i] && maps.phraseList[i].src;
+    if (src && lower.indexOf(String(src).toLowerCase()) !== -1) return true;
+  }
+  return false;
+}
+
 // Reduces a sentence to its UNDERLYING content words: citation markers ([1]),
 // quote marks, and punctuation are removed so marker moves / spacing / case-only
 // rewrites compare equal. Used to keep scoring and explanations honest (a moved
@@ -1923,6 +1960,18 @@ var DEFAULT_DATABASES = {
 // Deliberately conservative: skips footnotes/citations, already-bold text,
 // lines ending in sentence punctuation OR ,;: (a '...following:' label is NOT a
 // heading), and any multi-sentence run.
+function headingShapedText(t) {
+  var n = String(t || "").replace(/^\*\*/, "").replace(/\*\*$/, "").trim().replace(/\s+/g, " ");
+  if (!n) return false;
+  if (/^\[\d+\]/.test(n) || /^\s*Ibid\.?/i.test(n) || /^\([A-Z]/.test(n)) return false;
+  if (n.indexOf("\n") !== -1) return false;
+  if (/[.!?,;:)]]["\u201D\u2019]?\s*$/.test(n)) return false;
+  if (n.split(/\s+/).length > 15 || n.length > 140) return false;
+  if (!/^[A-Z]/.test(n)) return false;
+  if (/["'\u201C\u201D\u2018\u2019]/.test(n.slice(0, 1)) || n.indexOf("  ") !== -1) return false;
+  return true;
+}
+
 function boldHeadingSentences(sentences) {
   if (!Array.isArray(sentences)) return sentences;
   return sentences.map(function (s) {
@@ -1933,10 +1982,17 @@ function boldHeadingSentences(sentences) {
     if (/^\[\d+\]/.test(txt) || /^\s*Ibid\.?/i.test(txt) || /^\([A-Z]/.test(txt)) return s;
     if (/^\*\*/.test(txt)) return s;
     if (/[.!?,;:]$/.test(txt)) return s;
+    // A body sentence never becomes a heading: a closing bracket/paren tail
+    // (citation marker "[4]"/"(2020)") proves the text runs on, so it is NOT
+    // a title even though it lacks terminal punctuation.
+    if (/[)\]]["\u201D\u2019]?\s*$/.test(txt)) return s;
     if (txt.split(/\s+/).length > 15) return s;
     if (txt.length < 1 || txt.length > 140) return s;
     if (!/^[A-Z]/.test(txt)) return s;
     if (/["'\u201C\u201D\u2018\u2019]/.test(txt.slice(0, 1)) || txt.indexOf("\n") !== -1 || txt.indexOf("  ") !== -1) return s;
+    // Only re-bold when the ORIGINAL input was ALSO heading-shaped — bolding is a
+    // restoration of an input heading, never an upgrade of ordinary prose.
+    if (!headingShapedText(s.original)) return s;
     s.revised = "**" + txt + "**";
     return s;
   });
@@ -2210,7 +2266,7 @@ function ensureValidResult(parsed, originalText, options) {
     finalVersion = finalVersion.split("\n\n").map(function(para){
       var t=para.trim();
       var clean = t.replace(/^\*\*/, "").replace(/\*\*$/, "").trim();
-      if(clean.length>0 && clean.length<80 && !/[.!?]$/.test(clean) && !/[,;:?!]$/.test(clean) && !cw.test(clean) && /^[A-Z]/.test(clean) && !/^\[\d+\]/.test(clean) && !/^\([A-Z]/.test(clean)){
+      if(clean.length>0 && clean.length<80 && !/[.!?]$/.test(clean) && !/[,;:?!]$/.test(clean) && !/[)\]]["\u201D\u2019]?\s*$/.test(clean) && !cw.test(clean) && /^[A-Z]/.test(clean) && !/^\[\d+\]/.test(clean) && !/^\([A-Z]/.test(clean)){
         if(t === "**"+clean+"**") return para;
         return "**"+clean+"**";
       }
@@ -2827,6 +2883,8 @@ export default {
 
       var parsed = null;
       var provider = "none";
+      var lastParsed = null;
+      var lastParsedProvider = "";
       var providerErrors = [];
       var attemptTimes = [];
       var providerStartMs = Date.now();
@@ -2888,6 +2946,24 @@ export default {
                 pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " could not be parsed — trying the next provider" });
                 continue;
               }
+              // Echo-no-op guard: an output that is essentially the input verbatim
+              // (while the input WAS transformable by our rules) is not a success —
+              // it would silently produce flat 75/75 scores. Rotate to the next
+              // provider, keeping this result as a last-resort fallback.
+              var echoFinal = parsed.finalVersion || parsed.final || parsed.text || "";
+              if ((!echoFinal || echoFinal.length < 10) && Array.isArray(parsed.sentences) && parsed.sentences.length > 0) {
+                echoFinal = parsed.sentences.map(function(s){ return (s && (s.revised || s.original)) || ""; }).filter(function(s){ return s; }).join(" ");
+              }
+              if (echoFinal && String(echoFinal).trim().length > 0 &&
+                  inputIsTransformable(bodyText, options.databases, options.domain) &&
+                  isEchoOfOutput(echoFinal, bodyText)) {
+                if (!lastParsed) { lastParsed = parsed; lastParsedProvider = attemptName; }
+                providerErrors.push(attemptName + ": echoed the input verbatim — no real changes (rotating to next provider)");
+                console.error(attemptName + " echoed the input verbatim — rotating to the next provider");
+                attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false, echoedInput: true });
+                pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " echoed the text — trying next provider" });
+                continue;
+              }
               attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: true });
               pushLine({ ev: "tick", pct: 86, phase: "Model returned from " + attemptName + " — running deterministic nativization rules" });
               break;
@@ -2900,6 +2976,14 @@ export default {
             }
           }
 
+          if (!parsed && lastParsed) {
+            // Every provider echoed/failed; return the last parseable result so
+            // the request still completes with an honest (flat) outcome.
+            parsed = lastParsed;
+            provider = lastParsedProvider || provider;
+            attemptTimes.push({ provider: provider || "last", ms: 0, ok: true });
+            pushLine({ ev: "tick", pct: 86, phase: "All providers echoed the text — using last parseable result" });
+          }
           if (!parsed) {
             var configuredNow = {
               gemini: !!env.GEMINI_API_KEY,
