@@ -143,6 +143,8 @@ export default function ToolPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [progressPhase, setProgressPhase] = useState<string>("");
+  const [elapsedSec, setElapsedSec] = useState<number>(0);
+  const elapsedTimerRef = useRef<number | null>(null);
   const [result, setResult] = useState<TransformationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -217,6 +219,13 @@ export default function ToolPage() {
     loadDatabases();
   }, [loadDatabases]);
 
+  useEffect(() => () => {
+    if (elapsedTimerRef.current) {
+      window.clearInterval(elapsedTimerRef.current);
+      elapsedTimerRef.current = null;
+    }
+  }, []);
+
   const handleTransform = async () => {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = inputHtml;
@@ -242,6 +251,9 @@ export default function ToolPage() {
     setSelectedSentenceIdx(null);
     setProgress(0);
     setProgressPhase("Analyzing sentence cadence & register markers...");
+    setElapsedSec(0);
+    if (elapsedTimerRef.current) window.clearInterval(elapsedTimerRef.current);
+    elapsedTimerRef.current = window.setInterval(() => setElapsedSec((s) => s + 1), 1000);
     try {
       const token = await getToken();
       // Never transform with empty DB maps: block on the load so the worker's
@@ -265,6 +277,10 @@ export default function ToolPage() {
     } catch (err: any) {
       setError(err.message || "Something went wrong during transformation.");
     } finally {
+      if (elapsedTimerRef.current) {
+        window.clearInterval(elapsedTimerRef.current);
+        elapsedTimerRef.current = null;
+      }
       setLoading(false);
     }
   };
@@ -521,7 +537,7 @@ export default function ToolPage() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-500/25 active:scale-95 cursor-pointer"
               >
                 {loading ? (
-                  <><RefreshCw className="w-4 h-4 animate-spin" /><span>Nativizing ({progress}%)...</span></>
+                  <><RefreshCw className="w-4 h-4 animate-spin" /><span>Nativizing ({progress}%, {elapsedSec}s)...</span></>
                 ) : (
                   <><PenTool className="w-4 h-4" /><span>Nativize Prose</span><ArrowRight className="w-4 h-4" /></>
                 )}
@@ -582,11 +598,12 @@ export default function ToolPage() {
                     <div className="absolute inset-0 border-4 border-blue-500/20 border-t-blue-400 rounded-full animate-spin" />
                     <PenTool className="w-6 h-6 text-blue-400 animate-pulse" />
                   </div>
-                  <h3 className="font-serif text-xl font-bold text-white mb-1">Nativizing...</h3>
+                  <h3 className="font-serif text-xl font-bold text-white mb-1">Nativizing... <span className="text-blue-300 text-base font-mono">{elapsedSec}s</span></h3>
                   <p className="text-xs text-slate-300 mb-6 max-w-sm leading-relaxed">{progressPhase}</p>
                   <div className="w-56 h-2 bg-white/10 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300 rounded-full" style={{ width: `${progress}%` }} />
                   </div>
+                  <p className="text-[11px] text-slate-400 mt-4">Provider queues can take 30–90s per attempt; this is normal for the free tier.</p>
                 </div>
               ) : error ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-rose-950/30 border border-rose-500/30 rounded-2xl">
@@ -802,6 +819,12 @@ export default function ToolPage() {
                       <h4 className="text-xs uppercase font-bold tracking-wider text-white mb-3 flex items-center gap-2">
                         <FileText className="w-4 h-4 text-amber-400" /> Diagnostics
                       </h4>
+                      {result.timing && (
+                        <div className="p-2 mb-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-200 font-mono">
+                          Provider: {result.provider} &middot; {Math.round(result.timing.totalMs / 1000)}s
+                          {result.timing.attempts.length > 1 ? ` (${result.timing.attempts.length} attempts)` : ""}
+                        </div>
+                      )}
                       <div className="space-y-2.5">
                         {result.suggestions && result.suggestions.length > 0 ? (
                           result.suggestions.map((s, i) => (

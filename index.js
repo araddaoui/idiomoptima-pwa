@@ -1862,6 +1862,33 @@ var DEFAULT_DATABASES = {
   }
 };
 
+// Heading re-bold (output-side, deterministic): the model round-trip can strip
+// the '**' markers normalizeTitleBreaks added to headings in the INPUT body, so
+// this pass re-wraps any sentence that is unambiguously a heading — short,
+// sentence-shaped, no terminal punctuation — guaranteeing the title keeps its
+// formatting in the UI, exports, and Apply-to-Editor regardless of provider.
+// Deliberately conservative: skips footnotes/citations, already-bold text,
+// lines ending in sentence punctuation OR ,;: (a '...following:' label is NOT a
+// heading), and any multi-sentence run.
+function boldHeadingSentences(sentences) {
+  if (!Array.isArray(sentences)) return sentences;
+  return sentences.map(function (s) {
+    if (!s) return s;
+    var txt = (s.revised || "").trim();
+    if (!txt) return s;
+    if (s.isImmutableFootnote) return s;
+    if (/^\[\d+\]/.test(txt) || /^\s*Ibid\.?/i.test(txt) || /^\([A-Z]/.test(txt)) return s;
+    if (/^\*\*/.test(txt)) return s;
+    if (/[.!?,;:]$/.test(txt)) return s;
+    if (txt.split(/\s+/).length > 15) return s;
+    if (txt.length < 1 || txt.length > 140) return s;
+    if (!/^[A-Z]/.test(txt)) return s;
+    if (/["'\u201C\u201D\u2018\u2019]/.test(txt.slice(0, 1)) || txt.indexOf("\n") !== -1 || txt.indexOf("  ") !== -1) return s;
+    s.revised = "**" + txt + "**";
+    return s;
+  });
+}
+
 // Builds deterministic nativization maps from the databases the client sends.
 // Only MULTI-WORD sources participate in phrase-level matching (a bare single
 // common word like "plus" -> "also" is far too risky and changes meaning);
@@ -2261,6 +2288,12 @@ function ensureValidResult(parsed, originalText, options) {
     }
     sentences = split;
   })();
+
+  // Deterministic heading re-bold (see boldHeadingSentences): keeps titles and
+  // section headings bold in the UI / exports even when the model stripped the
+  // '**' markers. finalVersion is rebuilt from the same array below, so both
+  // stay in sync.
+  sentences = boldHeadingSentences(sentences);
 
   // Rebuild finalVersion from the post-processed sentences so it is always
   // 1:1 with the sentences list (no divergence between finalVersion and the
@@ -2730,6 +2763,8 @@ export default {
       var parsed = null;
       var provider = "none";
       var providerErrors = [];
+      var attemptTimes = [];
+      var providerStartMs = Date.now();
 
       for (var ai = 0; ai < attempts.length; ai++) {
         var attempt = attempts[ai];
@@ -2738,8 +2773,10 @@ export default {
         provider = attemptName;
         if (!attemptFn) {
           providerErrors.push(attemptName + ": skipped (not configured" + (bodyText.length >= 8000 && attemptName !== "gemini" && attemptName !== "deepseek" ? " / too long" : "") + ")");
+          attemptTimes.push({ provider: attemptName, ms: 0, ok: false, skipped: true });
           continue;
         }
+        var attemptStartMs = Date.now();
         try {
           var rawA = await attemptFn();
           parsed = parseJsonFromModel(rawA);
@@ -2763,11 +2800,20 @@ export default {
             console.error(unparseableMsg + " | First 200 chars: " + String(rawA).substring(0, 200));
             continue;
           }
+          if (!parsed) {
+            var unparseableMsg = attemptName + ": unparseable model output (length " + String(rawA).length + ")";
+            providerErrors.push(unparseableMsg);
+            console.error(unparseableMsg + " | First 200 chars: " + String(rawA).substring(0, 200));
+            attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
+            continue;
+          }
+          attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: true });
           break;
         } catch (e) {
           var failureMsg = attemptName + ": " + String((e && e.message) || e).substring(0, 300);
           providerErrors.push(failureMsg);
           console.error(attemptName + " failed:", e && e.message);
+          attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
         }
       }
 
@@ -2814,6 +2860,11 @@ export default {
       result.provider = provider;
       result.tier = tier;
       result.usage = usage;
+      result.timing = {
+        provider: provider,
+        totalMs: Date.now() - providerStartMs,
+        attempts: attemptTimes,
+      };
       return jsonResponse(result);
 
     } catch (error) {

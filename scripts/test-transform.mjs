@@ -151,7 +151,7 @@ const extracted = [
 ].join("\n");
 
 const api = new Function(
-  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, BUILTIN_NATIVIZATION, buildNativizationMaps, applyDatabaseNativization };"
+  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, BUILTIN_NATIVIZATION, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences };"
 )();
 
 // --- load + merge databases exactly like the client (ToolPage) ---------------
@@ -458,6 +458,32 @@ section("9. server-side DEFAULT_DATABASES floor (empty/absent client payload sti
   check(
     "handler falls back to DEFAULT_DATABASES when client payload is empty",
     /options\.databases = hasAnyDb \? clientDb : DEFAULT_DATABASES;/.test(INDEX_SRC),
+    true
+  );
+}
+
+// ============================================ 10. HEADING RE-BOLD (title fix)
+section("10. boldHeadingSentences re-bolds titles the model may have stripped");
+{
+  const bh = (txt) => api.boldHeadingSentences([{ original: txt, revised: txt, paragraphIndex: 0 }])[0].revised;
+
+  check("user title gets re-bolded", bh("Application & Adaptation to This Study"), "**Application & Adaptation to This Study**");
+  check("already-bold heading left untouched", bh("**Application & Adaptation to This Study**"), "**Application & Adaptation to This Study**");
+  check("sentence ending in '.' stays plain", bh("This is better suited to analysing the states."), "This is better suited to analysing the states.");
+  check("'...following:' label stays plain (no colon bolding)", bh("At a minimum, the contextuality criterion requires an understanding of the following:"), "At a minimum, the contextuality criterion requires an understanding of the following:");
+  check("footnote marker line stays plain", bh("[1] Nonneman, G. (2005). Routledge."), "[1] Nonneman, G. (2005). Routledge.");
+  check("lowercase-starting line stays plain", bh("application & adaptation to this study"), "application & adaptation to this study");
+  check("long body sentence (>= 15 words) stays plain", bh("Standard approaches to IR focus on a spectrum of notions such as the state, survival, cooperation, alliances, and wars"), "Standard approaches to IR focus on a spectrum of notions such as the state, survival, cooperation, alliances, and wars");
+
+  // Wiring guard: ensureValidResult must apply the pass before rebuild.
+  check(
+    "ensureValidResult applies boldHeadingSentences to sentences",
+    /sentences = boldHeadingSentences\(sentences\);/.test(INDEX_SRC),
+    true
+  );
+  check(
+    "response carries a timing breakdown",
+    /result\.timing = \{\s*provider: provider,\s*totalMs: Date\.now\(\) - providerStartMs,\s*attempts: attemptTimes,\s*\};/.test(INDEX_SRC),
     true
   );
 }

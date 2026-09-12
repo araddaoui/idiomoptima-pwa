@@ -16,6 +16,12 @@ export interface TransformationResult {
   explanation: string;
   detectedDialect: string;
   appliedMode?: string;
+  provider?: string;
+  timing?: {
+    provider: string;
+    totalMs: number;
+    attempts: { provider: string; ms: number; ok: boolean; skipped?: boolean }[];
+  };
   databaseStats?: {
     idiomReplacements: number;
     aiPhraseReplacements: number;
