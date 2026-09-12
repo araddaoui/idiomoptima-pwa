@@ -1591,7 +1591,7 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
                 if (cov > bestCover) bestCover = cov;
               }
               if (bestCover >= 0.75) isEcho = true;
-              if (!isEcho && tokenCoverage(normAdd, covered) >= 0.75) isEcho = true;
+              if (!isEcho && contentCoverage(normAdd, covered) >= 0.75) isEcho = true;
             }
           }
         }
@@ -1818,6 +1818,27 @@ function _echoTokenSet(text) {
 function tokenCoverage(childText, parentText) {
   var c = _echoTokenSet(childText);
   var p = _echoTokenSet(parentText);
+  var overlapped = 0;
+  var total = 0;
+  for (var k in c) {
+    if (!Object.prototype.hasOwnProperty.call(c, k)) continue;
+    total++;
+    if (Object.prototype.hasOwnProperty.call(p, k)) overlapped++;
+  }
+  return total === 0 ? 0 : overlapped / total;
+}
+
+function echoContentSet(text) {
+  var STOP = /\b(a|an|the|is|are|was|were|of|in|on|at|to|for|and|or|but|not|with|from|by|that|this|these|those|it|its|as|also|than|more|most|such|been|being|have|has|had|do|does|did|will|would|can|could|should|may|might|shall|there|their|they|we|you|i|he|she|it's|be|would|which|who|what|when|where|how|so|then|after|before)\b/gi;
+  var set = {};
+  String(text || "").replace(STOP, " ").split(/\s+/).forEach(function (w) {
+    if (w && !/^[0-9\[\]]+$/.test(w)) set[w] = true;
+  });
+  return set;
+}
+function contentCoverage(childText, parentText) {
+  var c = echoContentSet(childText);
+  var p = echoContentSet(parentText);
   var overlapped = 0;
   var total = 0;
   for (var k in c) {
