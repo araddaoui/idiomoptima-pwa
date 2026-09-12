@@ -145,18 +145,8 @@ export async function transformText(
 
   if (onProgress) onProgress(10, 0, 1, "Connecting to server...");
 
-  let progressTimer: ReturnType<typeof setInterval> | null = null;
-  let progressValue = 10;
-
-  if (onProgress) {
-    progressTimer = setInterval(() => {
-      if (progressValue < 90) {
-        progressValue += Math.random() * 4 + 1;
-        if (progressValue > 90) progressValue = 90;
-        onProgress(Math.round(progressValue), 0, 1, progressValue < 30 ? "Connecting to server..." : progressValue < 60 ? "Nativizing text..." : "Refining output...");
-      }
-    }, 800);
-  }
+  // Progress is driven entirely by real NDJSON events from the worker.
+  // No fake timer — every tick the user sees is a genuine server milestone.
 
   try {
     const headers: Record<string, string> = {
@@ -187,15 +177,74 @@ export async function transformText(
       }),
     });
 
-    if (progressTimer) clearInterval(progressTimer);
-    if (onProgress) onProgress(95, 0, 1, "Finalizing...");
+    // --- NDJSON stream consumption -------------------------------------------
+    // If the worker returned an NDJSON stream, read it line-by-line and forward
+    // each real milestone to onProgress. Both bars (paste + transform) receive
+    // the SAME events, so they move on an identical timeline by construction.
+    // If the worker returned a plain JSON error, fall back to legacy handling.
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || `Server error: ${response.status}`);
     }
 
-    const data: TransformationResult = await response.json();
+    // Content-Type is a CORS-safelisted header, so it is always readable by
+    // the browser even if the custom X-Transform-Stream header is not exposed
+    // (older worker / CDN stripping). Trust either one.
+    const isNdjson =
+      response.headers.get("X-Transform-Stream") === "ndjson" ||
+      (response.headers.get("Content-Type") || "").includes("application/x-ndjson");
+    let data: TransformationResult;
+
+    if (isNdjson && response.body) {
+      // --- Stream path: real worker-driven progress -------------------------
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let lastPct = 10;
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const evt = JSON.parse(line);
+              if (evt.ev === "final") {
+                data = evt.result;
+              } else if (evt.ev === "error") {
+                throw new Error(evt.message || "The AI service is temporarily unavailable.");
+              } else if (evt.ev === "phase" || evt.ev === "tick") {
+                // Forward real worker milestones to both bars — monotonically
+                // increasing, never fabricated.
+                if (typeof evt.pct === "number" && evt.pct > lastPct) {
+                  lastPct = evt.pct;
+                }
+                if (onProgress) onProgress(lastPct, 0, 1, evt.phase || "Working...");
+              }
+            } catch {}
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
+
+      if (!data!) {
+        throw new Error("Stream ended without a final result from the worker.");
+      }
+    } else {
+      // --- Legacy fallback: old worker returns plain JSON -------------------
+      if (onProgress) onProgress(95, 0, 1, "Finalizing...");
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("Unexpected response format from the server (expected JSON but received NDJSON/stream). Please reload the page.");
+      }
+    }
 
     // The worker enforces the databases deterministically and reports
     // `databaseStats` ({ totalMatches, aiPhrases, idioms, lexical,
@@ -290,7 +339,6 @@ export async function transformText(
 
     return data;
   } catch (error: any) {
-    if (progressTimer) clearInterval(progressTimer);
     console.error("Worker request failed:", error);
     throw new Error(`Transformation failed: ${error.message || "Server unavailable"}`);
   }

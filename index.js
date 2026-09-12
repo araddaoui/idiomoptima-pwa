@@ -2,6 +2,7 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Content-Type, Cache-Control, Authorization",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Expose-Headers": "X-Transform-Stream",
 };
 
 function jsonResponse(data, status) {
@@ -2829,107 +2830,167 @@ export default {
       var providerErrors = [];
       var attemptTimes = [];
       var providerStartMs = Date.now();
-
-      for (var ai = 0; ai < attempts.length; ai++) {
-        var attempt = attempts[ai];
-        var attemptName = attempt[0];
-        var attemptFn = attempt[1];
-        provider = attemptName;
-        if (!attemptFn) {
-          providerErrors.push(attemptName + ": skipped (not configured" + (bodyText.length >= 8000 && attemptName !== "gemini" && attemptName !== "deepseek" ? " / too long" : "") + ")");
-          attemptTimes.push({ provider: attemptName, ms: 0, ok: false, skipped: true });
-          continue;
-        }
-        var attemptStartMs = Date.now();
+      var streamEncoder = new TextEncoder();
+      var controllerRef = null;
+      var streamErrors = [];
+      function pushLine(obj) {
         try {
-          var rawA = await attemptFn();
-          parsed = parseJsonFromModel(rawA);
-          // Guard against models that stringify nested objects (prevents "[object Object]" corruption)
-          if (parsed && (parsed.finalVersion === "[object Object]" ||
-              (Array.isArray(parsed.sentences) && parsed.sentences.some(function (s) { return s && (s.original === "[object Object]" || s.revised === "[object Object]"); })))) {
-            parsed = null;
-          }
-          if (parsed && Array.isArray(parsed.sentences)) {
-            parsed.sentences = parsed.sentences.map(function (s) {
-              if (s && typeof s.original !== "string") s.original = String(s.original || "");
-              if (s && typeof s.revised !== "string") s.revised = String(s.revised || "");
-              if (s && s.original === "[object Object]") s.original = "";
-              if (s && s.revised === "[object Object]") s.revised = "";
-              return s;
-            });
-          }
-          if (!parsed) {
-            var unparseableMsg = attemptName + ": unparseable model output (length " + String(rawA).length + ")";
-            providerErrors.push(unparseableMsg);
-            console.error(unparseableMsg + " | First 200 chars: " + String(rawA).substring(0, 200));
-            continue;
-          }
-          if (!parsed) {
-            var unparseableMsg = attemptName + ": unparseable model output (length " + String(rawA).length + ")";
-            providerErrors.push(unparseableMsg);
-            console.error(unparseableMsg + " | First 200 chars: " + String(rawA).substring(0, 200));
-            attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
-            continue;
-          }
-          attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: true });
-          break;
+          controllerRef.enqueue(streamEncoder.encode(JSON.stringify(obj) + "\n"));
         } catch (e) {
-          var failureMsg = attemptName + ": " + String((e && e.message) || e).substring(0, 300);
-          providerErrors.push(failureMsg);
-          console.error(attemptName + " failed:", e && e.message);
-          attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
+          streamErrors.push("pushLine(" + (obj && obj.ev) + "): " + String((e && e.message) || e));
         }
       }
 
-      if (!parsed) {
-        var configuredNow = {
-          gemini: !!env.GEMINI_API_KEY,
-          openrouter: !!env.OPENROUTER_API_KEY,
-          deepseek: !!env.DEEPSEEK_API_KEY,
-          cloudflare: !!env.AI,
-        };
-        var configuredList = Object.keys(configuredNow).filter(function (k) { return configuredNow[k]; });
-        var message;
-        var missingKeys = [];
-        if (configuredList.length === 0) {
-          missingKeys = ["GEMINI_API_KEY", "OPENROUTER_API_KEY", "DEEPSEEK_API_KEY"];
-          message = "No AI provider is configured. Set at least one of " + missingKeys.join(", ") +
-            " as a Cloudflare Worker secret (wrangler.toml vars) and redeploy. OpenRouter is recommended for the free tier.";
-        } else if (providerErrors.length > 0 && providerErrors.every(function (e) { return e.indexOf("not configured") !== -1; })) {
-          message = "No AI provider is reachable for this request tier. Configured but skipped: " + providerErrors.join("; ") + ".";
-        } else {
-          message = "The AI service is temporarily unavailable. Please try again in a few minutes. If this persists, check that the provider API keys / free-model quotas are valid.";
-        }
-        return jsonResponse({
-          error: message,
-          detail: "Attempts: " + providerErrors.join(" | ") + ". Last provider: " + provider + ".",
-          configuredProviders: configuredNow,
-        }, 502);
-      }
+      var streamBody = new ReadableStream({
+        start: async function (controller) {
+          controllerRef = controller;
+          try {
+          pushLine({ ev: "phase", pct: 12, phase: "Loaded grammar, dialect & nativization rules" });
 
-      // Pass saved footnotes through for preservation
-      if (savedFootnotes) parsed._originalFootnotes = savedFootnotes;
+          for (var ai = 0; ai < attempts.length; ai++) {
+            var attempt = attempts[ai];
+            var attemptName = attempt[0];
+            var attemptFn = attempt[1];
+            provider = attemptName;
+            if (!attemptFn) {
+              providerErrors.push(attemptName + ": skipped (not configured" + (bodyText.length >= 8000 && attemptName !== "gemini" && attemptName !== "deepseek" ? " / too long" : "") + ")");
+              attemptTimes.push({ provider: attemptName, ms: 0, ok: false, skipped: true });
+              continue;
+            }
+            var attemptStartMs = Date.now();
+            pushLine({ ev: "tick", pct: Math.min(84, 18 + attemptTimes.length * 6), phase: "Contacting " + attemptName + " — this can take up to 45–90s" });
+            try {
+              var rawA = await attemptFn();
+              parsed = parseJsonFromModel(rawA);
+              if (parsed && (parsed.finalVersion === "[object Object]" ||
+                  (Array.isArray(parsed.sentences) && parsed.sentences.some(function (s) { return s && (s.original === "[object Object]" || s.revised === "[object Object]"); })))) {
+                parsed = null;
+              }
+              if (parsed && Array.isArray(parsed.sentences)) {
+                parsed.sentences = parsed.sentences.map(function (s) {
+                  if (s && typeof s.original !== "string") s.original = String(s.original || "");
+                  if (s && typeof s.revised !== "string") s.revised = String(s.revised || "");
+                  if (s && s.original === "[object Object]") s.original = "";
+                  if (s && s.revised === "[object Object]") s.revised = "";
+                  return s;
+                });
+              }
+              if (!parsed) {
+                var unparseableMsg = attemptName + ": unparseable model output (length " + String(rawA).length + ")";
+                providerErrors.push(unparseableMsg);
+                console.error(unparseableMsg + " | First 200 chars: " + String(rawA).substring(0, 200));
+              }
+              if (!parsed) {
+                var unparseableMsg = attemptName + ": unparseable model output (length " + String(rawA).length + ")";
+                providerErrors.push(unparseableMsg);
+                console.error(unparseableMsg + " | First 200 chars: " + String(rawA).substring(0, 200));
+                attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
+                pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " could not be parsed — trying the next provider" });
+                continue;
+              }
+              attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: true });
+              pushLine({ ev: "tick", pct: 86, phase: "Model returned from " + attemptName + " — running deterministic nativization rules" });
+              break;
+            } catch (e) {
+              var failureMsg = attemptName + ": " + String((e && e.message) || e).substring(0, 300);
+              providerErrors.push(failureMsg);
+              console.error(attemptName + " failed:", e && e.message);
+              attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
+              pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: "Trying next model provider (" + attemptName + " failed)" });
+            }
+          }
 
-      var result = ensureValidResult(parsed, text, options);
-      if (!result) {
-        return jsonResponse({ error: "Invalid response from AI model" }, 502);
-      }
+          if (!parsed) {
+            var configuredNow = {
+              gemini: !!env.GEMINI_API_KEY,
+              openrouter: !!env.OPENROUTER_API_KEY,
+              deepseek: !!env.DEEPSEEK_API_KEY,
+              cloudflare: !!env.AI,
+            };
+            var configuredList = Object.keys(configuredNow).filter(function (k) { return configuredNow[k]; });
+            var message;
+            var missingKeys = [];
+            if (configuredList.length === 0) {
+              missingKeys = ["GEMINI_API_KEY", "OPENROUTER_API_KEY", "DEEPSEEK_API_KEY"];
+              message = "No AI provider is configured. Set at least one of " + missingKeys.join(", ") +
+                " as a Cloudflare Worker secret (wrangler.toml vars) and redeploy. OpenRouter is recommended for the free tier.";
+            } else if (providerErrors.length > 0 && providerErrors.every(function (e) { return e.indexOf("not configured") !== -1; })) {
+              message = "No AI provider is reachable for this request tier. Configured but skipped: " + providerErrors.join("; ") + ".";
+            } else {
+              message = "The AI service is temporarily unavailable. Please try again in a few minutes. If this persists, check that the provider API keys / free-model quotas are valid.";
+            }
+            pushLine({ ev: "error", message: message, detail: "Attempts: " + providerErrors.join(" | ") + ". Last provider: " + provider + ".", configuredProviders: configuredNow });
+            try { controller.close(); } catch (e) {}
+            return;
+          }
 
-      // -- Increment usage ------------------------------------------
-      if (userId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
-        await incrementUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
-        usage += 1;
-      }
+          if (savedFootnotes) parsed._originalFootnotes = savedFootnotes;
 
-      result.provider = provider;
-      result.tier = tier;
-      result.usage = usage;
-      result.timing = {
-        provider: provider,
-        totalMs: Date.now() - providerStartMs,
-        attempts: attemptTimes,
-      };
-      return jsonResponse(result);
+          var result = ensureValidResult(parsed, text, options);
+          if (!result) {
+            pushLine({ ev: "error", message: "Invalid response from AI model" });
+            try { controller.close(); } catch (e) {}
+            return;
+          }
+
+          if (userId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+            await incrementUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
+            usage += 1;
+          }
+
+          result.provider = provider;
+          result.tier = tier;
+          result.usage = usage;
+          result.timing = {
+            provider: provider,
+            totalMs: Date.now() - providerStartMs,
+            attempts: attemptTimes,
+          };
+
+          var dbMatches = result.databaseStats && typeof result.databaseStats.totalMatches === "number" ? result.databaseStats.totalMatches : 0;
+          pushLine({ ev: "phase", pct: 90, phase: "Applied " + dbMatches + (dbMatches === 1 ? " deterministic nativization rule" : " deterministic nativization rules") + " backstop" });
+
+          if (attemptTimes && attemptTimes.length > 0) {
+            var accInflight = 0;
+            for (var pi = 0; pi < attemptTimes.length; pi++) {
+              var at = attemptTimes[pi];
+              var totalKnown = Date.now() - providerStartMs;
+              var share = totalKnown > 0 ? Math.round((at.ms / totalKnown) * 4) : 2;
+              accInflight = Math.min(96, accInflight + Math.max(1, share));
+              pushLine({
+                ev: "tick",
+                pct: 90 + accInflight,
+                phase: at.skipped
+                  ? "Model provider skipped (not configured)"
+                  : at.ok
+                    ? "Model returned from " + (at.provider || "") + " — finalizing"
+                    : "Trying next model provider (" + (at.provider || "") + ")",
+              });
+            }
+          }
+
+          pushLine({ ev: "phase", pct: 98, phase: "Finalizing output..." });
+          pushLine({ ev: "final", pct: 100, result: result });
+          } catch (err) {
+            streamErrors.push("body: " + String((err && err.stack) || (err && err.message) || err));
+            pushLine({ ev: "error", message: "Transform pipeline failed: " + String((err && err.message) || err), detail: streamErrors.join(" | ") });
+          } finally {
+            try { controller.close(); } catch (e) {}
+          }
+        },
+      });
+
+      return new Response(streamBody, {
+        headers: {
+          "Content-Type": "application/x-ndjson; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Transform-Stream": "ndjson",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Expose-Headers": "X-Transform-Stream",
+        },
+      });
 
     } catch (error) {
       console.error("Worker error:", error);
