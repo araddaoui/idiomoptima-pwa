@@ -1820,45 +1820,20 @@ function tokenCoverage(childText, parentText) {
   return total === 0 ? 0 : overlapped / total;
 }
 
-function isEchoOfOutput(output, input) {
-  if (!output || !input) return false;
-  var f = String(output).toLowerCase().replace(/\s+/g, " ").trim();
-  var i = String(input).toLowerCase().replace(/\s+/g, " ").trim();
-  if (!f || !i) return false;
-  if (f === i) return true;
-  var lenRatio = f.length / Math.max(1, i.length);
-  if (lenRatio < 0.7 || lenRatio > 1.05) return false;
-  return tokenCoverage(f, i) >= 0.97;
-}
-
-// A provider result is only treated as "transformable input" when at least
-// one built-in or DB nativization rule could genuinely fire on it. This keeps
-// the echo-rotation honest: a text that is already fully native (nothing to
-// change) is NOT re-attempted, so scores stay flat only when flat is correct.
-function inputIsTransformable(text, dbs, domain) {
-  if (!text || String(text).length < 8) return false;
-  var lower = String(text).toLowerCase();
-  if (typeof BUILTIN_NATIVIZATION !== "undefined") {
-    for (var b = 0; b < BUILTIN_NATIVIZATION.length; b++) {
-      var rule = BUILTIN_NATIVIZATION[b];
-      if (rule && rule.re) {
-        var res = rule.re.exec(String(text));
-        if (res) { rule.re.lastIndex = 0; return true; }
-      }
-    }
+function sentencesAllUnchanged(parsed) {
+  if (!parsed || !Array.isArray(parsed.sentences)) return false;
+  var bodySentences = 0;
+  for (var i = 0; i < parsed.sentences.length; i++) {
+    var s = parsed.sentences[i];
+    if (!s) continue;
+    if (s.isImmutableFootnote) continue;
+    bodySentences++;
+    var o = String(s.original || "").replace(/\s+/g, " ").trim();
+    var r = String(s.revised || "").replace(/\s+/g, " ").trim();
+    if (o && (!r || r !== o)) return false;
   }
-  var maps = dbs && typeof dbs === "object" ? buildNativizationMaps(dbs, domain) : buildNativizationMaps({}, domain);
-  for (var i = 0; i < maps.phraseList.length; i++) {
-    var src = maps.phraseList[i] && maps.phraseList[i].src;
-    if (src && lower.indexOf(String(src).toLowerCase()) !== -1) return true;
-  }
-  return false;
+  return bodySentences > 0;
 }
-
-// Reduces a sentence to its UNDERLYING content words: citation markers ([1]),
-// quote marks, and punctuation are removed so marker moves / spacing / case-only
-// rewrites compare equal. Used to keep scoring and explanations honest (a moved
-// "[1]" or a collapsed double space is NOT a "real improvement").
 function contentTokenSeq(text) {
   return String(text || "")
     .replace(/^\*\*/, "")
@@ -2946,22 +2921,20 @@ export default {
                 pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " could not be parsed — trying the next provider" });
                 continue;
               }
-              // Echo-no-op guard: an output that is essentially the input verbatim
-              // (while the input WAS transformable by our rules) is not a success —
-              // it would silently produce flat 75/75 scores. Rotate to the next
-              // provider, keeping this result as a last-resort fallback.
-              var echoFinal = parsed.finalVersion || parsed.final || parsed.text || "";
-              if ((!echoFinal || echoFinal.length < 10) && Array.isArray(parsed.sentences) && parsed.sentences.length > 0) {
-                echoFinal = parsed.sentences.map(function(s){ return (s && (s.revised || s.original)) || ""; }).filter(function(s){ return s; }).join(" ");
-              }
-              if (echoFinal && String(echoFinal).trim().length > 0 &&
-                  inputIsTransformable(bodyText, options.databases, options.domain) &&
-                  isEchoOfOutput(echoFinal, bodyText)) {
+              // No-op guard: a provider that returns the text without ANY
+              // sentence-level edit (verbatim echo, or a model that "saw nothing")
+              // is not a success while stronger providers remain — otherwise the
+              // request silently returns a flat, unchanged score. We deliberately do
+              // NOT gate this on our deterministic phrase DB hitting: a text can be
+              // stiff in ways our rules do not cover, and only a stronger model can
+              // fix those. After every configured provider has been tried, the last
+              // parseable no-op is accepted and scored honestly (flat = correct).
+              if (sentencesAllUnchanged(parsed) && ai < attempts.length - 1) {
                 if (!lastParsed) { lastParsed = parsed; lastParsedProvider = attemptName; }
-                providerErrors.push(attemptName + ": echoed the input verbatim — no real changes (rotating to next provider)");
-                console.error(attemptName + " echoed the input verbatim — rotating to the next provider");
-                attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false, echoedInput: true });
-                pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " echoed the text — trying next provider" });
+                providerErrors.push(attemptName + ": returned the text without any edits — rotating to next provider");
+                console.error(attemptName + " returned the text without any edits — rotating to the next provider");
+                attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false, noop: true });
+                pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " returned no edits — trying next provider" });
                 continue;
               }
               attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: true });
@@ -2977,12 +2950,13 @@ export default {
           }
 
           if (!parsed && lastParsed) {
-            // Every provider echoed/failed; return the last parseable result so
-            // the request still completes with an honest (flat) outcome.
+            // Every provider returned no edits / failed; return the last
+            // parseable result so the request still completes with an honest
+            // (flat) outcome.
             parsed = lastParsed;
             provider = lastParsedProvider || provider;
             attemptTimes.push({ provider: provider || "last", ms: 0, ok: true });
-            pushLine({ ev: "tick", pct: 86, phase: "All providers echoed the text — using last parseable result" });
+            pushLine({ ev: "tick", pct: 86, phase: "All providers returned no edits — using last parseable result" });
           }
           if (!parsed) {
             var configuredNow = {
