@@ -108,6 +108,7 @@ const LEXICAL_ADDITIONS = {
     // Directly targets the user's sample paragraph.
     { clunky: "it is like saying", native: "it is akin to saying", type: "Phrase" },
     { clunky: "does not have much to do with", native: "bears little relation to", type: "Phrase" },
+    { clunky: "do not have much to do with", native: "bear little relation to", type: "Phrase" },
     { clunky: "better suited for", native: "better suited to", type: "Phrase" },
     { clunky: "generally oblivious to", native: "largely unaware of", type: "Phrase" },
     // Other high-value academic awkwardness.

@@ -151,7 +151,7 @@ const extracted = [
 ].join("\n");
 
 const api = new Function(
-  extracted + "\n;return { escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, BUILTIN_NATIVIZATION, buildNativizationMaps, applyDatabaseNativization };"
+  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, BUILTIN_NATIVIZATION, buildNativizationMaps, applyDatabaseNativization };"
 )();
 
 // --- load + merge databases exactly like the client (ToolPage) ---------------
@@ -222,6 +222,7 @@ section("1. academic: reproduced user sample (the reported 95->95 no-op)");
       "Authoritarian backsliding in the developing world in general and the MENA region in particular is often treated as an externality.",
       "It is like saying that a fire department is the solution to arson.",
       "This comparison does not have much to do with building genuine legitimacy.",
+      "There is an explicit assumption that domestic affairs do not have much to do with foreign policy.",
       "These frameworks are better suited for analyzing formal institutions than lived politics.",
       "Public opinion under newer surveillance states is generally oblivious to the strategic dimension of digital control.",
     ],
@@ -229,8 +230,9 @@ section("1. academic: reproduced user sample (the reported 95->95 no-op)");
   );
   check("It is like saying -> It is akin to saying", revised[1], "It is akin to saying that a fire department is the solution to arson.");
   check("does not have much to do with -> bears little relation to", revised[2], "This comparison bears little relation to building genuine legitimacy.");
-  check("better suited for -> better suited to", revised[3], "These frameworks are better suited to analyzing formal institutions than lived politics.");
-  check("generally oblivious to -> largely unaware of", revised[4], "Public opinion under newer surveillance states is largely unaware of the strategic dimension of digital control.");
+  check("user phrasing 'do not have much to do with' -> bear little relation to", revised[3], "There is an explicit assumption that domestic affairs bear little relation to foreign policy.");
+  check("better suited for -> better suited to", revised[4], "These frameworks are better suited to analyzing formal institutions than lived politics.");
+  check("generally oblivious to -> largely unaware of", revised[5], "Public opinion under newer surveillance states is largely unaware of the strategic dimension of digital control.");
   check("paired 'in general ... in particular' sentence left intact (collocation lock)", revised[0], "Authoritarian backsliding in the developing world in general and the MENA region in particular is often treated as an externality.");
   check("sentencesChanged >= 4", stats.sentencesChanged >= 4, true);
   check("totalMatches >= 4", stats.totalMatches >= 4, true);
@@ -355,7 +357,7 @@ section("7. database health & integrity");
 
   check("ai-natural merged size >= 3500 (" + ai.length + ")", ai.length >= 3500, true);
   check("idioms db size is 2000", idiomDb.length, 2000);
-  check("sample-target pairs present in lexical-academic", ["it is like saying", "does not have much to do with", "better suited for", "generally oblivious to"].every((k) => acadKeys.has(k)), true);
+  check("sample-target pairs present in lexical-academic", ["it is like saying", "does not have much to do with", "do not have much to do with", "better suited for", "generally oblivious to"].every((k) => acadKeys.has(k)), true);
 
   let empty = 0;
   let idempotent = 0;
@@ -428,6 +430,36 @@ section("8. DIFFERENCE IS MADE — active-phrase fire-rate sweep (deterministic 
     fail += 1;
     failures.push(`sweep: ${offenders.length} active phrases did not consume their source (see offender lines above)`);
   }
+}
+
+// ============================================ 9. SERVER-SIDE DEFAULT DB FLOOR
+section("9. server-side DEFAULT_DATABASES floor (empty/absent client payload still fires)");
+{
+  const floor = api.DEFAULT_DATABASES;
+  check("DEFAULT_DATABASES is defined on the worker", !!floor && typeof floor === "object", true);
+
+  const { sentences: revised, stats } = api.applyDatabaseNativization(
+    [
+      { original: "It is like saying there are two distinct states.", revised: "It is like saying there are two distinct states.", paragraphIndex: 0 },
+      { original: "These frameworks are better suited for analyzing developing states.", revised: "These frameworks are better suited for analyzing developing states.", paragraphIndex: 0 },
+      { original: "Affairs do not have much to do with foreign policy.", revised: "Affairs do not have much to do with foreign policy.", paragraphIndex: 0 },
+      { original: "They are generally oblivious to domestic factors.", revised: "They are generally oblivious to domestic factors.", paragraphIndex: 0 },
+    ],
+    floor,
+    "academic"
+  );
+  check("floor: it is like saying -> akin (empty payload still fires)", revised[0].revised, "It is akin to saying there are two distinct states.");
+  check("floor: better suited for -> better suited to", revised[1].revised, "These frameworks are better suited to analyzing developing states.");
+  check("floor: do not have much to do with -> bear little relation to", revised[2].revised, "Affairs bear little relation to foreign policy.");
+  check("floor: generally oblivious to -> largely unaware of", revised[3].revised, "They are largely unaware of domestic factors.");
+  check("floor: stats.totalMatches >= 4", stats.totalMatches >= 4, true);
+
+  // Wiring guard: the request handler must fall back to DEFAULT_DATABASES.
+  check(
+    "handler falls back to DEFAULT_DATABASES when client payload is empty",
+    /options\.databases = hasAnyDb \? clientDb : DEFAULT_DATABASES;/.test(INDEX_SRC),
+    true
+  );
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

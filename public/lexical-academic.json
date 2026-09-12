@@ -2503,5 +2503,10 @@
     "clunky": "a significant component of",
     "native": "a large part of",
     "type": "Phrase"
+  },
+  {
+    "clunky": "do not have much to do with",
+    "native": "bear little relation to",
+    "type": "Phrase"
   }
 ]

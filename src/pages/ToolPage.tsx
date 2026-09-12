@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserButton, useUser, useAuth } from "@clerk/clerk-react";
 import {
@@ -158,44 +158,64 @@ export default function ToolPage() {
   const [idiomDatabase, setIdiomDatabase] = useState<any[]>([]);
   const [aiPhraseMap, setAiPhraseMap] = useState<any[]>([]);
   const [lexicalDatabases, setLexicalDatabases] = useState<Record<string, any[]>>({});
+  const databasesRef = useRef<{ idiomDatabase: any[]; aiPhraseMap: any[]; lexicalDatabases: Record<string, any[]> } | null>(null);
 
-  useEffect(() => {
-    const loadDatabases = async () => {
-      try {
-        const idiomRes = await fetch("/idioms-clunky-native.json");
-        if (idiomRes.ok) setIdiomDatabase(await idiomRes.json());
-      } catch {}
-      try {
-        const [db1, db2, db3] = await Promise.all([
-          fetch("/ai-natural-database.json").then((r) => (r.ok ? r.json() : [])),
-          fetch("/ai-natural-database-1500.json").then((r) => (r.ok ? r.json() : [])),
-          fetch("/ai-natural-database-1000.json").then((r) => (r.ok ? r.json() : [])),
-        ]);
-        const merged = new Map<string, any>();
-        for (const db of [db1, db2, db3]) {
-          for (const entry of db) {
-            const key = (entry.ai || entry.clunky || "").toLowerCase().trim();
-            if (key && (entry.natural || entry.native)) {
-              const existing = merged.get(key);
-              if (!existing || JSON.stringify(entry).length > JSON.stringify(existing).length) {
-                merged.set(key, entry);
-              }
+  const loadDatabases = useCallback(async () => {
+    if (databasesRef.current) return databasesRef.current;
+    const idiomDatabaseNext: any[] = [];
+    try {
+      const idiomRes = await fetch("/idioms-clunky-native.json");
+      if (idiomRes.ok) idiomDatabaseNext.push(...(await idiomRes.json()));
+    } catch {}
+
+    let aiPhraseMapNext: any[] = [];
+    try {
+      const [db1, db2, db3] = await Promise.all([
+        fetch("/ai-natural-database.json").then((r) => (r.ok ? r.json() : [])),
+        fetch("/ai-natural-database-1500.json").then((r) => (r.ok ? r.json() : [])),
+        fetch("/ai-natural-database-1000.json").then((r) => (r.ok ? r.json() : [])),
+      ]);
+      const merged = new Map<string, any>();
+      for (const db of [db1, db2, db3]) {
+        for (const entry of db) {
+          const key = (entry.ai || entry.clunky || "").toLowerCase().trim();
+          if (key && (entry.natural || entry.native)) {
+            const existing = merged.get(key);
+            if (!existing || JSON.stringify(entry).length > JSON.stringify(existing).length) {
+              merged.set(key, entry);
             }
           }
         }
-        setAiPhraseMap(Array.from(merged.values()));
-      } catch {}
-      try {
-        const lexResult: Record<string, any[]> = {};
-        for (const d of ["academic", "business", "creative", "general"]) {
-          const res = await fetch(`/lexical-${d}.json`);
-          if (res.ok) lexResult[d] = await res.json();
-        }
-        setLexicalDatabases(lexResult);
-      } catch {}
-    };
-    loadDatabases();
+      }
+      aiPhraseMapNext = Array.from(merged.values());
+    } catch {}
+
+    const lexicalDatabasesNext: Record<string, any[]> = {};
+    try {
+      for (const d of ["academic", "business", "creative", "general"]) {
+        const res = await fetch(`/lexical-${d}.json`);
+        if (res.ok) lexicalDatabasesNext[d] = await res.json();
+      }
+    } catch {}
+
+    const dbs = { idiomDatabase: idiomDatabaseNext, aiPhraseMap: aiPhraseMapNext, lexicalDatabases: lexicalDatabasesNext };
+    databasesRef.current = dbs;
+    setIdiomDatabase(dbs.idiomDatabase);
+    setAiPhraseMap(dbs.aiPhraseMap);
+    setLexicalDatabases(dbs.lexicalDatabases);
+    return dbs;
   }, []);
+
+  // Backstop: any DB a caller relies on is guaranteed loaded before a transform
+  // fires, so a request never goes out with empty maps (which silently disabled
+  // the deterministic nativization layer).
+  const ensureDatabases = useCallback(async () => {
+    return loadDatabases();
+  }, [loadDatabases]);
+
+  useEffect(() => {
+    loadDatabases();
+  }, [loadDatabases]);
 
   const handleTransform = async () => {
     const tempDiv = document.createElement("div");
@@ -224,6 +244,9 @@ export default function ToolPage() {
     setProgressPhase("Analyzing sentence cadence & register markers...");
     try {
       const token = await getToken();
+      // Never transform with empty DB maps: block on the load so the worker's
+      // deterministic nativization layer always receives the phrase rules.
+      const dbs = await ensureDatabases();
       const response = await transformText(
         plainText,
         domain,
@@ -234,7 +257,7 @@ export default function ToolPage() {
           if (phase) setProgressPhase(phase);
         },
         "auto",
-        { idiomDatabase, aiPhraseMap, lexicalDatabases },
+        { idiomDatabase: dbs.idiomDatabase, aiPhraseMap: dbs.aiPhraseMap, lexicalDatabases: dbs.lexicalDatabases },
         token || undefined
       );
       setResult(response);

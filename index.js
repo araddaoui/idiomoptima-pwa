@@ -1831,6 +1831,37 @@ function isCollocationLocked(text, src) {
   return false;
 }
 
+// Server-authoritative fallback database: used whenever the request carries no
+// usable client databases (empty payload, failed client load, or a transform
+// issued before the DB fetches resolved). Guarantees the deterministic
+// nativization layer ALWAYS has something to enforce — so even a bare request
+// with zero client data still produces real, honest transformations.
+var DEFAULT_DATABASES = {
+  idiomDb: [],
+  aiDb: [],
+  lexicalDb: {
+    general: [
+      { clunky: "in general", native: "generally" },
+      { clunky: "as well as", native: "along with" }
+    ],
+    academic: [
+      { clunky: "it is like saying", native: "it is akin to saying" },
+      { clunky: "does not have much to do with", native: "bears little relation to" },
+      { clunky: "do not have much to do with", native: "bear little relation to" },
+      { clunky: "better suited for", native: "better suited to" },
+      { clunky: "generally oblivious to", native: "largely unaware of" },
+      { clunky: "in general", native: "generally" }
+    ],
+    business: [
+      { clunky: "in general", native: "generally" }
+    ],
+    creative: [
+      { clunky: "it is like", native: "it is akin to" },
+      { clunky: "in general", native: "generally" }
+    ]
+  }
+};
+
 // Builds deterministic nativization maps from the databases the client sends.
 // Only MULTI-WORD sources participate in phrase-level matching (a bare single
 // common word like "plus" -> "also" is far too risky and changes meaning);
@@ -1987,7 +2018,7 @@ function applyDatabaseNativization(sentences, dbs, domain) {
             // "in general" vs "in particular") is present in the same sentence.
             if (isCollocationLocked(out, item.src)) { re.lastIndex = res.index + res[0].length; continue; }
             var prefix = out.slice(0, res.index);
-            var atStart = prefix.trim() === "" || /[.!?]["'\u201D\u2019]?\s+$/.test(prefix) || /\n\s*$/.test(prefix);
+            var atStart = prefix.trim() === "" || /[.!?]["'\u201D\u2019]?\s+$/.test(prefix) || /\n\s*$/.test(prefix) || /\]\s+$/.test(prefix);
             var cap = res[0].charAt(0) === res[0].charAt(0).toUpperCase() && res[0].charAt(0) !== res[0].charAt(0).toLowerCase();
             var tgt = cap && atStart ? item.tgt.charAt(0).toUpperCase() + item.tgt.slice(1) : item.tgt;
             out = out.substring(0, res.index) + tgt + out.substring(res.index + res[0].length);
@@ -2626,11 +2657,21 @@ export default {
 
       // Databases the client loaded (idioms / AI-phrases / domain lexical maps).
       // Used to nativize deterministically AND to inject compact DB rules into
-      // the provider prompts.
-      if (payload.databases && typeof payload.databases === "object") {
-        options.databases = payload.databases;
-        options.nativizationInstruction = buildNativizationInstruction(payload.databases, options.domain);
+      // the provider prompts. If the client shipped nothing usable (empty arrays
+      // / absent payload — e.g. a transform clicked before the DB fetches
+      // resolved), fall back to the server-side DEFAULT_DATABASES so the
+      // deterministic layer still fires real transformations.
+      var clientDb = payload.databases && typeof payload.databases === "object" ? payload.databases : null;
+      var anyLex = false;
+      if (clientDb && clientDb.lexicalDb && typeof clientDb.lexicalDb === "object" && !Array.isArray(clientDb.lexicalDb)) {
+        for (var dk in clientDb.lexicalDb) {
+          if (Array.isArray(clientDb.lexicalDb[dk]) && clientDb.lexicalDb[dk].length > 0) { anyLex = true; break; }
+        }
       }
+      var hasAnyDb = clientDb && ((Array.isArray(clientDb.aiDb) && clientDb.aiDb.length > 0) ||
+        (Array.isArray(clientDb.idiomDb) && clientDb.idiomDb.length > 0) || anyLex);
+      options.databases = hasAnyDb ? clientDb : DEFAULT_DATABASES;
+      options.nativizationInstruction = buildNativizationInstruction(options.databases, options.domain);
 
       if (!text) {
         return jsonResponse({ error: "No text provided" }, 400);
