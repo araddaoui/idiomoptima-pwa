@@ -929,7 +929,7 @@ async function callGemini(text, options, apiKey) {
   // Model candidates rotate so stale model IDs (e.g. a shut-down preview) never
   // make Gemini a fatal stop in the provider chain. A 404 / "not found" / 429
   // on one candidate moves on to the next; real auth failures still surface.
-  var MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-flash-latest"];
+  var MODEL_CANDIDATES = ["gemini-2.5-flash", "gemini-flash-latest"];
   var lastError = "";
   for (var ci = 0; ci < MODEL_CANDIDATES.length; ci++) {
     var model = MODEL_CANDIDATES[ci];
@@ -956,7 +956,7 @@ async function callGemini(text, options, apiKey) {
     if (!response.ok) {
       var errBody = await response.text();
       lastError = model + ": " + errBody.substring(0, 200);
-      if (response.status === 404 || response.status === 429 || /not found|unavailable|does not exist/i.test(errBody)) continue;
+      if (response.status === 404 || response.status === 429 || response.status === 400 || /not found|unavailable|does not exist|invalid argument|invalid_argument/i.test(errBody)) continue;
       throw new Error("Gemini API error (" + model + "): " + errBody.substring(0, 200));
     }
 
@@ -2135,6 +2135,16 @@ var BUILTIN_NATIVIZATION = [
   { re: /\butilisation\b/gi, lower: "use" },
   { re: /\butilization\b/gi, lower: "use" },
   { re: /\bin\s+additional\s+to\b/gi, lower: "in addition to" },
+{ re: /\bit\s+is\s+important\s+to\s+note\s+that\b/gi, lower: "note that" },
+{ re: /\bit\s+should\s+be\s+noted\s+that\b/gi, lower: "note that" },
+{ re: /\bwhat\s+is\s+termed\s+as\b/gi, lower: "what is called" },
+{ re: /\btermed\s+as\b/gi, lower: "called" },
+{ re: /\bis\s+replete\s+with\b/gi, lower: "is full of" },
+{ re: /\bin\s+the\s+event\s+that\b/gi, lower: "if" },
+{ re: /\bfor\s+the\s+purpose\s+of\b/gi, lower: "to" },
+{ re: /\bhas\s+the\s+ability\s+to\b/gi, lower: "can" },
+{ re: /\bin\s+order\s+to\b/gi, lower: "to" },
+{ re: /\ba\s+multitude\s+of\b/gi, lower: "a large number of" },
 ];
 
 // Deterministic enforcement layer: applies the exact DB replacements to each
