@@ -817,7 +817,16 @@ function postProcessSuggestions(suggestions, originalText, finalText, sentences,
       var orig = (sentences[i].original || "").trim();
       var rev = (sentences[i].revised || "").trim();
 
-      if (sentences[i].isImmutableFootnote || /^\[\d+\]/.test(orig) || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig) || /^\s*Ibid\.?/i.test(orig)) {
+      // Skip only ACTUAL citation/footnote lines (same narrow detection as
+      // deriveSentencesFromTexts + applyDatabaseNativization).
+      var sOrig = orig.replace(/^\s*\[\d+\]\s*/, "");
+      var sIsCitation = /^\[\d+\]/.test(orig) && sOrig.length > 0 && (
+        /^\s*Ibid\.?(\s|$)/i.test(sOrig) ||
+        /^[A-Z][^?!\n]*\(\d{4}\)/.test(sOrig) ||
+        /https?:\/\//i.test(sOrig) ||
+        /\bDOI\b/i.test(sOrig)
+      );
+      if (sentences[i].isImmutableFootnote || sIsCitation || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig) || /^\s*Ibid\.?/i.test(orig)) {
         footnoteCount++;
         continue;
       }
@@ -1514,11 +1523,22 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
       if (rev.length > 0 && rev[0] !== rev[0].toUpperCase() && rev[0] === rev[0].toLowerCase()) {
         rev = rev[0].toUpperCase() + rev.substring(1);
       }
+      // Only flag ACTUAL footnote/citation lines as immutable — body prose that
+      // happens to begin with an inline "[N] " marker (e.g. the model split a
+      // paragraph into "[1] This approach is better suited for ...") must NOT be
+      // flagged, or the deterministic layer will skip nativizing it.
+      var strippedOrig = orig.replace(/^\s*\[\d+\]\s*/, "");
+      var origIsCitation = /^\[\d+\]/.test(orig) && strippedOrig.length > 0 && (
+        /^\s*Ibid\.?(\s|$)/i.test(strippedOrig) ||
+        /^[A-Z][^?!\n]*\(\d{4}\)/.test(strippedOrig) ||
+        /https?:\/\//i.test(strippedOrig) ||
+        /\bDOI\b/i.test(strippedOrig)
+      );
       result.push({
         original: orig,
         revised: rev,
         explanation: "",
-        isImmutableFootnote: /^\[\d+\]/.test(orig) || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig) || /^\s*Ibid\.?/i.test(orig),
+        isImmutableFootnote: origIsCitation || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig) || /^\s*Ibid\.?/i.test(orig),
         paragraphIndex: p,
       });
     }
