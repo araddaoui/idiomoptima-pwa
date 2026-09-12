@@ -454,6 +454,24 @@ section("9. server-side DEFAULT_DATABASES floor (empty/absent client payload sti
   check("floor: generally oblivious to -> largely unaware of", revised[3].revised, "They are largely unaware of domestic factors.");
   check("floor: stats.totalMatches >= 4", stats.totalMatches >= 4, true);
 
+  // Regression: body prose that BEGINS with an inline "[N] " marker must still
+  // be nativized (the derive step can glue "policy. [1] This approach..." so the
+  // marker lands at sentence start; the footnote guard must not swallow it).
+  const { sentences: marked } = api.applyDatabaseNativization(
+    [
+      { original: "[1] This approach is better suited for analysing developing states in general and the MENA region in particular.", revised: "[1] This approach is better suited for analysing developing states in general and the MENA region in particular.", paragraphIndex: 0 },
+      { original: "[3] It is like saying there are two distinct states.", revised: "[3] It is like saying there are two distinct states.", paragraphIndex: 0 },
+      { original: "[31] Nonneman, G. (2005). Analysing the foreign policies of the Middle East and North Africa: A conceptual framework. Routledge. https://doi.org/10.4324/9780203008829", revised: "[31] Nonneman, G. (2005). Analysing the foreign policies of the Middle East and North Africa: A conceptual framework. Routledge. https://doi.org/10.4324/9780203008829", paragraphIndex: 0 },
+      { original: "[2] Ibid.", revised: "[2] Ibid.", paragraphIndex: 0 },
+    ],
+    floor,
+    "academic"
+  );
+  check("floor: [1]-prefixed body prose still nativized (better suited for -> to)", marked[0].revised.includes("better suited to analysing"), true);
+  check("floor: [3]-prefixed body prose still nativized (is like saying -> akin)", marked[1].revised.includes("It is akin to saying"), true);
+  check("floor: author-year citation stays untouched", marked[2].revised, marked[2].original);
+  check("floor: 'Ibid.' stays untouched", marked[3].revised, "[2] Ibid.");
+
   // Wiring guard: the request handler must fall back to DEFAULT_DATABASES.
   check(
     "handler falls back to DEFAULT_DATABASES when client payload is empty",

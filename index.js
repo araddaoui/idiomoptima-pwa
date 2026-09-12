@@ -2013,7 +2013,19 @@ function applyDatabaseNativization(sentences, dbs, domain) {
   sentences.forEach(function (s) {
     if (!s || !s.revised) return;
     var orig = (s.original || "").trim();
-    if (s.isImmutableFootnote || /^\[\d+\]/.test(orig) || /^\s*Ibid\.?/i.test(orig) || /^".*"$/.test(s.revised.trim())) return;
+    // Skip only ACTUAL footnote/citation lines, not body prose that merely
+    // begins with an inline reference marker ("[1] This approach is better
+    // suited for analysing..." must still be nativized). A line counts as a
+    // citation when, with a leading [N] stripped, it is author-year shaped,
+    // an "Ibid.", or carries a URL/DOI.
+    var stripped = orig.replace(/^\s*\[\d+\]\s*/, "");
+    var isCitation = stripped.length > 0 && (
+      /^\s*Ibid\.?(\s|$)/i.test(stripped) ||
+      /^[A-Z][^?!\n]*\(\d{4}\)/.test(stripped) ||
+      /https?:\/\//i.test(stripped) ||
+      /\bDOI\b/i.test(stripped)
+    );
+    if (s.isImmutableFootnote || isCitation || /^".*"$/.test(s.revised.trim())) return;
 
     var baseline = s.revised;
     var changedHere = false;
