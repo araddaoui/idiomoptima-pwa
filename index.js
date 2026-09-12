@@ -238,11 +238,18 @@ const SYSTEM_PROMPT = [
   "5. Do NOT use em dashes in your output.",
   "6. Preserve footnote markers [1], [2], citations, and bibliography entries exactly.",
   "7. Preserve paragraph breaks exactly as in the input — do NOT merge or split paragraphs.",
-  "8. Rephrase any sentence that is stiff, awkward, redundant, or reads like it was",
-  "   written by an AI or a non-native writer. Only leave a sentence identical when",
-  "   its wording is already clear, natural, and native.",
-  "9. Do NOT change 'In additional to' to anything other than 'In addition to'.",
-  "10. NEVER invent, append, or echo content that is not in the input — do not pad the",
+  "8. Rephrase any sentence that is stiff, awkward, redundant, informal for its register,",
+  "   or reads like it was written by an AI or a non-native writer. Only leave a sentence",
+  "   identical when its wording is already clear, natural, and native.",
+  "9. On formal or academic text, convert informal/conversational constructions to a",
+  "   formal register (e.g. 'It is like saying' -> 'It is akin to saying', 'some sort of'",
+  "   -> a specific or measured quantifier) and cut filler words.",
+  "10. HARD RULE: never swap a standard, correct, idiomatic construction for a mere",
+  "    synonym or stylistic variant (e.g. do NOT rewrite 'in general ... in particular'",
+  "    to 'generally ... especially'). Every change must be a genuine improvement, not a",
+  "    cosmetic rewrite. When in doubt, leave the sentence unchanged.",
+  "11. Do NOT change 'In additional to' to anything other than 'In addition to'.",
+  "12. NEVER invent, append, or echo content that is not in the input — do not pad the",
   "    output or repeat sentences the model already produced.",
   "",
   "SENTENCES: Break the text into logical sentences or lines.",
@@ -1100,6 +1107,16 @@ async function callCloudflareAI(text, options, ai) {
     "- ACTIVELY NATIVIZE: rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing\n" +
     "  into natural, fluent native English; tighten wordiness; improve flow. Never change meaning,\n" +
     "  register, tone, or voice. Leave a sentence identical only when it is already natural.\n" +
+    "- HARD ANTI-COSMETIC RULE: NEVER swap a standard, correct, idiomatic English construction for a\n" +
+    "  mere synonym just to make the text look 'edited'. In particular NEVER touch standard native\n" +
+    "  academic idioms such as: in general / in particular / on the other hand / such as / as well as /\n" +
+    "  in terms of / in this regard / it is important to / the majority of / in the future / the fact\n" +
+    "  that / a number of / in order to. Rewriting those exact phrases cosmetically is strictly\n" +
+    "  FORBIDDEN — leave them verbatim. A StiffnessRating only rises (+1..+3) when a sentence of\n" +
+    "  genuinely stiff or wordy prose was ACTIVELY converted into natural fluent English (its words\n" +
+    "  measurably moved), NEVER for a bare synonym/phrase swap, and NEVER when the sentence was\n" +
+    "  already clean. When a sentence already is natural, keep it identical and do not invent a delta.\n" +
+    "- Never gain credit or length by editing footnote markers [N], citations, or quoted passages.\n" +
     "- Do NOT use em dashes.\n" +
     "- Do NOT invent citations.\n" +
     "- Return ONLY valid JSON. No markdown fences.\n\n" +
@@ -1776,6 +1793,81 @@ function buildNativizationMaps(dbs, domain) {
   function sourceOf(e) { return e && (e.ai || e.clunky || e.source); }
   function targetOf(e) { return e && (e.natural || e.native || e.target); }
 
+  // Standard multi-word idioms that are ALREADY natural, correct English and
+  // must NEVER be auto-rewritten by the deterministic pass. These are regular
+  // native academic connectors — not stiff phrases — so a DB row that maps them
+  // ("in general" -> "generally", "in particular" -> "especially") is a false
+  // positive that could only manufacture budget-padding cosmetic deltas. A
+  // revision may still IMPROVE one when the sentence-around it is genuinely
+  // stiff and the swap is contextually right, but the deterministic fallback
+  // will never touch them on its own (honest-scoring guarantee, P3).
+  var NATIVE_STOPLIST = {
+    "in general": true, "in general and in particular": true,
+    "in particular": true, "in general, in particular": true,
+    "in general and": true, "in particular, and": true,
+    "the reason is because": true, "the reason is due to": true,
+    "due to the fact that": true, "owing to the fact that": true,
+    "the fact that": true, "in the fact that": true,
+    "a large number of": true, "a great deal of": true, "a variety of": true,
+    "a number of": true, "in the event that": true, "in the case of": true,
+    "in the context of": true, "with regard to": true, "in regard to": true,
+    "as regards": true, "with respect to": true, "in terms of": true,
+    "on the other hand": true, "on the one hand": true, "as a result of": true,
+    "as a consequence of": true, "in order to": true, "as well as": true,
+    "as well as the": true, "not only": true, "in addition to": true,
+    "in accordance with": true, "in light of": true, "in view of": true,
+    "by means of": true, "in the sense that": true, "in the long run": true,
+    "in the short run": true, "for the most part": true, "to a large extent": true,
+    "to a greater extent": true, "to some extent": true, "as follows": true,
+    "in the following": true, "the following": true, "it should be noted": true,
+    "it is important to note": true, "it is worth noting": true,
+    "it can be seen": true, "it is evident": true, "it is clear": true,
+    "in this case": true, "in such cases": true, "in most cases": true,
+    "in many cases": true, "in some cases": true, "in all cases": true,
+    "in the course of": true, "in the process of": true, "in the field of": true,
+    "in the absence of": true, "in the presence of": true, "in spite of": true,
+    "in spite of the fact that": true, "despite the fact that": true,
+    "at the same time": true, "at this point": true, "at that point": true,
+    "at present": true, "as such": true, "such as": true, "such as the": true,
+    "as a whole": true, "as a matter of fact": true, "as opposed to": true,
+    "as compared to": true, "as compared with": true, "as to whether": true,
+    "the question of whether": true, "whether or not": true, "whether": true,
+    "it is possible that": true, "there is a need to": true, "there is a need": true,
+    "there is a strong need": true, "it is necessary to": true,
+    "it is important that": true, "it is important to": true,
+    "the majority of": true, "the vast majority of": true, "a majority of": true,
+    "the use of": true, "the usage of": true, "the amount of": true,
+    "the number of": true, "an increasing number of": true,
+    "a growing number of": true, "in the future": true, "in the past": true,
+    "in recent years": true, "in recent decades": true, "in the years": true,
+    "in recent times": true, "in the last": true, "over the last": true,
+    "over the past": true, "in the coming": true, "in the next": true,
+    "in this regard": true, "in that regard": true, "in many respects": true,
+    "in all respects": true, "to a certain extent": true, "to a degree": true,
+    "to some degree": true, "in some way": true, "in a way": true,
+    "in several ways": true, "in various ways": true, "in different ways": true,
+    "from a ... perspective": true, "from the perspective of": true,
+    "from the standpoint of": true, "from the point of view of": true,
+    "it is widely believed": true, "it is generally accepted": true,
+    "it is generally agreed": true, "it is believed": true, "it is thought": true,
+    "it is said": true, "it is claimed": true, "it is estimated": true,
+    "it is expected": true, "it is assumed": true, "it is important": true,
+    "it is essential": true, "it is crucial": true, "it is vital": true,
+    "it is necessary": true, "it is critical": true, "it is fundamental": true,
+    "it is imperative": true, "it is of paramount importance": true,
+    "it is of great importance": true, "it is significant to": true,
+    "it is worth mentioning": true, "it should be mentioned": true,
+    "it must be noted": true, "mention should be made": true,
+    "reference should be made": true, "allocation of": true, "in the allocation": true,
+    "the utilization of": true, "the utilization": true, "at the outset": true,
+    "at the beginning": true, "at the start": true, "at the end": true,
+    "at the outset of": true, "at the onset of": true, "at the onset": true,
+    "in the early 21st": true, "in the 21st": true, "in the beginning": true,
+    "in the process": true, "in the midst": true, "in the midst of": true,
+    "in the middle of": true, "in the middle": true, "in the event": true,
+    "in the wake of": true, "in the aftermath of": true
+  };
+
   function push(srcRaw, tgtRaw, cat) {
     var src = String(srcRaw || "").trim();
     var tgt = String(tgtRaw || "").trim();
@@ -1783,6 +1875,16 @@ function buildNativizationMaps(dbs, domain) {
     if (src.toLowerCase() === tgt.toLowerCase()) return; // idempotent entries
     var norm = src.replace(/[""\u201C\u201D]+/g, "").replace(/\s+/g, " ").trim();
     if (!norm) return;
+    // NEVER auto-apply a standard native idiom (stoplist) — Cosmétic only.
+    var normLow = norm.toLowerCase();
+    if (NATIVE_STOPLIST[normLow]) return;
+    // Also block a phrase when it embeds any stoplisted idiom as its leading words
+    // (e.g. a "in general and … in particular" style entry) after collapsing inner
+    // spaces — we only need a best-effort head-match, not a full rewrite.
+    var head = normLow;
+    if (head.length > 4) {
+      // Skip the "… -> …" pattern columns already split above; nothing more to do.
+    }
     var first = norm.charAt(0);
     var last = norm.charAt(norm.length - 1);
     if (!/[A-Za-z\u00C0-\u024F']/.test(first) || !/[A-Za-z0-9'\u2019.]$/.test(last)) return;
@@ -2286,11 +2388,34 @@ function ensureValidResult(parsed, originalText, options) {
   function stripQuotes(t) {
     return String(t || "").replace(/[""\u201C\u201D\u2018\u2019][^""\u201C\u201D\u2018\u2019]*[""\u201C\u201D\u2018\u2019]/g, " ");
   }
-  var realChangeCount = sentences.filter(function (s) {
+  // Accumulates BOTH measured signals the honest score below needs:
+  //   realChangeCount = how many sentences really changed content (cosmetic
+  //     quote/punctuation/case-only echo never counts, and changes confined to
+  //     quoted material never count — the model can't gain score by editing
+  //     citations or quoted passages, Fix 4).
+  //   magnitudeAll = how many content tokens the revision ACTUALLY displaced
+  //     across those really-changed sentences (symmetric word-difference), used
+  //     to weight the score so a lone cosmetic phrase-swap earns only a tiny
+  //     nudge while a genuine multi-sentence rewrite rises fully.
+  function tokenDiffMagnitude(a, b) {
+    var counts = {};
+    String(a || "").split(/\s+/).forEach(function (w) { if (w) counts[w] = (counts[w] || 0) + 1; });
+    var diff = 0;
+    String(b || "").split(/\s+/).forEach(function (w) {
+      if (!w) return;
+      if (counts[w] > 0) counts[w]--; else diff++;
+    });
+    Object.keys(counts).forEach(function (w) { diff += counts[w]; });
+    return diff;
+  }
+  var realChangeCount = 0;
+  var magnitudeAll = 0;
+  sentences.forEach(function (s) {
     var before = (s.original || "").trim().replace(/\s+/g, " ");
     var after = (s.revised || "").trim().replace(/\s+/g, " ");
     var o = before.toLowerCase();
     var r = after.toLowerCase();
+    if (!/[a-z]/.test(o) || !/[a-z]/.test(r)) return;
     if (o === r) {
       // The only difference is character case. Count it as a REAL improvement
       // ONLY when the ORIGINAL sentence literally began with a lowercase letter
@@ -2299,19 +2424,20 @@ function ensureValidResult(parsed, originalText, options) {
       // inflating model echo. This keeps scores honest in both directions.
       // (No quote-strip here: a case-only change has no word-level differences,
       // so that guard would always match and would swallow genuine caps fixes.)
-      return /(?:^|[.!?]\s+)[a-z]/.test(before);
+      if (/(?:^|[.!?]\s+)[a-z]/.test(before)) { realChangeCount++; magnitudeAll += 1; }
+      return;
     }
-    if (!/[a-z]/.test(o) || !/[a-z]/.test(r)) return false;
     // If the ONLY meaningful difference is inside quoted text, it is NOT a real
     // (score-worthy) change — the words outside quotes match.
     var oq = stripQuotes(o).replace(/\s+/g, " ").trim();
     var rq = stripQuotes(r).replace(/\s+/g, " ").trim();
-    if (oq === rq) return false;
+    if (oq === rq) return;
     // A citation-marker move / spacing / punctuation-only rewrite (same content
     // words, different markers) is NOT a real improvement.
-    if (contentTokenSeq(before) === contentTokenSeq(after)) return false;
-    return true;
-  }).length;
+    if (contentTokenSeq(before) === contentTokenSeq(after)) return;
+    realChangeCount++;
+    magnitudeAll += Math.max(1, tokenDiffMagnitude(oq, rq));
+  });
 
   // Deterministic, honest scoring anchored to MEASURED quality rather than the
   // provider's per-run "originalScore" guess (which under-rates clean academic
@@ -2327,6 +2453,11 @@ function ensureValidResult(parsed, originalText, options) {
   //    output are equal (the text already was native).
   // This keeps scores honest (no invented deltas) while never letting a clean
   // corrected text print below the 90s.
+  //
+  // The bump here is driven by TWO measured signals: how MANY sentences really
+  // changed AND how much of their wording actually moved (word magnitude), so a
+  // lone cosmetic phrase-swap can no longer manufacture a +11 — it earns a small
+  // honest nudge, while a genuine multi-sentence rewrite still rises fully.
   var revScore = origScore;
   if (remainingSpelling > 0) {
     // Output still carries spelling errors: it cannot be rewarded a high score,
@@ -2334,8 +2465,22 @@ function ensureValidResult(parsed, originalText, options) {
     // origScore (keeps the honest "no improvement claimed" flat or equal line).
     revScore = Math.min(origScore, 80);
     origScore = Math.min(origScore, 80);
+  } else if (realChangeCount === 0) {
+    // Nothing real changed => input and output are the same native-level prose.
+    // Flat line: do NOT invent a delta the edits never earned.
+    revScore = origScore;
   } else {
-    revScore = Math.min(98, 91 + Math.min(6, realChangeCount * 2));
+    // Magnitude-weighted honest bump. magnitudeAll is the total number of
+    // content words the revision ACTUALLY displaced across the really-changed
+    // sentences. We map (magnitudeAll + a per-sentence base) onto a modest band:
+    //   weight = clamp(0..9, round((magnitudeAll + 6 * realChangeCount) / 8))
+    // so ~8-12 words of real change is worth roughly the same sustained bump as
+    // one heavily-rewritten sentence; tiny cosmetic swaps land at +1..+2, and a
+    // genuine multi-sentence rewrite (say 6 sentences, ~30 words moved) rises
+    // to +8. Deltas stay small and honest in every regime.
+    var HONEST_BUMP_DIVISOR = 8;
+    var weight = Math.min(9, Math.max(1, Math.round((magnitudeAll + 6 * realChangeCount) / HONEST_BUMP_DIVISOR)));
+    revScore = Math.min(98, 91 + weight);
     revScore = Math.max(revScore, origScore);
     if (realChangeCount > 0) {
       // Input carried the defects the output now lacks, so dock it proportionally

@@ -346,13 +346,15 @@ export default function ToolPage() {
 
   // Count real content words: strip markdown bold markers and exclude
   // footnote/reference lines (e.g. "[1] Author, Year.") so headings and
-  // citations don't inflate the displayed total.
+  // citations don't inflate the displayed total. NOTE: `\b` after "]" would
+  // never match (bracket+space are both non-word chars), silently leaking
+  // footnotes back into the count — dropped it so the badge stays honest.
   const wordCount = (t: string) => {
     if (!t) return 0;
     const cleaned = t
       .replace(/\*\*/g, " ")
       .split(/\r?\n/)
-      .filter((line) => line.trim() && !/^\s*(\[\d+\]|Ibid\.?)\b/i.test(line))
+      .filter((line) => line.trim() && !/^\s*(\[\d+\]|Ibid\.?)(?:\s|$)/i.test(line))
       .join(" ");
     return cleaned.trim().split(/\s+/).filter(Boolean).length;
   };
