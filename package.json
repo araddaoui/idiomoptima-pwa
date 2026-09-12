@@ -9,6 +9,8 @@
     "preview": "npm run build && wrangler dev",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "test": "node scripts/test-transform.mjs",
+    "enrich-databases": "node scripts/enrich-databases.cjs",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {

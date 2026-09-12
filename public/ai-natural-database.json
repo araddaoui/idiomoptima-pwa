@@ -24,10 +24,6 @@
     "natural": "but"
   },
   {
-    "ai": "meanwhile",
-    "natural": "meanwhile"
-  },
-  {
     "ai": "conversely",
     "natural": "instead"
   },
@@ -38,10 +34,6 @@
   {
     "ai": "in the same way",
     "natural": "likewise"
-  },
-  {
-    "ai": "for example",
-    "natural": "for example"
   },
   {
     "ai": "for instance",
@@ -76,20 +68,8 @@
     "natural": "still"
   },
   {
-    "ai": "still",
-    "natural": "still"
-  },
-  {
     "ai": "ultimately",
     "natural": "in the end"
-  },
-  {
-    "ai": "in the end",
-    "natural": "in the end"
-  },
-  {
-    "ai": "overall",
-    "natural": "overall"
   },
   {
     "ai": "on balance",
@@ -132,32 +112,12 @@
     "natural": "because"
   },
   {
-    "ai": "because of",
-    "natural": "because of"
-  },
-  {
     "ai": "thanks to",
     "natural": "because of"
   },
   {
     "ai": "as a result of",
     "natural": "because of"
-  },
-  {
-    "ai": "then",
-    "natural": "then"
-  },
-  {
-    "ai": "next",
-    "natural": "next"
-  },
-  {
-    "ai": "after that",
-    "natural": "after that"
-  },
-  {
-    "ai": "before that",
-    "natural": "before that"
   },
   {
     "ai": "across the board",
@@ -176,24 +136,8 @@
     "natural": "importantly"
   },
   {
-    "ai": "perhaps",
-    "natural": "perhaps"
-  },
-  {
     "ai": "to put it another way",
     "natural": "in other words"
-  },
-  {
-    "ai": "to be clear",
-    "natural": "to be clear"
-  },
-  {
-    "ai": "in short",
-    "natural": "in short"
-  },
-  {
-    "ai": "in the long run",
-    "natural": "in the long run"
   },
   {
     "ai": "in the short term",
@@ -202,14 +146,6 @@
   {
     "ai": "for the most part",
     "natural": "mostly"
-  },
-  {
-    "ai": "by contrast",
-    "natural": "by contrast"
-  },
-  {
-    "ai": "for the record",
-    "natural": ""
   },
   {
     "ai": "as a side note",
@@ -226,14 +162,6 @@
   {
     "ai": "more often than not",
     "natural": "often"
-  },
-  {
-    "ai": "on the positive side",
-    "natural": "on the positive side"
-  },
-  {
-    "ai": "on the negative side",
-    "natural": "on the negative side"
   },
   {
     "ai": "given these points",
@@ -284,14 +212,6 @@
     "natural": "clearly"
   },
   {
-    "ai": "it is fair to say that",
-    "natural": ""
-  },
-  {
-    "ai": "it is safe to say that",
-    "natural": ""
-  },
-  {
     "ai": "it is my belief that",
     "natural": "i believe"
   },
@@ -312,10 +232,6 @@
     "natural": "i think"
   },
   {
-    "ai": "as far as i can tell",
-    "natural": ""
-  },
-  {
     "ai": "one must consider that",
     "natural": "consider that"
   },
@@ -328,16 +244,8 @@
     "natural": "also note that"
   },
   {
-    "ai": "it may be helpful to note that",
-    "natural": ""
-  },
-  {
     "ai": "it is worth pointing out that",
     "natural": "note that"
-  },
-  {
-    "ai": "it is worth highlighting that",
-    "natural": ""
   },
   {
     "ai": "it is important to emphasize that",
@@ -352,52 +260,16 @@
     "natural": "note that"
   },
   {
-    "ai": "it is reasonable to expect that",
-    "natural": ""
-  },
-  {
-    "ai": "it is natural to assume that",
-    "natural": ""
-  },
-  {
-    "ai": "it is easy to see that",
-    "natural": ""
-  },
-  {
-    "ai": "it is helpful to remember that",
-    "natural": ""
-  },
-  {
-    "ai": "it is worth highlighting",
-    "natural": ""
-  },
-  {
     "ai": "it is worth emphasizing that",
     "natural": "keep in mind that"
-  },
-  {
-    "ai": "it is necessary to mention that",
-    "natural": ""
   },
   {
     "ai": "it is worth stressing that",
     "natural": "keep in mind that"
   },
   {
-    "ai": "it is worth clarifying that",
-    "natural": ""
-  },
-  {
-    "ai": "it is worth explaining that",
-    "natural": ""
-  },
-  {
     "ai": "it should go without saying that",
     "natural": "of course"
-  },
-  {
-    "ai": "it should go without saying",
-    "natural": ""
   },
   {
     "ai": "it should be emphasized that",
@@ -416,76 +288,8 @@
     "natural": "remember that"
   },
   {
-    "ai": "it is helpful to recognize that",
-    "natural": ""
-  },
-  {
     "ai": "it is worth mentioning",
     "natural": "note"
-  },
-  {
-    "ai": "it is worth stressing",
-    "natural": ""
-  },
-  {
-    "ai": "it is worth underlining",
-    "natural": ""
-  },
-  {
-    "ai": "it is worth suggesting that",
-    "natural": ""
-  },
-  {
-    "ai": "it is worth noting",
-    "natural": ""
-  },
-  {
-    "ai": "it is useful to understand that",
-    "natural": ""
-  },
-  {
-    "ai": "it is useful to mention that",
-    "natural": ""
-  },
-  {
-    "ai": "it is useful to point out that",
-    "natural": ""
-  },
-  {
-    "ai": "it is worth pointing out",
-    "natural": ""
-  },
-  {
-    "ai": "it is worth adding that",
-    "natural": ""
-  },
-  {
-    "ai": "it is worth observing that",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like",
-    "natural": ""
-  },
-  {
-    "ai": "it looks as though",
-    "natural": ""
-  },
-  {
-    "ai": "it seems as though",
-    "natural": ""
-  },
-  {
-    "ai": "it appears as if",
-    "natural": ""
   },
   {
     "ai": "it could be argued that",
@@ -494,42 +298,6 @@
   {
     "ai": "it can be argued that",
     "natural": "some might say"
-  },
-  {
-    "ai": "it may be that",
-    "natural": ""
-  },
-  {
-    "ai": "it might be the case that",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that",
-    "natural": ""
-  },
-  {
-    "ai": "there is a sense that",
-    "natural": ""
-  },
-  {
-    "ai": "there is a feeling that",
-    "natural": ""
-  },
-  {
-    "ai": "there is reason to believe that",
-    "natural": ""
-  },
-  {
-    "ai": "there is evidence that",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be",
-    "natural": ""
   },
   {
     "ai": "it seems likely that",
@@ -542,10 +310,6 @@
   {
     "ai": "it looks likely that",
     "natural": "likely"
-  },
-  {
-    "ai": "it may be reasonable to assume that",
-    "natural": ""
   },
   {
     "ai": "it could be suggested that",
@@ -586,22 +350,6 @@
   {
     "ai": "there is an argument that",
     "natural": "some say"
-  },
-  {
-    "ai": "there is reason to think that",
-    "natural": ""
-  },
-  {
-    "ai": "it may appear that",
-    "natural": ""
-  },
-  {
-    "ai": "it may look as if",
-    "natural": ""
-  },
-  {
-    "ai": "it may seem that",
-    "natural": ""
   },
   {
     "ai": "it can be seen that",
@@ -1636,10 +1384,6 @@
     "natural": "the wider environment"
   },
   {
-    "ai": "the current state of",
-    "natural": "the current state of"
-  },
-  {
     "ai": "the new normal",
     "natural": "what is now normal"
   },
@@ -1688,18 +1432,6 @@
     "natural": "the main point"
   },
   {
-    "ai": "a source of",
-    "natural": "a source of"
-  },
-  {
-    "ai": "a sign of",
-    "natural": "a sign of"
-  },
-  {
-    "ai": "a view of",
-    "natural": "a view of"
-  },
-  {
     "ai": "the current moment",
     "natural": "now"
   },
@@ -1733,10 +1465,6 @@
   },
   {
     "ai": "the central theme",
-    "natural": "the main theme"
-  },
-  {
-    "ai": "the main theme",
     "natural": "the main theme"
   },
   {
@@ -1936,10 +1664,6 @@
     "natural": "based on data"
   },
   {
-    "ai": "customer-focused",
-    "natural": "customer-focused"
-  },
-  {
     "ai": "research-backed",
     "natural": "based on research"
   },
@@ -1990,10 +1714,6 @@
   {
     "ai": "best-practice",
     "natural": "recommended"
-  },
-  {
-    "ai": "time-saving",
-    "natural": "time-saving"
   },
   {
     "ai": "cost-effective",
@@ -2060,14 +1780,6 @@
     "natural": "today"
   },
   {
-    "ai": "as technology advances",
-    "natural": ""
-  },
-  {
-    "ai": "in an era of rapid change",
-    "natural": ""
-  },
-  {
     "ai": "in the current environment",
     "natural": "now"
   },
@@ -2102,26 +1814,6 @@
   {
     "ai": "in the current era",
     "natural": "today"
-  },
-  {
-    "ai": "as the world changes",
-    "natural": ""
-  },
-  {
-    "ai": "as the market evolves",
-    "natural": ""
-  },
-  {
-    "ai": "with the rise of technology",
-    "natural": ""
-  },
-  {
-    "ai": "in the face of change",
-    "natural": ""
-  },
-  {
-    "ai": "with change happening fast",
-    "natural": ""
   },
   {
     "ai": "as a final note",
@@ -2168,18 +1860,6 @@
     "natural": "finally"
   },
   {
-    "ai": "it is worth emphasizing",
-    "natural": ""
-  },
-  {
-    "ai": "it should be noted",
-    "natural": ""
-  },
-  {
-    "ai": "it is important to note",
-    "natural": ""
-  },
-  {
     "ai": "it is important to understand",
     "natural": "remember"
   },
@@ -2198,10 +1878,6 @@
   {
     "ai": "in most cases",
     "natural": "often"
-  },
-  {
-    "ai": "in many ways",
-    "natural": "in many ways"
   },
   {
     "ai": "in other words",
@@ -2244,24 +1920,12 @@
     "natural": "finally"
   },
   {
-    "ai": "in this context",
-    "natural": ""
-  },
-  {
-    "ai": "in this case",
-    "natural": ""
-  },
-  {
     "ai": "in simple terms",
     "natural": "in short"
   },
   {
     "ai": "in broad terms",
     "natural": "in general"
-  },
-  {
-    "ai": "in practice",
-    "natural": "in practice"
   },
   {
     "ai": "in reality",
@@ -2360,44 +2024,8 @@
     "natural": "using"
   },
   {
-    "ai": "with the right approach",
-    "natural": "with the right approach"
-  },
-  {
-    "ai": "with the right mindset",
-    "natural": "with the right mindset"
-  },
-  {
-    "ai": "with the right plan",
-    "natural": "with the right plan"
-  },
-  {
-    "ai": "with the right tools",
-    "natural": "with the right tools"
-  },
-  {
-    "ai": "with the right support",
-    "natural": "with the right support"
-  },
-  {
-    "ai": "with the right team",
-    "natural": "with the right team"
-  },
-  {
     "ai": "with good reason",
     "natural": "for a good reason"
-  },
-  {
-    "ai": "with the right perspective",
-    "natural": "with the right perspective"
-  },
-  {
-    "ai": "with the right context",
-    "natural": "with the right context"
-  },
-  {
-    "ai": "with the right information",
-    "natural": "with the right information"
   },
   {
     "ai": "it is worth noting that the result is positive",
@@ -6360,186 +5988,6 @@
     "natural": "remember that"
   },
   {
-    "ai": "it is reasonable to assume that the result is positive",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the project is ready",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the data supports this",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the plan will work",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the results are clear",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the change is necessary",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the first step is familiar",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the next phase starts",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the conclusion is valid",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the trend is positive",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is the case",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is true",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is an important point",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is a useful observation",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is a relevant example",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is a common result",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is an expected outcome",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is a reasonable assumption",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is an important factor",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is the main point",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is the main takeaway",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is a strong argument",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is the best option",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is the right answer",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is the best choice",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is the most likely outcome",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is the most important factor",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is a key conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is the likely result",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that this is a valid example",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the evidence is strong",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the finding is clear",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the statement is accurate",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the point is clear",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the key idea is obvious",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the outcome is expected",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the response is positive",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the outcome is credible",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the pattern is obvious",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the issue is solved",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the process is underway",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the discussion is useful",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the example is helpful",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the conclusion is supported",
-    "natural": ""
-  },
-  {
-    "ai": "it is reasonable to assume that the reason is obvious",
-    "natural": ""
-  },
-  {
     "ai": "it may be helpful to note that the result is positive",
     "natural": "the result is positive"
   },
@@ -8876,70 +8324,6 @@
     "natural": "today"
   },
   {
-    "ai": "in the technology age",
-    "natural": ""
-  },
-  {
-    "ai": "in the business world",
-    "natural": ""
-  },
-  {
-    "ai": "in the market",
-    "natural": ""
-  },
-  {
-    "ai": "in the economy",
-    "natural": ""
-  },
-  {
-    "ai": "in the field",
-    "natural": ""
-  },
-  {
-    "ai": "in the industry",
-    "natural": ""
-  },
-  {
-    "ai": "in the sector",
-    "natural": ""
-  },
-  {
-    "ai": "in the professional world",
-    "natural": ""
-  },
-  {
-    "ai": "in the research world",
-    "natural": ""
-  },
-  {
-    "ai": "in the educational world",
-    "natural": ""
-  },
-  {
-    "ai": "in the today's workplace",
-    "natural": ""
-  },
-  {
-    "ai": "in the today's audience",
-    "natural": ""
-  },
-  {
-    "ai": "in the today's customers",
-    "natural": ""
-  },
-  {
-    "ai": "in the today's readers",
-    "natural": ""
-  },
-  {
-    "ai": "in the today's market",
-    "natural": ""
-  },
-  {
-    "ai": "in the today's technology landscape",
-    "natural": ""
-  },
-  {
     "ai": "in today's current climate",
     "natural": "nowadays"
   },
@@ -9022,982 +8406,6 @@
   {
     "ai": "in today's today's technology landscape",
     "natural": "nowadays"
-  },
-  {
-    "ai": "in an current climate",
-    "natural": ""
-  },
-  {
-    "ai": "in an current environment",
-    "natural": ""
-  },
-  {
-    "ai": "in an current era",
-    "natural": ""
-  },
-  {
-    "ai": "in an digital age",
-    "natural": ""
-  },
-  {
-    "ai": "in an modern era",
-    "natural": ""
-  },
-  {
-    "ai": "in an technology age",
-    "natural": ""
-  },
-  {
-    "ai": "in an business world",
-    "natural": ""
-  },
-  {
-    "ai": "in an market",
-    "natural": ""
-  },
-  {
-    "ai": "in an economy",
-    "natural": ""
-  },
-  {
-    "ai": "in an field",
-    "natural": ""
-  },
-  {
-    "ai": "in an industry",
-    "natural": ""
-  },
-  {
-    "ai": "in an sector",
-    "natural": ""
-  },
-  {
-    "ai": "in an professional world",
-    "natural": ""
-  },
-  {
-    "ai": "in an research world",
-    "natural": ""
-  },
-  {
-    "ai": "in an educational world",
-    "natural": ""
-  },
-  {
-    "ai": "in an today's workplace",
-    "natural": ""
-  },
-  {
-    "ai": "in an today's audience",
-    "natural": ""
-  },
-  {
-    "ai": "in an today's customers",
-    "natural": ""
-  },
-  {
-    "ai": "in an today's readers",
-    "natural": ""
-  },
-  {
-    "ai": "in an today's market",
-    "natural": ""
-  },
-  {
-    "ai": "in an today's technology landscape",
-    "natural": ""
-  },
-  {
-    "ai": "in a current climate",
-    "natural": ""
-  },
-  {
-    "ai": "in a current environment",
-    "natural": ""
-  },
-  {
-    "ai": "in a current era",
-    "natural": ""
-  },
-  {
-    "ai": "in a digital age",
-    "natural": ""
-  },
-  {
-    "ai": "in a modern era",
-    "natural": ""
-  },
-  {
-    "ai": "in a technology age",
-    "natural": ""
-  },
-  {
-    "ai": "in a business world",
-    "natural": ""
-  },
-  {
-    "ai": "in a market",
-    "natural": ""
-  },
-  {
-    "ai": "in a economy",
-    "natural": ""
-  },
-  {
-    "ai": "in a field",
-    "natural": ""
-  },
-  {
-    "ai": "in a industry",
-    "natural": ""
-  },
-  {
-    "ai": "in a sector",
-    "natural": ""
-  },
-  {
-    "ai": "in a professional world",
-    "natural": ""
-  },
-  {
-    "ai": "in a research world",
-    "natural": ""
-  },
-  {
-    "ai": "in a educational world",
-    "natural": ""
-  },
-  {
-    "ai": "in a today's workplace",
-    "natural": ""
-  },
-  {
-    "ai": "in a today's audience",
-    "natural": ""
-  },
-  {
-    "ai": "in a today's customers",
-    "natural": ""
-  },
-  {
-    "ai": "in a today's readers",
-    "natural": ""
-  },
-  {
-    "ai": "in a today's market",
-    "natural": ""
-  },
-  {
-    "ai": "in a today's technology landscape",
-    "natural": ""
-  },
-  {
-    "ai": "as current climate",
-    "natural": ""
-  },
-  {
-    "ai": "as current environment",
-    "natural": ""
-  },
-  {
-    "ai": "as current era",
-    "natural": ""
-  },
-  {
-    "ai": "as digital age",
-    "natural": ""
-  },
-  {
-    "ai": "as modern era",
-    "natural": ""
-  },
-  {
-    "ai": "as technology age",
-    "natural": ""
-  },
-  {
-    "ai": "as business world",
-    "natural": ""
-  },
-  {
-    "ai": "as market",
-    "natural": ""
-  },
-  {
-    "ai": "as economy",
-    "natural": ""
-  },
-  {
-    "ai": "as field",
-    "natural": ""
-  },
-  {
-    "ai": "as industry",
-    "natural": ""
-  },
-  {
-    "ai": "as sector",
-    "natural": ""
-  },
-  {
-    "ai": "as professional world",
-    "natural": ""
-  },
-  {
-    "ai": "as research world",
-    "natural": ""
-  },
-  {
-    "ai": "as educational world",
-    "natural": ""
-  },
-  {
-    "ai": "as today's workplace",
-    "natural": ""
-  },
-  {
-    "ai": "as today's audience",
-    "natural": ""
-  },
-  {
-    "ai": "as today's customers",
-    "natural": ""
-  },
-  {
-    "ai": "as today's readers",
-    "natural": ""
-  },
-  {
-    "ai": "as today's market",
-    "natural": ""
-  },
-  {
-    "ai": "as today's technology landscape",
-    "natural": ""
-  },
-  {
-    "ai": "with current climate",
-    "natural": ""
-  },
-  {
-    "ai": "with current environment",
-    "natural": ""
-  },
-  {
-    "ai": "with current era",
-    "natural": ""
-  },
-  {
-    "ai": "with digital age",
-    "natural": ""
-  },
-  {
-    "ai": "with modern era",
-    "natural": ""
-  },
-  {
-    "ai": "with technology age",
-    "natural": ""
-  },
-  {
-    "ai": "with business world",
-    "natural": ""
-  },
-  {
-    "ai": "with market",
-    "natural": ""
-  },
-  {
-    "ai": "with economy",
-    "natural": ""
-  },
-  {
-    "ai": "with field",
-    "natural": ""
-  },
-  {
-    "ai": "with industry",
-    "natural": ""
-  },
-  {
-    "ai": "with sector",
-    "natural": ""
-  },
-  {
-    "ai": "with professional world",
-    "natural": ""
-  },
-  {
-    "ai": "with research world",
-    "natural": ""
-  },
-  {
-    "ai": "with educational world",
-    "natural": ""
-  },
-  {
-    "ai": "with today's workplace",
-    "natural": ""
-  },
-  {
-    "ai": "with today's audience",
-    "natural": ""
-  },
-  {
-    "ai": "with today's customers",
-    "natural": ""
-  },
-  {
-    "ai": "with today's readers",
-    "natural": ""
-  },
-  {
-    "ai": "with today's market",
-    "natural": ""
-  },
-  {
-    "ai": "with today's technology landscape",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that the data supports this",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that the evidence is strong",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that the outcome is likely",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that the result is clear",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that the findings are consistent",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this is the case",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this seems true",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this appears accurate",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this looks valid",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this appears reasonable",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this seems likely",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this seems appropriate",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this appears correct",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this is the likely outcome",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this is the best conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this is the main point",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this is the main finding",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this is the most plausible option",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this is the most likely explanation",
-    "natural": ""
-  },
-  {
-    "ai": "it seems that this is a reasonable assumption",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that the data supports this",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that the evidence is strong",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that the outcome is likely",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that the result is clear",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that the findings are consistent",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this is the case",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this seems true",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this appears accurate",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this looks valid",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this appears reasonable",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this seems likely",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this seems appropriate",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this appears correct",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this is the likely outcome",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this is the best conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this is the main point",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this is the main finding",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this is the most plausible option",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this is the most likely explanation",
-    "natural": ""
-  },
-  {
-    "ai": "it appears that this is a reasonable assumption",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like the data supports this",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like the evidence is strong",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like the outcome is likely",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like the result is clear",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like the findings are consistent",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this is the case",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this seems true",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this appears accurate",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this looks valid",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this appears reasonable",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this seems likely",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this seems appropriate",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this appears correct",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this is the likely outcome",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this is the best conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this is the main point",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this is the main finding",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this is the most plausible option",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this is the most likely explanation",
-    "natural": ""
-  },
-  {
-    "ai": "it looks like this is a reasonable assumption",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be the data supports this",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be the evidence is strong",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be the outcome is likely",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be the result is clear",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be the findings are consistent",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this is the case",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this seems true",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this appears accurate",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this looks valid",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this appears reasonable",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this seems likely",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this seems appropriate",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this appears correct",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this is the likely outcome",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this is the best conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this is the main point",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this is the main finding",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this is the most plausible option",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this is the most likely explanation",
-    "natural": ""
-  },
-  {
-    "ai": "there seems to be this is a reasonable assumption",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be the data supports this",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be the evidence is strong",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be the outcome is likely",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be the result is clear",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be the findings are consistent",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this is the case",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this seems true",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this appears accurate",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this looks valid",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this appears reasonable",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this seems likely",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this seems appropriate",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this appears correct",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this is the likely outcome",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this is the best conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this is the main point",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this is the main finding",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this is the most plausible option",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this is the most likely explanation",
-    "natural": ""
-  },
-  {
-    "ai": "there appears to be this is a reasonable assumption",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that the data supports this",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that the evidence is strong",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that the outcome is likely",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that the result is clear",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that the findings are consistent",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this is the case",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this seems true",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this appears accurate",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this looks valid",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this appears reasonable",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this seems likely",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this seems appropriate",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this appears correct",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this is the likely outcome",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this is the best conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this is the main point",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this is the main finding",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this is the most plausible option",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this is the most likely explanation",
-    "natural": ""
-  },
-  {
-    "ai": "it may be that this is a reasonable assumption",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that the data supports this",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that the evidence is strong",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that the outcome is likely",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that the result is clear",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that the findings are consistent",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this is the case",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this seems true",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this appears accurate",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this looks valid",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this appears reasonable",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this seems likely",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this seems appropriate",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this appears correct",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this is the likely outcome",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this is the best conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this is the main point",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this is the main finding",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this is the most plausible option",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this is the most likely explanation",
-    "natural": ""
-  },
-  {
-    "ai": "it might be that this is a reasonable assumption",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that the data supports this",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that the evidence is strong",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that the outcome is likely",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that the result is clear",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that the findings are consistent",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this is the case",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this seems true",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this appears accurate",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this looks valid",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this appears reasonable",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this seems likely",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this seems appropriate",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this appears correct",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this is the likely outcome",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this is the best conclusion",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this is the main point",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this is the main finding",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this is the most plausible option",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this is the most likely explanation",
-    "natural": ""
-  },
-  {
-    "ai": "it is possible that this is a reasonable assumption",
-    "natural": ""
   },
   {
     "ai": "it could be argued that the data supports this",
@@ -15558,5 +13966,257 @@
   {
     "ai": "to close this is the main point to remember",
     "natural": "this is the main point to remember"
+  },
+  {
+    "ai": "when it comes to",
+    "natural": "regarding"
+  },
+  {
+    "ai": "by virtue of",
+    "natural": "through"
+  },
+  {
+    "ai": "in conjunction with",
+    "natural": "with"
+  },
+  {
+    "ai": "in light of the fact that",
+    "natural": "given that"
+  },
+  {
+    "ai": "at the end of the day",
+    "natural": "ultimately"
+  },
+  {
+    "ai": "in a nutshell",
+    "natural": "in short"
+  },
+  {
+    "ai": "it goes without saying that",
+    "natural": "clearly"
+  },
+  {
+    "ai": "in today's fast-paced world",
+    "natural": "today"
+  },
+  {
+    "ai": "in the ever-evolving landscape of",
+    "natural": "in the changing world of"
+  },
+  {
+    "ai": "time and time again",
+    "natural": "repeatedly"
+  },
+  {
+    "ai": "needless to say",
+    "natural": "obviously"
+  },
+  {
+    "ai": "last but not least",
+    "natural": "finally"
+  },
+  {
+    "ai": "first and foremost",
+    "natural": "primarily"
+  },
+  {
+    "ai": "play a pivotal role in",
+    "natural": "play a key role in"
+  },
+  {
+    "ai": "plays a pivotal role",
+    "natural": "plays a key role"
+  },
+  {
+    "ai": "plays a crucial role in",
+    "natural": "is key to"
+  },
+  {
+    "ai": "underscores the importance of",
+    "natural": "highlights the importance of"
+  },
+  {
+    "ai": "underscores the value of",
+    "natural": "highlights the value of"
+  },
+  {
+    "ai": "serves as a testament to",
+    "natural": "reflects"
+  },
+  {
+    "ai": "deep dive into",
+    "natural": "thorough look at"
+  },
+  {
+    "ai": "actionable insights",
+    "natural": "practical insights"
+  },
+  {
+    "ai": "unlock the potential of",
+    "natural": "make the most of"
+  },
+  {
+    "ai": "harness the power of",
+    "natural": "use"
+  },
+  {
+    "ai": "in the pipeline",
+    "natural": "underway"
+  },
+  {
+    "ai": "move the needle",
+    "natural": "make a difference"
+  },
+  {
+    "ai": "low-hanging fruit",
+    "natural": "quick wins"
+  },
+  {
+    "ai": "think outside the box",
+    "natural": "think creatively"
+  },
+  {
+    "ai": "a plethora of",
+    "natural": "a host of"
+  },
+  {
+    "ai": "take into consideration",
+    "natural": "consider"
+  },
+  {
+    "ai": "make significant strides",
+    "natural": "make great progress"
+  },
+  {
+    "ai": "significant strides",
+    "natural": "great progress"
+  },
+  {
+    "ai": "in light of the aforementioned",
+    "natural": "given the above"
+  },
+  {
+    "ai": "delves into",
+    "natural": "examines"
+  },
+  {
+    "ai": "fosters a culture of",
+    "natural": "encourages a culture of"
+  },
+  {
+    "ai": "fostering a culture of",
+    "natural": "encouraging a culture of"
+  },
+  {
+    "ai": "came to the conclusion that",
+    "natural": "concluded that"
+  },
+  {
+    "ai": "comes to the conclusion that",
+    "natural": "concludes that"
+  },
+  {
+    "ai": "it is apparent that",
+    "natural": "clearly"
+  },
+  {
+    "ai": "prior to",
+    "natural": "before"
+  },
+  {
+    "ai": "subsequent to",
+    "natural": "after"
+  },
+  {
+    "ai": "in the course of",
+    "natural": "during"
+  },
+  {
+    "ai": "throughout the course of",
+    "natural": "throughout"
+  },
+  {
+    "ai": "in the midst of",
+    "natural": "amid"
+  },
+  {
+    "ai": "in the absence of",
+    "natural": "without"
+  },
+  {
+    "ai": "germane to",
+    "natural": "relevant to"
+  },
+  {
+    "ai": "pertinent to",
+    "natural": "relevant to"
+  },
+  {
+    "ai": "extant literature",
+    "natural": "existing research"
+  },
+  {
+    "ai": "is predicated on",
+    "natural": "depends on"
+  },
+  {
+    "ai": "is contingent upon",
+    "natural": "depends on"
+  },
+  {
+    "ai": "is of paramount importance",
+    "natural": "is essential"
+  },
+  {
+    "ai": "is of great significance",
+    "natural": "is important"
+  },
+  {
+    "ai": "plays a fundamental role in",
+    "natural": "is central to"
+  },
+  {
+    "ai": "plays a part in",
+    "natural": "contributes to"
+  },
+  {
+    "ai": "exerts a significant influence on",
+    "natural": "strongly influences"
+  },
+  {
+    "ai": "has a marked impact on",
+    "natural": "markedly affects"
+  },
+  {
+    "ai": "inter alia",
+    "natural": "among other things"
+  },
+  {
+    "ai": "lends itself to",
+    "natural": "is well suited to"
+  },
+  {
+    "ai": "I am of the view that",
+    "natural": "I believe that"
+  },
+  {
+    "ai": "we are of the view that",
+    "natural": "we believe that"
+  },
+  {
+    "ai": "on the grounds that",
+    "natural": "because"
+  },
+  {
+    "ai": "in an effort to",
+    "natural": "to"
+  },
+  {
+    "ai": "irrespective of",
+    "natural": "regardless of"
+  },
+  {
+    "ai": "owing to the fact that",
+    "natural": "because"
   }
 ]

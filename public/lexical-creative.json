@@ -2498,5 +2498,80 @@
     "clunky": "The legacy looked ethereal.",
     "native": "The legacy fractured through the air, cloaked in a ethereal light.",
     "type": "Creative Prose"
+  },
+  {
+    "clunky": "she was very tired",
+    "native": "she was utterly exhausted",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "he ran very fast",
+    "native": "he sprinted",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "she felt very happy",
+    "native": "she felt elated",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "he was very angry",
+    "native": "he was seething",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "the sky was very beautiful",
+    "native": "the sky was breathtaking",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "they were very surprised",
+    "native": "they were stunned",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "the food was very good",
+    "native": "the food was delicious",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "it was raining heavily",
+    "native": "rain lashed the streets",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "she walked very fast",
+    "native": "she hurried",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "the market was very crowded",
+    "native": "the market was teeming with people",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "he spoke very quietly",
+    "native": "he whispered",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "the problem is very hard",
+    "native": "the problem is intractable",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "she was very interested",
+    "native": "she was intrigued",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "the room was very quiet",
+    "native": "silence hung in the room",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "the night was very dark",
+    "native": "darkness pressed in on all sides",
+    "type": "Phrase"
   }
 ]

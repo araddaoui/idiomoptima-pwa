@@ -1781,6 +1781,56 @@ function contentTokenSeq(text) {
     .join(" ");
 }
 
+// --- Deterministic nativization gates (shared with the test harness) ----------
+// A very small blocklist: only genuinely paired-correlative constructions that
+// MUST never be swapped out (swapping one half mangles the other half). The old
+// blanket "already-native connector" stoplist was removed so the databases
+// actually FIRE on common stiff phrasings; context-sensitive protection is done
+// at match time by isCollocationLocked() using the COLLOCATION_PAIRS below, and
+// the single-word allowlist keeps bare one-word swaps conservative.
+var NATIVE_STOPLIST = [
+  // "in particular" -> "especially" would be unsafe at sentence start
+  // ("Especially, the MENA region..."), so the whole entry is blocked. "in
+  // general" is NOT blocked: it now fires as "generally" unless its partner
+  // "in particular" appears in the same sentence (see isCollocationLocked).
+  "in particular",
+  "in general and in particular", "in general in particular", "in general, in particular"
+];
+
+// Correlative constructions: one half may be swapped only when the other half is
+// NOT present in the same sentence/quote-free segment.
+var COLLOCATION_PAIRS = [
+  ["in general", "in particular"],
+  ["on the one hand", "on the other hand"],
+  ["not only", "but also"]
+];
+
+// ONLY bare single-word sources allowed through the word-boundary pass. Every
+// other single-word entry is skipped by the <2-words gate because a bare common
+// word swap is too context-dependent. Each key must also exist in a database to
+// do anything; inflected forms get added alongside their DB entries in Phase 2.
+var SINGLE_WORD_ALLOW = {
+  "seamless": true, "streamline": true, "optimize": true, "enable": true,
+  "empower": true, "accelerate": true, "groundbreaking": true,
+  "transformative": true, "unparalleled": true, "orchestrate": true
+};
+
+function containsWordBoundary(text, word) {
+  return new RegExp("\\b" + escapeRegExp(word) + "\\b").test(String(text || "").toLowerCase());
+}
+
+function isCollocationLocked(text, src) {
+  var srcLow = String(src || "").toLowerCase();
+  var t = String(text || "").toLowerCase();
+  for (var i = 0; i < COLLOCATION_PAIRS.length; i++) {
+    var a = COLLOCATION_PAIRS[i][0];
+    var b = COLLOCATION_PAIRS[i][1];
+    if (a === srcLow && containsWordBoundary(t, b)) return true;
+    if (b === srcLow && containsWordBoundary(t, a)) return true;
+  }
+  return false;
+}
+
 // Builds deterministic nativization maps from the databases the client sends.
 // Only MULTI-WORD sources participate in phrase-level matching (a bare single
 // common word like "plus" -> "also" is far too risky and changes meaning);
@@ -1793,80 +1843,8 @@ function buildNativizationMaps(dbs, domain) {
   function sourceOf(e) { return e && (e.ai || e.clunky || e.source); }
   function targetOf(e) { return e && (e.natural || e.native || e.target); }
 
-  // Standard multi-word idioms that are ALREADY natural, correct English and
-  // must NEVER be auto-rewritten by the deterministic pass. These are regular
-  // native academic connectors — not stiff phrases — so a DB row that maps them
-  // ("in general" -> "generally", "in particular" -> "especially") is a false
-  // positive that could only manufacture budget-padding cosmetic deltas. A
-  // revision may still IMPROVE one when the sentence-around it is genuinely
-  // stiff and the swap is contextually right, but the deterministic fallback
-  // will never touch them on its own (honest-scoring guarantee, P3).
-  var NATIVE_STOPLIST = {
-    "in general": true, "in general and in particular": true,
-    "in particular": true, "in general, in particular": true,
-    "in general and": true, "in particular, and": true,
-    "the reason is because": true, "the reason is due to": true,
-    "due to the fact that": true, "owing to the fact that": true,
-    "the fact that": true, "in the fact that": true,
-    "a large number of": true, "a great deal of": true, "a variety of": true,
-    "a number of": true, "in the event that": true, "in the case of": true,
-    "in the context of": true, "with regard to": true, "in regard to": true,
-    "as regards": true, "with respect to": true, "in terms of": true,
-    "on the other hand": true, "on the one hand": true, "as a result of": true,
-    "as a consequence of": true, "in order to": true, "as well as": true,
-    "as well as the": true, "not only": true, "in addition to": true,
-    "in accordance with": true, "in light of": true, "in view of": true,
-    "by means of": true, "in the sense that": true, "in the long run": true,
-    "in the short run": true, "for the most part": true, "to a large extent": true,
-    "to a greater extent": true, "to some extent": true, "as follows": true,
-    "in the following": true, "the following": true, "it should be noted": true,
-    "it is important to note": true, "it is worth noting": true,
-    "it can be seen": true, "it is evident": true, "it is clear": true,
-    "in this case": true, "in such cases": true, "in most cases": true,
-    "in many cases": true, "in some cases": true, "in all cases": true,
-    "in the course of": true, "in the process of": true, "in the field of": true,
-    "in the absence of": true, "in the presence of": true, "in spite of": true,
-    "in spite of the fact that": true, "despite the fact that": true,
-    "at the same time": true, "at this point": true, "at that point": true,
-    "at present": true, "as such": true, "such as": true, "such as the": true,
-    "as a whole": true, "as a matter of fact": true, "as opposed to": true,
-    "as compared to": true, "as compared with": true, "as to whether": true,
-    "the question of whether": true, "whether or not": true, "whether": true,
-    "it is possible that": true, "there is a need to": true, "there is a need": true,
-    "there is a strong need": true, "it is necessary to": true,
-    "it is important that": true, "it is important to": true,
-    "the majority of": true, "the vast majority of": true, "a majority of": true,
-    "the use of": true, "the usage of": true, "the amount of": true,
-    "the number of": true, "an increasing number of": true,
-    "a growing number of": true, "in the future": true, "in the past": true,
-    "in recent years": true, "in recent decades": true, "in the years": true,
-    "in recent times": true, "in the last": true, "over the last": true,
-    "over the past": true, "in the coming": true, "in the next": true,
-    "in this regard": true, "in that regard": true, "in many respects": true,
-    "in all respects": true, "to a certain extent": true, "to a degree": true,
-    "to some degree": true, "in some way": true, "in a way": true,
-    "in several ways": true, "in various ways": true, "in different ways": true,
-    "from a ... perspective": true, "from the perspective of": true,
-    "from the standpoint of": true, "from the point of view of": true,
-    "it is widely believed": true, "it is generally accepted": true,
-    "it is generally agreed": true, "it is believed": true, "it is thought": true,
-    "it is said": true, "it is claimed": true, "it is estimated": true,
-    "it is expected": true, "it is assumed": true, "it is important": true,
-    "it is essential": true, "it is crucial": true, "it is vital": true,
-    "it is necessary": true, "it is critical": true, "it is fundamental": true,
-    "it is imperative": true, "it is of paramount importance": true,
-    "it is of great importance": true, "it is significant to": true,
-    "it is worth mentioning": true, "it should be mentioned": true,
-    "it must be noted": true, "mention should be made": true,
-    "reference should be made": true, "allocation of": true, "in the allocation": true,
-    "the utilization of": true, "the utilization": true, "at the outset": true,
-    "at the beginning": true, "at the start": true, "at the end": true,
-    "at the outset of": true, "at the onset of": true, "at the onset": true,
-    "in the early 21st": true, "in the 21st": true, "in the beginning": true,
-    "in the process": true, "in the midst": true, "in the midst of": true,
-    "in the middle of": true, "in the middle": true, "in the event": true,
-    "in the wake of": true, "in the aftermath of": true
-  };
+  // NATIVE_STOPLIST / COLLOCATION_PAIRS / SINGLE_WORD_ALLOW / isCollocationLocked
+  // live at module scope above (shared with the test harness).
 
   function push(srcRaw, tgtRaw, cat) {
     var src = String(srcRaw || "").trim();
@@ -1875,21 +1853,16 @@ function buildNativizationMaps(dbs, domain) {
     if (src.toLowerCase() === tgt.toLowerCase()) return; // idempotent entries
     var norm = src.replace(/[""\u201C\u201D]+/g, "").replace(/\s+/g, " ").trim();
     if (!norm) return;
-    // NEVER auto-apply a standard native idiom (stoplist) — Cosmétic only.
+    // Block genuinely paired-correlative connectors only (see isCollocationLocked
+    // for the at-match-time counterpart of this build-time list).
     var normLow = norm.toLowerCase();
-    if (NATIVE_STOPLIST[normLow]) return;
-    // Also block a phrase when it embeds any stoplisted idiom as its leading words
-    // (e.g. a "in general and … in particular" style entry) after collapsing inner
-    // spaces — we only need a best-effort head-match, not a full rewrite.
-    var head = normLow;
-    if (head.length > 4) {
-      // Skip the "… -> …" pattern columns already split above; nothing more to do.
-    }
+    if (NATIVE_STOPLIST.indexOf(normLow) !== -1) return;
     var first = norm.charAt(0);
     var last = norm.charAt(norm.length - 1);
     if (!/[A-Za-z\u00C0-\u024F']/.test(first) || !/[A-Za-z0-9'\u2019.]$/.test(last)) return;
     var wordCount = (norm.match(/[A-Za-z0-9'\u2019-]+/g) || []).length;
-    if (wordCount < 2) return;
+    var isAllowedSingle = wordCount === 1 && !!SINGLE_WORD_ALLOW[normLow];
+    if (wordCount < 2 && !isAllowedSingle) return;
     var endsSentence = /[.!?]$/.test(norm);
     if (!endsSentence && norm.length >= 6) {
       var key = norm.toLowerCase();
@@ -2010,6 +1983,9 @@ function applyDatabaseNativization(sentences, dbs, domain) {
           var re = new RegExp("\\b" + item.src + "\\b", "gi");
           var res;
           while ((res = re.exec(out)) !== null) {
+            // Correlative safety: skip the swap when this phrase's partner (e.g.
+            // "in general" vs "in particular") is present in the same sentence.
+            if (isCollocationLocked(out, item.src)) { re.lastIndex = res.index + res[0].length; continue; }
             var prefix = out.slice(0, res.index);
             var atStart = prefix.trim() === "" || /[.!?]["'\u201D\u2019]?\s+$/.test(prefix) || /\n\s*$/.test(prefix);
             var cap = res[0].charAt(0) === res[0].charAt(0).toUpperCase() && res[0].charAt(0) !== res[0].charAt(0).toLowerCase();

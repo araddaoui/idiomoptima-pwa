@@ -2498,5 +2498,85 @@
     "clunky": "Common interaction example 500",
     "native": "Natural native chunk 500",
     "type": "General Usage"
+  },
+  {
+    "clunky": "at this point in time",
+    "native": "now",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "at the present time",
+    "native": "now",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "in the near future",
+    "native": "soon",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "a lot of times",
+    "native": "often",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "in today's world",
+    "native": "nowadays",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "until such time as",
+    "native": "until",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "on account of",
+    "native": "because of",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "owing to",
+    "native": "because of",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "regardless of the fact that",
+    "native": "even though",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "in the neighborhood of",
+    "native": "about",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "the vast majority of",
+    "native": "most",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "as a matter of fact",
+    "native": "in fact",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "over the course of time",
+    "native": "over time",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "more likely than not",
+    "native": "probably",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "down the road",
+    "native": "later",
+    "type": "Idiom"
+  },
+  {
+    "clunky": "out of the blue",
+    "native": "unexpectedly",
+    "type": "Idiom"
   }
 ]

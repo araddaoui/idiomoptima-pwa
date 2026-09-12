@@ -2448,5 +2448,60 @@
     "clunky": "This is for all.",
     "native": "These findings have universal relevance for...",
     "type": "Adverbial Phrase"
+  },
+  {
+    "clunky": "it is like saying",
+    "native": "it is akin to saying",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "does not have much to do with",
+    "native": "bears little relation to",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "better suited for",
+    "native": "better suited to",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "generally oblivious to",
+    "native": "largely unaware of",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "in light of the aforementioned findings",
+    "native": "given the findings above",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "previous studies have shown that",
+    "native": "earlier studies show that",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "extensive research has shown that",
+    "native": "research shows that",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "a considerable body of literature",
+    "native": "much of the research",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "the findings of this study suggest that",
+    "native": "these findings suggest that",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "there is a growing recognition that",
+    "native": "there is growing awareness that",
+    "type": "Phrase"
+  },
+  {
+    "clunky": "a significant component of",
+    "native": "a large part of",
+    "type": "Phrase"
   }
 ]
