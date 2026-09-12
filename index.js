@@ -1399,9 +1399,22 @@ function extractFootnoteBlock(text) {
     var mBody = body.match(/([.!?:])[\s\n]*(\[\d+\][\s\S]*)$/);
     if (mBody && /^\[\d+\]/.test(mBody[2].trim())) {
       var gluedSplit = splitRefRun(mBody[2]);
-      footnotes = gluedSplit.refs;
-      body = body.substring(0, body.length - mBody[2].length).trimEnd();
-      if (gluedSplit.trailing) body = (body + "\n\n" + gluedSplit.trailing).trim();
+      // Only treat glued text as footnotes when it genuinely looks like
+      // references (contains a year, "Ibid", DOI, or URL).  Body prose
+      // that uses inline [N] citation markers — e.g. "[1] This approach
+      // is better suited for... [2] Standard approaches... [3] ... [4]"
+      // — has none of these and must stay in the body so the deterministic
+      // layer can nativize it.
+      var refsText = gluedSplit.refs || "";
+      var isRefBlock = /(?:1[89]|20)\d{2}/.test(refsText) ||
+                       /\bIbid\b/i.test(refsText) ||
+                       /https?:\/\//i.test(refsText) ||
+                       /\bDOI[:\s]/i.test(refsText);
+      if (isRefBlock) {
+        footnotes = gluedSplit.refs;
+        body = body.substring(0, body.length - mBody[2].length).trimEnd();
+        if (gluedSplit.trailing) body = (body + "\n\n" + gluedSplit.trailing).trim();
+      }
     }
   }
   return { body: (body || "").trim(), footnotes: (footnotes || "").trim() };
@@ -1687,14 +1700,33 @@ function reinsertParagraphBreaks(originalText, finalVersion) {
   function findWordSequence(text, words) {
     var textLower = text.toLowerCase();
     var searchFrom = 0;
-    var firstIdx = -1;
-    for (var w = 0; w < words.length; w++) {
-      var wordIdx = textLower.indexOf(words[w].toLowerCase(), searchFrom);
-      if (wordIdx === -1) return -1;
-      if (w === 0) firstIdx = wordIdx;
-      searchFrom = wordIdx + words[w].length;
+    // Words must match at real word boundaries AND sit close together
+    // (bounded gap) so the sequence forms one phrase. The old indexOf loop
+    // matched substrings ("i" inside "Application") and allowed unbounded
+    // gaps, which could split unrelated text (e.g. reinserting the
+    // "Nonneman's framework" boundary at the "Nonneman's approach" inside
+    // the previous paragraph).
+    var maxGap = 60;
+    while (searchFrom <= textLower.length) {
+      var firstIdx = textLower.indexOf(words[0].toLowerCase(), searchFrom);
+      if (firstIdx === -1) return -1;
+      var beforeChar = firstIdx > 0 ? textLower[firstIdx - 1] : " ";
+      var afterChar = textLower.substring(firstIdx + words[0].length, firstIdx + words[0].length + 1);
+      if (/[a-z0-9]/.test(beforeChar) || /[a-z0-9]/.test(afterChar)) {
+        searchFrom = firstIdx + 1;
+        continue;
+      }
+      var phraseOk = true;
+      var pos = firstIdx + words[0].length;
+      for (var w = 1; w < words.length; w++) {
+        var wordIdx = textLower.indexOf(words[w].toLowerCase(), pos);
+        if (wordIdx === -1 || wordIdx - pos > maxGap) { phraseOk = false; break; }
+        pos = wordIdx + words[w].length;
+      }
+      if (phraseOk) return firstIdx;
+      searchFrom = firstIdx + 1;
     }
-    return firstIdx;
+    return -1;
   }
 
   var matches = [];
