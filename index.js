@@ -1820,19 +1820,49 @@ function tokenCoverage(childText, parentText) {
   return total === 0 ? 0 : overlapped / total;
 }
 
-function sentencesAllUnchanged(parsed) {
-  if (!parsed || !Array.isArray(parsed.sentences)) return false;
-  var bodySentences = 0;
-  for (var i = 0; i < parsed.sentences.length; i++) {
-    var s = parsed.sentences[i];
-    if (!s) continue;
-    if (s.isImmutableFootnote) continue;
-    bodySentences++;
-    var o = String(s.original || "").replace(/\s+/g, " ").trim();
-    var r = String(s.revised || "").replace(/\s+/g, " ").trim();
-    if (o && (!r || r !== o)) return false;
+function stripQuotedContent(t) {
+  return String(t || "").replace(/["\"\u201C\u201D\u2018\u2019][^"\"\u201C\u201D\u2018\u2019]*["\"\u201C\u201D\u2018\u2019]/g, " ");
+}
+
+function normContent(t) {
+  return String(t || "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+// True when the parsed response contains at least one REAL content change,
+// mirroring the honest scorer in ensureValidResult: cosmetic-only edits
+// (punctuation swaps, quote-region rewrites, whitespace/case shuffles that a
+// weak free model pads into an otherwise verbatim echo) do NOT count as real
+// changes — such an output must rotate to a stronger provider instead of being
+// accepted as "success" and scored flat.
+function parsedHasRealChanges(parsed, bodyText) {
+  if (!parsed) return false;
+  var list = Array.isArray(parsed.sentences) && parsed.sentences.length > 0;
+  if (list) {
+    var real = 0;
+    for (var i = 0; i < parsed.sentences.length; i++) {
+      var s = parsed.sentences[i];
+      if (!s) continue;
+      if (s.isImmutableFootnote) continue;
+      var before = String(s.original || "").trim().replace(/\s+/g, " ");
+      var after = String(s.revised || "").trim().replace(/\s+/g, " ");
+      var o = before.toLowerCase();
+      var r = after.toLowerCase();
+      if (!/[a-z]/.test(o) || !/[a-z]/.test(r)) continue;
+      if (o === r) {
+        if (/(?:^|[.!?]\s+)[a-z]/.test(before)) real++;
+        continue;
+      }
+      var oq = stripQuotedContent(o).replace(/\s+/g, " ").trim();
+      var rq = stripQuotedContent(r).replace(/\s+/g, " ").trim();
+      if (oq === rq) continue;
+      real++;
+    }
+    return real > 0;
   }
-  return bodySentences > 0;
+  // No sentence array (finalVersion-only payload): treat a verbatim echo as no-change.
+  var bn = normContent(bodyText);
+  var fn = normContent(parsed.finalVersion || parsed.final || parsed.text || "");
+  return !!bn && !!fn && fn !== bn;
 }
 function contentTokenSeq(text) {
   return String(text || "")
@@ -2921,15 +2951,17 @@ export default {
                 pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " could not be parsed — trying the next provider" });
                 continue;
               }
-              // No-op guard: a provider that returns the text without ANY
-              // sentence-level edit (verbatim echo, or a model that "saw nothing")
-              // is not a success while stronger providers remain — otherwise the
-              // request silently returns a flat, unchanged score. We deliberately do
-              // NOT gate this on our deterministic phrase DB hitting: a text can be
-              // stiff in ways our rules do not cover, and only a stronger model can
-              // fix those. After every configured provider has been tried, the last
-              // parseable no-op is accepted and scored honestly (flat = correct).
-              if (sentencesAllUnchanged(parsed) && ai < attempts.length - 1) {
+              // No-real-change guard: a provider whose output contains no REAL
+              // content edit (verbatim echo, "saw nothing", or cosmetic-only
+              // punctuation/quote/case padding) is not a success while stronger
+              // providers remain — otherwise the request silently returns a flat,
+              // unchanged score. Classification mirrors the honest scorer so the two
+              // can never disagree. We deliberately do NOT gate this on our
+              // deterministic phrase DB hitting: a text can be stiff in ways our
+              // rules do not cover, and only a stronger model can fix those. After
+              // every configured provider has been tried, the last parseable no-op
+              // is accepted and scored honestly (flat = correct).
+              if (!parsedHasRealChanges(parsed, bodyText) && ai < attempts.length - 1) {
                 if (!lastParsed) { lastParsed = parsed; lastParsedProvider = attemptName; }
                 providerErrors.push(attemptName + ": returned the text without any edits — rotating to next provider");
                 console.error(attemptName + " returned the text without any edits — rotating to the next provider");
