@@ -190,7 +190,7 @@ async function handleStripeWebhook(request, env) {
       return acc;
     }, {});
 
-    const signedPayload = new TextEncoder().encode(parts.t || "" + "." + body);
+    const signedPayload = new TextEncoder().encode((parts.t || "") + "." + body);
     const key = await crypto.subtle.importKey(
       "raw",
       new TextEncoder().encode(env.STRIPE_WEBHOOK_SECRET),
