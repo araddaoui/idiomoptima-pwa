@@ -49,23 +49,30 @@ const TONES = [
 ];
 
 // Word-level diff (LCS) so "what changed" is visible even for subtle edits.
+// Comparison uses an apostrophe/punctuation-agnostic key (curly "SPPAIS’s" and
+// straight "SPPAIS's" are the same word) but renders the original tokens, so a
+// glyph-style flip never shows up as an add+delete pair.
 type WordDiffPart = { text: string; type: "same" | "add" | "del" };
+const normWordKey = (w: string): string =>
+  w.replace(/[\u2018\u2019]/g, "'").toLowerCase().replace(/[^a-z]/g, "");
 const wordDiff = (a: string, b: string): WordDiffPart[] => {
   const aa = a.split(/\s+/).filter(Boolean);
   const bb = b.split(/\s+/).filter(Boolean);
+  const ka = aa.map(normWordKey);
+  const kb = bb.map(normWordKey);
   const n = aa.length;
   const m = bb.length;
   const dp: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--) {
     for (let j = m - 1; j >= 0; j--) {
-      dp[i][j] = aa[i] === bb[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      dp[i][j] = ka[i] === kb[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
     }
   }
   const parts: WordDiffPart[] = [];
   let i = 0;
   let j = 0;
   while (i < n && j < m) {
-    if (aa[i] === bb[j]) { parts.push({ text: aa[i], type: "same" }); i++; j++; }
+    if (ka[i] === kb[j]) { parts.push({ text: aa[i], type: "same" }); i++; j++; }
     else if (dp[i + 1][j] >= dp[i][j + 1]) { parts.push({ text: aa[i], type: "del" }); i++; }
     else { parts.push({ text: bb[j], type: "add" }); j++; }
   }

@@ -714,32 +714,35 @@ function fixCommonMisspellingsSafe(s) {
 function restoreCurlyApostrophes(original, revised) {
   if (!original || !revised) return revised || original;
   if (original.indexOf("\u2019") === -1 && original.indexOf("\u2018") === -1) return revised;
-  // Split on non-word boundaries and restore 』' belongs to words that had 』 in
-  // the ORIGINAL. Map each straight apostrophe back only for the same word base.
-  var origWords = original.split(/(\s+)/);
-  var revWords = revised.split(/(\s+)/);
-  var revIdx = 0;
-  var out = [];
-  for (var i = 0; i < revWords.length; i++) {
-    var rw = revWords[i];
-    if (/\s+/.test(rw) || rw === "") { out.push(rw); continue; }
-    // Find the earliest not-yet-mapped original word that matches this revised
-    // word modulo apostrophe style, to pick up "'s" churn ("Nonneman's" vs "Nonneman’s").
-    var replaced = rw;
-    while (revIdx < origWords.length) {
-      var ow = origWords[revIdx];
-      revIdx++;
-      if (/\s+/.test(ow) || ow === "") continue;
-      var owNorm = ow.replace(/[\u2018\u2019]/g, "'");
-      var rwNorm = rw.replace(/[\u2018\u2019]/g, "'");
-      if (owNorm === rwNorm) {
-        // Same word ignoring apostrophe style: reuse the original's glyph.
-        replaced = ow;
-        break;
+  // Token-map restore: words that carried curly apostrophes in the ORIGINAL are
+  // rebuilt with the curly glyph wherever they appear in the revision. Matching
+  // by normalized word base (case+apostrophe agnostic, punctuation-stripped)
+  // and consuming a per-word count makes this robust to inserted tokens ("the
+  // added 'member' before 'SPPAIS’s'"), so curly apostrophes survive rewrites.
+  var curlyMap = {};
+  var rawByKey = {};
+  original.split(/(\s+)/).forEach(function (w) {
+    if (!/\s+/.test(w) && w !== "" && (w.indexOf("\u2019") !== -1 || w.indexOf("\u2018") !== -1)) {
+      var key = w.replace(/[\u2018\u2019]/g, "'").toLowerCase().replace(/[^a-z']/g, "").replace(/'/g, "");
+      if (key) {
+        curlyMap[key] = (curlyMap[key] || 0) + 1;
+        rawByKey[key] = w;
       }
     }
-    out.push(replaced);
-  }
+  });
+  if (Object.keys(curlyMap).length === 0) return revised;
+  var out = [];
+  revised.split(/(\s+)/).forEach(function (rw) {
+    if (/\s+/.test(rw) || rw === "") { out.push(rw); return; }
+    var key = rw.replace(/[\u2018\u2019]/g, "'").toLowerCase().replace(/[^a-z']/g, "").replace(/'/g, "");
+    if (key && curlyMap[key] > 0 && rawByKey[key]) {
+      // Reused the original glyph for this word base.
+      curlyMap[key]--;
+      out.push(rawByKey[key]);
+      return;
+    }
+    out.push(rw);
+  });
   return out.join("");
 }
 
@@ -805,11 +808,12 @@ function protectQuotes(original, revised) {
   return result;
 }
 
-function postProcessSuggestions(suggestions, originalText, finalText, sentences, preservedFootnoteCount) {
+function postProcessSuggestions(suggestions, originalText, finalText, sentences, preservedFootnoteCount, reviewNotes) {
   var suggs = [];
 
   var changedSentences = [];
   var unchangedCount = 0;
+  var flaggedCount = 0;
   var footnoteCount = preservedFootnoteCount || 0;
   var correctionTypes = { grammar: 0, punctuation: 0, spelling: 0, structure: 0, other: 0 };
 
@@ -829,6 +833,13 @@ function postProcessSuggestions(suggestions, originalText, finalText, sentences,
       );
       if (sentences[i].isImmutableFootnote || sIsCitation || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig) || /^\s*Ibid\.?/i.test(orig)) {
         footnoteCount++;
+        continue;
+      }
+      // Sentences the semantic-fidelity guard flagged as potentially inverted
+      // are excluded from the changed/unchanged counts: they are surfaced as
+      // explicit review notes (Fix-P0, Fix-P3).
+      if (sentences[i].semanticRisk) {
+        flaggedCount++;
         continue;
       }
 
@@ -895,6 +906,18 @@ function postProcessSuggestions(suggestions, originalText, finalText, sentences,
   }
 
   suggs.push("Preserved: " + unchangedCount + " unchanged sentence(s), " + footnoteCount + " footnote(s)/citation(s).");
+  var srcCount = countSourceSentences(originalText);
+  if (srcCount > 0 && changedSentences.length + unchangedCount + flaggedCount > srcCount) {
+    suggs.push("Based on " + srcCount + " source sentence(s); the output was re-segmented during alignment, so the counts above include reconstructed sentences.");
+  }
+
+  if (flaggedCount > 0) {
+    suggs.push("Flagged: " + flaggedCount + " sentence rewrite(s) may have inverted the meaning — see notes below.");
+  }
+  if (reviewNotes && reviewNotes.length > 0) {
+    // Bound the note volume so the panel never floods.
+    reviewNotes.slice(0, 6).forEach(function (note) { suggs.push(note); });
+  }
 
   return suggs;
 }
@@ -1363,7 +1386,8 @@ function extractFootnoteBlock(text) {
     // If after looks like footnote block, split there
     if (/^\s*\[\d+\]/.test(after)) {
       var midSplit = splitRefRun(after);
-      return {
+
+  return {
         body: (before + (midSplit.trailing ? "\n\n" + midSplit.trailing : "")).trim(),
         footnotes: midSplit.refs,
       };
@@ -2298,6 +2322,169 @@ function applyDatabaseNativization(sentences, dbs, domain) {
   return { sentences: sentences, stats: stats };
 }
 
+// Function words excluded from semantic-fidelity / dropped-content analysis
+// (deliberately NOT including "very"/"one" — a tightening that silently drops
+// those may be worth surfacing).
+var SEMANTIC_FUNCTION_WORDS = {
+  a:1, an:1, the:1, and:1, or:1, but:1, nor:1, of:1, in:1, on:1, at:1, to:1,
+  for:1, by:1, with:1, from:1, that:1, this:1, these:1, those:1, it:1, its:1,
+  is:1, are:1, was:1, were:1, be:1, been:1, being:1, has:1, have:1, had:1,
+  do:1, does:1, did:1, will:1, would:1, can:1, could:1, shall:1, should:1,
+  may:1, might:1, must:1, as:1, also:1, than:1, then:1, more:1, most:1,
+  such:1, so:1, while:1, when:1, where:1, which:1, who:1, whom:1, there:1,
+  here:1, they:1, their:1, them:1, we:1, our:1, you:1, your:1, i:1, he:1,
+  she:1, his:1, her:1, me:1, us:1, my:1, s:1, t:1, d:1, ll:1, ve:1, re:1,
+  cant:1, dont:1, doesnt:1, didnt:1, couldnt:1, shouldnt:1, wouldnt:1,
+  isnt:1, arent:1, wasnt:1, werent:1, wont:1, hasnt:1, havent:1, hadnt:1,
+  thats:1, theres:1, heres:1, wheres:1, whos:1, whats:1, lets:1, youd:1,
+  youll:1, youve:1, ofcourse:1, well:1, even:1, just:1, still:1
+};
+
+// Semantic-fidelity guard: flags sentences whose REVISED wording may have
+// inverted the author's meaning. Two deterministic signals:
+//   - "negation": a negation was inserted or removed while most words survived
+//     ("It is not expensive." -> "It is expensive.").
+//   - "inversion": a negation persists, the content tokens are nearly the same,
+//     but a shared key token jumped from one end of the sentence to the other
+//     ("they are NOT the primary focus of technology" -> "technology is not
+//     their primary focus").
+// Flagged sentences earn NO score bump and get a review note in the Notes tab.
+function detectSemanticRisk(sentences) {
+  var NEG = /\b(?:not|no|never|none|nothing|nobody|nowhere|neither|nor|without|hardly|barely|scarcely|rarely|seldom|cannot|can't|don't|doesn't|didn't|isn't|aren't|wasn't|weren't|won't|wouldn't|couldn't|shouldn't)\b/i;
+  function tokens(t) {
+    return String(t || "").replace(/[\u2018\u2019]/g, "'").toLowerCase().replace(/[^a-z'\s]/g, " ").split(/\s+/)
+      .filter(function (w) {
+        var k = w.replace(/'/g, "");
+        return k.length >= 3 && !SEMANTIC_FUNCTION_WORDS[k];
+      })
+      .map(function (w) { return w.replace(/'/g, ""); });
+  }
+  function diffMag(a, b) {
+    var counts = {};
+    var diff = 0;
+    a.forEach(function (w) { counts[w] = (counts[w] || 0) + 1; });
+    b.forEach(function (w) { if (counts[w] > 0) counts[w]--; else diff++; });
+    Object.keys(counts).forEach(function (w) { diff += counts[w]; });
+    return diff;
+  }
+  function sharedStats(a, b) {
+    var bSet = {};
+    b.forEach(function (w) { bSet[w] = (bSet[w] || 0) + 1; });
+    var aSeen = {};
+    var uniq = [];
+    var shared = 0;
+    a.forEach(function (w) { aSeen[w] = (aSeen[w] || 0) + 1; });
+    a.forEach(function (w) {
+      if (bSet[w] > 0) {
+        shared += Math.min(aSeen[w], bSet[w]);
+        if (!aSeen[w + "_unit"]) { aSeen[w + "_unit"] = 1; uniq.push(w); }
+      }
+    });
+    return { shared: shared, uniq: uniq };
+  }
+  var risks = {};
+  sentences.forEach(function (s, si) {
+    var o = (s.original || "").trim();
+    var r = (s.revised || "").trim();
+    if (!o || !r || o === r) return;
+    if (s.isImmutableFootnote || /^\[\d+\]/.test(o) || /^\s*Ibid\.?/i.test(o)) return;
+    var ot = tokens(o);
+    var rt = tokens(r);
+    if (ot.length < 2 || rt.length < 2) return;
+    var negO = NEG.test(o);
+    var negR = NEG.test(r);
+    var mag = diffMag(ot, rt);
+    if (negO !== negR && mag <= 6) {
+      var st = sharedStats(ot, rt);
+      if (st.shared / Math.min(ot.length, rt.length) >= 0.5) {
+        risks[si] = { kind: "negation", detail: negO && !negR ? "a 'not/no/never' negation was removed" : "a negation was introduced" };
+        return;
+      }
+    }
+    if (negO && negR && mag <= 5) {
+      var st2 = sharedStats(ot, rt);
+      if (st2.uniq.length >= 3) {
+        var sharedMap = {};
+        st2.uniq.forEach(function (w) { sharedMap[w] = 1; });
+        var oOrder = ot.filter(function (w) { return sharedMap[w]; });
+        var rOrder = rt.filter(function (w) { return sharedMap[w]; });
+        var firstO = oOrder[0], lastO = oOrder[oOrder.length - 1];
+        var firstR = rOrder[0], lastR = rOrder[rOrder.length - 1];
+        if ((firstR === lastO && lastR === firstO) || firstR === lastO || lastR === firstO) {
+          risks[si] = { kind: "inversion", detail: "the subject/object wording swapped around a negation — meaning may be flipped" };
+        }
+      }
+    }
+  });
+  return risks;
+}
+
+// Content words from the SOURCE (len>=4, non-stopword) that vanish entirely
+// from the final text. Words consumed by a FIRED nativization rule (builtin or
+// DB phrase) are intentionally removable and never flagged, so "prior to" ->
+// "before" stays silent while un-credited tightening drops like "today" /
+// "registered" get surfaced as a review note.
+function droppedContentWords(originalText, finalText, options) {
+  function addKeys(set, phrase) {
+    String(phrase || "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z\s]/g, " ").split(/\s+/).forEach(function (t) {
+      var k = t.replace(/'/g, "");
+      if (k && k.length >= 3 && !SEMANTIC_FUNCTION_WORDS[k]) set[k] = 1;
+    });
+  }
+  // Normalize a raw token into its base word(s): the possessive "SPPAIS’s" yields
+  // base "sppais" (plus the detached "'s"), so a surviving "SPPAIS" in the final
+  // text technically still contains the word and is NOT a dropped content word.
+  function baseKeys(raw) {
+    return String(raw || "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/'/g, " ").replace(/[^a-z\s]/g, " ").split(/\s+/)
+      .filter(function (t) { return t.length >= 4 && !SEMANTIC_FUNCTION_WORDS[t]; });
+  }
+  function finalHas(k) {
+    return new RegExp("(^|\\s)" + k + "(?![a-z])").test(finalNorm);
+  }
+  var allowed = {};
+  (BUILTIN_NATIVIZATION || []).forEach(function (rule) {
+    var re = new RegExp(rule.re.source, "gi");
+    var m;
+    while ((m = re.exec(originalText)) !== null) addKeys(allowed, m[0]);
+  });
+  try {
+    var maps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
+    if (maps && maps.phraseList) {
+      maps.phraseList.forEach(function (p) {
+        var re = new RegExp("\\b" + p.src + "\\b", "gi");
+        var pm;
+        while ((pm = re.exec(originalText)) !== null) addKeys(allowed, pm[0]);
+      });
+    }
+  } catch (e) { /* DB phrase maps are optional */ }
+  var finalNorm = " " + String(finalText || "").toLowerCase().replace(/[\u2018\u2019]/g, "'") + " ";
+  var out = [];
+  var seen = {};
+  String(originalText || "").split(/\s+/).forEach(function (raw) {
+    baseKeys(raw).forEach(function (k) {
+      if (seen[k] || allowed[k]) return;
+      seen[k] = 1;
+      if (!finalHas(k)) out.push(k);
+    });
+  });
+  return out.length > 6 ? out.slice(0, 6) : out;
+}
+
+// How many prose sentences does the SOURCE actually have? Used to reconcile the
+// diagnostics count ("11 improved + 4 preserved" vs the real 14-sentence input)
+// when the alignment step re-segments the model output.
+function countSourceSentences(text) {
+  if (!text) return 0;
+  var paras = String(text).split(/\n{2,}/).filter(function (p) { return p.trim().length > 0; });
+  var n = 0;
+  for (var i = 0; i < paras.length; i++) {
+    var p = paras[i].trim();
+    if (/^\[\d+\]/.test(p) || /^\s*Ibid\.?/i.test(p)) continue;
+    n += p.split(/(?<=[.!?])\s+(?!\[\d+\])/).filter(function (s) { return s.trim().length > 0; }).length;
+  }
+  return n;
+}
+
 function ensureValidResult(parsed, originalText, options) {
   if (!parsed || typeof parsed !== "object") return null;
 
@@ -2602,10 +2789,27 @@ function ensureValidResult(parsed, originalText, options) {
     if (revCommas < origCommas) changes.push("removed unnecessary comma(s)");
     if (revCommas > origCommas) changes.push("added missing comma(s)");
     var stopWords = /^(a|an|the|is|are|was|were|of|in|on|at|to|for|and|but|or|not|with|from|by|that|this|these|those|it|its|as|also|than|more|most|such|been|being|have|has|had|do|does|did|will|would|can|could|should|may|might|shall)$/i;
+    // Token-normalized word diff (Fix-P1): compare by apostrophe-style- and
+    // punctuation-agnostic content key so a curly "SPPAIS’s" vs straight
+    // "SPPAIS's" never feeds a bogus "replaced X with X" narrative, and matched
+    // words consume a count (moves don't double-report).
+    function normKey(w) {
+      return String(w).replace(/[\u2018\u2019]/g, "'").toLowerCase().replace(/[^a-z']/g, "").replace(/'/g, "");
+    }
     var origContent = orig.split(/\s+/).filter(function(w) { return !stopWords.test(w.replace(/[^a-zA-Z]/g, "")); });
     var revContent = revised.split(/\s+/).filter(function(w) { return !stopWords.test(w.replace(/[^a-zA-Z]/g, "")); });
-    var removed = origContent.filter(function(w) { return revContent.indexOf(w) === -1; });
-    var added = revContent.filter(function(w) { return origContent.indexOf(w) === -1; });
+    var oc = origContent.map(normKey);
+    var rc = revContent.map(normKey);
+    var removed = [];
+    var removedSeen = {};
+    oc.forEach(function (k, i) {
+      if (rc.indexOf(k) === -1 && !removedSeen[k]) { removedSeen[k] = 1; removed.push(origContent[i]); }
+    });
+    var added = [];
+    var addedSeen = {};
+    rc.forEach(function (k, i) {
+      if (oc.indexOf(k) === -1 && !addedSeen[k]) { addedSeen[k] = 1; added.push(revContent[i]); }
+    });
     if (removed.length > 0 && added.length > 0) {
       changes.push("replaced '" + removed.slice(0, 3).join("', '") + "' with '" + added.slice(0, 3).join("', '") + "'");
     } else if (removed.length > 0) {
@@ -2661,9 +2865,24 @@ function ensureValidResult(parsed, originalText, options) {
     Object.keys(counts).forEach(function (w) { diff += counts[w]; });
     return diff;
   }
+  // Semantic-fidelity guard (Fix-P0): flag sentences whose REVISED wording
+  // flips the meaning (negation inserted/removed, or a subject/object swap
+  // around a surviving negation). Flagged sentences earn NO bump below and get
+  // a review note surfaced via postProcessSuggestions.
+  var semanticRisks = detectSemanticRisk(sentences);
+  for (var sr in semanticRisks) {
+    if (Object.prototype.hasOwnProperty.call(semanticRisks, sr)) sentences[Number(sr)].semanticRisk = semanticRisks[sr];
+  }
+  // Content words that vanished from the SOURCE without a justifying
+  // nativization rule firing (Fix-P2, "dropped words" note).
+  var droppedWords = droppedContentWords(bodyOnlyOriginal, finalVersion, options);
+
   var realChangeCount = 0;
   var magnitudeAll = 0;
-  sentences.forEach(function (s) {
+  sentences.forEach(function (s, si) {
+    // Semantically-flagged sentences must not inflate the score: their edit is
+    // unverifiable (may have flipped meaning), so it cards no credit.
+    if (semanticRisks[si]) return;
     var before = (s.original || "").trim().replace(/\s+/g, " ");
     var after = (s.revised || "").trim().replace(/\s+/g, " ");
     var o = before.toLowerCase();
@@ -2753,12 +2972,25 @@ function ensureValidResult(parsed, originalText, options) {
     if (preservedFootnoteCount === 0 && savedFootnotes.trim()) preservedFootnoteCount = 1;
   }
 
+  // Review notes the Notes tab surfaces on top of the deterministic summary
+  // (Fix-P0 semantic flags + Fix-P2 dropped-word warnings).
+  var reviewNotes = [];
+  var srKeys = Object.keys(semanticRisks || {}).map(Number).sort(function (a, b) { return a - b; });
+  srKeys.slice(0, 5).forEach(function (ridx) {
+    var risk = semanticRisks[ridx];
+    reviewNotes.push("Note — Sentence " + (ridx + 1) + ": " + risk.detail + " (the revision may have changed the meaning; review to confirm intent).");
+  });
+  if (droppedWords.length > 0) {
+    reviewNotes.push("Note — words dropped during tightening were not linked to a nativizing rewrite: " + droppedWords.join(", ") + (droppedWords.length === 6 ? " (and more)" : "") + ". Confirm the simplification preserves intent.");
+  }
+
   var suggestions = postProcessSuggestions(
     Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
     originalText,
     finalVersion,
     sentences,
-    preservedFootnoteCount
+    preservedFootnoteCount,
+    reviewNotes
   );
 
   // Surface the deterministic nativization work as the FIRST summary line so the
@@ -2772,11 +3004,15 @@ function ensureValidResult(parsed, originalText, options) {
   // "70->77" + "No corrections needed" desync: the model's free-text explanation
   // disagreed with our scoring, so we stop trusting it entirely).
   var summary;
+  var flaggedCount = Object.keys(semanticRisks || {}).length;
   if (remainingSpelling > 0) {
     summary = "The revision corrected several issues, but " + remainingSpelling + " spelling error(s) remain in the output.";
   } else if (realChangeCount > 0) {
     summary = "The revision made " + realChangeCount + " real improvement" + (realChangeCount === 1 ? "" : "s") +
       ", nativizing and refining the writing to native-level English.";
+  } else if (flaggedCount > 0) {
+    summary = "The revision rephrased " + flaggedCount + " sentence" + (flaggedCount === 1 ? "" : "s") +
+      " flagged for semantic review — see notes.";
   } else {
     summary = "The original text needed no corrections.";
   }
@@ -2806,6 +3042,12 @@ function ensureValidResult(parsed, originalText, options) {
         });
       });
   }
+
+  // Global curly-apostrophe pass over the REBUILT final text (per-sentence
+  // restore already covers the sentence list; this ensures Full-Prose and the
+  // finalVersion used by clients carry the original glyphs even when alignment
+  // collapsed a re-segmented sentence).
+  finalVersion = restoreCurlyApostrophes(bodyOnlyOriginal, finalVersion);
 
   return {
     originalScore: origScore,
