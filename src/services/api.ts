@@ -4,10 +4,14 @@ export interface UserTierInfo {
   tier: "free" | "pro" | "enterprise";
   usage: number;
   limit: number;
+  wordLimit?: number | null;
 }
 
+export const FREE_RUN_LIMIT = 4;
+export const FREE_WORD_LIMIT = 800;
+
 export function limitForTier(tier?: string): number {
-  return tier === "pro" || tier === "enterprise" ? 9999 : 50;
+  return tier === "pro" || tier === "enterprise" ? 9999 : FREE_RUN_LIMIT;
 }
 
 export async function getUserTier(authToken?: string): Promise<UserTierInfo | null> {

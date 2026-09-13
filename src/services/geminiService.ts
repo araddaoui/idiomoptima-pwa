@@ -189,9 +189,11 @@ export async function transformText(
       const errorData = await response.json().catch(() => ({}));
       const error = new Error(errorData.error || `Server error: ${response.status}`);
       (error as any).limitReached = Boolean(errorData.limitReached);
+      (error as any).wordLimitReached = Boolean(errorData.wordLimitReached);
       (error as any).tier = errorData.tier;
       (error as any).usage = errorData.usage;
       (error as any).limit = errorData.limit;
+      (error as any).wordLimit = errorData.wordLimit;
       throw error;
     }
 
@@ -353,6 +355,13 @@ export async function transformText(
       (finalError as any).tier = (error as any).tier;
       (finalError as any).usage = (error as any).usage;
       (finalError as any).limit = (error as any).limit;
+    }
+    if (error && (error as any).wordLimitReached) {
+      (finalError as any).wordLimitReached = true;
+      (finalError as any).tier = (error as any).tier;
+      (finalError as any).usage = (error as any).usage;
+      (finalError as any).limit = (error as any).limit;
+      (finalError as any).wordLimit = (error as any).wordLimit;
     }
     throw finalError;
   }

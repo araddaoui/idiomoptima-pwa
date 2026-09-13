@@ -71,8 +71,10 @@ The package name is still the legacy `react-example` and worker mame internally
 
 - **Auth**: `Authorization: Bearer <clerk JWT>` → verified against
   `https://{CLERK_DOMAIN}/.well-known/jwks.json` (cached 1h). user id = `sub`.
-- **Tiers & limits**: tier from `users.subscription_tier`; `free` = 50 requests/day,
-  `pro`/`enterprise` = 9999. Over limit → HTTP 429 with `limitReached: true`. Usage
+- **Tiers & limits**: tier from `users.subscription_tier`; `free` = 4 requests/day
+  (each capped at 800 words), `pro`/`enterprise` = 9999 and no word cap. Over the
+  run limit → HTTP 429 with `limitReached: true`; over 800 words on free → HTTP 429
+  with `wordLimitReached: true`. Usage
   increments only for authenticated users; **anonymous requests bypass limits entirely**.
 - **Providers**: Pro = Gemini → OpenRouter → DeepSeek. Free = OpenRouter → Cloudflare AI
   → Gemini → DeepSeek; free texts ≥ 8000 chars skip OpenRouter/Cloudflare and go
@@ -123,9 +125,10 @@ Keep API keys out of commits.
   audit-hardening work (HEAD `61ac999`). Stray untracked files:
   `index.js.bak-20260828-131457`, `last-response.json`.
 - **Public copy is now aligned with enforcement**: the worker limits authenticated free
-  users to 50 requests/day (`users.subscription_tier` in Supabase), pro/enterprise 9999;
-  anonymous requests bypass limits. `about.html`, `faq.html`, `privacy.html`, and the
-  landing-page pricing reflect this. Any future change to the limit numbers must update
+  users to 4 requests/day (each capped at 800 words) (`users.subscription_tier`
+  in Supabase), pro/enterprise 9999; anonymous requests bypass limits.
+  `about.html`, `faq.html`, `privacy.html`, and the landing-page pricing reflect
+  this. Any future change to the limit numbers must update
   `index.js` AND those four files.
 - The repo root contains large data files (nativewrite `*.csv`, `lexical-*.json`,
   `metadata.json`) that are inputs to the frontend databases, not app source.

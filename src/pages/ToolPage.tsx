@@ -27,7 +27,7 @@ import { Document, Packer, Paragraph, TextRun } from "docx";
 import { jsPDF } from "jspdf";
 import { RichTextEditor } from "../components/RichTextEditor";
 import { transformText, TransformationResult } from "../services/geminiService";
-import { createBillingPortal, createCheckout, getUserTier, limitForTier, UserTierInfo } from "../services/api";
+import { createBillingPortal, createCheckout, getUserTier, limitForTier, FREE_RUN_LIMIT, FREE_WORD_LIMIT, UserTierInfo } from "../services/api";
 
 const DIALECTS = [
   { value: "auto", label: "Auto-Detect" },
@@ -161,7 +161,7 @@ export default function ToolPage() {
   const [result, setResult] = useState<TransformationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tierInfo, setTierInfo] = useState<UserTierInfo | null>(null);
-  const [limitPanel, setLimitPanel] = useState<boolean>(false);
+  const [limitPanel, setLimitPanel] = useState<"runs" | "words" | null>(null);
   const [upgradeLoading, setUpgradeLoading] = useState<boolean>(false);
   const [portalLoading, setPortalLoading] = useState<boolean>(false);
   const [banner, setBanner] = useState<string | null>(null);
@@ -295,7 +295,7 @@ export default function ToolPage() {
     }
   };
 
-  const runLimit = tierInfo ? limitForTier(tierInfo.tier) : 50;
+  const runLimit = tierInfo ? limitForTier(tierInfo.tier) : FREE_RUN_LIMIT;
   const runsLeft = tierInfo ? Math.max(0, runLimit - tierInfo.usage) : 0;
 
   const handleTransform = async () => {
@@ -318,7 +318,12 @@ export default function ToolPage() {
       return;
     }
     if (tierInfo && tierInfo.tier === "free" && tierInfo.usage >= runLimit) {
-      setLimitPanel(true);
+      setLimitPanel("runs");
+      setError(null);
+      return;
+    }
+    if (tierInfo && tierInfo.tier === "free" && wordCount(plainTextInput) > FREE_WORD_LIMIT) {
+      setLimitPanel("words");
       setError(null);
       return;
     }
@@ -360,10 +365,16 @@ export default function ToolPage() {
       }
     } catch (err: any) {
       if (err && err.limitReached) {
-        setLimitPanel(true);
+        setLimitPanel("runs");
         setError(null);
         if (typeof err.usage === "number") {
-          setTierInfo((t) => ({ tier: "free", usage: err.usage, limit: t?.limit ?? 50 }));
+          setTierInfo((t) => ({ tier: "free", usage: err.usage, limit: t?.limit ?? FREE_RUN_LIMIT }));
+        }
+      } else if (err && err.wordLimitReached) {
+        setLimitPanel("words");
+        setError(null);
+        if (typeof err.usage === "number") {
+          setTierInfo((t) => ({ tier: "free", usage: err.usage, limit: t?.limit ?? FREE_RUN_LIMIT }));
         }
       } else {
         setError(err.message || "Something went wrong during transformation.");
@@ -523,20 +534,21 @@ export default function ToolPage() {
                   onClick={startUpgrade}
                   disabled={upgradeLoading}
                   title="Upgrade to Pro for unlimited runs"
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-amber-300 bg-amber-400/10 border border-amber-400/40 hover:bg-amber-400/20 transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] font-bold text-amber-300 bg-amber-400/10 border border-amber-400/40 hover:bg-amber-400/20 transition-all cursor-pointer disabled:opacity-50"
                 >
                   <Crown className="w-3.5 h-3.5" />
-                  {runsLeft}/{runLimit} free · Upgrade
+                  <span className="font-mono">{runsLeft}/{runLimit}</span>
+                  <span className="hidden sm:inline">free · Upgrade</span>
                 </button>
               ) : (
                 <button
                   onClick={startManage}
                   disabled={portalLoading}
                   title="Manage subscription"
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-emerald-300 bg-emerald-400/10 border border-emerald-400/40 hover:bg-emerald-400/20 transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] font-bold text-emerald-300 bg-emerald-400/10 border border-emerald-400/40 hover:bg-emerald-400/20 transition-all cursor-pointer disabled:opacity-50"
                 >
                   <Crown className="w-3.5 h-3.5" />
-                  {tierInfo.tier === "enterprise" ? "Enterprise" : "Pro"}
+                  <span className="hidden sm:inline">{tierInfo.tier === "enterprise" ? "Enterprise" : "Pro"}</span>
                   <CreditCard className="w-3 h-3" />
                 </button>
               )
@@ -663,7 +675,7 @@ export default function ToolPage() {
                   <div className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 flex-wrap">
                     <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                     <span>
-                      You have <span className="font-bold">{runsLeft}</span> of {runLimit} free runs left today.
+                      You have <span className="font-bold">{runsLeft}</span> of {runLimit} free runs left today · up to <span className="font-bold">{FREE_WORD_LIMIT}</span> words each.
                     </span>
                     <button onClick={startUpgrade} disabled={upgradeLoading} className="underline font-bold text-blue-900 hover:text-blue-600 cursor-pointer disabled:opacity-50">
                       Upgrade
@@ -748,17 +760,30 @@ export default function ToolPage() {
               ) : limitPanel ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-amber-500/5 border border-amber-400/30 rounded-2xl">
                   <Crown className="w-10 h-10 text-amber-300 mb-3" />
-                  <h3 className="font-bold text-base text-amber-200 mb-1">You've reached your daily free limit</h3>
-                  <p className="text-xs text-slate-300 max-w-md leading-relaxed mb-6">
-                    You've used all {tierInfo ? tierInfo.usage : runLimit} of {runLimit} free runs today; the counter resets at midnight.
-                    Upgrade to Pro for unlimited transformations — cancel anytime.
-                  </p>
+                  {limitPanel === "words" ? (
+                    <>
+                      <h3 className="font-bold text-base text-amber-200 mb-1">This draft is too long for the free plan</h3>
+                      <p className="text-xs text-slate-300 max-w-md leading-relaxed mb-6">
+                        Your draft is <span className="font-bold text-amber-200">{wordCount(plainTextInput)} words</span> — free runs are capped at{" "}
+                        <span className="font-bold text-amber-200">{FREE_WORD_LIMIT}</span> words each.
+                        Upgrade to Pro for unlimited length — cancel anytime.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="font-bold text-base text-amber-200 mb-1">You've reached your daily free limit</h3>
+                      <p className="text-xs text-slate-300 max-w-md leading-relaxed mb-6">
+                        You've used all {tierInfo ? tierInfo.usage : runLimit} of {runLimit} free runs today; the counter resets at midnight.
+                        Upgrade to Pro for unlimited transformations — cancel anytime.
+                      </p>
+                    </>
+                  )}
                   <div className="flex items-center gap-3 flex-wrap justify-center">
                     <button onClick={startUpgrade} disabled={upgradeLoading} className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-[#0A192F] rounded-xl font-bold text-xs transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-2">
                       <CreditCard className="w-4 h-4" />
                       {upgradeLoading ? "Opening checkout..." : "Upgrade to Pro · $9/mo"}
                     </button>
-                    <button onClick={() => setLimitPanel(false)} className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl font-semibold text-xs transition-all cursor-pointer">
+                    <button onClick={() => setLimitPanel(null)} className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl font-semibold text-xs transition-all cursor-pointer">
                       Continue on Free
                     </button>
                   </div>

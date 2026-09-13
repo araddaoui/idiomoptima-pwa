@@ -37,7 +37,7 @@ function LandingRoute() {
     <LandingPage
       onStartFree={() => navigate(isSignedIn ? "/app" : "/sign-up")}
       onGoToApp={() => navigate("/app")}
-      onUpgrade={() => navigate(isSignedIn ? "/app?upgrade=1" : "/sign-up")}
+      onUpgrade={() => navigate(isSignedIn ? "/app?upgrade=1" : `/sign-up?redirect_url=${encodeURIComponent("/app?upgrade=1")}`)}
     />
   );
 }
@@ -57,7 +57,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <ClerkProvider publishableKey={CLERK_KEY}>
+    <ClerkProvider publishableKey={CLERK_KEY} afterSignInUrl="/app" afterSignUpUrl="/app">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingRoute />} />

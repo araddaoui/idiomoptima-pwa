@@ -3219,7 +3219,7 @@ export default {
     if (request.method === "GET" && path === "/user-tier") {
       var clerkDomain = env.CLERK_DOMAIN || "";
       var userId = await getUserIdFromRequest(request, clerkDomain);
-      if (!userId) return jsonResponse({ tier: "free", usage: 0, limit: 50 });
+      if (!userId) return jsonResponse({ tier: "free", usage: 0, limit: 4, wordLimit: 800 });
 
       var tier = "free";
       var usage = 0;
@@ -3227,8 +3227,9 @@ export default {
         tier = await getUserTier(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
         usage = await getDailyUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
       }
-      var limit = tier === "pro" || tier === "enterprise" ? 9999 : 50;
-      return jsonResponse({ tier: tier, usage: usage, limit: limit });
+      var limit = tier === "pro" || tier === "enterprise" ? 9999 : 4;
+      var wordLimit = tier === "pro" || tier === "enterprise" ? null : 800;
+      return jsonResponse({ tier: tier, usage: usage, limit: limit, wordLimit: wordLimit });
     }
 
     // -- Main transformation (POST) ---------------------------------
@@ -3239,6 +3240,7 @@ export default {
     try {
       var payload = await request.json();
       var text = String(payload.text || "").trim();
+      var wordCount = text.length > 0 ? text.trim().split(/\s+/).filter(Boolean).length : 0;
       var options = {
         domain: String(payload.domain || "general"),
         tone: String(payload.tone || "neutral"),
@@ -3283,7 +3285,7 @@ export default {
         tier = await getUserTier(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
         usage = await getDailyUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
 
-        var limit = tier === "pro" || tier === "enterprise" ? 9999 : 50;
+        var limit = tier === "pro" || tier === "enterprise" ? 9999 : 4;
         if (usage >= limit) {
           return jsonResponse({
             error: "Daily limit reached (" + limit + " requests). " +
@@ -3292,6 +3294,16 @@ export default {
             tier: tier,
             usage: usage,
             limit: limit,
+          }, 429);
+        }
+        if (tier === "free" && wordCount > 800) {
+          return jsonResponse({
+            error: "The free plan allows up to 800 words per transformation. Upgrade to Pro for unlimited length.",
+            wordLimitReached: true,
+            tier: tier,
+            usage: usage,
+            limit: limit,
+            wordLimit: 800,
           }, 429);
         }
       }

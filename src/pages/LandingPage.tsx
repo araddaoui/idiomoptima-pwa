@@ -37,7 +37,8 @@ const plans = [
     price: '0',
     description: 'Try IdiomOptima with no commitment',
     features: [
-      '50 free transformations per day',
+      '4 free transformations per day',
+      'Up to 800 words per transformation',
       'Academic, Business, Literary & General registers',
       'American, British, Canadian & Australian English',
       'Word, PDF & Plain Text export',
