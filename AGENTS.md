@@ -115,12 +115,15 @@ Keep API keys out of commits.
   compat 2026-08-19) and `wrangler.jsonc` (`react-example`, compat 2026-06-08,
   `nodejs_compat`). The build emits a `dist/wrangler.json`. Verify which one is the
   source of truth before changing Worker config.
-- **Uncommitted changes** currently in the worktree: `index.js`, `src/pages/ToolPage.tsx`,
-  `src/services/geminiService.ts`, and the public `ai-natural-database*.json` +
-  `lexical-*.json` files. Stray untracked files: `index.js.bak-20260828-131457`,
-  `last-response.json`.
-- **`public/about.html` still claims "4 transformations per day, up to 800 words"** but the
-  worker enforces 50 requests/day for free users — stale copy.
+- **Uncommitted changes** currently in the worktree: `src/pages/ToolPage.tsx` and
+  `src/services/geminiService.ts` only if locally modified beyond the committed
+  audit-hardening work (HEAD `61ac999`). Stray untracked files:
+  `index.js.bak-20260828-131457`, `last-response.json`.
+- **Public copy is now aligned with enforcement**: the worker limits authenticated free
+  users to 50 requests/day (`users.subscription_tier` in Supabase), pro/enterprise 9999;
+  anonymous requests bypass limits. `about.html`, `faq.html`, `privacy.html`, and the
+  landing-page pricing reflect this. Any future change to the limit numbers must update
+  `index.js` AND those four files.
 - The repo root contains large data files (nativewrite `*.csv`, `lexical-*.json`,
   `metadata.json`) that are inputs to the frontend databases, not app source.
 - `geminiService.ts` declares `process.env.WORKER_URL` reference inside comments/JSON in

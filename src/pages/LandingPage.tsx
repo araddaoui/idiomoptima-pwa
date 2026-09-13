@@ -36,7 +36,7 @@ const plans = [
     price: '0',
     description: 'Try IdiomOptima with no commitment',
     features: [
-      'Free to use with daily request limits',
+      '50 free transformations per day',
       'Academic, Business, Literary & General registers',
       'American, British, Canadian & Australian English',
       'Word, PDF & Plain Text export',
@@ -53,11 +53,11 @@ const plans = [
     description: 'For writers, researchers, and professionals',
     features: [
       'Everything in Free, plus:',
-      'Higher usage limits',
+      'Unlimited daily transformations',
       'Priority processing',
-      'Longer document support (up to 4,000 words)',
+      'Supports documents of any length',
     ],
-    cta: 'Coming Soon',
+    cta: 'Upgrade',
     highlighted: true,
     icon: Crown,
   },
@@ -308,7 +308,7 @@ export default function LandingPage({ onStartFree, onGoToApp }: LandingPageProps
               See How It Works
             </button>
           </div>
-          <p className="text-xs text-slate-500 mt-4">No account required. Free to use.</p>
+          <p className="text-xs text-slate-500 mt-4">Free to start — no credit card required.</p>
         </div>
       </section>
 
@@ -521,6 +521,8 @@ export default function LandingPage({ onStartFree, onGoToApp }: LandingPageProps
                     onClick={() => {
                       if (plan.name === 'Enterprise') {
                         window.location.href = 'mailto:contact@idiomoptima.com';
+                      } else if (plan.name === 'Pro') {
+                        onGoToApp?.();
                       } else if (plan.name === 'Free') {
                         onStartFree();
                       }
