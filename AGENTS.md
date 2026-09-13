@@ -34,7 +34,10 @@ The package name is still the legacy `react-example` and worker mame internally
   `/api/transform` only exists as the dev-proxy fallback in `vite.config.ts` that
   `geminiService.ts` overrides via `VITE_WORKER_URL`.
 - Worker endpoints: `GET /health`, `POST /stripe-webhook`, `POST /create-checkout`,
-  `GET /user-tier`, and `POST /` (transform). Everything else → 404.
+  `POST /billing-portal`, `GET /user-tier`, and `POST /` (transform). Everything
+  else → 404. `POST /create-checkout` and `POST /billing-portal` require a valid
+  Clerk JWT and both `upsert_user`-guarantee a `users` row (checkout) / read
+  `stripe_customer_id` (portal).
 - SPA rewrites live in `vercel.json` (`/app*`, `/sign-in*`, `/sign-up*` → `index.html`;
   `www.idiomoptima.com` → 301 to bare domain).
 

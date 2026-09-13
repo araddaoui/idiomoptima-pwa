@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { UserButton, useUser, useAuth } from "@clerk/clerk-react";
 import {
   PenTool,
@@ -19,11 +19,15 @@ import {
   SplitSquareVertical,
   Layers,
   CheckCircle2,
+  Crown,
+  CreditCard,
+  X,
 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import { jsPDF } from "jspdf";
 import { RichTextEditor } from "../components/RichTextEditor";
 import { transformText, TransformationResult } from "../services/geminiService";
+import { createBillingPortal, createCheckout, getUserTier, limitForTier, UserTierInfo } from "../services/api";
 
 const DIALECTS = [
   { value: "auto", label: "Auto-Detect" },
@@ -135,7 +139,9 @@ const PRESETS = [
 
 export default function ToolPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { getToken } = useAuth();
+  const { user } = useUser();
   const [inputHtml, setInputHtml] = useState<string>(PRESETS[0].html);
   const [forcedDialect, setForcedDialect] = useState<string>(() => {
     try {
@@ -154,6 +160,11 @@ export default function ToolPage() {
   const elapsedTimerRef = useRef<number | null>(null);
   const [result, setResult] = useState<TransformationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [tierInfo, setTierInfo] = useState<UserTierInfo | null>(null);
+  const [limitPanel, setLimitPanel] = useState<boolean>(false);
+  const [upgradeLoading, setUpgradeLoading] = useState<boolean>(false);
+  const [portalLoading, setPortalLoading] = useState<boolean>(false);
+  const [banner, setBanner] = useState<string | null>(null);
 
   const [selectedSentenceIdx, setSelectedSentenceIdx] = useState<number | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
@@ -233,6 +244,60 @@ export default function ToolPage() {
     }
   }, []);
 
+  const refreshTier = useCallback(async () => {
+    try {
+      const token = await getToken();
+      const info = await getUserTier(token || undefined);
+      if (info) setTierInfo(info);
+    } catch {}
+  }, [getToken]);
+
+  useEffect(() => {
+    void refreshTier();
+    const upgraded = searchParams.get("upgraded");
+    const cancelled = searchParams.get("upgrade_cancelled");
+    if (upgraded === "1") {
+      setBanner("Payment successful — your account is now on Pro. Enjoy unlimited runs!");
+      setTierInfo((t) => (t ? { ...t, tier: "pro", limit: 9999 } : { tier: "pro", usage: 0, limit: 9999 }));
+      setSearchParams({}, { replace: true });
+    } else if (cancelled === "1") {
+      setBanner("Upgrade cancelled — no charges were made. You can upgrade anytime.");
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const startUpgrade = async () => {
+    if (upgradeLoading) return;
+    setUpgradeLoading(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const url = await createCheckout(token, user?.primaryEmailAddress?.emailAddress || undefined);
+      if (url) window.location.href = url;
+      else setError("Could not start checkout. Please try again.");
+    } finally {
+      setUpgradeLoading(false);
+    }
+  };
+
+  const startManage = async () => {
+    if (portalLoading) return;
+    setPortalLoading(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const url = await createBillingPortal(token);
+      if (url) window.location.href = url;
+      else setError("Could not open billing settings. Please try again.");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const runLimit = tierInfo ? limitForTier(tierInfo.tier) : 50;
+  const runsLeft = tierInfo ? Math.max(0, runLimit - tierInfo.usage) : 0;
+
   const handleTransform = async () => {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = inputHtml;
@@ -250,6 +315,11 @@ export default function ToolPage() {
     }
     if (!plainText.trim()) {
       setError("Please write or paste some text into the editor first.");
+      return;
+    }
+    if (tierInfo && tierInfo.tier === "free" && tierInfo.usage >= runLimit) {
+      setLimitPanel(true);
+      setError(null);
       return;
     }
     setLoading(true);
@@ -281,8 +351,23 @@ export default function ToolPage() {
       );
       setResult(response);
       setSelectedSentenceIdx(0);
+      if (response.tier) {
+        setTierInfo({
+          tier: response.tier as UserTierInfo["tier"],
+          usage: typeof response.usage === "number" ? response.usage : (tierInfo?.usage ?? 0),
+          limit: limitForTier(response.tier),
+        });
+      }
     } catch (err: any) {
-      setError(err.message || "Something went wrong during transformation.");
+      if (err && err.limitReached) {
+        setLimitPanel(true);
+        setError(null);
+        if (typeof err.usage === "number") {
+          setTierInfo((t) => ({ tier: "free", usage: err.usage, limit: t?.limit ?? 50 }));
+        }
+      } else {
+        setError(err.message || "Something went wrong during transformation.");
+      }
     } finally {
       if (elapsedTimerRef.current) {
         window.clearInterval(elapsedTimerRef.current);
@@ -431,7 +516,31 @@ export default function ToolPage() {
             </h1>
           </div>
 
-          <div className="w-[140px] shrink-0 flex justify-end">
+          <div className="shrink-0 flex items-center justify-end gap-3">
+            {tierInfo && (
+              tierInfo.tier === "free" ? (
+                <button
+                  onClick={startUpgrade}
+                  disabled={upgradeLoading}
+                  title="Upgrade to Pro for unlimited runs"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-amber-300 bg-amber-400/10 border border-amber-400/40 hover:bg-amber-400/20 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <Crown className="w-3.5 h-3.5" />
+                  {runsLeft}/{runLimit} free · Upgrade
+                </button>
+              ) : (
+                <button
+                  onClick={startManage}
+                  disabled={portalLoading}
+                  title="Manage subscription"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-emerald-300 bg-emerald-400/10 border border-emerald-400/40 hover:bg-emerald-400/20 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <Crown className="w-3.5 h-3.5" />
+                  {tierInfo.tier === "enterprise" ? "Enterprise" : "Pro"}
+                  <CreditCard className="w-3 h-3" />
+                </button>
+              )
+            )}
             <UserButton
               afterSignOutUrl="/"
               appearance={{
@@ -513,6 +622,17 @@ export default function ToolPage() {
 
       {/* ─── Main Workspace ─── */}
       <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col gap-5">
+        {banner && (
+          <div className="flex items-center justify-between gap-3 bg-amber-500/10 border border-amber-400/30 rounded-xl px-4 py-2.5 text-xs text-amber-200">
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-amber-300 shrink-0" />
+              {banner}
+            </span>
+            <button onClick={() => setBanner(null)} className="text-amber-300 hover:text-white transition-colors cursor-pointer shrink-0" aria-label="Dismiss">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-[580px]">
 
           {/* LEFT: Source Editor */}
@@ -534,9 +654,22 @@ export default function ToolPage() {
             </div>
 
             <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Zero text retention. Citations preserved.</span>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Zero text retention. Citations preserved.</span>
+                </div>
+                {tierInfo && tierInfo.tier === "free" && (
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 flex-wrap">
+                    <Crown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span>
+                      You have <span className="font-bold">{runsLeft}</span> of {runLimit} free runs left today.
+                    </span>
+                    <button onClick={startUpgrade} disabled={upgradeLoading} className="underline font-bold text-blue-900 hover:text-blue-600 cursor-pointer disabled:opacity-50">
+                      Upgrade
+                    </button>
+                  </div>
+                )}
               </div>
               <button
                 onClick={handleTransform}
@@ -611,6 +744,24 @@ export default function ToolPage() {
                     <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300 rounded-full" style={{ width: `${progress}%` }} />
                   </div>
                   <p className="text-[11px] text-slate-400 mt-4">Provider queues can take 30–90s per attempt; this is normal for the free tier.</p>
+                </div>
+              ) : limitPanel ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-amber-500/5 border border-amber-400/30 rounded-2xl">
+                  <Crown className="w-10 h-10 text-amber-300 mb-3" />
+                  <h3 className="font-bold text-base text-amber-200 mb-1">You've reached your daily free limit</h3>
+                  <p className="text-xs text-slate-300 max-w-md leading-relaxed mb-6">
+                    You've used all {tierInfo ? tierInfo.usage : runLimit} of {runLimit} free runs today; the counter resets at midnight.
+                    Upgrade to Pro for unlimited transformations — cancel anytime.
+                  </p>
+                  <div className="flex items-center gap-3 flex-wrap justify-center">
+                    <button onClick={startUpgrade} disabled={upgradeLoading} className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-[#0A192F] rounded-xl font-bold text-xs transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-2">
+                      <CreditCard className="w-4 h-4" />
+                      {upgradeLoading ? "Opening checkout..." : "Upgrade to Pro · $9/mo"}
+                    </button>
+                    <button onClick={() => setLimitPanel(false)} className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl font-semibold text-xs transition-all cursor-pointer">
+                      Continue on Free
+                    </button>
+                  </div>
                 </div>
               ) : error ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-rose-950/30 border border-rose-500/30 rounded-2xl">

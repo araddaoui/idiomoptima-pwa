@@ -29,10 +29,12 @@ export interface TransformationResult {
     totalReplacements: number;
     sentencesChanged?: number;
   };
+  tier?: string;
+  usage?: number;
 }
 
 const envAny = (import.meta as any).env || {};
-const WORKER_URL = envAny.VITE_WORKER_URL || envAny.VITE_API_URL || "https://nativewrite-api.nativewrite-api.workers.dev";
+export const WORKER_URL = envAny.VITE_WORKER_URL || envAny.VITE_API_URL || "https://nativewrite-api.nativewrite-api.workers.dev";
 
 /**
  * Layer 1 - Mode Detection Engine (Heuristic)
@@ -185,7 +187,12 @@ export async function transformText(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Server error: ${response.status}`);
+      const error = new Error(errorData.error || `Server error: ${response.status}`);
+      (error as any).limitReached = Boolean(errorData.limitReached);
+      (error as any).tier = errorData.tier;
+      (error as any).usage = errorData.usage;
+      (error as any).limit = errorData.limit;
+      throw error;
     }
 
     // Content-Type is a CORS-safelisted header, so it is always readable by
@@ -340,6 +347,13 @@ export async function transformText(
     return data;
   } catch (error: any) {
     console.error("Worker request failed:", error);
-    throw new Error(`Transformation failed: ${error.message || "Server unavailable"}`);
+    const finalError = new Error(`Transformation failed: ${error.message || "Server unavailable"}`);
+    if (error && (error as any).limitReached) {
+      (finalError as any).limitReached = true;
+      (finalError as any).tier = (error as any).tier;
+      (finalError as any).usage = (error as any).usage;
+      (finalError as any).limit = (error as any).limit;
+    }
+    throw finalError;
   }
 }

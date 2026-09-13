@@ -37,6 +37,7 @@ function LandingRoute() {
     <LandingPage
       onStartFree={() => navigate(isSignedIn ? "/app" : "/sign-up")}
       onGoToApp={() => navigate("/app")}
+      onUpgrade={() => navigate(isSignedIn ? "/app?upgrade=1" : "/sign-up")}
     />
   );
 }

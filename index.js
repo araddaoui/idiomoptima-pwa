@@ -156,6 +156,27 @@ async function createStripeCheckout(stripeKey, priceId, clerkId, email, supabase
   return resp.json();
 }
 
+async function createStripePortal(stripeKey, customerId) {
+  const origin = "https://idiomoptima.com";
+  const resp = await fetch("https://api.stripe.com/v1/billing_portal/sessions", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + stripeKey,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      customer: customerId,
+      return_url: origin + "/app?manage=1",
+    }).toString(),
+  });
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error("Stripe portal error: " + err.substring(0, 200));
+  }
+  const session = await resp.json();
+  return session.url;
+}
+
 async function handleStripeWebhook(request, env) {
   const sig = request.headers.get("Stripe-Signature");
   const body = await request.text();
@@ -198,6 +219,13 @@ async function handleStripeWebhook(request, env) {
     const stripeCustomerId = session.customer;
     const stripeSubscriptionId = session.subscription;
     if (clerkId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+      const customerEmail = session.customer_details && session.customer_details.email
+        ? session.customer_details.email
+        : (session.metadata && session.metadata.email) || "";
+      await supabaseRpc(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, "upsert_user", {
+        p_clerk_id: clerkId,
+        p_email: customerEmail,
+      });
       await fetch(env.SUPABASE_URL + "/rest/v1/users?clerk_id=eq." + encodeURIComponent(clerkId), {
         method: "PATCH",
         headers: {
@@ -3131,20 +3159,53 @@ export default {
       return handleStripeWebhook(request, env);
     }
 
+    // -- Stripe billing portal (manage subscription) -----------------
+    if (request.method === "POST" && path === "/billing-portal") {
+      try {
+        var portalDomain = env.CLERK_DOMAIN || "";
+        var portalUserId = await getUserIdFromRequest(request, portalDomain);
+        if (!portalUserId || !env.STRIPE_SECRET_KEY) {
+          return jsonResponse({ error: "Authentication required" }, 401);
+        }
+        var portalCustomerId = null;
+        if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+          var portalRows = await supabaseQuery(
+            env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, "users",
+            "select=stripe_customer_id&clerk_id=eq." + encodeURIComponent(portalUserId) + "&limit=1"
+          );
+          if (portalRows && portalRows[0]) portalCustomerId = portalRows[0].stripe_customer_id;
+        }
+        if (!portalCustomerId) {
+          return jsonResponse({ error: "No active subscription found for this account." }, 400);
+        }
+        var portalUrl = await createStripePortal(env.STRIPE_SECRET_KEY, portalCustomerId);
+        return jsonResponse({ url: portalUrl });
+      } catch (e) {
+        return jsonResponse({ error: e.message }, 500);
+      }
+    }
+
     // -- Create Stripe Checkout session -----------------------------
     if (request.method === "POST" && path === "/create-checkout") {
       try {
-        var body = await request.json();
-        var clerkId = body.clerk_id;
-        var email = body.email;
-        if (!clerkId || !env.STRIPE_SECRET_KEY) {
-          return jsonResponse({ error: "Missing clerk_id or Stripe key" }, 400);
+        var checkoutDomain = env.CLERK_DOMAIN || "";
+        var checkoutUserId = await getUserIdFromRequest(request, checkoutDomain);
+        if (!checkoutUserId || !env.STRIPE_SECRET_KEY) {
+          return jsonResponse({ error: "Authentication required" }, 401);
+        }
+        var ccBody = await request.json();
+        var ccEmail = String(ccBody.email || "");
+        if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+          await supabaseRpc(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, "upsert_user", {
+            p_clerk_id: checkoutUserId,
+            p_email: ccEmail,
+          });
         }
         var checkout = await createStripeCheckout(
           env.STRIPE_SECRET_KEY,
           env.STRIPE_PRICE_ID || "price_placeholder",
-          clerkId,
-          email,
+          checkoutUserId,
+          ccEmail,
           env.SUPABASE_URL,
           env.SUPABASE_SERVICE_KEY
         );

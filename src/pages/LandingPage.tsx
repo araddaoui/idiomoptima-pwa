@@ -28,6 +28,7 @@ import {
 interface LandingPageProps {
   onStartFree: () => void;
   onGoToApp?: () => void;
+  onUpgrade?: () => void;
 }
 
 const plans = [
@@ -195,7 +196,7 @@ const testimonials = [
   },
 ];
 
-export default function LandingPage({ onStartFree, onGoToApp }: LandingPageProps) {
+export default function LandingPage({ onStartFree, onGoToApp, onUpgrade }: LandingPageProps) {
   const { isSignedIn } = useUser();
   const { openSignIn, openSignUp } = useClerk();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -522,7 +523,7 @@ export default function LandingPage({ onStartFree, onGoToApp }: LandingPageProps
                       if (plan.name === 'Enterprise') {
                         window.location.href = 'mailto:contact@idiomoptima.com';
                       } else if (plan.name === 'Pro') {
-                        onGoToApp?.();
+                        onUpgrade?.();
                       } else if (plan.name === 'Free') {
                         onStartFree();
                       }
@@ -539,6 +540,7 @@ export default function LandingPage({ onStartFree, onGoToApp }: LandingPageProps
               );
             })}
           </div>
+          <p className="text-center text-xs text-slate-500 mt-6">Billed securely via Stripe · Cancel anytime</p>
         </div>
       </section>
 
@@ -643,8 +645,8 @@ export default function LandingPage({ onStartFree, onGoToApp }: LandingPageProps
             <h3 className="text-xl font-bold mb-4">{policyModal === 'terms' ? 'Terms of Service' : 'Privacy Policy'}</h3>
             <p className="text-sm text-slate-400 leading-relaxed">
               {policyModal === 'terms'
-                ? 'By using IdiomOptima, you agree to use the service for lawful purposes. We reserve the right to modify or discontinue the service at any time. Your use of the service is at your own risk.'
-                : 'We respect your privacy. IdiomOptima processes your text in memory and does not store it on our servers. We do not sell your data or use it for advertising. We may collect anonymous usage analytics to improve the service.'}
+                ? 'By using IdiomOptima, you agree to use the service for lawful purposes. We reserve the right to modify or discontinue the service at any time. Your use of the service is at your own risk. Paid plans are billed monthly through Stripe and renew until cancelled; cancellation takes effect at the end of the current billing period.'
+                : 'We respect your privacy. IdiomOptima processes your text in memory and does not store it on our servers. We do not sell your data or use it for advertising. We may collect anonymous usage analytics to improve the service. Payments are processed by Stripe; we do not store your card details.'}
             </p>
             <p className="text-xs text-slate-500 mt-4">
               Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
