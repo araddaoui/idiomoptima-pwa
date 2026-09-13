@@ -67,27 +67,39 @@ function getUserIdFromRequest(request, clerkDomain) {
 // --- Supabase helpers -------------------------------------------------
 async function supabaseQuery(supabaseUrl, supabaseKey, table, params) {
   const url = supabaseUrl + "/rest/v1/" + table + "?" + params;
-  const resp = await fetch(url, {
-    headers: {
-      apikey: supabaseKey,
-      Authorization: "Bearer " + supabaseKey,
-      "Content-Type": "application/json",
-    },
-  });
+  let resp;
+  try {
+    resp = await fetch(url, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: "Bearer " + supabaseKey,
+        "Content-Type": "application/json",
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (e) {
+    return null;
+  }
   if (!resp.ok) return null;
   return resp.json();
 }
 
 async function supabaseRpc(supabaseUrl, supabaseKey, fn, body) {
-  const resp = await fetch(supabaseUrl + "/rest/v1/rpc/" + fn, {
-    method: "POST",
-    headers: {
-      apikey: supabaseKey,
-      Authorization: "Bearer " + supabaseKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+  let resp;
+  try {
+    resp = await fetch(supabaseUrl + "/rest/v1/rpc/" + fn, {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: "Bearer " + supabaseKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (e) {
+    return null;
+  }
   if (!resp.ok) return null;
   return resp.json();
 }
@@ -1040,8 +1052,10 @@ async function callOpenRouter(text, options, apiKey) {
     attempts++;
     // Per-model timeout so a hanging/rate-limited free model rotates to the
     // next instead of blocking the request for minutes (client was stuck at 90%).
-    var ctrl = new AbortController();
-    var timer = setTimeout(function () { ctrl.abort(); }, 45000);
+    // AbortSignal.timeout(90000) covers BOTH the headers and the body read —
+    // the old AbortController cleared its timer the instant headers arrived,
+    // leaving response.json()/response.text() untimed and free-tier stalls able
+    // to pin the free tier at OpenRouter for 4-5+ minutes.
     var response;
     try {
       response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -1059,14 +1073,12 @@ async function callOpenRouter(text, options, apiKey) {
           temperature: 0.4,
           max_tokens: 16384,
         }),
-        signal: ctrl.signal,
+        signal: AbortSignal.timeout(90000),
       });
     } catch (e) {
-      clearTimeout(timer);
       lastError = model + " timed out (" + String((e && e.message) || e).substring(0, 60) + ")";
       continue;
     }
-    clearTimeout(timer);
 
     // Free models are shared and often rate-limited upstream; rotate to the
     // next one instead of failing the whole provider.
@@ -2327,7 +2339,10 @@ function applyDatabaseNativization(sentences, dbs, domain) {
 // those may be worth surfacing).
 var SEMANTIC_FUNCTION_WORDS = {
   a:1, an:1, the:1, and:1, or:1, but:1, nor:1, of:1, in:1, on:1, at:1, to:1,
-  for:1, by:1, with:1, from:1, that:1, this:1, these:1, those:1, it:1, its:1,
+  for:1, by:1, with:1, from:1, between:1, through:1, within:1, without:1,
+  into:1, upon:1, under:1, over:1, across:1, among:1, around:1, against:1,
+  beyond:1, during:1, after:1, before:1, toward:1, towards:1, inside:1,
+  outside:1, below:1, above:1, that:1, this:1, these:1, those:1, it:1, its:1,
   is:1, are:1, was:1, were:1, be:1, been:1, being:1, has:1, have:1, had:1,
   do:1, does:1, did:1, will:1, would:1, can:1, could:1, shall:1, should:1,
   may:1, might:1, must:1, as:1, also:1, than:1, then:1, more:1, most:1,
@@ -2439,7 +2454,23 @@ function droppedContentWords(originalText, finalText, options) {
       .filter(function (t) { return t.length >= 4 && !SEMANTIC_FUNCTION_WORDS[t]; });
   }
   function finalHas(k) {
-    return new RegExp("(^|\\s)" + k + "(?![a-z])").test(finalNorm);
+    if (finalTokenSet[k]) return true;
+    // Morphological tolerance: accept an inflected/derived relative so a word
+    // that only changed form is not a drop. Exact equality is handled above;
+    // here we accept any final token sharing a common prefix of >= 3 chars
+    // with the source key ("guiding" ~ "guide" share "guid"; "come" ~ "coming"
+    // share "com").
+    if (k.length >= 4) {
+      for (var i = 0; i < finalTokens.length; i++) {
+        var t = finalTokens[i];
+        if (t.length < 4) continue;
+        var n = t.length < k.length ? t.length : k.length;
+        var p = 0;
+        while (p < n && t.charCodeAt(p) === k.charCodeAt(p)) p++;
+        if (p >= 3) return true;
+      }
+    }
+    return false;
   }
   var allowed = {};
   (BUILTIN_NATIVIZATION || []).forEach(function (rule) {
@@ -2457,7 +2488,14 @@ function droppedContentWords(originalText, finalText, options) {
       });
     }
   } catch (e) { /* DB phrase maps are optional */ }
-  var finalNorm = " " + String(finalText || "").toLowerCase().replace(/[\u2018\u2019]/g, "'") + " ";
+  // Normalize the FINAL text the same way the source is normalized: strip every
+  // non-letter down to whitespace so "AI-powered" becomes "ai powered" and the
+  // standalone key "powered" can match (previously the hyphen blocked the match
+  // and "powered" was falsely flagged as dropped).
+  var finalNorm = " " + String(finalText || "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z]+/g, " ") + " ";
+  var finalTokens = finalNorm.split(/\s+/).filter(Boolean);
+  var finalTokenSet = {};
+  finalTokens.forEach(function (t) { finalTokenSet[t] = 1; });
   var out = [];
   var seen = {};
   String(originalText || "").split(/\s+/).forEach(function (raw) {
@@ -2467,7 +2505,11 @@ function droppedContentWords(originalText, finalText, options) {
       if (!finalHas(k)) out.push(k);
     });
   });
-  return out.length > 6 ? out.slice(0, 6) : out;
+  // Longer words are more likely substantive content, so surface the genuine
+  // losses ("registered") ahead of short intensifier-like deletions ("very"),
+  // and let 8 items show instead of truncating the real drops at 6.
+  out.sort(function (a, b) { return b.length - a.length; });
+  return out.length > 8 ? out.slice(0, 8) : out;
 }
 
 // How many prose sentences does the SOURCE actually have? Used to reconcile the
