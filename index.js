@@ -1893,6 +1893,34 @@ function parsedHasRealChanges(parsed, bodyText) {
   var fn = normContent(parsed.finalVersion || parsed.final || parsed.text || "");
   return !!bn && !!fn && fn !== bn;
 }
+function stripForContentCompare(t) {
+  return stripQuotedContent(String(t || ""))
+    .replace(/\*\*/g, " ")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function hasRealContentChange(parsed, bodyText) {
+  if (!parsed) return false;
+  var list = Array.isArray(parsed.sentences) && parsed.sentences.length > 0;
+  if (list) {
+    for (var i = 0; i < parsed.sentences.length; i++) {
+      var s = parsed.sentences[i];
+      if (!s) continue;
+      if (s.isImmutableFootnote) continue;
+      var before = String(s.original || "").trim();
+      var after = String(s.revised || "").trim();
+      if (!/[A-Za-z]/.test(before) || !/[A-Za-z]/.test(after)) continue;
+      if (stripForContentCompare(before) === stripForContentCompare(after)) continue;
+      return true;
+    }
+    return false;
+  }
+  var bn = stripForContentCompare(bodyText);
+  var fn = stripForContentCompare(parsed.finalVersion || parsed.final || parsed.text || "");
+  return !!bn && !!fn && fn !== bn;
+}
 function contentTokenSeq(text) {
   return String(text || "")
     .replace(/^\*\*/, "")
@@ -2145,6 +2173,26 @@ var BUILTIN_NATIVIZATION = [
 { re: /\bhas\s+the\s+ability\s+to\b/gi, lower: "can" },
 { re: /\bin\s+order\s+to\b/gi, lower: "to" },
 { re: /\ba\s+multitude\s+of\b/gi, lower: "a large number of" },
+{ re: /\bprior\s+to\b/gi, lower: "before" },
+{ re: /\bsubsequent\s+to\b/gi, lower: "after" },
+{ re: /\bwith\s+regard\s+to\b/gi, lower: "about" },
+{ re: /\bin\s+regards\s+to\b/gi, lower: "regarding" },
+{ re: /\bin\s+relation\s+to\b/gi, lower: "about" },
+{ re: /\bat\s+this\s+point\s+in\s+time\b/gi, lower: "now" },
+{ re: /\bat\s+the\s+present\s+time\b/gi, lower: "now" },
+{ re: /\bin\s+the\s+near\s+future\b/gi, lower: "soon" },
+{ re: /\bon\s+a\s+daily\s+basis\b/gi, lower: "daily" },
+{ re: /\bon\s+a\s+regular\s+basis\b/gi, lower: "regularly" },
+{ re: /\bon\s+a\s+weekly\s+basis\b/gi, lower: "weekly" },
+{ re: /\bon\s+a\s+monthly\s+basis\b/gi, lower: "monthly" },
+{ re: /\bon\s+an\s+annual\s+basis\b/gi, lower: "annually" },
+{ re: /\bover\s+the\s+course\s+of\b/gi, lower: "during" },
+{ re: /\bin\s+the\s+case\s+of\b/gi, lower: "for" },
+{ re: /\bmake\s+a\s+decision\b/gi, lower: "decide" },
+{ re: /\btake\s+into\s+consideration\b/gi, lower: "consider" },
+{ re: /\bin\s+today's\s+world\b/gi, lower: "today" },
+{ re: /\ba\s+large\s+majority\s+of\s+the\b/gi, lower: "most of the" },
+{ re: /\ba\s+large\s+majority\s+of\b/gi, lower: "most" },
 ];
 
 // Deterministic enforcement layer: applies the exact DB replacements to each
@@ -2930,6 +2978,7 @@ export default {
       var lastParsed = null;
       var lastParsedProvider = "";
       var providerErrors = [];
+var rescueUsed = false;
       var attemptTimes = [];
       var providerStartMs = Date.now();
       var streamEncoder = new TextEncoder();
@@ -2990,17 +3039,32 @@ export default {
                 pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " could not be parsed — trying the next provider" });
                 continue;
               }
-              // No-real-change guard: a provider whose output contains no REAL
-              // content edit (verbatim echo, "saw nothing", or cosmetic-only
-              // punctuation/quote/case padding) is not a success while stronger
-              // providers remain — otherwise the request silently returns a flat,
-              // unchanged score. Classification mirrors the honest scorer so the two
-              // can never disagree. We deliberately do NOT gate this on our
-              // deterministic phrase DB hitting: a text can be stiff in ways our
-              // rules do not cover, and only a stronger model can fix those. After
-              // every configured provider has been tried, the last parseable no-op
-              // is accepted and scored honestly (flat = correct).
-              if (!parsedHasRealChanges(parsed, bodyText) && ai < attempts.length - 1) {
+              if (Array.isArray(parsed.sentences) && parsed.sentences.length > 0) {
+                var outTxt = parsed.sentences.map(function (ss) { return (ss && ss.revised) || ""; }).join(" ");
+                if (outTxt.trim().length > 0) {
+                  var fwd = contentCoverage(outTxt, bodyText);
+                  var back = contentCoverage(bodyText, outTxt);
+                  if (fwd < 0.5 || back < 0.5) {
+                    var fidMsg = attemptName + ": response dropped or invented too much content (forward " + fwd.toFixed(2) + ", backward " + back.toFixed(2) + ") — rotating";
+                    providerErrors.push(fidMsg);
+                    console.error(fidMsg);
+                    attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
+                    pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " response lost or invented content — trying next provider" });
+                    continue;
+                  }
+                }
+              }
+              // No-content-change guard (provider rotation): a provider whose
+              // output contains no word-level content edit (verbatim echo,
+              // "saw nothing", or cosmetic-only punctuation/quote/case/bolding
+              // padding) is not a success while stronger providers remain —
+              // otherwise the request silently returns a flat, unchanged score.
+              // We deliberately do NOT gate this on our deterministic phrase DB
+              // hitting: a text can be stiff in ways our rules do not cover, and
+              // only a stronger model can fix those. After every configured
+              // provider has been tried, the last parseable no-op is accepted and
+              // scored honestly (flat = correct) via parsedHasRealChanges.
+              if (!hasRealContentChange(parsed, bodyText) && ai < attempts.length - 1) {
                 if (!lastParsed) { lastParsed = parsed; lastParsedProvider = attemptName; }
                 providerErrors.push(attemptName + ": returned the text without any edits — rotating to next provider");
                 console.error(attemptName + " returned the text without any edits — rotating to the next provider");
@@ -3030,27 +3094,15 @@ export default {
             pushLine({ ev: "tick", pct: 86, phase: "All providers returned no edits — using last parseable result" });
           }
           if (!parsed) {
-            var configuredNow = {
-              gemini: !!env.GEMINI_API_KEY,
-              openrouter: !!env.OPENROUTER_API_KEY,
-              deepseek: !!env.DEEPSEEK_API_KEY,
-              cloudflare: !!env.AI,
-            };
-            var configuredList = Object.keys(configuredNow).filter(function (k) { return configuredNow[k]; });
-            var message;
-            var missingKeys = [];
-            if (configuredList.length === 0) {
-              missingKeys = ["GEMINI_API_KEY", "OPENROUTER_API_KEY", "DEEPSEEK_API_KEY"];
-              message = "No AI provider is configured. Set at least one of " + missingKeys.join(", ") +
-                " as a Cloudflare Worker secret (wrangler.toml vars) and redeploy. OpenRouter is recommended for the free tier.";
-            } else if (providerErrors.length > 0 && providerErrors.every(function (e) { return e.indexOf("not configured") !== -1; })) {
-              message = "No AI provider is reachable for this request tier. Configured but skipped: " + providerErrors.join("; ") + ".";
-            } else {
-              message = "The AI service is temporarily unavailable. Please try again in a few minutes. If this persists, check that the provider API keys / free-model quotas are valid.";
-            }
-            pushLine({ ev: "error", message: message, detail: "Attempts: " + providerErrors.join(" | ") + ". Last provider: " + provider + ".", configuredProviders: configuredNow });
-            try { controller.close(); } catch (e) {}
-            return;
+            // Rescue: every provider failed to produce a usable parse. Return the
+            // original text unchanged so users always get a response instead of an
+            // error — the deterministic nativization backstop below still applies
+            // its safe rules, so the result stays honest and never "zero".
+            parsed = deriveSentencesFromTexts(bodyText, bodyText);
+            provider = "none";
+            rescueUsed = true;
+            attemptTimes.push({ provider: "none", ms: 0, ok: true });
+            pushLine({ ev: "tick", pct: 86, phase: "No provider produced a usable result — returning the original text unchanged" });
           }
 
           if (savedFootnotes) parsed._originalFootnotes = savedFootnotes;
@@ -3070,6 +3122,10 @@ export default {
           result.provider = provider;
           result.tier = tier;
           result.usage = usage;
+          if (rescueUsed) {
+            result.rescued = true;
+            result.providerErrors = providerErrors;
+          }
           result.timing = {
             provider: provider,
             totalMs: Date.now() - providerStartMs,
