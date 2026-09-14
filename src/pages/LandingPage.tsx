@@ -73,7 +73,7 @@ const plans = [
       'API access',
       'Custom lexicon integration',
     ],
-    cta: 'Coming Soon',
+    cta: 'Contact Us',
     highlighted: false,
     icon: Shield,
   },
@@ -204,6 +204,18 @@ export default function LandingPage({ onStartFree, onGoToApp, onUpgrade }: Landi
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [activeExample, setActiveExample] = useState(0);
   const [policyModal, setPolicyModal] = useState<'terms' | 'privacy' | null>(null);
+  const [contactCopied, setContactCopied] = useState(false);
+
+  const CONTACT_EMAIL = 'contact@idiomoptima.com';
+
+  const handleContact = () => {
+    window.location.href = `mailto:${CONTACT_EMAIL}`;
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(CONTACT_EMAIL).catch(() => {});
+    }
+    setContactCopied(true);
+    window.setTimeout(() => setContactCopied(false), 2000);
+  };
 
   return (
     <div className="min-h-screen bg-[#0B1120] text-white font-sans selection:bg-indigo-500/30">
@@ -522,7 +534,7 @@ export default function LandingPage({ onStartFree, onGoToApp, onUpgrade }: Landi
                   <button
                     onClick={() => {
                       if (plan.name === 'Enterprise') {
-                        window.location.href = 'mailto:contact@idiomoptima.com';
+                        handleContact();
                       } else if (plan.name === 'Pro') {
                         onUpgrade?.();
                       } else if (plan.name === 'Free') {
@@ -533,7 +545,7 @@ export default function LandingPage({ onStartFree, onGoToApp, onUpgrade }: Landi
                       plan.highlighted
                         ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-lg shadow-indigo-500/25'
                         : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
-                    } ${plan.cta === 'Coming Soon' ? 'opacity-60 cursor-default' : ''}`}
+                    }`}
                   >
                     {plan.cta}
                   </button>
@@ -631,8 +643,13 @@ export default function LandingPage({ onStartFree, onGoToApp, onUpgrade }: Landi
             <a href="/faq.html" className="hover:text-white transition-colors flex items-center gap-1">
               <HelpCircle className="w-3 h-3" /> FAQ
             </a>
-            <a href="mailto:contact@idiomoptima.com" className="hover:text-white transition-colors flex items-center gap-1">
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              onClick={handleContact}
+              className="hover:text-white transition-colors flex items-center gap-1"
+            >
               <MessageSquare className="w-3 h-3" /> Contact
+              {contactCopied && <span className="text-emerald-400">Copied ✓</span>}
             </a>
           </div>
         </div>
