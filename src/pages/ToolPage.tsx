@@ -28,6 +28,7 @@ import { jsPDF } from "jspdf";
 import { RichTextEditor } from "../components/RichTextEditor";
 import { transformText, TransformationResult } from "../services/geminiService";
 import { createBillingPortal, createCheckout, getUserTier, limitForTier, FREE_RUN_LIMIT, FREE_WORD_LIMIT, UserTierInfo } from "../services/api";
+import { looksNonEnglish, ENGLISH_ONLY_MESSAGE } from "../lib/language";
 
 const DIALECTS = [
   { value: "auto", label: "Auto-Detect" },
@@ -160,6 +161,7 @@ export default function ToolPage() {
   const elapsedTimerRef = useRef<number | null>(null);
   const [result, setResult] = useState<TransformationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [languageNotice, setLanguageNotice] = useState<string | null>(null);
   const [tierInfo, setTierInfo] = useState<UserTierInfo | null>(null);
   const [limitPanel, setLimitPanel] = useState<"runs" | "words" | null>(null);
   const [upgradeLoading, setUpgradeLoading] = useState<boolean>(false);
@@ -327,8 +329,14 @@ export default function ToolPage() {
       setError(null);
       return;
     }
+    if (looksNonEnglish(plainText)) {
+      setLanguageNotice(ENGLISH_ONLY_MESSAGE);
+      setError(null);
+      return;
+    }
     setLoading(true);
     setError(null);
+    setLanguageNotice(null);
     setResult(null);
     setSelectedSentenceIdx(null);
     setProgress(0);
@@ -376,6 +384,9 @@ export default function ToolPage() {
         if (typeof err.usage === "number") {
           setTierInfo((t) => ({ tier: "free", usage: err.usage, limit: t?.limit ?? FREE_RUN_LIMIT }));
         }
+      } else if (err && err.notEnglish) {
+        setLanguageNotice(ENGLISH_ONLY_MESSAGE);
+        setError(null);
       } else {
         setError(err.message || "Something went wrong during transformation.");
       }
@@ -393,6 +404,7 @@ export default function ToolPage() {
     setResult(null);
     setSelectedSentenceIdx(null);
     setError(null);
+    setLanguageNotice(null);
   };
 
   const loadPreset = (preset: (typeof PRESETS)[0]) => {
@@ -403,6 +415,7 @@ export default function ToolPage() {
     setResult(null);
     setSelectedSentenceIdx(null);
     setError(null);
+    setLanguageNotice(null);
   };
 
   const handleCopyFullText = () => {
@@ -662,7 +675,16 @@ export default function ToolPage() {
             </div>
 
             <div className="flex-1 min-h-[440px] p-2 bg-white relative flex flex-col">
-              <RichTextEditor content={inputHtml} onChange={setInputHtml} />
+              {languageNotice && (
+                <div className="mx-1 mb-2 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-xs flex items-start gap-2.5">
+                  <Languages className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
+                  <div>
+                    <span className="font-bold block text-amber-900 text-[13px] mb-0.5">English text required</span>
+                    <span>{languageNotice}</span>
+                  </div>
+                </div>
+              )}
+              <RichTextEditor content={inputHtml} onChange={(h) => { setInputHtml(h); if (languageNotice) setLanguageNotice(null); }} />
             </div>
 
             <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">

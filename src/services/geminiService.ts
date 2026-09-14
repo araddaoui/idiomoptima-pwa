@@ -194,6 +194,7 @@ export async function transformText(
       (error as any).usage = errorData.usage;
       (error as any).limit = errorData.limit;
       (error as any).wordLimit = errorData.wordLimit;
+      (error as any).notEnglish = Boolean(errorData.notEnglish);
       throw error;
     }
 
@@ -362,6 +363,9 @@ export async function transformText(
       (finalError as any).usage = (error as any).usage;
       (finalError as any).limit = (error as any).limit;
       (finalError as any).wordLimit = (error as any).wordLimit;
+    }
+    if (error && (error as any).notEnglish) {
+      (finalError as any).notEnglish = true;
     }
     throw finalError;
   }

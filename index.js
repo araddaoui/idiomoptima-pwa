@@ -12,6 +12,55 @@ function jsonResponse(data, status) {
   });
 }
 
+// --- English-only guard (mirrored verbatim in src/lib/language.ts) --------
+// Keep both copies in sync: same constants, same logic, same thresholds.
+var ENGLISH_ONLY_MESSAGE =
+  "IdiomOptima only transforms English texts. Write or paste your text in English and try again.";
+
+var ENGLISH_FUNCTION_WORDS = [
+  "the", "a", "an", "and", "or", "but", "of", "to", "in", "on", "at", "by",
+  "for", "with", "from", "as", "is", "are", "was", "were", "be", "been", "it",
+  "this", "that", "his", "her", "its", "you", "your", "we", "they", "have",
+  "has", "had", "will", "would", "can", "not", "no", "there", "their",
+];
+
+function looksNonEnglish(text) {
+  if (!text) return false;
+  var cleaned = text
+    .replace(/\*\*/g, " ")
+    .split(/\r?\n/)
+    .filter(function (line) {
+      return line.trim() && !/^\s*(\[\d+\]|Ibid\.?)(?:\s|$)/i.test(line);
+    })
+    .join(" ");
+  var tokens = cleaned.trim().split(/\s+/).filter(Boolean);
+
+  var allLetters = (cleaned.match(/\p{L}/gu) || []).length;
+  if (allLetters === 0) return false;
+  var latin = (cleaned.match(/[A-Za-z\u00C0-\u024F\u1E00-\u1EFF]/g) || []).length;
+  var foreign = allLetters - latin;
+
+  // Non-Latin script (Arabic, Cyrillic, CJK, Hangul, Kana, ...) is a decisive
+  // signal, checked before the word-count guard because CJK has no separators.
+  if (foreign / allLetters > 0.25) return true;
+
+  // Too short (and word-separable) for a reliable verdict.
+  if (tokens.length < 15) return false;
+
+  var diacritics = (cleaned.match(/[\u00C0-\u00FF\u0100-\u017F\u1E00-\u1EFF]/g) || []).length;
+  var stopHits = 0;
+  for (var i = 0; i < tokens.length; i++) {
+    var tok = tokens[i].replace(/[^A-Za-z\u00C0-\u024F\u1E00-\u1EFF']/g, "").toLowerCase();
+    if (tok && ENGLISH_FUNCTION_WORDS.indexOf(tok) !== -1) stopHits++;
+  }
+  var stopRate = stopHits / tokens.length;
+  var diacriticRate = diacritics / allLetters;
+
+  // German-style low accent density is caught by its umlauts (ä ö ü ß);
+  // French/Spanish density clears the rate threshold.
+  return (diacriticRate > 0.015 || /[äöüß]/i.test(cleaned)) && stopRate < 0.12;
+}
+
 // --- Clerk JWT verification -------------------------------------------
 let cachedJWKS = null;
 let jwksExpiry = 0;
@@ -3254,6 +3303,13 @@ export default {
           .join(" ");
         wordCount = countText.trim().split(/\s+/).filter(Boolean).length;
       }
+
+      // English-only guard: block non-English input for everyone (including
+      // anonymous callers) before any provider work or usage accounting.
+      if (text.length > 0 && looksNonEnglish(text)) {
+        return jsonResponse({ error: ENGLISH_ONLY_MESSAGE, notEnglish: true }, 400);
+      }
+
       var options = {
         domain: String(payload.domain || "general"),
         tone: String(payload.tone || "neutral"),
