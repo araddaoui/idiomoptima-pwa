@@ -121,6 +121,13 @@ function extractFunction(src, name) {
   const paramsStart = anchor + "function ".length + name.length;
   return "function " + name + src.slice(paramsStart, openIdx) + extractBalanced(src, openIdx, "{");
 }
+function extractVarObject(src, name) {
+  const anchor = src.indexOf(`var ${name} = {`);
+  if (anchor === -1) throw new Error(`var ${name} = { not found in index.js`);
+  const end = src.indexOf("\n};", anchor);
+  if (end === -1) throw new Error(`end of var ${name} not found`);
+  return src.slice(anchor, end + 3);
+}
 function extractVar(src, name) {
   const anchor = src.indexOf(`var ${name} =`);
   if (anchor === -1) throw new Error(`var ${name} not found in index.js`);
@@ -147,11 +154,13 @@ const extracted = [
   extractFunction(INDEX_SRC, "replaceOutsideQuotes"),
   extractVar(INDEX_SRC, "BUILTIN_NATIVIZATION"),
   extractFunction(INDEX_SRC, "buildNativizationMaps"),
+  extractVarObject(INDEX_SRC, "SEMANTIC_FUNCTION_WORDS"),
+  extractFunction(INDEX_SRC, "addedContentWords"),
   extractFunction(INDEX_SRC, "applyDatabaseNativization"),
 ].join("\n");
 
 const api = new Function(
-  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, BUILTIN_NATIVIZATION, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences };"
+  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, BUILTIN_NATIVIZATION, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
 )();
 
 // --- load + merge databases exactly like the client (ToolPage) ---------------
@@ -501,6 +510,34 @@ section("10. boldHeadingSentences re-bolds titles the model may have stripped");
   check("footnote marker line stays plain", bh("[1] Nonneman, G. (2005). Routledge."), "[1] Nonneman, G. (2005). Routledge.");
   check("lowercase-starting line stays plain", bh("application & adaptation to this study"), "application & adaptation to this study");
   check("long body sentence (>= 15 words) stays plain", bh("Standard approaches to IR focus on a spectrum of notions such as the state, survival, cooperation, alliances, and wars"), "Standard approaches to IR focus on a spectrum of notions such as the state, survival, cooperation, alliances, and wars");
+
+  // Added-word note parity: replacement words from a MATCHED DB rule are
+  // whitelisted (p.tgt, not p.dst), so the Notes tab stops flagging the rule's
+  // own replacements as "possibly invented detail".
+  {
+    const added = (orig, fin) =>
+      api.addedContentWords(orig, fin, { databases: api.DEFAULT_DATABASES, domain: "academic" });
+    const got = added(
+      "The politicians took the decision. [1]",
+      "The politicians made the decision. [1]"
+    );
+    check("DB-rule target word 'made' whitelisted in added-word notes", got.includes("made"), false);
+    const got2 = added(
+      "The use of military power takes the decision to go to war.",
+      "The use of military power decides to go to war."
+    );
+    check("DB-rule target word 'decides' whitelisted in added-word notes", got2.includes("decides"), false);
+    const got3 = added(
+      "Their motives harks back to old beliefs and levels of certainty about winning.",
+      "Their motives traces back to old beliefs and confidence in winning."
+    );
+    check("DB-rule target words 'traces'+'confidence' whitelisted", got3.includes("traces") || got3.includes("confidence"), false);
+    const got4 = added(
+      "Puts the use of power within reach.",
+      "Places the use of power within reach."
+    );
+    check("non-covered model word 'places' still flagged in added-word notes", got4.includes("places"), true);
+  }
 
   // Wiring guard: ensureValidResult must apply the pass before rebuild.
   check(

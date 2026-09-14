@@ -2920,7 +2920,7 @@ function addedContentWords(originalText, finalText, options) {
         if (!p || !p.src) return;
         var rePh = new RegExp("\\b" + p.src + "\\b", "gi");
         var pm, phMatched = 0;
-        while ((pm = rePh.exec(originalText)) !== null && phMatched < 10) { phMatched++; addKeys(allowed, p.dst); }
+        while ((pm = rePh.exec(originalText)) !== null && phMatched < 10) { phMatched++; addKeys(allowed, p.tgt || p.dst); }
       });
     }
   } catch (e) { /* DB phrase maps are optional */ }
