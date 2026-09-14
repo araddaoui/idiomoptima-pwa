@@ -349,6 +349,11 @@ const SYSTEM_PROMPT = [
   "    degree of caution or certainty is part of their voice — keep it exactly.",
   "14. NEVER alter dates, years, numbers, names, or figures anywhere in the text — both",
   "    inside and outside quoted material. Rephrase around them if a sentence is stiff.",
+  "15. PRIORITIZE THE SINGLE STIFFEST SENTENCE: identify the source sentence that carries",
+  "    the most stiff, formulaic, or AI-sounding phrasing (the one the NATIVIZATION RULES",
+  "    apply to most) and make sure your revision visibly nativizes that sentence. Fixing",
+  "    only the easy sentences while leaving the stiffest one untouched is a failure, even",
+  "    if every other sentence improved.",
   "",
   "SENTENCES: Break the text into logical sentences or lines.",
   "For each sentence, return:",
@@ -1255,6 +1260,7 @@ async function callGemini(text, options, apiKey) {
     "Preserve footnote markers [N], citations, and bibliography entries exactly. " +
     "Rephrase any sentence that is stiff, awkward, redundant, or AI/non-native-sounding; " +
     "leave a sentence identical only when it is already perfectly natural. " +
+    "Prioritize the single stiffest, most AI-sounding sentence: nativize it visibly even if the other sentences are easier. " +
     "Do NOT merge or split paragraphs — preserve paragraph breaks exactly. " +
     "Replace em dashes with commas. " +
     "Use '\\n\\n' between paragraphs in finalVersion. " +
@@ -1464,6 +1470,9 @@ async function callCloudflareAI(text, options, ai) {
     "- ACTIVELY NATIVIZE: rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing\n" +
     "  into natural, fluent native English; tighten wordiness; improve flow. Never change meaning,\n" +
     "  register, tone, or voice. Leave a sentence identical only when it is already natural.\n" +
+    "  Prioritize the single stiffest, most AI-sounding sentence: nativize it visibly even if the\n" +
+    "  other sentences are easier to fix; fixing only easy sentences and leaving the stiffest\n" +
+    "  untouched is a failure.\n" +
     "- HARD ANTI-COSMETIC RULE: NEVER swap a standard, correct, idiomatic English construction for a\n" +
     "  mere synonym just to make the text look 'edited'. In particular NEVER touch standard native\n" +
     "  academic idioms such as: in general / in particular / on the other hand / such as / as well as /\n" +
@@ -2914,6 +2923,83 @@ function addedContentWords(originalText, finalText, options) {
   return out.length > 8 ? out.slice(0, 8) : out;
 }
 
+// Identifies the single "stiffest" source sentence: the one carrying the most
+// formulaic / AI-sounding phrasing (aiDb AI-ese entries PLUS the builtin
+// nativization sources). Score = total words inside those matched phrases, so a
+// sentence crowded with long stiff phrases ranks above one with a single short
+// hit. Only prose counts (footnotes/citations excluded). Returns
+// { index, score, phraseCount } or null when nothing stiff was found.
+function findStiffestSentence(sentences, options) {
+  if (!Array.isArray(sentences)) return null;
+  var maps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
+  var aiRules = [];
+  for (var i = 0; i < maps.phraseList.length; i++) {
+    var p = maps.phraseList[i];
+    if (p.cat === "ai" && p.src.length >= 4) aiRules.push(p.src);
+  }
+// Longest-first so "in the event that" wins over "event that" when both are
+  // present as separate DB entries; each matched phrase counts once.
+  aiRules.sort(function (a, b) { return b.split(/\s+/).length - a.split(/\s+/).length; });
+  // Word-boundary regexes so a phrase still matches when it abuts punctuation
+  // ("at this point in time." should count as the phrase + a period).
+  var aiRegexes = aiRules.map(function (ph) {
+    return new RegExp("\\b" + escapeRegExp(ph).split(/\s+/).join("\\s+") + "\\b", "i");
+  });
+  var best = null;
+  for (var si = 0; si < sentences.length; si++) {
+    var s = sentences[si];
+    if (!s || s.isImmutableFootnote || /^\[\d+\]/.test((s.original || "").trim()) || /^\s*Ibid\.?/i.test((s.original || "").trim())) continue;
+    var text = " " + String(s.original || "").replace(/\s+/g, " ").replace(/[""\u201C\u201D]+/g, " ") + " ";
+    var matched = {};
+    var score = 0;
+    var phraseCount = 0;
+    for (var r = 0; r < aiRules.length; r++) {
+      if (matched[aiRules[r]]) continue;
+      if (aiRegexes[r].test(text)) {
+matched[aiRules[r]] = 1;
+        phraseCount++;
+        score += (aiRules[r].match(/[^\s]+/g) || []).length;
+      }
+    }
+    (BUILTIN_NATIVIZATION || []).forEach(function (rule) {
+      var re = new RegExp(rule.re.source, "gi");
+      var t = " " + String(s.original || "").replace(/[""\u201C\u201D]+/g, " ") + " ";
+      if (re.test(t)) {
+        phraseCount++;
+        score += 2;
+      }
+    });
+    if (score === 0) continue;
+    if (!best || score > best.score || (score === best.score && text.length > best.textLen)) {
+      best = { index: si, score: score, phraseCount: phraseCount, textLen: text.length };
+    }
+  }
+  return best;
+}
+
+// Does this sentence's revision contain a REAL content change (vs a cosmetic
+// case/punctuation/citation-marker/quote-only flip)? Mirrors the scoring loop's
+// unchanged/real-change rules so the stiffest-sentence note never contradicts
+// the score.
+function hasRealSentenceChange(original, revised) {
+  function stripQuotesLike(t) {
+    return String(t || "").replace(/[""\u201C\u201D\u2018\u2019][^""\u201C\u201D\u2018\u2019]*[""\u201C\u201D\u2018\u2019]/g, " ");
+  }
+  var before = String(original || "").trim().replace(/\s+/g, " ");
+  var after = String(revised || "").trim().replace(/\s+/g, " ");
+  var o = before.toLowerCase();
+  var r = after.toLowerCase();
+  if (!/[a-z]/.test(o) || !/[a-z]/.test(r)) return false;
+  if (o === r) {
+    // Case-only flip counts ONLY as a real fix when the source literally began
+    // with a lowercase letter (genuine capitalization error).
+    return /(?:^|[.!?]\s+)[a-z]/.test(before);
+  }
+  if (stripQuotesLike(o).replace(/\s+/g, " ").trim() === stripQuotesLike(r).replace(/\s+/g, " ").trim()) return false;
+  if (contentTokenSeq(before) === contentTokenSeq(after)) return false;
+  return true;
+}
+
 // How many prose sentences does the SOURCE actually have? Used to reconcile the
 // diagnostics count ("11 improved + 4 preserved" vs the real 14-sentence input)
 // when the alignment step re-segments the model output.
@@ -3398,6 +3484,21 @@ function ensureValidResult(parsed, originalText, options) {
     magnitudeAll += Math.max(1, tokenDiffMagnitude(oq, rq));
   });
 
+  // Stiffest-sentence prioritization: find the source sentence carrying the most
+  // AI-sounding phrasing and confirm the revision actually addressed it. When it
+  // was left effectively unchanged, surface an explicit note so the author can
+  // re-run or hand-fix the real target (the model's "fix the easy ones" failure
+  // the prompt rule 15 also pushes against).
+  var stiffTarget = findStiffestSentence(sentences, options);
+  var stiffUntouched = null;
+  if (stiffTarget && sentences[stiffTarget.index]) {
+    var st = sentences[stiffTarget.index];
+    var stChanged = hasRealSentenceChange(st.original, st.revised);
+    // A semantically-flagged sentence WAS touched (that is why it is flagged).
+    if (semanticRisks[stiffTarget.index]) stChanged = true;
+    if (!stChanged) stiffUntouched = stiffTarget;
+  }
+
   // Deterministic, honest scoring anchored to MEASURED quality rather than the
   // provider's per-run "originalScore" guess (which under-rates clean academic
   // text and previously dragged clean output down to the 80s).
@@ -3478,6 +3579,9 @@ function ensureValidResult(parsed, originalText, options) {
   }
   if (addedWords.length > 0) {
     reviewNotes.push("Note — the revision adds words that appear nowhere in the source (possibly invented detail): " + addedWords.join(", ") + (addedWords.length === 8 ? " (and more)" : "") + ". Confirm the added detail is intended.");
+  }
+  if (stiffUntouched) {
+    reviewNotes.push("Note — Sentence " + (stiffUntouched.index + 1) + " reads the stiffest (the source crowds " + stiffUntouched.phraseCount + " AI-sounding phrase" + (stiffUntouched.phraseCount === 1 ? "" : "s") + " here) but the revision left it effectively unchanged. It is the sentence to fix first — re-run or nativize it by hand.");
   }
 
   var suggestions = postProcessSuggestions(
