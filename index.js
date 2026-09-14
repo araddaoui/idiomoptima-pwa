@@ -408,10 +408,20 @@ function postProcessText(text) {
   return text;
 }
 
-function addQuestionMark(text) {
-  if (!text) return text;
-  return String(text).replace(/\b(who)\s+(knows)(\s*)[.!](\s|$)/gi, function(m, w, k, sp, tail) {
-    return w + " " + k + sp + "?" + tail;
+// "who knows" punctuation is the AUTHOR's call, not the engine's: a deterministic
+// pass must never read authorial "who knows." (a rhetorical aside) as a question
+// and coerce the period into "?", nor may it silently drop a real "?". When the
+// SOURCE text carries a terminal mark immediately after "who knows", we enforce
+// EXACTLY that mark on the revised text (author punctuation preserved verbatim,
+// including surrounding spacing and case). When the source has no such mark, or
+// "who knows" is not in the source, the revision is left untouched — the engine
+// never fabricates punctuation.
+function addQuestionMark(revised, original) {
+  var srcTerm = /\bwho\s+knows(\s*)([.!?])(\s|$)/i.exec(String(original || ""));
+  if (!srcTerm) return revised || "";
+  var terminal = srcTerm[2];
+  return String(revised || "").replace(/\b(who\s+knows)(\s*)[.!?](\s|$)/gi, function (m, wk, sp, tail) {
+    return wk + sp + terminal + tail;
   });
 }
 
@@ -1557,12 +1567,6 @@ function countMisspellings(text) {
   return count;
 }
 
-function safeScore(val, fallback) {
-  var n = parseInt(val, 10);
-  if (isNaN(n) || n < 0 || n > 100) return fallback;
-  return n;
-}
-
 function rebuildFinalVersion(originalText, sentences) {
   if (!originalText || !sentences || sentences.length === 0) return originalText;
 
@@ -2341,7 +2345,17 @@ function isCollocationLocked(text, src) {
 // with zero client data still produces real, honest transformations.
 var DEFAULT_DATABASES = {
   idiomDb: [],
-  aiDb: [],
+  // Minimal always-on AI-ese floor for the server-side fallback path (used when
+  // the client ships an empty database payload). The full rule set ships with
+  // the public/ JSONs via the client; these entries keep the deterministic layer
+  // on task for a bare request.
+  aiDb: [
+    { ai: "some sort of", natural: "some kind of" },
+    { ai: "went ahead with", natural: "proceeded with" },
+    { ai: "go ahead with", natural: "proceed with" },
+    { ai: "let us analyze this", natural: "we now analyze this" },
+    { ai: "let us now analyze this", natural: "we now analyze this" }
+  ],
   lexicalDb: {
     general: [
       { clunky: "in general", native: "generally" },
@@ -2923,58 +2937,90 @@ function addedContentWords(originalText, finalText, options) {
   return out.length > 8 ? out.slice(0, 8) : out;
 }
 
-// Identifies the single "stiffest" source sentence: the one carrying the most
-// formulaic / AI-sounding phrasing (aiDb AI-ese entries PLUS the builtin
-// nativization sources). Score = total words inside those matched phrases, so a
-// sentence crowded with long stiff phrases ranks above one with a single short
-// hit. Only prose counts (footnotes/citations excluded). Returns
-// { index, score, phraseCount } or null when nothing stiff was found.
-function findStiffestSentence(sentences, options) {
-  if (!Array.isArray(sentences)) return null;
-  var maps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
+// Shared stiffness scanner used by findStiffestSentence, the stiffest-note gate
+// (hasDealtWithStiffness) and the score measurement — ONE rule set, ONE matcher,
+// three consumers, so none of them can drift apart. Only multi-character ai-phase
+// candidates participate from the database phrase list PLUS the always-on builtin
+// rules. Quote CHARACTERS are blanked exactly like the current detection contract
+// (matching quoted text counts as stiff, but the apply layer never rewrites
+// inside quotes). Each DISTINCT rule credits once (longest first, so a longer
+// phrase beats its nested fragment). Returns { keys, count } where keys are the
+// matched rule identities (aiDb phrase or builtin regex source) and count is the
+// word-displacement surrogate used by ranking and scoring (aiDb phrases weigh
+// their word count; builtin rules weigh 2).
+function scanStiffPhrases(text, maps) {
+  var out = { keys: [], count: 0 };
+  if (!text) return out;
   var aiRules = [];
   for (var i = 0; i < maps.phraseList.length; i++) {
     var p = maps.phraseList[i];
     if (p.cat === "ai" && p.src.length >= 4) aiRules.push(p.src);
   }
-// Longest-first so "in the event that" wins over "event that" when both are
-  // present as separate DB entries; each matched phrase counts once.
   aiRules.sort(function (a, b) { return b.split(/\s+/).length - a.split(/\s+/).length; });
-  // Word-boundary regexes so a phrase still matches when it abuts punctuation
-  // ("at this point in time." should count as the phrase + a period).
-  var aiRegexes = aiRules.map(function (ph) {
-    return new RegExp("\\b" + escapeRegExp(ph).split(/\s+/).join("\\s+") + "\\b", "i");
+  var matched = {};
+  var t = " " + String(text).replace(/\s+/g, " ").replace(/[""\u201C\u201D]+/g, " ") + " ";
+  for (var r = 0; r < aiRules.length; r++) {
+    var ph = aiRules[r];
+    if (matched[ph]) continue;
+    var re = new RegExp("\\b" + escapeRegExp(ph).split(/\s+/).join("\\s+") + "\\b", "i");
+    if (re.test(t)) {
+      matched[ph] = 1;
+      out.keys.push(ph);
+      out.count += (ph.match(/[^\s]+/g) || []).length;
+    }
+  }
+  (BUILTIN_NATIVIZATION || []).forEach(function (rule) {
+    var key = rule.re.source;
+    if (matched[key]) return;
+    var bre = new RegExp(key, "gi");
+    if (bre.test(t)) {
+      matched[key] = 1;
+      out.keys.push(key);
+      out.count += 2;
+    }
   });
+  return out;
+}
+
+// Identifies the single "stiffest" source sentence: the one carrying the most
+// formulaic / AI-sounding phrasing (aiDb AI-ese entries PLUS the builtin
+// nativization sources). Score = total rule word-displacement (see
+// scanStiffPhrases), so a sentence crowded with long stiff phrases ranks above
+// one with a single short hit. Only prose counts (footnotes/citations excluded).
+// Returns { index, score, phraseCount, textLen } or null when nothing stiff was
+// found.
+function findStiffestSentence(sentences, options) {
+  if (!Array.isArray(sentences)) return null;
+  var maps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
   var best = null;
   for (var si = 0; si < sentences.length; si++) {
     var s = sentences[si];
     if (!s || s.isImmutableFootnote || /^\[\d+\]/.test((s.original || "").trim()) || /^\s*Ibid\.?/i.test((s.original || "").trim())) continue;
     var text = " " + String(s.original || "").replace(/\s+/g, " ").replace(/[""\u201C\u201D]+/g, " ") + " ";
-    var matched = {};
-    var score = 0;
-    var phraseCount = 0;
-    for (var r = 0; r < aiRules.length; r++) {
-      if (matched[aiRules[r]]) continue;
-      if (aiRegexes[r].test(text)) {
-matched[aiRules[r]] = 1;
-        phraseCount++;
-        score += (aiRules[r].match(/[^\s]+/g) || []).length;
-      }
-    }
-    (BUILTIN_NATIVIZATION || []).forEach(function (rule) {
-      var re = new RegExp(rule.re.source, "gi");
-      var t = " " + String(s.original || "").replace(/[""\u201C\u201D]+/g, " ") + " ";
-      if (re.test(t)) {
-        phraseCount++;
-        score += 2;
-      }
-    });
-    if (score === 0) continue;
-    if (!best || score > best.score || (score === best.score && text.length > best.textLen)) {
-      best = { index: si, score: score, phraseCount: phraseCount, textLen: text.length };
+    var prof = scanStiffPhrases(text, maps);
+    if (prof.count === 0) continue;
+    if (!best || prof.count > best.score || (prof.count === best.score && text.length > best.textLen)) {
+      best = { index: si, score: prof.count, phraseCount: prof.keys.length, textLen: text.length };
     }
   }
   return best;
+}
+
+// The stiffest-sentence note must not be silenced by an unrelated edit: a
+// sentence is "handled" only when EVERY nativization rule that matched its
+// SOURCE text is also gone from its REVISED text. A grammar-only fix that leaves
+// the stiff phrasing behind (e.g. 'Despite of ... went ahead with' ->
+// 'Despite ... went ahead with', where the awkward phrase survives the grammar
+// fix) still deserves the note.
+function hasDealtWithStiffness(original, revised, options) {
+  var maps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
+  var srcKeys = scanStiffPhrases(String(original || ""), maps).keys;
+  if (srcKeys.length === 0) return true;
+  var revKeys = scanStiffPhrases(String(revised || ""), maps).keys;
+  for (var i = 0; i < srcKeys.length; i++) {
+    if (revKeys.indexOf(srcKeys[i]) !== -1) return false;
+  }
+  return true;
 }
 
 // Does this sentence's revision contain a REAL content change (vs a cosmetic
@@ -3132,7 +3178,7 @@ function ensureValidResult(parsed, originalText, options) {
   var derivedS = deriveSentencesFromTexts(bodyOnlyOriginal, finalVersion);
   var sentences = derivedS.sentences;
   finalVersion = derivedS.finalVersion;
-  finalVersion = addQuestionMark(finalVersion);
+  finalVersion = addQuestionMark(finalVersion, bodyOnlyOriginal);
 
   // Post-process each sentence
   restoredQuoteCount = 0; // per-document reset so the diagnostics note is honest
@@ -3155,7 +3201,7 @@ function ensureValidResult(parsed, originalText, options) {
     s.revised = nativePolish(s.revised);
     s.revised = fixCommonMisspellingsSafe(s.revised);
     s.revised = capitalizeEnhanced(s.revised);
-    s.revised = addQuestionMark(s.revised);
+    s.revised = addQuestionMark(s.revised, s.original);
     return s;
   });
 
@@ -3400,13 +3446,51 @@ function ensureValidResult(parsed, originalText, options) {
 
   var dialect = parsed.detectedDialect || detectDialect(originalText);
 
-  // Scoring based on text quality
-  // origScore reflects the quality of the SOURCE text (from the model's rating,
-  // clamped to a sane range and capped if the source shows obvious errors).
-  var origScore = safeScore(parsed.originalScore, 85);
+  // Scoring based on ONE deterministic measurement applied to the source prose
+  // and to the final revised prose from the SAME rule set, so a score can only
+  // climb when a real, detected, deterministic defect actually disappears:
+  //   1. Misspellings cap a text at 80 — a spelled-out error blocks "native".
+  //   2. Each still-present stiff/AI-ese rule (aiDb phrase or builtin) docks 3
+  //      points (floor 58); duplicate-word slips cap at 85.
+  // The provider's per-run "originalScore" guess is deliberately NOT consulted
+  // here — a quality score is measured, never guessed, and a weak provider that
+  // under-rated clean input previously pinned production originals to the 62
+  // floor while a lone cosmetic swap granted a +9 revised bump.
   var hasDuplicateWords = /\b(\w+)\s+\1\b/.test(originalText);
-  if (hasDuplicateWords) origScore = Math.min(origScore, 85);
   var remainingSpelling = countMisspellings(sentences.map(function (s) { return s.revised || ""; }).join(" "));
+  var sourceSpelling = countMisspellings(bodyOnlyOriginal);
+  var stiffMaps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
+  // The prose definition shared with findStiffestSentence / scanStiffPhrases:
+  // footnotes and citation lines never participate in a measurement.
+  function scoringProse(list) {
+    return (list || []).filter(function (s) {
+      if (!s || s.isImmutableFootnote) return false;
+      var raw = (s.original || "").trim();
+      if (/^\[\d+\]/.test(raw) || /^\s*Ibid\.?/i.test(raw)) return false;
+      return true;
+    });
+  }
+  function proseJoin(list, field) {
+    return scoringProse(list).map(function (s) { return String(s[field] || ""); }).join(" \n ");
+  }
+  var sourceProse = proseJoin(sentences, "original");
+  var revisedProse = proseJoin(sentences, "revised");
+  var srcProf = scanStiffPhrases(sourceProse, stiffMaps);
+  var revProf = scanStiffPhrases(revisedProse, stiffMaps);
+  var sourceStiffness = srcProf.count;
+  var revisedStiffness = revProf.count;
+  // Distinct rules the revision actually consumed — the honest numerator for the
+  // "N stiff/AI-sounding phrase(s) nativized" diagnostic below.
+  var nativizedRuleCount = Math.max(0, srcProf.keys.length - revProf.keys.length);
+  function measuredScore(spelling, stiffness, duplicateWords) {
+    var score = 100;
+    if (spelling > 0) score = Math.min(score, 80);
+    score = Math.max(58, score - stiffness * 3);
+    if (duplicateWords) score = Math.min(score, 85);
+    return score;
+  }
+  var origScore = measuredScore(sourceSpelling, sourceStiffness, hasDuplicateWords);
+  var revScore = measuredScore(remainingSpelling, revisedStiffness, false);
 
   // Count REAL content changes (ignore trivial punctuation/case-only rewrites
   // from the AI echo that padded earlier scores). Also EXCLUDE changes confined
@@ -3415,15 +3499,16 @@ function ensureValidResult(parsed, originalText, options) {
   function stripQuotes(t) {
     return String(t || "").replace(/[""\u201C\u201D\u2018\u2019][^""\u201C\u201D\u2018\u2019]*[""\u201C\u201D\u2018\u2019]/g, " ");
   }
-  // Accumulates BOTH measured signals the honest score below needs:
+  // Records what the revision ACTUALLY displaced:
   //   realChangeCount = how many sentences really changed content (cosmetic
   //     quote/punctuation/case-only echo never counts, and changes confined to
   //     quoted material never count — the model can't gain score by editing
-  //     citations or quoted passages, Fix 4).
-  //   magnitudeAll = how many content tokens the revision ACTUALLY displaced
-  //     across those really-changed sentences (symmetric word-difference), used
-  //     to weight the score so a lone cosmetic phrase-swap earns only a tiny
-  //     nudge while a genuine multi-sentence rewrite rises fully.
+  //     citations or quoted passages, Fix 4). Drives the deterministic summary.
+  //   magnitudeAll = how many content tokens the revision displaced across those
+  //     really-changed sentences (symmetric word-difference). Kept as a measured
+  //     diagnostic (probes / further analysis read it); the scores above are
+  //     driven purely by the deterministic spelling + stiffness measurement, so
+  //     a lone cosmetic swap can no longer manufacture a bump.
   function tokenDiffMagnitude(a, b) {
     var counts = {};
     String(a || "").split(/\s+/).forEach(function (w) { if (w) counts[w] = (counts[w] || 0) + 1; });
@@ -3493,65 +3578,28 @@ function ensureValidResult(parsed, originalText, options) {
   var stiffUntouched = null;
   if (stiffTarget && sentences[stiffTarget.index]) {
     var st = sentences[stiffTarget.index];
-    var stChanged = hasRealSentenceChange(st.original, st.revised);
+    var stDealtWith = hasDealtWithStiffness(st.original, st.revised, options);
     // A semantically-flagged sentence WAS touched (that is why it is flagged).
-    if (semanticRisks[stiffTarget.index]) stChanged = true;
-    if (!stChanged) stiffUntouched = stiffTarget;
+    if (semanticRisks[stiffTarget.index]) stDealtWith = true;
+    if (!stDealtWith) stiffUntouched = stiffTarget;
   }
 
-  // Deterministic, honest scoring anchored to MEASURED quality rather than the
-  // provider's per-run "originalScore" guess (which under-rates clean academic
-  // text and previously dragged clean output down to the 80s).
-  //
-  // Rules:
-  //  - Residual misspellings in the output => output is NOT high: cap at 80.
-  //  - Clean output => it is native-level prose by definition (no detectable
-  //    residual defects), so it lands in the 90s, nudging up slightly with how
-  //    much the revision actually had to fix.
-  //  - The ORIGINAL score honestly reflects the flaws the revision removed:
-  //    each real fix deducts from the output score. No real fixes => input and
-  //    output are equal (the text already was native).
-  // This keeps scores honest (no invented deltas) while never letting a clean
-  // corrected text print below the 90s.
-  //
-  // The bump here is driven by TWO measured signals: how MANY sentences really
-  // changed AND how much of their wording actually moved (word magnitude), so a
-  // lone cosmetic phrase-swap can no longer manufacture a +11 — it earns a small
-  // honest nudge, while a genuine multi-sentence rewrite still rises fully.
-  var revScore = origScore;
+  // Honest reconciliation between the two measured scores:
+  //  - A revised text that still carries misspellings can never out-score its
+  //    source: cap BOTH at 80 (the source carried at least the same errors).
+  //  - revScore never prints below origScore: the revision is judged with the
+  //    same rubric as its source, so an identical text measures identically (the
+  //    flat line falls out of the measurement) and a revision that removed no
+  //    defects still gains nothing over the original.
+  //  - Both cap at 98, preserving the historical ceiling and leaving headroom
+  //    for a revision that genuinely cleared every stiff rule.
   if (remainingSpelling > 0) {
-    // Output still carries spelling errors: it cannot be rewarded a high score,
-    // and neither can the original. Cap BOTH so revScore never dips below
-    // origScore (keeps the honest "no improvement claimed" flat or equal line).
-    revScore = Math.min(origScore, 80);
     origScore = Math.min(origScore, 80);
-  } else if (realChangeCount === 0) {
-    // Nothing real changed => input and output are the same native-level prose.
-    // Flat line: do NOT invent a delta the edits never earned.
-    revScore = origScore;
-  } else {
-    // Magnitude-weighted honest bump. magnitudeAll is the total number of
-    // content words the revision ACTUALLY displaced across the really-changed
-    // sentences. We map (magnitudeAll + a per-sentence base) onto a modest band:
-    //   weight = clamp(0..9, round((magnitudeAll + 6 * realChangeCount) / 8))
-    // so ~8-12 words of real change is worth roughly the same sustained bump as
-    // one heavily-rewritten sentence; tiny cosmetic swaps land at +1..+2, and a
-    // genuine multi-sentence rewrite (say 6 sentences, ~30 words moved) rises
-    // to +8. Deltas stay small and honest in every regime.
-    var HONEST_BUMP_DIVISOR = 8;
-    var weight = Math.min(9, Math.max(1, Math.round((magnitudeAll + 6 * realChangeCount) / HONEST_BUMP_DIVISOR)));
-    revScore = Math.min(98, 91 + weight);
-    revScore = Math.max(revScore, origScore);
-    if (realChangeCount > 0) {
-      // Input carried the defects the output now lacks, so dock it proportionally
-      // to how much real editing was required. Floor keeps genuinely-strong prose
-      // honest (a barely-touched clean text is not a 50).
-      origScore = Math.max(62, Math.min(origScore, revScore - Math.min(8, 2 + realChangeCount * 2)));
-    } else {
-      // Nothing real needed changing => the original already was native-level.
-      origScore = revScore;
-    }
+    revScore = Math.min(revScore, 80);
   }
+  revScore = Math.max(revScore, origScore);
+  origScore = Math.min(98, origScore);
+  revScore = Math.min(98, revScore);
 
   var preservedFootnoteCount = 0;
   if (savedFootnotes && savedFootnotes.trim()) {
@@ -3595,7 +3643,9 @@ function ensureValidResult(parsed, originalText, options) {
 
   // Surface the deterministic nativization work as the FIRST summary line so the
   // panel text can never contradict the applied transformations.
-  if (databaseStats.totalMatches > 0) {
+  if (nativizedRuleCount > 0) {
+    suggestions.unshift(nativizedRuleCount + " stiff/AI-sounding phrase(s) nativized using IdiomOptima's nativization rules.");
+  } else if (databaseStats.totalMatches > 0) {
     suggestions.unshift(databaseStats.totalMatches + " stiff/AI-sounding phrase(s) nativized using IdiomOptima's nativization rules.");
   }
 
