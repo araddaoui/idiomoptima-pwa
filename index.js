@@ -319,7 +319,8 @@ const SYSTEM_PROMPT = [
   "RULES:",
   "1. Return the COMPLETE text. Every word, every paragraph, every line. Nothing dropped.",
   "2. Return the title exactly as it appears in the input.",
-  "3. Do NOT modify text inside quotation marks — leave quoted passages exactly as-is.",
+  "3. Do NOT modify text inside quotation marks — leave quoted passages exactly as-is",
+  "   (including digits, years, and dates inside quotes).",
   "4. ACTIVELY NATIVIZE. Rework stiff, wordy, formulaic, non-native, or AI-sounding",
   "   phrasing into natural, fluent native English. Tighten wordiness and redundancy.",
   "   Improve readability and flow. When the NATIVIZATION RULES list a natural native",
@@ -341,6 +342,13 @@ const SYSTEM_PROMPT = [
   "11. Do NOT change 'In additional to' to anything other than 'In addition to'.",
   "12. NEVER invent, append, or echo content that is not in the input — do not pad the",
   "    output or repeat sentences the model already produced.",
+  "13. PRESERVE THE AUTHOR'S EPISTEMIC STANCE AND VOICE: never strengthen, weaken, or",
+  "    reverse hedging or evidential verbs — do NOT rewrite 'suggests' to 'shows',",
+  "    'may' to 'will', 'could' to 'can', 'appears to' to 'proves', 'argues' to",
+  "    'demonstrates', 'lingers' to 'persists', or 'tends to' to 'always'. The author's",
+  "    degree of caution or certainty is part of their voice — keep it exactly.",
+  "14. NEVER alter dates, years, numbers, names, or figures anywhere in the text — both",
+  "    inside and outside quoted material. Rephrase around them if a sentence is stiff.",
   "",
   "SENTENCES: Break the text into logical sentences or lines.",
   "For each sentence, return:",
@@ -835,24 +843,56 @@ function restoreCurlyApostrophes(original, revised) {
   return out.join("");
 }
 
+var restoredQuoteCount = 0;
+
 function protectQuotes(original, revised) {
   // Find all quoted text in original and restore them in revised if changed.
-  // Matches double and curly single/double quotes.
-  var quoteRegex = /[""\u201C\u2018]([^""\u201D\u2019]+)[""\u201D\u2019]/g;
+  // Handles double/curly quotes PLUS straight single quotes in quote position
+  // (e.g. 'Qatar of the late 1990s, 2000s, and 2010s') while ignoring plain
+  // possessives/contractions (today's, Roberts', leaders').
   var result = revised;
 
+  function tokenOf(w) {
+    return String(w).toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z0-9']/g, "");
+  }
   function extractQuotes(t) {
-    var out = [];
-    var re = /[""\u201C\u2018]([^""\u201D\u2019]+)[""\u201D\u2019]/g;
+    var out = {};
+    // Double / curly quotes.
+    var re = /["\u201C\u2018]([^"'\u201C\u201D\u2018\u2019]{2,})["\u201D\u2019]/g;
     var m;
     while ((m = re.exec(t)) !== null) {
       var c = m[1];
-      // Skip very short or heading-like fragments.
-      if (c.length < 4) continue;
       if (/^['"]?[A-Z][a-z]+:/.test(c)) continue;
-      out.push({ index: m.index, content: c, full: m[0] });
+      out[m.index] = { index: m.index, content: c, full: m[0] };
     }
-    return out;
+    // Straight single quotes in QUOTE position: an apostrophe preceded by a
+    // non-alphanumeric and followed by content, closed by an apostrophe that
+    // follows a letter and is followed by a non-letter.
+    var ch = Array.from(t);
+    for (var i = 0; i < ch.length; i++) {
+      if (ch[i] !== "'") continue;
+      var prev = i > 0 ? ch[i - 1] : "";
+      if (prev && /[A-Za-z0-9]/.test(prev)) continue; // word-internal apostrophe
+      var nxt = i < ch.length - 1 ? ch[i + 1] : "";
+      if (!nxt || !/[A-Za-z0-9]/.test(nxt)) continue; // open must precede content
+      for (var j = i + 1; j < ch.length; j++) {
+        if (ch[j] !== "'") continue;
+        var prevJ = ch[j - 1];
+        if (!prevJ || !/[A-Za-z0-9]/.test(prevJ)) continue; // close follows a letter
+        var nextJ = j < ch.length - 1 ? ch[j + 1] : "";
+        if (nextJ && /[A-Za-z0-9]/.test(nextJ)) continue; // close precedes non-letter
+        var inner = ch.slice(i + 1, j).join("");
+        if (inner.length >= 2 && !/["'\u2018\u2019\u201C\u201D]/.test(inner)) {
+          out[i] = { index: i, content: inner, full: "'" + inner + "'" };
+        }
+        i = j; // resume scan AFTER the closing quote
+        break;
+      }
+    }
+    var arr = [];
+    for (var k in out) arr.push(out[k]);
+    arr.sort(function (a, b) { return a.index - b.index; });
+    return arr;
   }
   function words(s) { return s.replace(/[^\w\u2019'-]+/g, " ").trim().split(/\s+/); }
   function overlap(a, b) {
@@ -871,7 +911,6 @@ function protectQuotes(original, revised) {
   var used = {};
   for (var i = 0; i < origQuotes.length; i++) {
     var oq = origQuotes[i];
-    var oWords = words(oq.full);
     // Prefer the positional match (same index) or the best-overlap unused one.
     var target = null, bestScore = 0;
     if (resQuotes[i] && !used[i]) {
@@ -887,13 +926,69 @@ function protectQuotes(original, revised) {
     // Only restore when the revised quote is a REASONABLE but NOT identical
     // variant of the original (it has meaningful word overlap yet differs).
     if (bestScore >= 0.5 && target.full !== oq.full) {
-      var restored = result.substring(0, target.index) + oq.full + result.substring(target.index + target.full.length);
-      result = restored;
+      result = result.substring(0, target.index) + oq.full + result.substring(target.index + target.full.length);
+      restoredQuoteCount++;
       used[i] = true;
     } else if (target === resQuotes[i]) {
       used[i] = true;
     }
   }
+
+  // Anchor fallback: when pairing found no stale quote span to restore (e.g.
+  // the model rewrote the phrase so the quote marks themselves moved), locate
+  // the tokens that surrounded the quote in the ORIGINAL and swap whatever now
+  // sits between them in the result for the EXACT original quoted span — but
+  // only when the bracketed region still contains quote characters and is a
+  // plausible length, otherwise we leave the sentence untouched.
+  function tokenSpans(text) {
+    var spans = [];
+    var re = /[A-Za-z0-9\u2019']+/g;
+    var mm;
+    while ((mm = re.exec(text)) !== null) {
+      spans.push({ start: mm.index, end: re.lastIndex, raw: text.slice(mm.index, re.lastIndex) });
+    }
+    return spans;
+  }
+  function findSeq(spans, from, wanted) {
+    for (var a = from; a <= spans.length - wanted.length; a++) {
+      var ok = true;
+      for (var k = 0; k < wanted.length; k++) {
+        if (tokenOf(spans[a + k].raw) !== wanted[k]) { ok = false; break; }
+      }
+      if (ok) return { start: spans[a].start, end: spans[a + wanted.length - 1].end };
+    }
+    return null;
+  }
+  var oSpans = tokenSpans(original);
+  var oTokNorms = oSpans.map(function (sp) { return tokenOf(sp.raw); });
+  var oStart = 0, oEnd = oSpans.length - 1;
+
+  for (var q = 0; q < origQuotes.length; q++) {
+    var qq = origQuotes[q];
+    if (result.indexOf(qq.full) !== -1) continue; // already preserved verbatim
+    // Tokens fully before / after the quote in the ORIGINAL.
+    var beforeIdx = -1;
+    while (oStart <= oEnd && oSpans[oStart].end <= qq.index) { beforeIdx = oStart; oStart++; }
+    var afterIdx = -1;
+    for (var t2 = oEnd; t2 >= 0; t2--) if (oSpans[t2].start >= qq.index + qq.full.length) afterIdx = t2;
+    if (beforeIdx < 0 || afterIdx < 0 || afterIdx <= beforeIdx) continue;
+    var beforeWanted = oTokNorms.slice(Math.max(0, beforeIdx - 2), beforeIdx + 1);
+    var afterWanted = oTokNorms.slice(afterIdx, afterIdx + 3);
+    var rSpans = tokenSpans(result);
+    var bm = findSeq(rSpans, 0, beforeWanted);
+    if (!bm) continue;
+    var spanFrom = 0;
+    for (var aa = 0; aa < rSpans.length; aa++) if (rSpans[aa].end <= bm.end) spanFrom = aa + 1;
+    var am = findSeq(rSpans, spanFrom, afterWanted);
+    if (!am || am.start <= bm.end) continue;
+    var between = result.slice(bm.end, am.start);
+    var qLen = qq.full.length;
+    if (between.length < qLen * 0.4 || between.length > qLen * 3) continue;
+    if (!/["'\u2018\u2019\u201C\u201D]/.test(between)) continue;
+    result = result.slice(0, bm.end) + qq.full + result.slice(am.start);
+    restoredQuoteCount++;
+  }
+
   return result;
 }
 
@@ -1028,6 +1123,8 @@ async function callGemini(text, options, apiKey) {
     "CRITICAL RULES: " +
     "Return the COMPLETE text from title to final footnote. Do NOT drop any content. " +
     "Do NOT modify text inside quotation marks. " +
+    "Never change the author's hedging or evidential verbs (suggests->shows, may->will, could->can, appears->proves, argues->demonstrates). " +
+    "Never alter digits, years, dates, names, or figures, inside or outside quotes. " +
     "Preserve footnote markers [N], citations, and bibliography entries exactly. " +
     "Rephrase any sentence that is stiff, awkward, redundant, or AI/non-native-sounding; " +
     "leave a sentence identical only when it is already perfectly natural. " +
@@ -1232,6 +1329,11 @@ async function callCloudflareAI(text, options, ai) {
     "- Preserve footnote markers [N], citations, bibliography exactly — verbatim.\n" +
     "- Preserve paragraph breaks exactly — use \\n\\n between paragraphs.\n" +
     "- Preserve headings exactly — do NOT merge with body.\n" +
+    "- NEVER edit text inside quotation marks — keep quotes verbatim, digits, years, and dates\n" +
+    "  included. Never alter years/digits/names anywhere, even outside quotes.\n" +
+    "- Never change the author's hedging or evidential verbs (suggests->shows, may->will,\n" +
+    "  could->can, appears->proves, argues->demonstrates, lingers->persists) — the author's\n" +
+    "  degree of caution is part of their voice.\n" +
     "- ACTIVELY NATIVIZE: rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing\n" +
     "  into natural, fluent native English; tighten wordiness; improve flow. Never change meaning,\n" +
     "  register, tone, or voice. Leave a sentence identical only when it is already natural.\n" +
@@ -2140,11 +2242,38 @@ function headingShapedText(t) {
   if (!n) return false;
   if (/^\[\d+\]/.test(n) || /^\s*Ibid\.?/i.test(n) || /^\([A-Z]/.test(n)) return false;
   if (n.indexOf("\n") !== -1) return false;
-  if (/[.!?,;:)]]["\u201D\u2019]?\s*$/.test(n)) return false;
+  if (/[.!?,;:)]["\u201D\u2019]?\s*$/.test(n)) return false;
   if (n.split(/\s+/).length > 15 || n.length > 140) return false;
   if (!/^[A-Z]/.test(n)) return false;
   if (/["'\u201C\u201D\u2018\u2019]/.test(n.slice(0, 1)) || n.indexOf("  ") !== -1) return false;
   return true;
+}
+
+// Deterministic "heading ate the first sentence" unweld (text-level): a bold
+// label glued onto a full sentence by SPACES only — "**Conclusion** This
+// chapter serves as the backdrop for this thesis." — is split back into its own
+// heading line. Gates: heading inner is a short label (no terminal punctuation,
+// no colon "Note:" lead-ins), the bold span sits at a sentence boundary (start,
+// or right after .!?\u201D\u2019;\u2018), the glued tail is a complete sentence
+// that is not itself heading-shaped, and the tail is not huge. This runs BEFORE
+// sentence derivation (so derive splits cleanly) and AGAIN after the paragraph
+// re-builder, which can reintroduce the weld.
+function splitGluedHeadings(text) {
+  return String(text).replace(/(\*\*[^*\n]{1,120}\*\*)[ \t]+(?=[A-Z\u201C\u2018])/g, function(m, h, off, whole) {
+    var inner = h.replace(/^\*\*/, "").replace(/\*\*$/, "").trim();
+    if (/[.!?,;:\u2018\u2019]\s*$/.test(inner) || inner.split(/\s+/).length > 14) return m;
+    var prevCh = off > 0 ? whole[off - 1] : "";
+    // Mid-paragraph boundary (right after sentence-final punctuation): insert a
+    // break BEFORE the heading too, so "...theory.**Implications** Deeper..." ->
+    // "...theory.\n\n**Implications**\n\nDeeper...".
+    var leadBreak = prevCh && !/[\n \t.!?\u201D\u2019;\u2018]/.test(prevCh) ? "" :
+                    (prevCh && /[.!?\u201D\u2019;\u2018]/.test(prevCh) ? "\n\n" : "");
+    if (prevCh && !/[.!?\u201D\u2019;\u2018\n]/.test(prevCh)) return m;
+    var tail = whole.slice(off + m.length).split(/\r?\n/)[0];
+    if (!/[.!?]["'\u201D\u2019]*[ \t]*$/.test(tail)) return m;
+    if (headingShapedText(tail) || tail.length >= 500) return m;
+    return leadBreak + h + "\n\n";
+  });
 }
 
 function boldHeadingSentences(sentences) {
@@ -2638,6 +2767,11 @@ function ensureValidResult(parsed, originalText, options) {
   }
   // Also join any remaining split bold title (generic)
   finalVersion = finalVersion.replace(/\*\*([^\n]*?)\n\n([^\n]*?\*\*)/g, function(m, p1, p2){
+    // Gate: only join a split bold heading when the SECOND span is itself
+    // heading-shaped. A full sentence (e.g. "**Conclusion**\n\nThis chapter
+    // serves as the backdrop for this thesis.**<something>") must never be
+    // welded onto the title — that produced "Conclusion** This chapter...".
+    if (!headingShapedText(p2)) return m;
     return "**" + (p1 + p2).replace(/\*\*/g, "").replace(/\s+/g, " ").trim() + "**";
   });
   // Fix concatenated bold headings with no break (e.g., "**Chapter...**Introduction**" -> two paras)
@@ -2645,7 +2779,7 @@ function ensureValidResult(parsed, originalText, options) {
   // Also fix case where second heading lost its opening ** (e.g., "**Chapter...**Introduction**" without opening on second)
   finalVersion = finalVersion.replace(/(\*\*[^*]+\*\*)([A-Z][a-z]+[^*]*\*\*)/g, function(m, p1, p2){
     var inner = p2.replace(/^\*\*/, "").replace(/\*\*$/, "").trim();
-    if(inner.length < 80 && !/[.!?]$/.test(inner)){
+    if(inner.length < 80 && !/[.!?]$/.test(inner) && headingShapedText(p2)){
       return p1 + "\n\n**" + inner + "**";
     }
     return m;
@@ -2653,7 +2787,7 @@ function ensureValidResult(parsed, originalText, options) {
   // Fix single-newline between headings (e.g., "**Introduction**\nCore puzzle" -> two bold paras)
   finalVersion = finalVersion.replace(/(\*\*[^*]+\*\*)\n([A-Z][^\n]{1,80})\n/g, function(m, p1, p2){
     var t=p2.trim();
-    if(t.length<80 && !/[.!?]$/.test(t) && !/^\[\d+\]/.test(t)){
+    if(t.length<80 && !/[.!?]$/.test(t) && !/^\[\d+\]/.test(t) && headingShapedText(t)){
       return p1 + "\n\n**" + t + "**\n";
     }
     return m;
@@ -2710,12 +2844,16 @@ function ensureValidResult(parsed, originalText, options) {
   // fuzzy paragraph-break reinsertion). "remarkable \n\nresults" -> "remarkable results".
   finalVersion = finalVersion.replace(/([A-Za-z0-9'\u2019\u2018])\r?\n\r?\n(?=[a-z])/g, function(m, c) { return c + " "; });
   finalVersion = finalVersion.replace(/([A-Za-z0-9'\u2019\u2018])\r?\n(?=[a-z])/g, function(m, c) { return c + " "; });
+  // Split space-glued bold headings BEFORE derivation so the model's
+  // "**Conclusion** This chapter serves..." cannot be welded onto the body.
+  finalVersion = splitGluedHeadings(finalVersion);
   var derivedS = deriveSentencesFromTexts(bodyOnlyOriginal, finalVersion);
   var sentences = derivedS.sentences;
   finalVersion = derivedS.finalVersion;
   finalVersion = addQuestionMark(finalVersion);
 
   // Post-process each sentence
+  restoredQuoteCount = 0; // per-document reset so the diagnostics note is honest
   sentences = sentences.map(function(s) {
     s.revised = postProcessText(s.revised);
     if (s.original && s.revised && s.original !== s.revised) {
@@ -2761,17 +2899,38 @@ function ensureValidResult(parsed, originalText, options) {
     for (var si = 0; si < sentences.length; si++) {
       var s = sentences[si];
       var r = (s.revised || "").replace(/^\s+/, "");
+      // Detect a heading welded to body text: either "**Heading**\n<rest>" or the
+      // space-glued variant "**Heading** <sentence>." the model produces (the
+      // "title ate the first sentence" defect). The space variant splits only
+      // when the tail is a real sentence — never "**Intro** Subheading", and
+      // never a "**Note:** ..." lead-in.
+      var spec = null;
       var m = /^(\*\*[^*]+\*\*)\s*\r?\n(?=\S)/.exec(r);
-      // Only split when the heading is followed by a newline + real body text.
       if (m && m[0].indexOf("\n") !== -1 && r.slice(m[1].length).trim().length > 0) {
-        var headKey = m[1].replace(/\*\*/g, "").toLowerCase().trim();
+        spec = { head: m[1], tail: r.slice(m[1].length).replace(/^\s*\r?\n+/, "").trim() };
+      } else {
+        var sm = /^(\*\*[^*]+\*\*)\s+(\S[\s\S]*)$/.exec(r);
+        if (sm) {
+          var headInner = sm[1].replace(/^\*\*/, "").replace(/\*\*$/, "").trim();
+          var tailTxt = sm[2].trim();
+          if (!/[.!?,;:\u2018\u2019]\s*$/.test(headInner) &&
+              /^[A-Z\u201C\u2018]/.test(tailTxt) &&
+              /[.!?]["'\u201D\u2019]*\s*$/.test(tailTxt) &&
+              !headingShapedText(tailTxt) &&
+              tailTxt.length < 500) {
+            spec = { head: sm[1], tail: tailTxt };
+          }
+        }
+      }
+      // Only split when the heading is followed by real body text.
+      if (spec && spec.tail.length > 0) {
+        var headKey = spec.head.replace(/\*\*/g, "").toLowerCase().trim();
         if (seenHeadings[headKey]) {
           // The heading was already emitted as a standalone prior sentence;
           // keep only the body, so we don't duplicate the heading.
-          var bodyOnly = r.slice(m[1].length).replace(/^\s*\r?\n+/, "").trim();
           split.push({
             original: s.original,
-            revised: bodyOnly,
+            revised: spec.tail,
             explanation: s.explanation,
             isImmutableFootnote: s.isImmutableFootnote,
             paragraphIndex: s.paragraphIndex,
@@ -2779,16 +2938,15 @@ function ensureValidResult(parsed, originalText, options) {
         } else {
           seenHeadings[headKey] = true;
           split.push({
-            original: s.original,
-            revised: m[1],
+            original: spec.head,
+            revised: spec.head,
             explanation: s.explanation === "No corrections needed." ? "No corrections needed." : "Formatted as heading.",
             isImmutableFootnote: false,
             paragraphIndex: s.paragraphIndex,
           });
-          var bodyText = r.slice(m[1].length).replace(/^\s*\r?\n+/, "").trim();
           split.push({
             original: s.original,
-            revised: bodyText,
+            revised: spec.tail,
             explanation: s.explanation,
             isImmutableFootnote: s.isImmutableFootnote,
             paragraphIndex: s.paragraphIndex,
@@ -2826,6 +2984,12 @@ function ensureValidResult(parsed, originalText, options) {
   if (rebuilt && rebuilt.trim().length > 0) {
     finalVersion = rebuilt;
   }
+
+  // Deterministic unweld (text-level): splitGluedHeadings is applied again
+  // after the paragraph re-builder, which can reintroduce a space-glued bold
+  // heading (the "title ate the first sentence" defect).
+  finalVersion = splitGluedHeadings(finalVersion);
+
   // Append the original footnote block EXACTLY ONCE, as its own paragraphs,
   // after the body rebuild (idempotent — removed the previous double append).
   if (savedFootnotes && savedFootnotes.trim()) {
@@ -3101,6 +3265,9 @@ function ensureValidResult(parsed, originalText, options) {
   });
   if (droppedWords.length > 0) {
     reviewNotes.push("Note — words dropped during tightening were not linked to a nativizing rewrite: " + droppedWords.join(", ") + (droppedWords.length === 6 ? " (and more)" : "") + ". Confirm the simplification preserves intent.");
+  }
+  if (restoredQuoteCount > 0) {
+    reviewNotes.push("Note — " + restoredQuoteCount + " quoted passage" + (restoredQuoteCount === 1 ? " was" : "s were") + " modified during processing and restored to the original wording.");
   }
 
   var suggestions = postProcessSuggestions(
