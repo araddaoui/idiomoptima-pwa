@@ -3240,7 +3240,20 @@ export default {
     try {
       var payload = await request.json();
       var text = String(payload.text || "").trim();
-      var wordCount = text.length > 0 ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+      // Count "honest words" the same way the client badge/pre-gate does:
+      // strip ** markdown, drop footnote-reference lines, then count tokens.
+      // (Otherwise prose under 800 but with footnotes would 429 a real user.)
+      var wordCount = 0;
+      if (text.length > 0) {
+        var countText = text
+          .replace(/\*\*/g, " ")
+          .split(/\r?\n/)
+          .filter(function (line) {
+            return line.trim() && !/^\s*(\[\d+\]|Ibid\.?)(?:\s|$)/i.test(line);
+          })
+          .join(" ");
+        wordCount = countText.trim().split(/\s+/).filter(Boolean).length;
+      }
       var options = {
         domain: String(payload.domain || "general"),
         tone: String(payload.tone || "neutral"),
