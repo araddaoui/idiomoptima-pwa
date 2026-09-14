@@ -14238,5 +14238,33 @@
   {
     "ai": "let us now analyze this",
     "natural": "we now analyze this"
+  },
+  {
+    "ai": "as stated earlier",
+    "natural": "as noted earlier"
+  },
+  {
+    "ai": "harks back to",
+    "natural": "traces back to"
+  },
+  {
+    "ai": "levels of certainty about",
+    "natural": "confidence in"
+  },
+  {
+    "ai": "a certain richness to the",
+    "natural": "richness to the"
+  },
+  {
+    "ai": "a complex of factors",
+    "natural": "a range of factors"
+  },
+  {
+    "ai": "took the decision",
+    "natural": "made the decision"
+  },
+  {
+    "ai": "takes the decision to",
+    "natural": "decides to"
   }
 ]

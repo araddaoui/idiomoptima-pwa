@@ -487,6 +487,15 @@ section("10. boldHeadingSentences re-bolds titles the model may have stripped");
 
   check("user title gets re-bolded", bh("Application & Adaptation to This Study"), "**Application & Adaptation to This Study**");
   check("already-bold heading left untouched", bh("**Application & Adaptation to This Study**"), "**Application & Adaptation to This Study**");
+  check("question-form title alone on its line gets re-bolded", bh("Where does Use of Military Power Literature come from?"), "**Where does Use of Military Power Literature come from?**");
+  {
+    const twoInPara = (a, b) => [{ original: a, revised: a, paragraphIndex: 0 }, { original: b, revised: b, paragraphIndex: 0 }];
+    check(
+      "question sentence inside body prose stays plain",
+      api.boldHeadingSentences(twoInPara("What does this mean for the analysis?", "The framework reframes the debate.")).map((s) => s.revised).join("|"),
+      "What does this mean for the analysis?|The framework reframes the debate."
+    );
+  }
   check("sentence ending in '.' stays plain", bh("This is better suited to analysing the states."), "This is better suited to analysing the states.");
   check("'...following:' label stays plain (no colon bolding)", bh("At a minimum, the contextuality criterion requires an understanding of the following:"), "At a minimum, the contextuality criterion requires an understanding of the following:");
   check("footnote marker line stays plain", bh("[1] Nonneman, G. (2005). Routledge."), "[1] Nonneman, G. (2005). Routledge.");

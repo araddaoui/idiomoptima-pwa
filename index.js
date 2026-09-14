@@ -2033,8 +2033,8 @@ function normalizeTitleBreaks(text) {
   text = text.split("\n\n").map(function(para) {
     var trimmed = para.trim();
     if (trimmed.length > 0 && trimmed.length < 80
-        && !/[.!?]$/.test(trimmed)
-        && !/[,;:?!]$/.test(trimmed)
+        && !/[.!]$/.test(trimmed)
+        && !/[,;:!]$/.test(trimmed)
         && !/[)\]]["\u201D\u2019]?\s*$/.test(trimmed)
         && !continuationWords.test(trimmed)
         && /^[A-Z]/.test(trimmed)
@@ -2354,7 +2354,14 @@ var DEFAULT_DATABASES = {
     { ai: "went ahead with", natural: "proceeded with" },
     { ai: "go ahead with", natural: "proceed with" },
     { ai: "let us analyze this", natural: "we now analyze this" },
-    { ai: "let us now analyze this", natural: "we now analyze this" }
+    { ai: "let us now analyze this", natural: "we now analyze this" },
+    { ai: "as stated earlier", natural: "as noted earlier" },
+    { ai: "harks back to", natural: "traces back to" },
+    { ai: "levels of certainty about", natural: "confidence in" },
+    { ai: "a certain richness to the", natural: "richness to the" },
+    { ai: "a complex of factors", natural: "a range of factors" },
+    { ai: "took the decision", natural: "made the decision" },
+    { ai: "takes the decision to", natural: "decides to" }
   ],
   lexicalDb: {
     general: [
@@ -2392,7 +2399,7 @@ function headingShapedText(t) {
   if (!n) return false;
   if (/^\[\d+\]/.test(n) || /^\s*Ibid\.?/i.test(n) || /^\([A-Z]/.test(n)) return false;
   if (n.indexOf("\n") !== -1) return false;
-  if (/[.!?,;:)]["\u201D\u2019]?\s*$/.test(n)) return false;
+  if (/[.,!;:)]["\u201D\u2019]?\s*$/.test(n)) return false;
   if (n.split(/\s+/).length > 15 || n.length > 140) return false;
   if (!/^[A-Z]/.test(n)) return false;
   if (/["'\u201C\u201D\u2018\u2019]/.test(n.slice(0, 1)) || n.indexOf("  ") !== -1) return false;
@@ -2428,6 +2435,13 @@ function splitGluedHeadings(text) {
 
 function boldHeadingSentences(sentences) {
   if (!Array.isArray(sentences)) return sentences;
+  // Question-form headings ("Where does X come from?") must stay titles ONLY when
+  // the question line is its own paragraph — a question inside body prose never
+  // becomes a heading. Count sentences per paragraph so we can check the gate.
+  var paraCounts = {};
+  sentences.forEach(function (x) {
+    if (x && typeof x.paragraphIndex === "number") paraCounts[x.paragraphIndex] = (paraCounts[x.paragraphIndex] || 0) + 1;
+  });
   return sentences.map(function (s) {
     if (!s) return s;
     var txt = (s.revised || "").trim();
@@ -2435,7 +2449,8 @@ function boldHeadingSentences(sentences) {
     if (s.isImmutableFootnote) return s;
     if (/^\[\d+\]/.test(txt) || /^\s*Ibid\.?/i.test(txt) || /^\([A-Z]/.test(txt)) return s;
     if (/^\*\*/.test(txt)) return s;
-    if (/[.!?,;:]$/.test(txt)) return s;
+    var qForm = /\?\s*$/.test(txt);
+    if (/[.,!;:]$/.test(txt)) return s;
     // A body sentence never becomes a heading: a closing bracket/paren tail
     // (citation marker "[4]"/"(2020)") proves the text runs on, so it is NOT
     // a title even though it lacks terminal punctuation.
@@ -2447,6 +2462,10 @@ function boldHeadingSentences(sentences) {
     // Only re-bold when the ORIGINAL input was ALSO heading-shaped — bolding is a
     // restoration of an input heading, never an upgrade of ordinary prose.
     if (!headingShapedText(s.original)) return s;
+    // A question-form title was heading-shaped in the input, but ONLY trusts the
+    // restore when the line truly stands alone: a question in the middle of a
+    // multi-sentence paragraph stays plain.
+    if (qForm && typeof s.paragraphIndex === "number" && (paraCounts[s.paragraphIndex] || 0) !== 1) return s;
     s.revised = "**" + txt + "**";
     return s;
   });
@@ -3477,15 +3496,20 @@ function ensureValidResult(parsed, originalText, options) {
   var revisedProse = proseJoin(sentences, "revised");
   var srcProf = scanStiffPhrases(sourceProse, stiffMaps);
   var revProf = scanStiffPhrases(revisedProse, stiffMaps);
-  var sourceStiffness = srcProf.count;
-  var revisedStiffness = revProf.count;
+  var sourceStiffness = srcProf.keys.length;
+  var revisedStiffness = revProf.keys.length;
   // Distinct rules the revision actually consumed — the honest numerator for the
   // "N stiff/AI-sounding phrase(s) nativized" diagnostic below.
   var nativizedRuleCount = Math.max(0, srcProf.keys.length - revProf.keys.length);
   function measuredScore(spelling, stiffness, duplicateWords) {
     var score = 100;
     if (spelling > 0) score = Math.min(score, 80);
-    score = Math.max(58, score - stiffness * 3);
+    // Stiffness is measured in MATCHED PHRASES (unique DB / builtin rules the
+    // text actually contains), not raw word displacement, so the deduction has a
+    // stable per-flaw resolution: one phrase costs 4 points, five cost 20. A text
+    // with a couple of detectable stiff formulas reads ~90; ~7 reads in the mid
+    // 70s; and the floor still guards the scale from collapsing past 58.
+    score = Math.max(58, score - stiffness * 4);
     if (duplicateWords) score = Math.min(score, 85);
     return score;
   }
