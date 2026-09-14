@@ -992,6 +992,133 @@ function protectQuotes(original, revised) {
   return result;
 }
 
+// Deterministic voice-preservation guard (Fix-E sibling): if the model HARDENED
+// the author's epistemic stance (e.g. "This suggests that ... -> This shows",
+// "may -> will", "could -> can", "tends to -> always"), swap the blunt word back
+// to the author's exact hedged word. Word-swap level, so phrasing around the
+// hedge keeps its edits. Only fires when (a) the hedged word is GONE from the
+// revision, (b) exactly ONE blunt counterpart took its place, (c) that blunt
+// word was NOT in the source (so a legit "show"/"will" elsewhere is untouched),
+// and (d) the rest of the sentence still overlaps the source. Counts real
+// restores in epistemicRestoreCount (surfaced via reviewNotes).
+var epistemicRestoreCount = 0;
+
+var HEDGED_TO_BLUNT = {
+  suggest: ["show", "shows", "showed", "showing", "prove", "proves", "proved", "proven", "demonstrate", "demonstrates", "demonstrated", "confirm", "confirms", "confirmed", "establish", "establishes", "established"],
+  imply: ["show", "shows", "showed", "showing", "prove", "proves", "proved", "proven", "demonstrate", "demonstrates", "demonstrated", "confirm", "confirms", "confirmed"],
+  indicate: ["show", "shows", "showed", "showing", "prove", "proves", "proved", "proven", "demonstrate", "demonstrates", "demonstrated", "confirm", "confirms", "confirmed"],
+  appear: ["prove", "proves", "proved", "proven", "show", "shows", "showed", "showing", "demonstrate", "demonstrates", "demonstrated", "confirm", "confirms", "confirmed"],
+  argue: ["demonstrate", "demonstrates", "demonstrated", "prove", "proves", "proved", "proven", "show", "shows", "showed", "showing"],
+  claim: ["demonstrate", "demonstrates", "demonstrated", "show", "shows", "showed", "showing", "prove", "proves", "proved", "proven"],
+  may: ["will", "must", "certainly", "definitely"],
+  might: ["will", "must"],
+  could: ["can", "will", "must"]
+};
+
+// Cheap morphological variants so "suggests"/"suggested"/"suggesting" all reduce
+// to a form that matches the hedge table. Kept conservative; inflected blunt
+// forms are also listed explicitly above.
+function stemVariants(w) {
+  var t = String(w || "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z']/g, "").replace(/'/g, "");
+  var out = [t];
+  if (/ing$/.test(t) && t.length > 5) out.push(t.slice(0, -3));
+  if (/ied$/.test(t)) out.push(t.slice(0, -3) + "y");
+  if (/(ed|es)$/.test(t) && t.length > 4) out.push(t.slice(0, -2));
+  if (/s$/.test(t) && !/ss$/.test(t) && t.length > 3) out.push(t.slice(0, -1));
+  return out;
+}
+
+function protectEpistemicVoice(original, revised) {
+  if (!original || !revised || original === revised) return revised;
+  var result = revised;
+
+  function splitWords(text) {
+    return String(text || "").split(/\s+/).filter(function (w) { return w.length > 0; });
+  }
+  var origWords = splitWords(original);
+
+  // "tends to <verb>" -> "always <verb>" (the listed hardening case): restore the
+  // hedged phrase when the model swapped in an always/invariably adverb and the
+  // verb's base form survives in the source ("tends to linger" -> "always
+  // lingers" -> back to "tends to linger").
+  if (/\btends?\s+to\b/i.test(original) && !/\btend/i.test(result) && /always|invariably/i.test(result)) {
+    var altMatch = /\b(always|invariably)\s+([A-Za-z]+)/i.exec(result);
+    var altVerb = altMatch ? altMatch[2] : "";
+    var altBase = altVerb.toLowerCase().replace(/ing$/, "").replace(/ed$/, "").replace(/s$/, "");
+    if (altMatch && altBase.length > 2 && new RegExp("\\b" + altBase + "\\w*", "i").test(original)) {
+      result = result.replace(altMatch[0], "tends to " + altBase);
+      epistemicRestoreCount++;
+    }
+  }
+
+  var restoredFor = {};
+  for (var i = 0; i < origWords.length; i++) {
+    var ow = origWords[i];
+    var oStems = stemVariants(ow);
+    var hedge = null;
+    for (var s = 0; s < oStems.length; s++) {
+      if (HEDGED_TO_BLUNT[oStems[s]]) { hedge = oStems[s]; break; }
+    }
+    if (!hedge) continue;
+    if (restoredFor[hedge]) continue; // one restore per hedge type per sentence
+    var hedgeLower = hedge.toLowerCase();
+    // "may" followed by a bare year/number is a month, not a hedge.
+    if (hedgeLower === "may" && /^\d{2,4}$/.test(String(origWords[i + 1] || ""))) continue;
+
+    var revWords = splitWords(result);
+    // Hedge still present in some form? The model kept the author's voice; nothing to do.
+    var stillHedged = revWords.some(function (rw) {
+      return stemVariants(rw).some(function (st) { return st === hedge || (HEDGED_TO_BLUNT[st] && st === hedgeLower); });
+    });
+    if (stillHedged) continue;
+
+    // Find blunt candidates in the revision whose word was NOT in the source.
+    var bluntForms = HEDGED_TO_BLUNT[hedge];
+    var bluntHits = [];
+    revWords.forEach(function (rw) {
+      var sts = stemVariants(rw);
+      for (var x = 0; x < sts.length; x++) {
+        var st = sts[x];
+        var bluntHit = null;
+for (var b = 0; b < bluntForms.length; b++) {
+        if (st === bluntForms[b]) { bluntHit = bluntForms[b]; break; }
+      }
+      if (!bluntHit) continue;
+        var bluntInSource = origWords.some(function (ow2) { return stemVariants(ow2).indexOf(bluntHit) !== -1; });
+        if (!bluntInSource) bluntHits.push({ word: rw, stem: bluntHit });
+        break;
+      }
+    });
+    if (bluntHits.length !== 1) continue;
+
+    // Sentence must otherwise still overlap the source (only the stance changed).
+    var oSet = {};
+    origWords.forEach(function (w) {
+      stemVariants(w).forEach(function (st) { if (/[a-z]/.test(st) && st.length >= 3) oSet[st] = 1; });
+    });
+    var rSet = {};
+    revWords.forEach(function (w) {
+      stemVariants(w).forEach(function (st) { if (/[a-z]/.test(st) && st.length >= 3) rSet[st] = 1; });
+    });
+    var oTotal = Object.keys(oSet).length;
+    var shared = 0;
+    for (var k in rSet) if (oSet[k]) shared++;
+    if (oTotal === 0 || shared / oTotal < 0.45) continue;
+
+    // Swap the blunt word's FIRST occurrence back to the author's EXACT hedged
+    // word from the source (case preserved).
+    var exact = ow.replace(/[^A-Za-z\u2018\u2019]/g, "");
+    if (!exact) continue;
+    var bluntWord = bluntHits[0].word.replace(/[^A-Za-z\u2018\u2019]/g, "");
+    if (!bluntWord) continue;
+    if (!new RegExp("\\b" + escapeRegExp(bluntWord) + "\\b", "i").test(result)) continue;
+    result = result.replace(new RegExp("\\b" + escapeRegExp(bluntWord) + "\\b", "i"), exact);
+    epistemicRestoreCount++;
+    restoredFor[hedge] = 1;
+  }
+  return result;
+}
+
 function postProcessSuggestions(suggestions, originalText, finalText, sentences, preservedFootnoteCount, reviewNotes) {
   var suggs = [];
 
@@ -2718,6 +2845,75 @@ function droppedContentWords(originalText, finalText, options) {
   return out.length > 8 ? out.slice(0, 8) : out;
 }
 
+// Mirror of droppedContentWords: open-class words that appear in the FINAL text
+// but nowhere in the source. The model sometimes invents detail ("moral
+// considerations", "stakeholder buy-in") that the author never wrote; those are
+// surfaced as an advisory note (NOT auto-reverted) so the author can confirm the
+// added detail is intended. Words introduced by the deterministic nativization
+// layer (a built-in rule or a DB phrase that matched the source) are excluded,
+// so legit "firms ups" never get flagged.
+function addedContentWords(originalText, finalText, options) {
+  function addKeys(set, phrase) {
+    String(phrase || "").split(/\s+/).forEach(function (p) {
+      if (p && p.length >= 3) set[p.toLowerCase().replace(/[^a-z]+/g, "")] = 1;
+    });
+  }
+  function baseKeys(raw) {
+    return String(raw || "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z']/g, " ")
+      .split(/\s+/).map(function (t) { return t.replace(/'/g, ""); })
+      .filter(function (t) { return t.length >= 4 && !SEMANTIC_FUNCTION_WORDS[t]; });
+  }
+  // Words the deterministic nativization layer is allowed to introduce: any
+  // replacement word from a built-in rule or DB phrase that MATCHED the source.
+  var allowed = {};
+  (BUILTIN_NATIVIZATION || []).forEach(function (rule) {
+    var re = new RegExp(rule.re.source, "gi");
+    var m, matched = 0;
+    while ((m = re.exec(originalText)) !== null && matched < 10) { matched++; addKeys(allowed, rule.lower); }
+  });
+  try {
+    var maps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
+    if (maps && maps.phraseList) {
+      maps.phraseList.forEach(function (p) {
+        if (!p || !p.src) return;
+        var rePh = new RegExp("\\b" + p.src + "\\b", "gi");
+        var pm, phMatched = 0;
+        while ((pm = rePh.exec(originalText)) !== null && phMatched < 10) { phMatched++; addKeys(allowed, p.dst); }
+      });
+    }
+  } catch (e) { /* DB phrase maps are optional */ }
+  var origNorm = " " + String(originalText || "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z]+/g, " ") + " ";
+  var origTokens = origNorm.split(/\s+/).filter(Boolean);
+  var origTokensSet = {};
+  origTokens.forEach(function (t) { origTokensSet[t] = 1; });
+  var out = [];
+  var seen = {};
+  String(finalText || "").split(/\s+/).forEach(function (raw) {
+    baseKeys(raw).forEach(function (k) {
+      if (seen[k] || allowed[k]) return;
+      seen[k] = 1;
+      if (origTokensSet[k]) return;
+      // Morphological tolerance: "considerations" next to source "consideration"
+      // (added word is a prefix of a source token) or the reverse (prefix of the
+      // added word is a source token) is a form of the author's word, not an
+      // invention. New words sharing only a 3-letter stub are still flagged.
+      var hit = false;
+      for (var j = k.length; j >= 3; j--) {
+        if (origTokensSet[k.slice(0, j)]) { hit = true; break; }
+      }
+      if (!hit) {
+        for (var t = 0; t < origTokens.length; t++) {
+          var ot = origTokens[t];
+          if (ot.length > k.length && ot.slice(0, k.length) === k) { hit = true; break; }
+        }
+      }
+      if (!hit) out.push(k);
+    });
+  });
+  out.sort(function (a, b) { return b.length - a.length; });
+  return out.length > 8 ? out.slice(0, 8) : out;
+}
+
 // How many prose sentences does the SOURCE actually have? Used to reconcile the
 // diagnostics count ("11 improved + 4 preserved" vs the real 14-sentence input)
 // when the alignment step re-segments the model output.
@@ -2854,6 +3050,7 @@ function ensureValidResult(parsed, originalText, options) {
 
   // Post-process each sentence
   restoredQuoteCount = 0; // per-document reset so the diagnostics note is honest
+  epistemicRestoreCount = 0; // per-document reset so the diagnostics note is honest
   sentences = sentences.map(function(s) {
     s.revised = postProcessText(s.revised);
     if (s.original && s.revised && s.original !== s.revised) {
@@ -2864,6 +3061,10 @@ function ensureValidResult(parsed, originalText, options) {
       s.revised = restoreDroppedSentence(s.original, s.revised);
       s.revised = restoreCurlyApostrophes(s.original, s.revised);
       s.revised = restoreLeadingEllipsis(s.original, s.revised);
+      // Restore the author's hedged/evidential wording if the model hardened it
+      // (suggests -> shows, may -> will, could -> can) AFTER quote protection so
+      // quoted speech never loses its hedging.
+      s.revised = protectEpistemicVoice(s.original, s.revised);
     }
     s.revised = nativePolish(s.revised);
     s.revised = fixCommonMisspellingsSafe(s.revised);
@@ -3159,6 +3360,9 @@ function ensureValidResult(parsed, originalText, options) {
   // Content words that vanished from the SOURCE without a justifying
   // nativization rule firing (Fix-P2, "dropped words" note).
   var droppedWords = droppedContentWords(bodyOnlyOriginal, finalVersion, options);
+  // Content words the revision ADDED that appear nowhere in the source (possibly
+  // invented detail) — advisory note so the author can confirm intent.
+  var addedWords = addedContentWords(bodyOnlyOriginal, finalVersion, options);
 
   var realChangeCount = 0;
   var magnitudeAll = 0;
@@ -3268,6 +3472,12 @@ function ensureValidResult(parsed, originalText, options) {
   }
   if (restoredQuoteCount > 0) {
     reviewNotes.push("Note — " + restoredQuoteCount + " quoted passage" + (restoredQuoteCount === 1 ? " was" : "s were") + " modified during processing and restored to the original wording.");
+  }
+  if (epistemicRestoreCount > 0) {
+    reviewNotes.push("Note — " + epistemicRestoreCount + " revision" + (epistemicRestoreCount === 1 ? "" : "s") + " hardened the author's epistemic stance (e.g. suggests \u2192 shows, may \u2192 will) and " + (epistemicRestoreCount === 1 ? "was" : "were") + " restored to the original hedging under the voice-preservation rule.");
+  }
+  if (addedWords.length > 0) {
+    reviewNotes.push("Note — the revision adds words that appear nowhere in the source (possibly invented detail): " + addedWords.join(", ") + (addedWords.length === 8 ? " (and more)" : "") + ". Confirm the added detail is intended.");
   }
 
   var suggestions = postProcessSuggestions(
