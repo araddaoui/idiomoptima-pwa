@@ -25,7 +25,12 @@ The package name is still the legacy `react-example` and worker mame internally
   `cloudflare` vite plugin also builds the Worker).
 - `npm run preview` — build + `wrangler dev`.
 - `npm run lint` — `tsc --noEmit` (this is the typecheck command).
-- `npm run deploy` — build + `wrangler deploy`.
+- `npm run deploy` — build + `wrangler deploy --config wrangler.toml`. IMPORTANT: this is
+  the ONLY command that ships `index.js` to the transform worker the app actually calls
+  (`https://nativewrite-api.nativewrite-api.workers.dev`). A bare `wrangler deploy` (no
+  `--config`) resolves the Vite-emitted `dist/wrangler.json` (from `wrangler.jsonc`,
+  name `react-example`) and instead publishes a STATIC SPA worker that never runs
+  `index.js` — the app would silently keep hitting the last real transform deploy.
 - `npm run clean` — `rm -rf dist`.
 
 ### Important routing notes
