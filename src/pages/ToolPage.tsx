@@ -1055,6 +1055,13 @@ export default function ToolPage() {
                           </div>
                         )}
 
+                        {result.databaseLine && (
+                          <div className="p-3 bg-teal-950/30 border border-teal-500/20 rounded-xl text-xs">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-teal-400 block mb-1.5">Nativization</span>
+                            <p className="leading-relaxed text-slate-300">{result.databaseLine}</p>
+                          </div>
+                        )}
+
                         {result.explanation && (
                           <div className="p-3 bg-indigo-950/30 border border-indigo-500/20 rounded-xl">
                             <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400 block mb-1">Summary</span>

@@ -3529,11 +3529,18 @@ function ensureValidResult(parsed, originalText, options) {
     if (Object.prototype.hasOwnProperty.call(semanticRisks, sr)) sentences[Number(sr)].semanticRisk = semanticRisks[sr];
   }
   // Content words that vanished from the SOURCE without a justifying
-  // nativization rule firing (Fix-P2, "dropped words" note).
-  var droppedWords = droppedContentWords(bodyOnlyOriginal, finalVersion, options);
+  // nativization rule firing (Fix-P2, "dropped words" note). Word-level
+  // comparisons must exclude the preserved reference/citation block: the source
+  // has ALREADY had its footnotes extracted, while finalVersion can carry them
+  // (the model returns the reference block and the rebuild keeps it). Without
+  // this, citation words ("Clausewitz", "university", "international"...) are
+  // mislabeled as invented detail — re-stripping finalVersion with
+  // extractFootnoteBlock yields the same prose-only view the source uses.
+  var bodyFinalForWords = extractFootnoteBlock(String(finalVersion || "")).body || finalVersion;
+  var droppedWords = droppedContentWords(bodyOnlyOriginal, bodyFinalForWords, options);
   // Content words the revision ADDED that appear nowhere in the source (possibly
   // invented detail) — advisory note so the author can confirm intent.
-  var addedWords = addedContentWords(bodyOnlyOriginal, finalVersion, options);
+  var addedWords = addedContentWords(bodyOnlyOriginal, bodyFinalForWords, options);
 
   var realChangeCount = 0;
   var magnitudeAll = 0;
@@ -3591,15 +3598,25 @@ function ensureValidResult(parsed, originalText, options) {
   //    same rubric as its source, so an identical text measures identically (the
   //    flat line falls out of the measurement) and a revision that removed no
   //    defects still gains nothing over the original.
-  //  - Both cap at 98, preserving the historical ceiling and leaving headroom
-  //    for a revision that genuinely cleared every stiff rule.
+  //  - Small honest credit for REAL content improvements the rubric cannot see
+  //    (tightening, synonym upgrades, hyphenation, comma/parallelism repairs):
+  //    +2 per really-changed sentence. A clean-but-edited text therefore lands
+  //    visibly (and modestly) above its source — the 99 cap keeps headroom so
+  //    the meter can distinguish an edited text from an untouched one, while a
+  //    full stiffness-clearing rewrite of a heavily-stiff source still ends at
+  //    ~+11 at worst, never the old invented +28 spike. Untouched text
+  //    (realChangeCount === 0) stays flat, and an output with residual
+  //    misspellings is already capped at 80 and never takes the credit.
   if (remainingSpelling > 0) {
     origScore = Math.min(origScore, 80);
     revScore = Math.min(revScore, 80);
   }
-  revScore = Math.max(revScore, origScore);
   origScore = Math.min(98, origScore);
-  revScore = Math.min(98, revScore);
+  if (remainingSpelling === 0 && realChangeCount > 0) {
+    revScore = Math.min(99, Math.max(revScore, origScore) + realChangeCount * 2);
+  } else {
+    revScore = Math.min(98, Math.max(revScore, origScore));
+  }
 
   var preservedFootnoteCount = 0;
   if (savedFootnotes && savedFootnotes.trim()) {

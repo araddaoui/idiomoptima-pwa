@@ -29,6 +29,10 @@ export interface TransformationResult {
     totalReplacements: number;
     sentencesChanged?: number;
   };
+  // One-sentence transparency line about the nativization layer (rules sent to
+  // the model vs deterministic backstop applied). Rendered as its own card in
+  // the Notes tab, NOT as a numbered suggestion.
+  databaseLine?: string;
   tier?: string;
   usage?: number;
 }
@@ -338,7 +342,7 @@ export async function transformText(
     const dbLine = serverStats
       ? `Nativization: ${aiTotal} AI-ese, ${idiomTotal} idiom(s), ${lexTotal} lexical (${domain}) phrase rules sent to the model; deterministic backstop applied ${aiPhraseReplacements}/${idiomReplacements}/${lexicalReplacements} (model handled the rest).`
       : `Database: checked ${aiTotal} AI-ese, ${idiomTotal} idiom(s), ${lexTotal} lexical (${domain}) — applied ${aiPhraseReplacements}/${idiomReplacements}/${lexicalReplacements} (total ${totalReplacements}).`;
-    data.suggestions = [...(data.suggestions || []), dbLine];
+    data.databaseLine = dbLine;
 
     if (onProgress) onProgress(100, 1, 1, "Complete!");
 
