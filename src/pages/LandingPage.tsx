@@ -298,7 +298,7 @@ export default function LandingPage({ onStartFree, onGoToApp, onUpgrade }: Landi
           </div>
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-[1.1] tracking-tight">
             <span className="bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-              Your words, perfected.
+              Edit. Nativize. Humanize.
             </span>
           </h1>
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
