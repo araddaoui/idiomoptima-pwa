@@ -33,6 +33,13 @@ export interface TransformationResult {
   // the model vs deterministic backstop applied). Rendered as its own card in
   // the Notes tab, NOT as a numbered suggestion.
   databaseLine?: string;
+  // Coverage census (worker-computed): how many stiff phrases the rule set
+  // matched in the source vs. common stiff patterns present but not covered by
+  // any rule (left to the model/author). Rendered as a transparency note.
+  coverage?: {
+    matched: number;
+    uncovered: string[];
+  };
   tier?: string;
   usage?: number;
 }

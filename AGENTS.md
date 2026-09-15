@@ -143,22 +143,38 @@ Keep API keys out of commits.
 - No AGENTS.md existed before this file; git history uses conventional commits
   (`fix: ...`, `Major overhaul: ...`).
 
-## FROZEN — behavioral freeze (tag `freeze-2026-09-14`)
+## Determinism contract (tag `determinism-2026-09-14`)
 
-The code is FROZEN at tag `freeze-2026-09-14` (commit `541bab2`, worker Version ID
-`09ee6a1d-ad7f-48c5-a23e-6ceb953e9ed6` on `nativewrite-api`). The behavioral contract
-below is binding: any future behavior change requires an EXPLICIT unfreeze from the
-user PLUS the full verification matrix (below) to pass; deploy is only via
-`npm run deploy` (`wrangler deploy --config wrangler.toml`).
+The behavioral freeze (`freeze-2026-09-14`, commit `541bab2`) was EXPLICITLY
+unfrozen by the user on 2026-09-14 to fix a user-reported inconsistency: the same
+manuscript was sometimes edited heavily and sometimes barely at all. The replacement
+profile — temperature 0 on all LLM providers plus an auditable coverage census —
+is now the binding contract below. Deploy is STILL only via `npm run deploy`
+(`wrangler deploy --config wrangler.toml`); any future behavior change requires an
+explicit okay from the user PLUS the full verification matrix (below) to pass.
 
 Deterministic contract (must never drift):
 
-- **Score = honest measured improvement**, independent of provider: base
+- **Provider determinism**: ALL providers run at `temperature: 0` (Gemini
+  `thinkingBudget: 0`, `topP: 1`). Provider order stays fixed per tier, failure-driven
+  rotation intact; which provider actually answered is audited (`timing.attempts`) and
+  surfaced by the consistency harness. No temperature/sampling variation is allowed to
+  affect output.
+- **Score = honest measured improvement**, provider-independent: base
   `max(58, 100 - matchedStiffPhraseCount * 4)`; residual-misspellings cap at 80;
   duplicated-word cap at 85; real-change credit `+2`/really-changed sentence capped
   at 99 (98 without changes), original capped at 98. The SAME input must always
   produce the SAME `originalScore`/`revisedScore` regardless of which LLM provider
-  answered. Reference profile for the "military power literature" sample: 72 → 99.
+  answered. Reference profile for the "military power literature" sample: 72 → 99
+  (committed fixture `scripts/corpus/military.txt`, harness-asserted).
+- **Coverage census** (diagnostic, never applied): `COVERAGE_WATCHLIST` in `index.js`
+  (7 items: `the mere fact that`, `more likely to break than not`, `in whose neighbourhood`,
+  `such a common denominator`, `is occasioned by`, `do not want to hear`,
+  `looking forward to receive`) is scanned against the source and the result carries
+  `coverage: { matched, uncovered }`. A "quiet" run is EXPLAINED by `uncovered`, not
+  by whimsy. Reference census (offline): uae 7 (`more likely to break than not`,
+  `in whose neighbourhood`), academic 7 (`the mere fact that`, `such a common denominator`),
+  literary 0, business 1 (`looking forward to receive`), general 4 (none), military 7 (none).
 - **Title bolding** (incl. question-form titles like "Where does X come from?") is a
   restoration of an input heading ONLY: the line must be heading-shaped in the
   original, and `?`-form titles only when they are the sole sentence of their
@@ -166,23 +182,41 @@ Deterministic contract (must never drift):
 - **Drop/added-word Notes** flag only words NOT covered by a matched builtin or DB
   rule. Replacement words from a matched DB rule are whitelisted (`p.tgt`, NOT
   `p.dst`). Footnote/citation words are stripped before both checks.
-- **Nativization rule-sets**: worker `DEFAULT_DATABASES.aiDb` = 12 entries;
-  `public/ai-natural-database.json` = 3567 entries. The 7 rule additions:
-  `as stated earlier→as noted earlier`, `harks back to→traces back to`,
-  `levels of certainty about→confidence in`, `a certain richness to the→richness to the`,
-  `a complex of factors→a range of factors`, `took the decision→made the decision`,
-  `takes the decision to→decides to`. DB growth is data-only and freeze-safe;
-  rule SEMANTICS must not change.
-- **Known/accepted behavior (NOT bugs under freeze)**: model-performed synonym swaps
-  not covered by any rule (e.g. `places`, `within`, `designated`, `taken`, `land`,
-  `puts`, `in`) stay surfaced in the Notes by design. Anonymous requests bypass
-  usage limits; free tier = 4 requests/day, 800-word cap.
+- **Nativization rule-sets**: worker `DEFAULT_DATABASES.aiDb` = 28 entries;
+  `public/ai-natural-database.json` = 3583 entries. The 16 additions (in addition to
+  the earlier documented 7): `it will be useful to map out→it helps to map out`,
+  `intent upon spreading→determined to spread`, `was the key culprit in→was the main driver of`,
+  `equally pressing sources of concern→equally pressing worries`,
+  `casting doubt on the very legitimacy→calling into question the very legitimacy`,
+  `is seen as an extension of→is regarded as an extension of`,
+  `has the asset of allowing me to→allows me to`, `remaining within the continuity of→continuing`,
+  `lends itself basically to the mere fact that→rests essentially on the fact that`,
+  `within the parameters of→within the bounds of`, `have affinities with each other→share affinities`,
+  `underpinning representation of→underlying representation of`,
+  `as the world evolves at a rapid pace→as the world changes fast`,
+  `is a testament to→attests to`, `a tapestry of→a mix of`, `regarding for the→regarding the`.
+  DB growth is data-only and freeze-safe; rule SEMANTICS must not change.
+- **Known/accepted behavior (NOT bugs)**: model-performed synonym swaps not covered by
+  any rule (e.g. `places`, `within`, `designated`, `taken`, `land`, `puts`) stay
+  surfaced in the Notes by design. Anonymous requests bypass usage limits; free tier =
+  4 requests/day, 800-word cap. Single-token DB entries (e.g. `user-friendly`) are
+  dropped by `buildNativizationMaps` (not on `SINGLE_WORD_ALLOW`).
 
-Full verification matrix (required before any post-freeze deploy):
+Full verification matrix (required before ANY deploy):
 
 1. `node --check index.js`
 2. `npm run lint` (tsc --noEmit) and `npm run build`
 3. `npm test` (`scripts/test-transform.mjs`, includes heading + added-word-note regressions)
-4. Local temp suites: master-test.cjs (83), auditfix-test.cjs (23), lang-test.mjs (14),
-   audit-goal3.cjs (20), followup-verify.cjs (8), e2e-user-text.cjs (72→99, bolded
-   `?`-title, note cleanliness)
+4. `npm run consistency` (`scripts/consistency-check.mjs`): offline determinism ×3 per
+   corpus fixture, coverage thresholds per field, Lolita-untouched invariant, military
+   72→99 reference. Live provider audit is opt-in: `npm run consistency:live` (consumes
+   quota; asserts live scores invariant and bytes identical when the same provider answers).
+5. Local temp suites (not committed): master-test.cjs (83), auditfix-test.cjs (23),
+   lang-test.mjs (14), audit-goal3.cjs (20), followup-verify.cjs (8). The old
+   `e2e-user-text.cjs` probe is retired: its title regex required a literal `*` after
+   stripping stars (could not pass) and note-12/13 only exist in the real transform
+   path, not the `sentences: []` offline call; the military reference now lives as the
+   `military.txt` harness fixture.
+6. Corpus fixtures live in `scripts/corpus/` (`uae`, `academic`, `literary`,
+   `business`, `general`, `military`); driven by the CORPUS table at the top of
+   `scripts/consistency-check.mjs`.

@@ -1059,6 +1059,19 @@ export default function ToolPage() {
                           <div className="p-3 bg-teal-950/30 border border-teal-500/20 rounded-xl text-xs">
                             <span className="text-[10px] uppercase font-bold tracking-wider text-teal-400 block mb-1.5">Nativization</span>
                             <p className="leading-relaxed text-slate-300">{result.databaseLine}</p>
+                            {result.coverage && (
+                              <p className="leading-relaxed text-slate-400 mt-2">
+                                Coverage: matched <strong className="text-teal-300">{result.coverage.matched}</strong> stiff phrase{result.coverage.matched === 1 ? "" : "s"} in the source rule set
+                                {result.coverage.uncovered.length > 0 && (
+                                  <>
+                                    {" "}· {result.coverage.uncovered.length} common stiff pattern{result.coverage.uncovered.length === 1 ? "" : "s"} present but not auto-edited (left to the model/author): {result.coverage.uncovered.map(p => `“${p}”`).join(", ")}
+                                  </>
+                                )}
+                                {result.coverage.uncovered.length === 0 && (
+                                  <> · every detectable stiff phrase was inside the rule set</>
+                                )}
+                              </p>
+                            )}
                           </div>
                         )}
 

@@ -10,6 +10,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "test": "node scripts/test-transform.mjs",
+    "consistency": "node scripts/consistency-check.mjs",
+    "consistency:live": "node scripts/consistency-check.mjs --live",
     "enrich-databases": "node scripts/enrich-databases.cjs",
     "deploy": "npm run build && wrangler deploy --config wrangler.toml"
   },

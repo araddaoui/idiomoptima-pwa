@@ -1296,7 +1296,7 @@ async function callGemini(text, options, apiKey) {
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\n" + prompt }] }],
-          generationConfig: { temperature: 0.4, topP: 0.9, responseMimeType: "application/json", maxOutputTokens: 65536, thinkingConfig: { thinkingBudget: 0 } },
+          generationConfig: { temperature: 0, topP: 1, responseMimeType: "application/json", maxOutputTokens: 65536, thinkingConfig: { thinkingBudget: 0 } },
         }),
         signal: AbortSignal.timeout(90000),
       });
@@ -1387,7 +1387,7 @@ async function callOpenRouter(text, options, apiKey) {
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: prompt },
           ],
-          temperature: 0.4,
+          temperature: 0,
           max_tokens: 16384,
         }),
         signal: AbortSignal.timeout(90000),
@@ -1447,7 +1447,7 @@ async function callDeepSeek(text, options, apiKey) {
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: prompt },
       ],
-      temperature: 0.4,
+      temperature: 0,
       max_tokens: 16384,
     }),
     signal: AbortSignal.timeout(90000),
@@ -1506,7 +1506,7 @@ async function callCloudflareAI(text, options, ai) {
         { role: "system", content: "You are IdiomOptima. Return only valid JSON." },
         { role: "user", content: prompt },
       ],
-      temperature: 0.4,
+      temperature: 0,
       max_tokens: 16384,
     }),
     new Promise(function (_, reject) {
@@ -2361,7 +2361,23 @@ var DEFAULT_DATABASES = {
     { ai: "a certain richness to the", natural: "richness to the" },
     { ai: "a complex of factors", natural: "a range of factors" },
     { ai: "took the decision", natural: "made the decision" },
-    { ai: "takes the decision to", natural: "decides to" }
+    { ai: "takes the decision to", natural: "decides to" },
+    { ai: "it will be useful to map out", natural: "it helps to map out" },
+    { ai: "intent upon spreading", natural: "determined to spread" },
+    { ai: "was the key culprit in", natural: "was the main driver of" },
+    { ai: "equally pressing sources of concern", natural: "equally pressing worries" },
+    { ai: "casting doubt on the very legitimacy", natural: "calling into question the very legitimacy" },
+    { ai: "is seen as an extension of", natural: "is regarded as an extension of" },
+    { ai: "has the asset of allowing me to", natural: "allows me to" },
+    { ai: "remaining within the continuity of", natural: "continuing" },
+    { ai: "lends itself basically to the mere fact that", natural: "rests essentially on the fact that" },
+    { ai: "within the parameters of", natural: "within the bounds of" },
+    { ai: "have affinities with each other", natural: "share affinities" },
+    { ai: "underpinning representation of", natural: "underlying representation of" },
+    { ai: "as the world evolves at a rapid pace", natural: "as the world changes fast" },
+    { ai: "is a testament to", natural: "attests to" },
+    { ai: "a tapestry of", natural: "a mix of" },
+    { ai: "regarding for the", natural: "regarding the" }
   ],
   lexicalDb: {
     general: [
@@ -3001,6 +3017,23 @@ function scanStiffPhrases(text, maps) {
   return out;
 }
 
+// Coverage-census watchlist (diagnostic only, never applied as edits): common
+// stiff/non-native patterns observed across academic, business and general text
+// that are too voice- or context-dependent to auto-rewrite safely. The census
+// reports "present but not covered by any rule" so a quiet run reads as an
+// explainable coverage reading instead of a silent shrug. Entries here must NOT
+// overlap entries shipping in the aiDb / public databases (they would be double
+// counted; the census already skips any watch item a matched rule covers).
+var COVERAGE_WATCHLIST = [
+  "the mere fact that",
+  "more likely to break than not",
+  "in whose neighbourhood",
+  "such a common denominator",
+  "is occasioned by",
+  "do not want to hear",
+  "looking forward to receive"
+];
+
 // Identifies the single "stiffest" source sentence: the one carrying the most
 // formulaic / AI-sounding phrasing (aiDb AI-ese entries PLUS the builtin
 // nativization sources). Score = total rule word-displacement (see
@@ -3501,6 +3534,23 @@ function ensureValidResult(parsed, originalText, options) {
   // Distinct rules the revision actually consumed — the honest numerator for the
   // "N stiff/AI-sounding phrase(s) nativized" diagnostic below.
   var nativizedRuleCount = Math.max(0, srcProf.keys.length - revProf.keys.length);
+  // Coverage census (diagnostic honesty): the count of phrases the rule set
+  // matched in the SOURCE versus a small curated watchlist of stiff patterns the
+  // rule set deliberately does NOT auto-rewrite (too voice-/context-dependent —
+  // they stay the model's or the author's job). Surfaced so a "quiet" run is
+  // explainable: when a text is full of stiff phrasing the rules do not cover,
+  // the response reports the gap instead of pretending nothing was wrong. Watch
+  // entries already covered by a matched DB rule are never double-listed.
+  var coverage = { matched: srcProf.keys.length, uncovered: [] };
+  var srcNorm = " " + String(sourceProse || "").replace(/\s+/g, " ").replace(/[""\u201C\u201D]+/g, " ") + " ";
+  var srcMatchedLow = {};
+  srcProf.keys.forEach(function (k) { srcMatchedLow[String(k).toLowerCase()] = 1; });
+  COVERAGE_WATCHLIST.forEach(function (ph) {
+    var low = ph.toLowerCase();
+    if (srcMatchedLow[low]) return;
+    var cre = new RegExp("\\b" + escapeRegExp(low).split(/\s+/).join("\\s+") + "\\b", "i");
+    if (cre.test(srcNorm)) coverage.uncovered.push(ph);
+  });
   function measuredScore(spelling, stiffness, duplicateWords) {
     var score = 100;
     if (spelling > 0) score = Math.min(score, 80);
@@ -3749,6 +3799,7 @@ function ensureValidResult(parsed, originalText, options) {
     explanation: summary,
     detectedDialect: dialect,
     databaseStats: databaseStats,
+    coverage: coverage,
   };
 }
 
