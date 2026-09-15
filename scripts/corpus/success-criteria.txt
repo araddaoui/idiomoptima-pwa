@@ -1,0 +1,8 @@
+Two-Pass Success Criteria
+
+The research team intend to demonstration that the robust framework is appropriate for real-world deployment. Despite its claims, the adopted methodology did not adequately handle the challanges posed by underlaying constraints, and it is important to note that further scrutiny is required.
+
+Colonisation brought significant changes, but the travelled routes remain the focus of this investigation. The writer labelled these developments as characterisation of a broader shift, and it is worth noting that the evidence is consistent with this interpretation. Engineers routinely navigate these challenges in production.
+
+[1] Clausewitz, On War, University Press.
+[2] Ibid.

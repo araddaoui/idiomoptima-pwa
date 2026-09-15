@@ -143,30 +143,48 @@ Keep API keys out of commits.
 - No AGENTS.md existed before this file; git history uses conventional commits
   (`fix: ...`, `Major overhaul: ...`).
 
-## Determinism contract (tag `determinism-2026-09-14`)
+## Determinism contract (two-pass rebuild, 2026-09-14)
 
 The behavioral freeze (`freeze-2026-09-14`, commit `541bab2`) was EXPLICITLY
 unfrozen by the user on 2026-09-14 to fix a user-reported inconsistency: the same
-manuscript was sometimes edited heavily and sometimes barely at all. The replacement
-profile — temperature 0 on all LLM providers plus an auditable coverage census —
-is now the binding contract below. Deploy is STILL only via `npm run deploy`
+manuscript was sometimes edited heavily and sometimes barely at all. The binding
+replacement is the **two-pass contract** below (approved along with its full
+matrix by the user on 2026-09-14). Deploy is STILL only via `npm run deploy`
 (`wrangler deploy --config wrangler.toml`); any future behavior change requires an
 explicit okay from the user PLUS the full verification matrix (below) to pass.
 
 Deterministic contract (must never drift):
 
-- **Provider determinism**: ALL providers run at `temperature: 0` (Gemini
-  `thinkingBudget: 0`, `topP: 1`). Provider order stays fixed per tier, failure-driven
-  rotation intact; which provider actually answered is audited (`timing.attempts`) and
-  surfaced by the consistency harness. No temperature/sampling variation is allowed to
-  affect output.
-- **Score = honest measured improvement**, provider-independent: base
-  `max(58, 100 - matchedStiffPhraseCount * 4)`; residual-misspellings cap at 80;
-  duplicated-word cap at 85; real-change credit `+2`/really-changed sentence capped
-  at 99 (98 without changes), original capped at 98. The SAME input must always
-  produce the SAME `originalScore`/`revisedScore` regardless of which LLM provider
-  answered. Reference profile for the "military power literature" sample: 72 → 99
-  (committed fixture `scripts/corpus/military.txt`, harness-asserted).
+- **Two-pass pipeline**: Pass 1 = Gemini grammar/spelling/S-V correction ONLY
+  (never adds/removes commas, never rewrites for style, never swaps word choice).
+  Pass 2 = deterministic regex lexical replacement from the client DB families
+  (aiDb AI-ese → idioms → domain lexical), longest-first, word-boundary,
+  quote-safe, collocation-guarded, applied to each sentence's `revised` only.
+  There are NO code-side nativization rules in Pass 2 beyond the DB layer: the
+  builtin word-swap map, the slot-template families, the prompt example list,
+  and the template credit in scoring were all REMOVED. The grammar layer exists
+  ONLY as a residual detector for scoring, never as an editor (the old Stage-A
+  write path is gone).
+- **Provider determinism**: Gemini is the ONLY provider for every tier
+  (`MODEL_CANDIDATES = ["gemini-3.6-flash","gemini-2.5-flash","gemini-flash-latest"]`),
+  run at `temperature: 0`, `topP: 1`, `maxOutputTokens: 65536`, forced JSON, and
+  NO `thinkingConfig`. OpenRouter/DeepSeek/Cloudflare-AI standby were REMOVED.
+  There is no failure rotation: if Gemini is down the request fails loudly.
+  Which model actually answered is audited (`timing.attempts`). No
+  temperature/sampling variation is allowed to affect output.
+- **Score = re-banded measured residual**, provider-independent: raw residual
+  meter unchanged (spelling cap 80, duplicated-word cap 85, grammar 3/hit cap 15,
+  stiffness density `min(40, round(stiff/proseCount*30))`, floor 40); then the
+  BAND snaps it onto the display scale — `originalScore` = 98 only when the
+  source is measured flawless (raw >= 98), otherwise at most 95; if nothing
+  measurable changed (`anyChange` = no real sentence change AND no DB rule fired
+  AND no spelling/stiffness/grammar clearing) the revision scores EXACTLY like
+  its source; otherwise `revisedScore = min(98, originalScore + max(2,
+  round(cleared*0.8)))` where `cleared = rawRev - rawOrig`. Residual misspellings
+  still cap both at 80. The SAME input always produces the SAME scores regardless
+  of provider. Reference profiles: military 77→95, uae 60→92, academic 60→87,
+  grammar 79→84, business 98→98, general 91→98, literary 98→98, success-criteria
+  80→96 (all committed fixtures, harness-asserted).
 - **Coverage census** (diagnostic, never applied): `COVERAGE_WATCHLIST` in `index.js`
   (7 items: `the mere fact that`, `more likely to break than not`, `in whose neighbourhood`,
   `such a common denominator`, `is occasioned by`, `do not want to hear`,
@@ -174,43 +192,51 @@ Deterministic contract (must never drift):
   `coverage: { matched, uncovered }`. A "quiet" run is EXPLAINED by `uncovered`, not
   by whimsy. Reference census (offline): uae 7 (`more likely to break than not`,
   `in whose neighbourhood`), academic 7 (`the mere fact that`, `such a common denominator`),
-  literary 0, business 1 (`looking forward to receive`), general 4 (none), military 7 (none).
+  literary 0, business 1 (`looking forward to receive`), general 4 (none), military 7 (none),
+  success-criteria 4 (none).
 - **Title bolding** (incl. question-form titles like "Where does X come from?") is a
   restoration of an input heading ONLY: the line must be heading-shaped in the
   original, and `?`-form titles only when they are the sole sentence of their
   paragraph (a question inside body prose stays plain).
-- **Drop/added-word Notes** flag only words NOT covered by a matched builtin or DB
-  rule. Replacement words from a matched DB rule are whitelisted (`p.tgt`, NOT
+- **Drop/added-word Notes** flag only words NOT covered by a matched DB rule.
+  Replacement words from a matched DB rule are whitelisted (`p.tgt`, NOT
   `p.dst`). Footnote/citation words are stripped before both checks.
 - **Nativization rule-sets**: worker `DEFAULT_DATABASES.aiDb` = 28 entries;
-  `public/ai-natural-database.json` = 3583 entries. The 16 additions (in addition to
-  the earlier documented 7): `it will be useful to map out→it helps to map out`,
-  `intent upon spreading→determined to spread`, `was the key culprit in→was the main driver of`,
-  `equally pressing sources of concern→equally pressing worries`,
-  `casting doubt on the very legitimacy→calling into question the very legitimacy`,
-  `is seen as an extension of→is regarded as an extension of`,
-  `has the asset of allowing me to→allows me to`, `remaining within the continuity of→continuing`,
-  `lends itself basically to the mere fact that→rests essentially on the fact that`,
-  `within the parameters of→within the bounds of`, `have affinities with each other→share affinities`,
-  `underpinning representation of→underlying representation of`,
-  `as the world evolves at a rapid pace→as the world changes fast`,
-  `is a testament to→attests to`, `a tapestry of→a mix of`, `regarding for the→regarding the`.
-  DB growth is data-only and freeze-safe; rule SEMANTICS must not change.
+  `public/ai-natural-database.json` = 3584 entries (the 16 documented additions,
+  plus the freeze-safe data entry `robust framework→solid framework`). All 16
+  documented additions above remain as DATA (their old code-side template
+  families are removed; the aiDb rows are the only place they live now). DB
+  growth is data-only and freeze-safe; rule SEMANTICS must not change.
+- **Grammar/spelling lives in Pass 1 (live-only)**: the offline/rescue path
+  cannot fix grammar by contract. The success-criteria fixture's grammar asserts
+  (`challanges→challenges`, `underlaying→underlying`, `demonstration→demonstrate`)
+  run against the LIVE worker only; offline, the harness asserts the DB-only
+  fires (robust framework, `it is important to note that`, `it is worth noting`,
+  `navigate these challenges`), UK-dialect preservation (`colonisation`,
+  `travelled`, `labelled`, `characterisation`), footnote preservation, and the
+  80→96 band. Grammar defects are detected deterministically via
+  `applyGrammarLayer(...).fixes` (detector-only).
 - **Known/accepted behavior (NOT bugs)**: model-performed synonym swaps not covered by
   any rule (e.g. `places`, `within`, `designated`, `taken`, `land`, `puts`) stay
   surfaced in the Notes by design. Anonymous requests bypass usage limits; free tier =
-  4 requests/day, 800-word cap. Single-token DB entries (e.g. `user-friendly`) are
-  dropped by `buildNativizationMaps` (not on `SINGLE_WORD_ALLOW`).
+  4 requests/day, 800-word cap. Single-token DB entries are dropped by
+  `buildNativizationMaps` unless on `SINGLE_WORD_ALLOW` (bare `navigate→handle`
+  stays GATED on purpose — an un-gated swap would produce ungrammatical "handle
+  to the page"; the multi-word `navigate these challenges→handle these challenges`
+  fires normally).
 
 Full verification matrix (required before ANY deploy):
 
 1. `node --check index.js`
 2. `npm run lint` (tsc --noEmit) and `npm run build`
-3. `npm test` (`scripts/test-transform.mjs`, includes heading + added-word-note regressions)
+3. `npm test` (`scripts/test-transform.mjs`, includes heading + added-word-note
+   regressions and the DB-only Pass-2 suite)
 4. `npm run consistency` (`scripts/consistency-check.mjs`): offline determinism ×3 per
-   corpus fixture, coverage thresholds per field, Lolita-untouched invariant, military
-   72→99 reference. Live provider audit is opt-in: `npm run consistency:live` (consumes
-   quota; asserts live scores invariant and bytes identical when the same provider answers).
+   corpus fixture, coverage thresholds per field, Lolita-untouched invariant, re-banded
+   reference pins (incl. military 77→95 and success-criteria 80→96), DB-only/dialect/
+   footnote asserts, residual-detector honesty. Live provider audit is opt-in:
+   `npm run consistency:live` (consumes quota; asserts live scores invariant, bytes
+   identical when the same provider answers, and the Live-only grammar fixes land).
 5. Local temp suites (not committed): master-test.cjs (83), auditfix-test.cjs (23),
    lang-test.mjs (14), audit-goal3.cjs (20), followup-verify.cjs (8). The old
    `e2e-user-text.cjs` probe is retired: its title regex required a literal `*` after
@@ -218,5 +244,5 @@ Full verification matrix (required before ANY deploy):
    path, not the `sentences: []` offline call; the military reference now lives as the
    `military.txt` harness fixture.
 6. Corpus fixtures live in `scripts/corpus/` (`uae`, `academic`, `literary`,
-   `business`, `general`, `military`); driven by the CORPUS table at the top of
-   `scripts/consistency-check.mjs`.
+   `business`, `general`, `military`, `grammar`, `success-criteria`); driven by the
+   CORPUS table at the top of `scripts/consistency-check.mjs`.

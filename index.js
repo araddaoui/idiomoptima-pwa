@@ -311,73 +311,52 @@ async function handleStripeWebhook(request, env) {
 
 // --- Main fetch handler ----------------------------------------------
 const SYSTEM_PROMPT = [
-  "You are IdiomOptima, a native-English editing engine for non-native writers.",
-  "You fix clear grammar, punctuation, and spelling errors AND nativize stiff,",
-  "stilted, clunky, or formulaic (AI-sounding) phrasing into natural native English.",
-  "You never change the author's meaning, intent, or voice.",
+  "You are a grammar and spelling correction engine. Your ONLY job is to fix clear",
+  "grammar errors and spelling mistakes.",
   "",
-  "RULES:",
-  "1. Return the COMPLETE text. Every word, every paragraph, every line. Nothing dropped.",
-  "2. Return the title exactly as it appears in the input.",
-  "3. Do NOT modify text inside quotation marks — leave quoted passages exactly as-is",
-  "   (including digits, years, and dates inside quotes).",
-  "4. ACTIVELY NATIVIZE. Rework stiff, wordy, formulaic, non-native, or AI-sounding",
-  "   phrasing into natural, fluent native English. Tighten wordiness and redundancy.",
-  "   Improve readability and flow. When the NATIVIZATION RULES list a natural native",
-  "   equivalent for a phrase, use it. Never change meaning; keep the register",
-  "   (academic/business/creative/general), tone, and voice.",
-  "5. Do NOT use em dashes in your output.",
-  "6. Preserve footnote markers [1], [2], citations, and bibliography entries exactly.",
-  "7. Preserve paragraph breaks exactly as in the input — do NOT merge or split paragraphs.",
-  "8. Rephrase any sentence that is stiff, awkward, redundant, informal for its register,",
-  "   or reads like it was written by an AI or a non-native writer. Only leave a sentence",
-  "   identical when its wording is already clear, natural, and native.",
-  "9. On formal or academic text, convert informal/conversational constructions to a",
-  "   formal register (e.g. 'It is like saying' -> 'It is akin to saying', 'some sort of'",
-  "   -> a specific or measured quantifier) and cut filler words.",
-  "10. HARD RULE: never swap a standard, correct, idiomatic construction for a mere",
-  "    synonym or stylistic variant (e.g. do NOT rewrite 'in general ... in particular'",
-  "    to 'generally ... especially'). Every change must be a genuine improvement, not a",
-  "    cosmetic rewrite. When in doubt, leave the sentence unchanged.",
-  "11. Do NOT change 'In additional to' to anything other than 'In addition to'.",
-  "12. NEVER invent, append, or echo content that is not in the input — do not pad the",
-  "    output or repeat sentences the model already produced.",
-  "13. PRESERVE THE AUTHOR'S EPISTEMIC STANCE AND VOICE: never strengthen, weaken, or",
-  "    reverse hedging or evidential verbs — do NOT rewrite 'suggests' to 'shows',",
-  "    'may' to 'will', 'could' to 'can', 'appears to' to 'proves', 'argues' to",
-  "    'demonstrates', 'lingers' to 'persists', or 'tends to' to 'always'. The author's",
-  "    degree of caution or certainty is part of their voice — keep it exactly.",
-  "14. NEVER alter dates, years, numbers, names, or figures anywhere in the text — both",
-  "    inside and outside quoted material. Rephrase around them if a sentence is stiff.",
-  "15. PRIORITIZE THE SINGLE STIFFEST SENTENCE: identify the source sentence that carries",
-  "    the most stiff, formulaic, or AI-sounding phrasing (the one the NATIVIZATION RULES",
-  "    apply to most) and make sure your revision visibly nativizes that sentence. Fixing",
-  "    only the easy sentences while leaving the stiffest one untouched is a failure, even",
-  "    if every other sentence improved.",
+  "STRICT RULES:",
+  "1. Return the COMPLETE text — every word, every paragraph, every footnote, every",
+  "   heading. Nothing dropped.",
+  "2. Fix ONLY: subject-verb agreement errors, wrong verb tenses, misspelled words,",
+  "   wrong articles (a/an/the), wrong prepositions when clearly incorrect.",
+  "3. Do NOT: add commas, remove commas, restructure sentences, change word choice,",
+  "   rewrite phrases, simplify vocabulary, change formal words to informal ones,",
+  "   nativize or 'fix' style. Leave sentence structure and wording alone.",
+  "4. Do NOT touch: footnote markers [1] or [[1]](#_ftn1), citation text, bibliography",
+  "   entries, URLs, DOIs.",
+  "5. Preserve ALL paragraph breaks exactly as in the input — do NOT merge or split",
+  "   paragraphs.",
+  "6. Preserve ALL headings exactly as in the input.",
+  "7. Detect the dialect (US/UK/CA/AU) from the spelling in the input and preserve it.",
+  "   Do NOT convert UK spelling to US or vice versa.",
+  "8. Never alter dates, years, numbers, names, or figures anywhere in the text — both",
+  "   inside and outside quoted material.",
+  "9. Return ONLY valid JSON. No markdown fences.",
   "",
   "SENTENCES: Break the text into logical sentences or lines.",
   "For each sentence, return:",
   "- 'original': the sentence exactly as in the input",
-  "- 'revised': the nativized/improved sentence. Polish stiff phrasing, tighten wording,",
-  "  and fix errors. Identical only if the sentence is already perfectly natural.",
-  "- 'explanation': For CHANGED sentences ONLY — state the improvement",
-  "  (e.g. 'Nativized stiff phrasing', 'Tightened wordiness', 'Fixed subject-verb agreement').",
+  "- 'revised': the corrected sentence, or identical when no grammar/spelling error",
+  "  was found. Structural and stylistic changes are FORBIDDEN in 'revised'.",
+  "- 'explanation': For CHANGED sentences ONLY — state the specific error fixed",
+  "  (e.g. 'Fixed subject-verb agreement', 'Spelling: underlaying -> underlying').",
   "  For UNCHANGED sentences, use exactly: 'No corrections needed.'",
   "- 'isImmutableFootnote': true for footnote markers, citation lines, and bibliography entries",
   "",
   "suggestions: Return exactly 1 item: a summary of all corrections made, e.g.:",
-  "- 'Corrected 2 comma splices, 1 misspelling, and 1 subject-verb agreement error.'",
-  "or 'No grammar, punctuation, or spelling errors found.'",
+  "- 'Corrected 1 spelling error, 1 subject-verb agreement error.'",
+  "or 'No corrections needed.'",
   "",
-  "originalScore (0-100): Rate grammatical correctness of the original.",
-  "- 90-100: Near-perfect, no errors. 80-89: Minor issues. 70-79: Some errors.",
-  "- 60-69: Frequent errors. 50-69: Many errors. Below 50: Severely broken.",
-  "revisedScore (0-100): Rate the text AFTER your edits. Must be >= originalScore.",
+  "originalScore (0-100): Rate grammatical correctness of the ORIGINAL.",
+  "- 88-95: well-written with few or no issues. 70-87: some clear errors.",
+  "- Below 70: frequent errors. Never above 95 unless genuinely flawless.",
+  "revisedScore (0-100): Rate the text AFTER your corrections. Must be >= originalScore,",
+  "  and equal when no corrections were made.",
   "",
   "OUTPUT: Valid JSON only, no markdown fences.",
   '{"originalScore": N, "revisedScore": N, "finalVersion": "COMPLETE corrected text",',
   '"sentences": [{"original": "...", "revised": "...", "explanation": "...", "isImmutableFootnote": false}],',
-  '"suggestions": ["Corrected X errors: ..."], "explanation": "Fixed X grammar, Y punctuation, Z spelling issues.", "detectedDialect": "US|UK|CA|AU"}',
+  '"suggestions": ["Corrected X errors: ..."], "explanation": "Fixed X grammar and Y spelling issues.", "detectedDialect": "US|UK|CA|AU"}',
 ].join("\n");
 
 function parseJsonFromModel(text) {
@@ -700,57 +679,13 @@ function replaceOutsideQuotes(text, fn) {
 
 function nativePolish(s) {
     if (!s) return s;
-    // Never touch footnotes / citations / Ibid lines.
-    if (/^\s*\[\d+\]/.test(s) || /^\s*Ibid\.?/i.test(s) || /\(\d{4}\)/.test(s)) return s;
-    var out = s;
-    // AI-ese filler removal (quote-safe). High-confidence filler a native
-    // editor would cut or tighten. Each rule is sized to keep the sentence
-    // grammatical; see the unit test for before/after on every case.
-    out = replaceOutsideQuotes(out, function (seg) {
-      // Drop the whole "It is important to note that X" / "It is worth noting
-      // that X" frame, keeping its payload subject intact.
-      seg = seg.replace(/\(?[Ii]t is (?:important|worth (?:noting|mentioning)|also important|interesting) (?:to note|to mention)?\s*that\s+/i, "");
-      seg = seg.replace(/\(?[Ii]t is clear (?:that )?/i, "");
-      seg = seg.replace(/\(?[Ii]t should be noted (?:that )?/i, "");
-      // "begs the question" misuses the idiom (it means "avoids", not "raises").
-      seg = seg.replace(/\bbegs the question\b/gi, "raises the question");
-      // Wordy connectors -> tight native alternatives.
-      seg = seg.replace(/\bat the end of the day\s*,?/gi, "ultimately,");
-      seg = seg.replace(/\bwhen it comes to\s*/gi, "regarding ");
-      seg = seg.replace(/\bin the realm of\s+/gi, "in ");
-      seg = seg.replace(/\bdue to the fact that\s+/gi, "because ");
-      seg = seg.replace(/\bon a daily basis\s*,?/gi, "daily,");
-      seg = seg.replace(/\bin order to\s+/gi, "to ");
-      seg = seg.replace(/\ba number of\s+/gi, "several ");
-      seg = seg.replace(/\bthe fact that\s+/gi, "that ");
-      // Clean a doubled separator a drop may leave ("ultimately, ," / "that ,").
-      seg = seg.replace(/\s*,+\s*,/g, ", ");
-      seg = seg.replace(/\s+,\s*[,;:,]/g, " ");
-      return seg;
-    });
-    // Clean up any awkward "could be able to" / residual before/after overlaps.
-    out = out.replace(/\b(?:in a) manner\s*of\b/gi, "");
+    // Mechanical whitespace/punctuation polish ONLY — no word-level nativization
+    // here. Lexical changes come exclusively from the deterministic DB pass.
+    var out = String(s);
+    // Clean a doubled separator ("ultimately, ," / "that ,") and stray spacing.
+    out = out.replace(/\s*,+\s*,/g, ", ");
+    out = out.replace(/\s+,\s*[,;:,]/g, " ");
     out = out.replace(/\s+/g, " ").replace(/\s,/, ",").replace(/\s+\./, ".");
-    // Rule: fix a singular/plural agreement slip in a "not merely ... but ..."
-    // parallelism ("not merely explanation ... but explanations ...") by
-    // normalising to a parallel VERB form ("not merely to explain ... but to
-    // explain ..."), which is what a native editor writes and reads naturally.
-    var toVerb = {
-      "explanation": "explain", "analysis": "analyse", "description": "describe",
-      "interpretation": "interpret", "discussion": "discuss"
-    };
-    out = out.replace(
-      /\bnot merely\s+(explanation|analysis|description|interpretation|discussion)s?\b(.*?)\bbut\s+(explanation|analysis|description|interpretation|discussion)s\b(.*)$/gi,
-      function (mm, noun1, mid, noun2, tail) {
-        var v = toVerb[noun1.toLowerCase()] || noun1;
-        // The noun headed an "of"-phrase ("explanation of patterns"); the verb
-        // form takes the object directly ("explain patterns"), so drop a
-        // following "of" right after the verb.
-        var midFixed = mid.replace(/^\s+of\b/, " ").replace(/\s+/g, " ");
-        var tailFixed = tail.replace(/^\s+of\b/, " ").replace(/\s+/g, " ");
-        return "not merely to " + v + midFixed + "but to " + v + tailFixed;
-      }
-    );
     return out;
   }
 
@@ -1250,7 +1185,7 @@ function postProcessSuggestions(suggestions, originalText, finalText, sentences,
 
 function detectDialect(text) {
   var lower = (text || "").toLowerCase();
-  if (/\b(colour|behaviour|favour|flavour|harbour|labour|behaviour|colour|towards|amongst|whilst|analyse[sd]?|analysing|organisation|organise[sd]?|prioritise[sd]?|recognise[sd]?|defence|offence|licence|practise|behaviour|cheque|programme|centre|theatre|metre|fibre)\b/i.test(lower)) return "UK";
+  if (/\b(colour|behaviour|favour|flavour|harbour|labour|behaviour|towards|amongst|whilst|analyse[sd]?|analysing|organisation|organise[sd]?|prioritise[sd]?|recognise[sd]?|defence|offence|licence|practise|cheque|programme|centre|theatre|metre|fibre|colonisation|travelled|labelled|characterisation)\b/i.test(lower)) return "UK";
   if (/\bcanada\b|\bcanadian\b/.test(lower)) return "CA";
   if (/\baustralia\b|\baustralian\b/.test(lower)) return "AU";
   return "US";
@@ -1258,30 +1193,19 @@ function detectDialect(text) {
 
 async function callGemini(text, options, apiKey) {
   var dialect = options.forcedDialect || "the most likely";
-  var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\n" +
-    "TASK: Fix grammar, punctuation, and spelling errors in the text below AND ACTIVELY NATIVIZE — " +
-    "rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing into natural, fluent native " +
-    "English, tighten unnecessary words, and improve flow, while never changing meaning, register, tone, or voice. " +
-    "CRITICAL RULES: " +
-    "Return the COMPLETE text from title to final footnote. Do NOT drop any content. " +
-    "Do NOT modify text inside quotation marks. " +
-    "Never change the author's hedging or evidential verbs (suggests->shows, may->will, could->can, appears->proves, argues->demonstrates). " +
-    "Never alter digits, years, dates, names, or figures, inside or outside quotes. " +
-    "Preserve footnote markers [N], citations, and bibliography entries exactly. " +
-    "Rephrase any sentence that is stiff, awkward, redundant, or AI/non-native-sounding; " +
-    "leave a sentence identical only when it is already perfectly natural. " +
-    "Prioritize the single stiffest, most AI-sounding sentence: nativize it visibly even if the other sentences are easier. " +
-    "Do NOT merge or split paragraphs — preserve paragraph breaks exactly. " +
-    "Replace em dashes with commas. " +
-    "Use '\\n\\n' between paragraphs in finalVersion. " +
-    "The suggestions array MUST contain at least 3 categorized items. " +
-    (options.nativizationInstruction || "") +
-    "\nText:\n" + text;
+  var prompt =
+    "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\n" +
+    "TASK: Fix grammar and spelling errors ONLY — subject-verb agreement, wrong verb tenses, misspellings, " +
+    "wrong articles (a/an/the), and clearly wrong prepositions. Do NOT restructure sentences, change word " +
+    "choice, nativize or 'improve' the style, add or remove commas, or rewrite phrasing. The COMPLETE text " +
+    "is returned; the deterministic nativization layer runs afterwards, so lexical replacement is not your job.\n" +
+    "Text:\n" + text;
 
-  // Model candidates rotate so stale model IDs (e.g. a shut-down preview) never
-  // make Gemini a fatal stop in the provider chain. A 404 / "not found" / 429
-  // on one candidate moves on to the next; real auth failures still surface.
-  var MODEL_CANDIDATES = ["gemini-2.5-flash", "gemini-flash-latest"];
+  // Model candidates rotate so a stale / unprovisioned model ID (e.g. a preview
+  // not yet bound to this project) never makes Gemini a fatal stop. A 404 /
+  // "not found" / 429 on one candidate moves on to the next; real auth failures
+  // still surface. 3.6 is preferred, older flash models are the fallback.
+  var MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-flash-latest"];
   var lastError = "";
   for (var ci = 0; ci < MODEL_CANDIDATES.length; ci++) {
     var model = MODEL_CANDIDATES[ci];
@@ -1296,7 +1220,7 @@ async function callGemini(text, options, apiKey) {
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: SYSTEM_PROMPT + "\n\n" + prompt }] }],
-          generationConfig: { temperature: 0, topP: 1, responseMimeType: "application/json", maxOutputTokens: 65536, thinkingConfig: { thinkingBudget: 0 } },
+          generationConfig: { temperature: 0, topP: 1, responseMimeType: "application/json", maxOutputTokens: 65536 },
         }),
         signal: AbortSignal.timeout(90000),
       });
@@ -1338,194 +1262,6 @@ async function callGemini(text, options, apiKey) {
     return String(raw || "");
   }
   throw new Error("Gemini API error: all candidate models failed. Last: " + lastError);
-}
-
-var OPENROUTER_FREE_MODELS = [
-  "google/gemma-4-31b-it:free",
-  "google/gemma-4-26b-a4b-it:free",
-  "nvidia/nemotron-3-ultra-550b-a55b:free",
-  "nvidia/nemotron-3-super-120b-a12b:free",
-  "openai/gpt-oss-20b:free",
-  "poolside/laguna-xs.2:free",
-  "openrouter/free",
-];
-
-async function callOpenRouter(text, options, apiKey) {
-  var dialect = options.forcedDialect || detectDialect(text);
-  var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\nTASK: Fix grammar, punctuation, and spelling errors AND ACTIVELY NATIVIZE — rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing into natural, fluent native English, tighten unnecessary words, and improve flow, while never changing meaning, register, tone, or voice. CRITICAL: Return COMPLETE text, preserve footnote markers [N], citations, quoted passages, and headings exactly, preserve paragraph breaks exactly (use \\n\\n), never invent or echo content. Return ONLY valid JSON.\n" + (options.nativizationInstruction || "") + "\nText:\n" + text;
-
-  var queue = OPENROUTER_FREE_MODELS.slice();
-  var tried = {};
-  var lastError = "";
-  // Cap how many free models we rotate through so a long tail of
-  // rate-limited/hanging models can't pin the free tier at OpenRouter for
-  // minutes before falling through to the next provider.
-  var MAX_OPENROUTER_MODELS = 4;
-  var attempts = 0;
-  while (queue.length > 0 && attempts < MAX_OPENROUTER_MODELS) {
-    var model = queue.shift();
-    if (tried[model]) continue;
-    tried[model] = true;
-    attempts++;
-    // Per-model timeout so a hanging/rate-limited free model rotates to the
-    // next instead of blocking the request for minutes (client was stuck at 90%).
-    // AbortSignal.timeout(90000) covers BOTH the headers and the body read —
-    // the old AbortController cleared its timer the instant headers arrived,
-    // leaving response.json()/response.text() untimed and free-tier stalls able
-    // to pin the free tier at OpenRouter for 4-5+ minutes.
-    var response;
-    try {
-      response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + apiKey,
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: prompt },
-          ],
-          temperature: 0,
-          max_tokens: 16384,
-        }),
-        signal: AbortSignal.timeout(90000),
-      });
-    } catch (e) {
-      lastError = model + " timed out (" + String((e && e.message) || e).substring(0, 60) + ")";
-      continue;
-    }
-
-    // Free models are shared and often rate-limited upstream; rotate to the
-    // next one instead of failing the whole provider.
-    if (response.status === 429) {
-      lastError = model + " rate-limited upstream";
-      continue;
-    }
-    if (!response.ok) {
-      var errText = await response.text();
-      errText = errText.substring(0, 400);
-      lastError = model + ": " + errText;
-      // Model moved to paid / renamed: OpenRouter tells us the replacement
-      // slug ("use this slug instead: z-ai/glm-5.2"). Retry with that hint.
-      var hint = /use this slug instead[:\s]+([A-Za-z0-9][A-Za-z0-9._-]*\/[A-Za-z0-9._:-]+)/i.exec(errText);
-      if (hint && hint[1] && hint[1] !== model) {
-        queue.unshift(hint[1]);
-        continue;
-      }
-      // Other "model unavailable / not found / no such" errors: try the next model.
-      var isModelIssue = /model|not found|unavailable|does not exist|deployed|slug|no such|expired/i.test(errText);
-      if (isModelIssue) continue;
-      throw new Error("OpenRouter error: " + errText);
-    }
-
-    var data = await response.json();
-    var content = String((data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "");
-    if (!content) {
-      lastError = model + " returned empty content";
-      continue;
-    }
-    return content;
-  }
-  throw new Error("OpenRouter error: all free models unavailable. Last: " + lastError);
-}
-
-async function callDeepSeek(text, options, apiKey) {
-  var dialect = options.forcedDialect || detectDialect(text);
-  var prompt = "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\nTASK: Fix grammar, punctuation, and spelling errors AND ACTIVELY NATIVIZE — rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing into natural, fluent native English, tighten unnecessary words, and improve flow, while never changing meaning, register, tone, or voice. CRITICAL: Return COMPLETE text, preserve footnote markers [N], citations, quoted passages, and headings exactly, preserve paragraph breaks exactly (use \\n\\n), never invent or echo content. Return ONLY valid JSON.\n" + (options.nativizationInstruction || "") + "\nText:\n" + text;
-
-  var response = await fetch("https://api.deepseek.com/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + apiKey,
-    },
-    body: JSON.stringify({
-      model: "deepseek-v4-flash",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0,
-      max_tokens: 16384,
-    }),
-    signal: AbortSignal.timeout(90000),
-  });
-
-  if (!response.ok) {
-    var err = await response.text();
-    throw new Error("DeepSeek error: " + err.substring(0, 200));
-  }
-
-  var data = await response.json();
-  return String((data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "");
-}
-
-async function callCloudflareAI(text, options, ai) {
-  var dialect = options.forcedDialect || detectDialect(text);
-  var prompt =
-    "You are IdiomOptima, a native-English editing engine. Fix grammar, punctuation, spelling, and nativize stiff/AI-sounding or clunky phrasing into natural native English per the NATIVIZATION RULES.\n" +
-    "Dialect: " + dialect + " English. Domain: " + options.domain + " Tone: " + options.tone + "\n\n" +
-    "RULES:\n" +
-    "- Return COMPLETE text from title to final footnote — nothing dropped.\n" +
-    "- Preserve footnote markers [N], citations, bibliography exactly — verbatim.\n" +
-    "- Preserve paragraph breaks exactly — use \\n\\n between paragraphs.\n" +
-    "- Preserve headings exactly — do NOT merge with body.\n" +
-    "- NEVER edit text inside quotation marks — keep quotes verbatim, digits, years, and dates\n" +
-    "  included. Never alter years/digits/names anywhere, even outside quotes.\n" +
-    "- Never change the author's hedging or evidential verbs (suggests->shows, may->will,\n" +
-    "  could->can, appears->proves, argues->demonstrates, lingers->persists) — the author's\n" +
-    "  degree of caution is part of their voice.\n" +
-    "- ACTIVELY NATIVIZE: rework any stiff, wordy, formulaic, non-native, or AI-sounding phrasing\n" +
-    "  into natural, fluent native English; tighten wordiness; improve flow. Never change meaning,\n" +
-    "  register, tone, or voice. Leave a sentence identical only when it is already natural.\n" +
-    "  Prioritize the single stiffest, most AI-sounding sentence: nativize it visibly even if the\n" +
-    "  other sentences are easier to fix; fixing only easy sentences and leaving the stiffest\n" +
-    "  untouched is a failure.\n" +
-    "- HARD ANTI-COSMETIC RULE: NEVER swap a standard, correct, idiomatic English construction for a\n" +
-    "  mere synonym just to make the text look 'edited'. In particular NEVER touch standard native\n" +
-    "  academic idioms such as: in general / in particular / on the other hand / such as / as well as /\n" +
-    "  in terms of / in this regard / it is important to / the majority of / in the future / the fact\n" +
-    "  that / a number of / in order to. Rewriting those exact phrases cosmetically is strictly\n" +
-    "  FORBIDDEN — leave them verbatim. A StiffnessRating only rises (+1..+3) when a sentence of\n" +
-    "  genuinely stiff or wordy prose was ACTIVELY converted into natural fluent English (its words\n" +
-    "  measurably moved), NEVER for a bare synonym/phrase swap, and NEVER when the sentence was\n" +
-    "  already clean. When a sentence already is natural, keep it identical and do not invent a delta.\n" +
-    "- Never gain credit or length by editing footnote markers [N], citations, or quoted passages.\n" +
-    "- Do NOT use em dashes.\n" +
-    "- Do NOT invent citations.\n" +
-    "- Return ONLY valid JSON. No markdown fences.\n\n" +
-    (options.nativizationInstruction || "") + "\n\n" +
-    "JSON shape: {\"originalScore\":0-100,\"revisedScore\":0-100,\"finalVersion\":\"full text\",\"sentences\":[{\"original\":\"...\",\"revised\":\"...\",\"suggestions\":[],\"explanation\":\"note\",\"isImmutableFootnote\":false}],\"suggestions\":[],\"explanation\":\"note\",\"detectedDialect\":\"US|UK|CA|AU\"}\n\n" +
-    "Text to fix:\n" + text;
-
-  var response = await Promise.race([
-    ai.run("@cf/openai/gpt-oss-20b", {
-      messages: [
-        { role: "system", content: "You are IdiomOptima. Return only valid JSON." },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0,
-      max_tokens: 16384,
-    }),
-    new Promise(function (_, reject) {
-      setTimeout(function () { reject(new Error("Cloudflare AI timed out after 60s")); }, 60000);
-    }),
-  ]);
-
-  var result;
-  if (typeof response === "string") {
-    result = response;
-  } else if (response instanceof ArrayBuffer) {
-    result = new TextDecoder("utf-8").decode(response);
-  } else {
-    result = response && (response.response || (response.result && response.result.response) || (response.choices && response.choices[0] && response.choices[0].message && response.choices[0].message.content) || JSON.stringify(response));
-  }
-  if (typeof result === "object" && result !== null) {
-    try { result = JSON.stringify(result); } catch(e) { result = String(result); }
-  }
-  return String(result || "");
 }
 
 function countMisspellings(text) {
@@ -1661,7 +1397,16 @@ function rebuildFinalVersion(originalText, sentences) {
 
 function isFootnoteRefLine(line) {
   var t = String(line == null ? "" : line).trim().replace(/\r$/, "");
-  return !!t && (/^\[\d+\]\s*/.test(t) || /^Ibid\.?/i.test(t));
+  return !!t && (/^\[\d+\]\s*/.test(t) || /^\[\[\d+\]\]\(#/.test(t) || /^Ibid\.?/i.test(t));
+}
+
+// Normalizes the rich-text footnote-reference links some editors produce
+// ("[[1]](#_ftnref1)" or "[[2]](#_ftn2)") to plain "[N]" markers in the body,
+// so Gemini sees the same marker shape it is told to preserve and the prose
+// diff never treats the URL-ish wrapper as content. The footnote BLOCK itself
+// is re-appended verbatim by the caller; only the inline body markers change.
+function normalizeFootnoteRefs(text) {
+  return String(text || "").replace(/\[\[(\d+)\]\]\(#[^)]*\)/g, "[$1]");
 }
 
 // A wrapped piece of a multi-line citation (URL/DOI/ISSN on its own line,
@@ -2549,83 +2294,133 @@ function buildNativizationMaps(dbs, domain) {
   return maps;
 }
 
-// A compact, prompt-safe version of the DB rules so the MODEL also nativizes
-// during generation (the deterministic pass below catches the rest). Cap at 250
-// of the longest, clearly-AI-style phrase entries.
-function buildNativizationInstruction(dbs, domain) {
-  var maps = buildNativizationMaps(dbs, domain);
-  var lines = [];
-  for (var i = 0; i < maps.phraseList.length && lines.length < 250; i++) {
-    var p = maps.phraseList[i];
-    if (p.src.length >= 8) lines.push("- '" + p.src + "' -> '" + p.tgt + "'");
-  }
-  if (!lines.length) return "";
-  return "NATIVIZATION RULES (IdiomOptima database):\n" +
-    "When the text uses one of these stiff, formulaic, AI-sounding, or clunky phrases verbatim, " +
-    "reword it into its natural native English equivalent ('source' -> 'target'). " +
-    "Keep the meaning and the register (academic/business/creative/general) of the surrounding text. " +
-    "Never apply these rules inside quotation marks, footnotes, citations, headings, or numbers. " +
-    "Only apply a rule when the exact phrase appears; do not hunt for loose paraphrases.\n" +
-    lines.join("\n");
+// --- Universal grammar layer (residual DETECTOR only) -------------------------
+// The "known and standard" grammar every text shares. These are language-wide,
+// structural, high-confidence rules — deliberately conservative (a regex grammar
+// layer only certifies what it can verify; the MODEL's correction phase handles
+// the broad grammar in Pass 1). This layer NEVER edits text: it exists only as a
+// deterministic residual meter (`applyGrammarLayer(...).fixes`) for scoring and
+// the census. Every rule is quote-safe (via replaceOutsideQuotes).
+var GRAMMAR_PLURAL_NOUNS = [
+  "findings","results","factors","studies","analyses","policies","approaches",
+  "strategies","mechanisms","processes","outcomes","implications","developments",
+  "challenges","opportunities","measures","changes","issues","matters","effects",
+  "aspects","features","dimensions","laws","rules","models","theories"
+];
+var GRAMMAR_SINGULAR_NOUNS = [
+  "finding","result","factor","study","analysis","policy","approach","strategy",
+  "mechanism","process","outcome","implication","development","challenge",
+  "opportunity","measure","change","issue","matter","effect","aspect","feature",
+  "dimension","law","rule","model","theory"
+];
+// A preceding modal/auxiliary means "have"/"do" is the bare infinitive, not a
+// finite form agreeing with the pronoun: "Did she have...", "Does he have...",
+// "Will it do...". The pronoun-agreement rules must never reorder those.
+var AUX_PRECEDER = {
+  did: 1, "didnt": 1, "didnt't": 1, do: 1, does: 1, will: 1, would: 1, can: 1,
+  could: 1, shall: 1, should: 1, may: 1, might: 1, must: 1, wont: 1, wouldnt: 1,
+  couldnt: 1, shouldnt: 1, cant: 1, dont: 1, doesnt: 1
+};
+var GRAMMAR_RULES = [
+  // a/an by sound: silent-h and letter-name words take "an"; eu-/u-/one- words
+  // (vowel letter, consonant sound) take "a".
+  { id: "a-an-silent-h",
+    re: /\b(a)\s+(hour|hourly|honest|honour|honor|honourable|honorable|honorary|heir|heiress|NGO|MBA|FBI)\b/gi,
+    repl: function (m) { return "an " + m[2]; } },
+  { id: "an-a-eu-words",
+    re: /\b(an)\s+(university|union|uniform|unique|unit|useful|user|used|usual|usage|utensil|eulogy|euphoria|Europe|European|euro|one|once|ubiquitous|unified|unilateral|upward|uranium|UFO|URL|hourglass)\b/gi,
+    repl: function (m) { return "a " + m[2]; } },
+  // Subject-verb agreement in high-confidence plural/singular frames.
+  { id: "sv-plural",
+    re: new RegExp("\\b(the\\s+)?((" + GRAMMAR_PLURAL_NOUNS.join("|") + "))\\s+(is|was|has)\\b", "gi"),
+    repl: function (m) { var map = { is: "are", was: "were", has: "have" }; return (m[1] || "") + m[2] + " " + map[m[4].toLowerCase()]; } },
+  { id: "sv-singular",
+    re: new RegExp("\\b(the\\s+)?((" + GRAMMAR_SINGULAR_NOUNS.join("|") + "))\\s+(are|were|have|do)\\b", "gi"),
+    repl: function (m) { var map = { are: "is", were: "was", have: "has", do: "does" }; return (m[1] || "") + m[2] + " " + map[m[4].toLowerCase()]; } },
+  // Pronoun-auxiliary agreement: he/she/it + have/do -> has/does; plural
+  // pronouns + has/does -> have/do.
+  { id: "pron-singular",
+    re: /\b(he|she|it)\s+(have|do)\b/gi,
+    guard: function (s, idx) {
+      var pre = s.slice(0, idx).replace(/[""\u201C\u201D\u2018\u2019,;:!?()\[\]\d]+/g, " ").replace(/\s+/g, " ").trim();
+      var tok = pre.split(/\s+/).pop() || "";
+      return !!AUX_PRECEDER[tok.toLowerCase()];
+    },
+    repl: function (m) { return m[1] + " " + (m[2].toLowerCase() === "have" ? "has" : "does"); } },
+  { id: "pron-plural",
+    re: /\b(they|we|you|people|researchers|scholars|authors|writers)\s+(has|does)\b/gi,
+    repl: function (m) { return m[1] + " " + (m[2].toLowerCase() === "has" ? "have" : "do"); } },
+  // Doubled subject ("the study it shows" -> "the study shows"), only when a
+  // finite verb follows immediately so legitimate relative clauses survive.
+  { id: "doubled-subject",
+    re: /\b(the\s+)?(study|analysis|approach|government|policy|system|process|findings|survey|research|work|text|chapter|article|paper|book|argument|field|model|project|report|section|paragraph|thesis|theory|strategy|programme|program|initiative|regime|state|country|army|force|coalition|alliance|company|team|department|school|court|council|committee|party|union|staff|faculty|society|economy|market|sector|industry)\s+(it|they)\s+(shows|show|reveals|reveal|demonstrates|demonstrate|highlights|highlight|is|are|was|were|has|have|concludes|conclude|argues|argue|explains|explain|provides|provide|illustrates|illustrate|suggests|suggest|indicates|indicate|claims|claim|asserts|assert|describes|describe|examines|examine|explores|explore|discusses|discuss|advances|advanced|advance|entered|enters|emerges|emerged|moves|moved|acts|acted|responds|responded|reacts|reacted|differs|differed|agrees|agreed|declines|declined|grows|grew|rises|rose|exerts|exerted|exercises|exercised|pursues|pursued|promotes|promoted|implements|implemented|launches|launched|conducts|conducted|opposes|opposed|resists|resisted|supports|supported|expands|expanded|extends|extended|mobilizes|mobilized|deploys|deployed|marches|marched|withdraws|withdrew|intervenes|intervened|escalates|escalated)\b/gi,
+    repl: function (m) { return (m[1] || "") + m[2] + " " + m[4]; } },
+];
+// Governed-preposition pairs (wrong preposition -> the head verb's true
+// complement). Universal collocations, not per-text patches.
+var GRAMMAR_PREPOSITIONS = [
+  { re: /\b(depend(?:s|ed|ing)?)\s+(?:of|in|with)\b/gi, good: function (m) { return m[1] + " on"; } },
+  { re: /\brelevant\s+(?:for|with)\b/gi, good: function (m) { return "relevant to"; } },
+  { re: /\bassociated\s+to\b/gi, good: function (m) { return "associated with"; } },
+  { re: /\bcomposed\s+(?:by|with)\b/gi, good: function (m) { return "composed of"; } },
+  { re: /\bsimilar\s+(?:with|than)\b/gi, good: function (m) { return "similar to"; } },
+  { re: /\bdifferent\s+with\b/gi, good: function (m) { return "different from"; } },
+  { re: /\bcontrary\s+(?:in|with|for|at)\b/gi, good: function (m) { return "contrary to"; } },
+  { re: /\bwith\s+respect\s+for\b/gi, good: function (m) { return "with respect to"; } },
+  { re: /\bcommitted\s+for\b/gi, good: function (m) { return "committed to"; } },
+  { re: /\born\s+the\s+basis\s+of\b/gi, good: function (m) { return "on the basis of"; } },
+  { re: /\bon\s+the\s+behalf\s+of\b/gi, good: function (m) { return "on behalf of"; } },
+  { re: /\birregardless\b/gi, good: function (m) { return "regardless"; } },
+  { re: /\b(could|should|would|must|might)\s+of\b/gi, good: function (m) { return m[1] + " have"; } },
+  { re: /\bthe\s+reason\s+is\s+because\b/gi, good: function (m) { return "the reason is that"; } },
+];
+// Applies the grammar layer to a prose block; quote-safe, footnote lines must be
+// excluded by the caller. Returns { text, fixes } so the SAME detector counts
+// source vs revised defects for scoring (fully deterministic, provider-free).
+function applyGrammarLayer(text) {
+  if (!text) return { text: text || "", fixes: 0 };
+  var fixes = 0;
+  var out = replaceOutsideQuotes(String(text), function (seg) {
+    var s = seg;
+    for (var i = 0; i < GRAMMAR_RULES.length; i++) {
+      var rule = GRAMMAR_RULES[i];
+      var re = new RegExp(rule.re.source, rule.re.flags);
+      var res;
+      while ((res = re.exec(s)) !== null) {
+        if (rule.guard && rule.guard(s, res.index)) { re.lastIndex = res.index + res[0].length; continue; }
+        var rep = rule.repl(res);
+        s = s.substring(0, res.index) + rep + s.substring(res.index + res[0].length);
+        re.lastIndex = res.index + rep.length;
+        fixes++;
+      }
+    }
+    for (var j = 0; j < GRAMMAR_PREPOSITIONS.length; j++) {
+      var pp = GRAMMAR_PREPOSITIONS[j];
+      var pr = new RegExp(pp.re.source, pp.re.flags);
+      while ((res = pr.exec(s)) !== null) {
+        var good = String(typeof pp.good === "function" ? pp.good(res) : pp.good);
+        if (/^[A-Z]/.test(res[0]) && !/^[A-Z]/.test(good)) good = good.charAt(0).toUpperCase() + good.slice(1);
+        s = s.substring(0, res.index) + good + s.substring(res.index + res[0].length);
+        pr.lastIndex = res.index + good.length;
+        fixes++;
+      }
+    }
+    return s;
+  });
+  return { text: out, fixes: fixes };
 }
 
-// Built-in nativization rules that ALWAYS run (quote-safe via replaceOutsideQuotes,
-// never on footnotes/citations/Ibid lines), so a real transformation happens even
-// when the client database ships no matching phrases or the model is conservative.
-// Only unambiguous constructions: clear misuse ("Despite of"), wordy filler
-// ("due to the fact that"), and safe register swaps ("utilize" -> "use") that can
-// never change the intended meaning.
-var BUILTIN_NATIVIZATION = [
-  { re: /\bdespite\s+of\b/gi, lower: "despite" },
-  { re: /\bin\s+spite\s+of\s+the\s+fact\s+that\b/gi, lower: "although" },
-  { re: /\bdue\s+to\s+the\s+fact\s+that\b/gi, lower: "because" },
-  { re: /\bthe\s+reason\s+is\s+because\b/gi, lower: "the reason is that" },
-  { re: /\butilize\b/gi, lower: "use" },
-  { re: /\butilizes\b/gi, lower: "uses" },
-  { re: /\butilized\b/gi, lower: "used" },
-  { re: /\butilizing\b/gi, lower: "using" },
-  { re: /\butilises\b/gi, lower: "uses" },
-  { re: /\butilised\b/gi, lower: "used" },
-  { re: /\butilising\b/gi, lower: "using" },
-  { re: /\butilisation\b/gi, lower: "use" },
-  { re: /\butilization\b/gi, lower: "use" },
-  { re: /\bin\s+additional\s+to\b/gi, lower: "in addition to" },
-{ re: /\bit\s+is\s+important\s+to\s+note\s+that\b/gi, lower: "note that" },
-{ re: /\bit\s+should\s+be\s+noted\s+that\b/gi, lower: "note that" },
-{ re: /\bwhat\s+is\s+termed\s+as\b/gi, lower: "what is called" },
-{ re: /\btermed\s+as\b/gi, lower: "called" },
-{ re: /\bis\s+replete\s+with\b/gi, lower: "is full of" },
-{ re: /\bin\s+the\s+event\s+that\b/gi, lower: "if" },
-{ re: /\bfor\s+the\s+purpose\s+of\b/gi, lower: "to" },
-{ re: /\bhas\s+the\s+ability\s+to\b/gi, lower: "can" },
-{ re: /\bin\s+order\s+to\b/gi, lower: "to" },
-{ re: /\ba\s+multitude\s+of\b/gi, lower: "a large number of" },
-{ re: /\bprior\s+to\b/gi, lower: "before" },
-{ re: /\bsubsequent\s+to\b/gi, lower: "after" },
-{ re: /\bwith\s+regard\s+to\b/gi, lower: "about" },
-{ re: /\bin\s+regards\s+to\b/gi, lower: "regarding" },
-{ re: /\bin\s+relation\s+to\b/gi, lower: "about" },
-{ re: /\bat\s+this\s+point\s+in\s+time\b/gi, lower: "now" },
-{ re: /\bat\s+the\s+present\s+time\b/gi, lower: "now" },
-{ re: /\bin\s+the\s+near\s+future\b/gi, lower: "soon" },
-{ re: /\bon\s+a\s+daily\s+basis\b/gi, lower: "daily" },
-{ re: /\bon\s+a\s+regular\s+basis\b/gi, lower: "regularly" },
-{ re: /\bon\s+a\s+weekly\s+basis\b/gi, lower: "weekly" },
-{ re: /\bon\s+a\s+monthly\s+basis\b/gi, lower: "monthly" },
-{ re: /\bon\s+an\s+annual\s+basis\b/gi, lower: "annually" },
-{ re: /\bover\s+the\s+course\s+of\b/gi, lower: "during" },
-{ re: /\bin\s+the\s+case\s+of\b/gi, lower: "for" },
-{ re: /\bmake\s+a\s+decision\b/gi, lower: "decide" },
-{ re: /\btake\s+into\s+consideration\b/gi, lower: "consider" },
-{ re: /\bin\s+today's\s+world\b/gi, lower: "today" },
-{ re: /\ba\s+large\s+majority\s+of\s+the\b/gi, lower: "most of the" },
-{ re: /\ba\s+large\s+majority\s+of\b/gi, lower: "most" },
-];
+// --- Nativization is DATABASE-DRIVEN ONLY (two-pass contract) -----------------
+// Pass 2 applies the three client DB families (ai-ese -> idioms -> domain
+// lexical) as pure regex replacements; there are NO code-side nativization
+// rules beyond the DB layer (no builtin word-swap maps, no slot-template
+// families). A single-token entry needs an explicit SINGLE_WORD_ALLOW slot.
+// applyDatabaseNativization below is the ONLY lexical pass.
 
 // Deterministic enforcement layer: applies the exact DB replacements to each
-// sentence (recap-safe via replaceOutsideQuotes, footnote/citation-safe), then
-// applies the built-in nativization rules, and reports honest statistics for the
-// suggestions and score.
+// sentence (recap-safe via replaceOutsideQuotes, footnote/citation-safe) and
+// reports honest statistics for the suggestions and score. This is the ONLY
+// lexical pass — no built-in word-swap rules or template families exist.
 function applyDatabaseNativization(sentences, dbs, domain) {
   var stats = { totalMatches: 0, sentencesChanged: 0, aiPhrases: 0, idioms: 0, lexical: 0 };
   var maps = dbs && typeof dbs === "object" ? buildNativizationMaps(dbs, domain) : buildNativizationMaps({}, domain);
@@ -2697,27 +2492,6 @@ function applyDatabaseNativization(sentences, dbs, domain) {
         return out;
       });
     }
-
-    // 3) Built-in always-on nativization rules (quote-safe, counted as AI-style
-    //    phrasing so the stats and diagnostics reflect the real transformation,
-    //    even when the client DB had no matches).
-    s.revised = replaceOutsideQuotes(s.revised, function (seg) {
-      var out = seg;
-      for (var b = 0; b < BUILTIN_NATIVIZATION.length; b++) {
-        var rule = BUILTIN_NATIVIZATION[b];
-        var res;
-        while ((res = rule.re.exec(out)) !== null) {
-          var first = res[0].charAt(0);
-          var startCap = first === first.toUpperCase() && first !== first.toLowerCase();
-          var rep = startCap ? rule.lower.charAt(0).toUpperCase() + rule.lower.slice(1) : rule.lower;
-          out = out.substring(0, res.index) + rep + out.substring(res.index + res[0].length);
-          rule.re.lastIndex = res.index + rep.length;
-          bump("ai");
-          changedHere = true;
-        }
-      }
-      return out;
-    });
 
     if (changedHere) stats.sentencesChanged++;
   });
@@ -2826,10 +2600,10 @@ function detectSemanticRisk(sentences) {
 }
 
 // Content words from the SOURCE (len>=4, non-stopword) that vanish entirely
-// from the final text. Words consumed by a FIRED nativization rule (builtin or
-// DB phrase) are intentionally removable and never flagged, so "prior to" ->
-// "before" stays silent while un-credited tightening drops like "today" /
-// "registered" get surfaced as a review note.
+// from the final text. Words consumed by a FIRED DB nativization rule are
+// intentionally removable and never flagged, so "prior to" -> "before" stays
+// silent while un-credited tightening drops like "today" / "registered" get
+// surfaced as a review note.
 function droppedContentWords(originalText, finalText, options) {
   function addKeys(set, phrase) {
     String(phrase || "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z\s]/g, " ").split(/\s+/).forEach(function (t) {
@@ -2864,11 +2638,6 @@ function droppedContentWords(originalText, finalText, options) {
     return false;
   }
   var allowed = {};
-  (BUILTIN_NATIVIZATION || []).forEach(function (rule) {
-    var re = new RegExp(rule.re.source, "gi");
-    var m;
-    while ((m = re.exec(originalText)) !== null) addKeys(allowed, m[0]);
-  });
   try {
     var maps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
     if (maps && maps.phraseList) {
@@ -2922,13 +2691,8 @@ function addedContentWords(originalText, finalText, options) {
       .filter(function (t) { return t.length >= 4 && !SEMANTIC_FUNCTION_WORDS[t]; });
   }
   // Words the deterministic nativization layer is allowed to introduce: any
-  // replacement word from a built-in rule or DB phrase that MATCHED the source.
+  // replacement word from a DB phrase that MATCHED the source.
   var allowed = {};
-  (BUILTIN_NATIVIZATION || []).forEach(function (rule) {
-    var re = new RegExp(rule.re.source, "gi");
-    var m, matched = 0;
-    while ((m = re.exec(originalText)) !== null && matched < 10) { matched++; addKeys(allowed, rule.lower); }
-  });
   try {
     var maps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
     if (maps && maps.phraseList) {
@@ -2975,14 +2739,13 @@ function addedContentWords(originalText, finalText, options) {
 // Shared stiffness scanner used by findStiffestSentence, the stiffest-note gate
 // (hasDealtWithStiffness) and the score measurement — ONE rule set, ONE matcher,
 // three consumers, so none of them can drift apart. Only multi-character ai-phase
-// candidates participate from the database phrase list PLUS the always-on builtin
-// rules. Quote CHARACTERS are blanked exactly like the current detection contract
-// (matching quoted text counts as stiff, but the apply layer never rewrites
-// inside quotes). Each DISTINCT rule credits once (longest first, so a longer
-// phrase beats its nested fragment). Returns { keys, count } where keys are the
-// matched rule identities (aiDb phrase or builtin regex source) and count is the
-// word-displacement surrogate used by ranking and scoring (aiDb phrases weigh
-// their word count; builtin rules weigh 2).
+// candidates participate from the database phrase list. Quote CHARACTERS are
+// blanked exactly like the current detection contract (matching quoted text
+// counts as stiff, but the apply layer never rewrites inside quotes). Each
+// DISTINCT rule credits once (longest first, so a longer phrase beats its
+// nested fragment). Returns { keys, count } where keys are the matched rule
+// identities (aiDb phrases) and count is the word-displacement surrogate used
+// by ranking and scoring (aiDb phrases weigh their word count).
 function scanStiffPhrases(text, maps) {
   var out = { keys: [], count: 0 };
   if (!text) return out;
@@ -3004,16 +2767,6 @@ function scanStiffPhrases(text, maps) {
       out.count += (ph.match(/[^\s]+/g) || []).length;
     }
   }
-  (BUILTIN_NATIVIZATION || []).forEach(function (rule) {
-    var key = rule.re.source;
-    if (matched[key]) return;
-    var bre = new RegExp(key, "gi");
-    if (bre.test(t)) {
-      matched[key] = 1;
-      out.keys.push(key);
-      out.count += 2;
-    }
-  });
   return out;
 }
 
@@ -3205,11 +2958,12 @@ function ensureValidResult(parsed, originalText, options) {
     if (extractedFoot.footnotes) {
       finalVersion = extractedFoot.body;
     }
+    finalVersion = normalizeFootnoteRefs(finalVersion);
     // Normalize footnote separation for the single append at the end.
     var normalizedFootnotes = savedFootnotes.replace(/\r?\n(?=\[\d+\])/g, "\n\n").replace(/\r?\n(?=\s*Ibid)/gi, "\n\n");
     // Recompute the body-only original (strip the trailing footnote block).
     var origFoot = extractFootnoteBlock(originalText);
-    bodyOnlyOriginal = origFoot.body || originalText;
+    bodyOnlyOriginal = normalizeFootnoteRefs(origFoot.body || originalText);
     // Headings the user typed WITHOUT a blank line ("Literature Review\nWith this...")
     // must still be promoted to their own paragraph, so the derive/rebuild steps
     // treat them as standalone elements instead of welding them onto the body
@@ -3237,6 +2991,8 @@ function ensureValidResult(parsed, originalText, options) {
   epistemicRestoreCount = 0; // per-document reset so the diagnostics note is honest
   sentences = sentences.map(function(s) {
     s.revised = postProcessText(s.revised);
+    // Grammar correction is the MODEL's job (Pass 1); the deterministic grammar
+    // layer here exists ONLY as a residual detector for scoring, never an editor.
     if (s.original && s.revised && s.original !== s.revised) {
       s.revised = protectQuotes(s.original, s.revised);
       s.revised = protectAcademicRegister(s.original, s.revised);
@@ -3502,8 +3258,10 @@ function ensureValidResult(parsed, originalText, options) {
   // and to the final revised prose from the SAME rule set, so a score can only
   // climb when a real, detected, deterministic defect actually disappears:
   //   1. Misspellings cap a text at 80 — a spelled-out error blocks "native".
-  //   2. Each still-present stiff/AI-ese rule (aiDb phrase or builtin) docks 3
-  //      points (floor 58); duplicate-word slips cap at 85.
+  //   2. Residual detectable grammar defects dock 3 each (cap 15).
+  //   3. Residual stiff/AI-ese phrases (aiDb + builtin + template families) dock
+  //      density-normalized: min(40, round(stiffHits / proseSentenceCount * 30)).
+  //   4. Duplicate-word slips cap at 85.
   // The provider's per-run "originalScore" guess is deliberately NOT consulted
   // here — a quality score is measured, never guessed, and a weak provider that
   // under-rated clean input previously pinned production originals to the 62
@@ -3551,20 +3309,35 @@ function ensureValidResult(parsed, originalText, options) {
     var cre = new RegExp("\\b" + escapeRegExp(low).split(/\s+/).join("\\s+") + "\\b", "i");
     if (cre.test(srcNorm)) coverage.uncovered.push(ph);
   });
-  function measuredScore(spelling, stiffness, duplicateWords) {
-    var score = 100;
+  // Residual, length-normalized scoring (the "residual 0-100 + counts" contract):
+  // a score measures what is genuinely LEFT in the text, never what the rule
+  // book consumed. Same deterministic measurement applied to source and to
+  // revised, so a score climbs ONLY when a real, detected defect disappears.
+  // Grammar residual is rescanned with the SAME applyGrammarLayer after every
+  // pass (idempotent: already-fixed constructs no longer match, so the residual
+  // is the honest remainder). Template-family hits are counted once per phrase
+  // and merged with the DB/builtin stiffness scan (never double-docked).
+  var proseSentenceCount = Math.max(1, scoringProse(sentences).length);
+  var sourceGrammarHits = 0;
+  var revisedGrammarHits = 0;
+  scoringProse(sentences).forEach(function (s) {
+    // Quote-only sentences are skipped by every editing pass, so they must not
+    // count as an untouchable residual defect in the measurement either (the
+    // noted Lolita-untouched corpus stays at the native 98-98 this way).
+    if (/^".*"$/.test((s.original || "").trim()) || /^".*"$/.test((s.revised || "").trim())) return;
+    sourceGrammarHits += applyGrammarLayer(s.original || "").fixes;
+    revisedGrammarHits += applyGrammarLayer(s.revised || "").fixes;
+  });
+  var sourceStiffAll = sourceStiffness;
+  var revisedStiffAll = revisedStiffness;
+  function measuredResidual(spelling, grammarHits, stiffAll, dupWords) {
+    var score = 100 - Math.min(15, grammarHits * 3) - Math.min(40, Math.round((stiffAll / proseSentenceCount) * 30));
     if (spelling > 0) score = Math.min(score, 80);
-    // Stiffness is measured in MATCHED PHRASES (unique DB / builtin rules the
-    // text actually contains), not raw word displacement, so the deduction has a
-    // stable per-flaw resolution: one phrase costs 4 points, five cost 20. A text
-    // with a couple of detectable stiff formulas reads ~90; ~7 reads in the mid
-    // 70s; and the floor still guards the scale from collapsing past 58.
-    score = Math.max(58, score - stiffness * 4);
-    if (duplicateWords) score = Math.min(score, 85);
-    return score;
+    if (dupWords) score = Math.min(score, 85);
+    return Math.min(100, Math.max(40, score));
   }
-  var origScore = measuredScore(sourceSpelling, sourceStiffness, hasDuplicateWords);
-  var revScore = measuredScore(remainingSpelling, revisedStiffness, false);
+  var origScore = measuredResidual(sourceSpelling, sourceGrammarHits, sourceStiffAll, hasDuplicateWords);
+  var revScore = measuredResidual(remainingSpelling, revisedGrammarHits, revisedStiffAll, false);
 
   // Count REAL content changes (ignore trivial punctuation/case-only rewrites
   // from the AI echo that padded earlier scores). Also EXCLUDE changes confined
@@ -3665,32 +3438,45 @@ function ensureValidResult(parsed, originalText, options) {
     if (!stDealtWith) stiffUntouched = stiffTarget;
   }
 
-  // Honest reconciliation between the two measured scores:
-  //  - A revised text that still carries misspellings can never out-score its
-  //    source: cap BOTH at 80 (the source carried at least the same errors).
-  //  - revScore never prints below origScore: the revision is judged with the
-  //    same rubric as its source, so an identical text measures identically (the
-  //    flat line falls out of the measurement) and a revision that removed no
-  //    defects still gains nothing over the original.
-  //  - Small honest credit for REAL content improvements the rubric cannot see
-  //    (tightening, synonym upgrades, hyphenation, comma/parallelism repairs):
-  //    +2 per really-changed sentence. A clean-but-edited text therefore lands
-  //    visibly (and modestly) above its source — the 99 cap keeps headroom so
-  //    the meter can distinguish an edited text from an untouched one, while a
-  //    full stiffness-clearing rewrite of a heavily-stiff source still ends at
-  //    ~+11 at worst, never the old invented +28 spike. Untouched text
-  //    (realChangeCount === 0) stays flat, and an output with residual
-  //    misspellings is already capped at 80 and never takes the credit.
+// Deterministic re-banded scoring — the meter is the raw residual measurement,
+// then the BAND snaps it onto the honest display scale both providers agree on:
+//   - originalScore prints at most 95 UNLESS the source is measured flawless
+//     (raw >= 98), which prints 98. A near-perfect source (96/97) still reads 95,
+//     so a revision always has visible headroom.
+//   - When nothing measurable changed (no real sentence change, no DB rule
+//     fired, no spelling/stiffness/grammar improvement) the revision is scored
+//     EXACTLY like its source (revised == original) — no phantom credit.
+//   - Otherwise the revision earns the measured improvement back on a
+//     compressed scale: revised = min(98, original + max(2, round(cleared*0.8)))
+//     where cleared = rawRevised - rawSource (the SAME deterministic rubric
+//     applied to both texts). The +2 floor guarantees a genuine correction
+//     visibly matters; cap 98 keeps a perfect revision from colliding with a
+//     hypothetical perfect source.
+//   - Residual misspellings still cap BOTH at 80, so a revised text carrying
+//     errors can never out-score its source.
+//   - Nothing here uses provider identity, temperature, or model — the SAME
+//     source always produces the SAME originalScore/revisedScore.
+  var anyChange =
+    realChangeCount > 0 ||
+    databaseStats.totalMatches > 0 ||
+    remainingSpelling < sourceSpelling ||
+    revisedStiffAll < sourceStiffAll ||
+    revisedGrammarHits < sourceGrammarHits;
+  var cleared = Math.max(0, revScore - origScore);
+  origScore = Math.min(98, Math.max(origScore, 40));
+  if (origScore >= 98) origScore = 98;          // flawless source prints 98
+  else origScore = Math.min(95, origScore);       // everything else tops at 95
+  if (anyChange && cleared > 0) {
+    var boost = Math.max(2, Math.round(cleared * 0.8));
+    revScore = Math.min(98, origScore + boost);
+  } else {
+    revScore = origScore;
+  }
   if (remainingSpelling > 0) {
     origScore = Math.min(origScore, 80);
     revScore = Math.min(revScore, 80);
   }
-  origScore = Math.min(98, origScore);
-  if (remainingSpelling === 0 && realChangeCount > 0) {
-    revScore = Math.min(99, Math.max(revScore, origScore) + realChangeCount * 2);
-  } else {
-    revScore = Math.min(98, Math.max(revScore, origScore));
-  }
+  if (revScore < origScore) revScore = origScore;
 
   var preservedFootnoteCount = 0;
   if (savedFootnotes && savedFootnotes.trim()) {
@@ -3748,6 +3534,11 @@ function ensureValidResult(parsed, originalText, options) {
   var flaggedCount = Object.keys(semanticRisks || {}).length;
   if (remainingSpelling > 0) {
     summary = "The revision corrected several issues, but " + remainingSpelling + " spelling error(s) remain in the output.";
+  } else if (revisedGrammarHits > 0 || revisedStiffAll > 0) {
+    var remainBits = [];
+    if (revisedGrammarHits > 0) remainBits.push(revisedGrammarHits + " grammar issue" + (revisedGrammarHits === 1 ? "" : "s"));
+    if (revisedStiffAll > 0) remainBits.push(revisedStiffAll + " stiff/AI-sounding phrase instance" + (revisedStiffAll === 1 ? "" : "s"));
+    summary = "The revision fixed the detectable issues, but " + remainBits.join(" and ") + " would still benefit from a second pass.";
   } else if (realChangeCount > 0) {
     summary = "The revision made " + realChangeCount + " real improvement" + (realChangeCount === 1 ? "" : "s") +
       ", nativizing and refining the writing to native-level English.";
@@ -3800,6 +3591,11 @@ function ensureValidResult(parsed, originalText, options) {
     detectedDialect: dialect,
     databaseStats: databaseStats,
     coverage: coverage,
+    // Residual-defect census (the "counts" half of the residual 0-100 + counts
+    // contract): unambiguous counts of what was measured in source vs what
+    // remains, so the UI can surface "7 stiff, 0 spelling, 0 grammar -> 0 left".
+    sourceIssues: { spelling: sourceSpelling, grammar: sourceGrammarHits, stiffness: sourceStiffAll },
+    remainingIssues: { spelling: remainingSpelling, grammar: revisedGrammarHits, stiffness: revisedStiffAll },
   };
 }
 
@@ -3819,10 +3615,8 @@ export default {
         timestamp: Date.now(),
         configuredProviders: {
           gemini: !!env.GEMINI_API_KEY,
-          openrouter: !!env.OPENROUTER_API_KEY,
-          deepseek: !!env.DEEPSEEK_API_KEY,
-          cloudflare: !!env.AI,
         },
+        contract: "two-pass: gemini grammar-only -> deterministic DB nativization",
       });
     }
 
@@ -3956,7 +3750,6 @@ export default {
       var hasAnyDb = clientDb && ((Array.isArray(clientDb.aiDb) && clientDb.aiDb.length > 0) ||
         (Array.isArray(clientDb.idiomDb) && clientDb.idiomDb.length > 0) || anyLex);
       options.databases = hasAnyDb ? clientDb : DEFAULT_DATABASES;
-      options.nativizationInstruction = buildNativizationInstruction(options.databases, options.domain);
 
       if (!text) {
         return jsonResponse({ error: "No text provided" }, 400);
@@ -3964,7 +3757,7 @@ export default {
 
       // -- Pre-process: extract footnotes, normalize titles ----------
       var extracted = extractFootnoteBlock(text);
-      var bodyText = normalizeTitleBreaks(extracted.body);
+      var bodyText = normalizeFootnoteRefs(normalizeTitleBreaks(extracted.body));
       var savedFootnotes = extracted.footnotes;
 
       // -- Auth + tier check ----------------------------------------
@@ -4000,27 +3793,14 @@ export default {
         }
       }
 
-      // -- Provider routing based on tier ---------------------------
-      // Build an ordered attempt chain: [name, fn-or-null].
-      // Pro: Gemini (best quality + long docs) -> OpenRouter -> DeepSeek.
-      // Free: OpenRouter (cheapest) -> Cloudflare AI -> Gemini -> DeepSeek.
-      // Long free texts (>= 8000 chars) skip OpenRouter/Cloudflare and go straight to Gemini/DeepSeek.
+      // -- Provider routing ------------------------------------------
+      // Single provider contract: Gemini is the ONLY provider (all tiers).
+      // temperature 0 + no thinkingConfig keeps output deterministic; the
+      // deterministic DB nativization layer runs after in ensureValidResult.
+      // If Gemini is down the request fails loudly instead of degrading to a
+      // weaker model (the two-pass contract is provider-pure).
       var attempts = [];
-      if (tier === "pro" || tier === "enterprise") {
-        attempts.push(["gemini", env.GEMINI_API_KEY ? function () { return callGemini(bodyText, options, env.GEMINI_API_KEY); } : null]);
-        attempts.push(["openrouter", env.OPENROUTER_API_KEY ? function () { return callOpenRouter(bodyText, options, env.OPENROUTER_API_KEY); } : null]);
-        attempts.push(["deepseek", env.DEEPSEEK_API_KEY ? function () { return callDeepSeek(bodyText, options, env.DEEPSEEK_API_KEY); } : null]);
-      } else {
-        if (bodyText.length < 8000) {
-          attempts.push(["openrouter", env.OPENROUTER_API_KEY ? function () { return callOpenRouter(bodyText, options, env.OPENROUTER_API_KEY); } : null]);
-          attempts.push(["cloudflare", env.AI ? function () { return callCloudflareAI(bodyText, options, env.AI); } : null]);
-        } else {
-          attempts.push(["openrouter", null]);
-          attempts.push(["cloudflare", null]);
-        }
-        attempts.push(["gemini", env.GEMINI_API_KEY ? function () { return callGemini(bodyText, options, env.GEMINI_API_KEY); } : null]);
-        attempts.push(["deepseek", env.DEEPSEEK_API_KEY ? function () { return callDeepSeek(bodyText, options, env.DEEPSEEK_API_KEY); } : null]);
-      }
+      attempts.push(["gemini", env.GEMINI_API_KEY ? function () { return callGemini(bodyText, options, env.GEMINI_API_KEY); } : null]);
 
       var parsed = null;
       var provider = "none";

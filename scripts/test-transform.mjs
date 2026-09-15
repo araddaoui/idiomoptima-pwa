@@ -3,8 +3,8 @@
 //
 // Exercises the REAL worker functions (buildNativizationMaps,
 // applyDatabaseNativization, replaceOutsideQuotes, normalizeSentenceKey,
-// escapeRegExp, BUILTIN_NATIVIZATION) extracted verbatim from the current
-// index.js, fed with the SAME merged databases the client ships.
+// escapeRegExp) extracted verbatim from the current index.js, fed with the
+// SAME merged databases the client ships.
 //
 // Coverage:
 //   1. Reproduced user sample (academic) — real transformations fire, paired
@@ -12,7 +12,7 @@
 //   2. Correlative-collocation safety ("in general" fires ONLY unpaired).
 //   3. Single-word allowlist (fires for curated words, stays blocked otherwise).
 //   4. Per-domain sweeps (business / general / creative).
-//   5. Built-in always-on rules.
+//   5. Pass-2 pure-DB layer (no builtin rules; DB phrases are the only editor).
 //   6. Quote safety (never rewrite inside quotation marks).
 //   7. Database health (sizes, shapes, no idempotent/empty/dangerous entries).
 //   8. "DIFFERENCE IS MADE" SWEEP: deterministically sample the live
@@ -152,7 +152,6 @@ const extracted = [
   extractFunction(INDEX_SRC, "escapeRegExp"),
   extractFunction(INDEX_SRC, "normalizeSentenceKey"),
   extractFunction(INDEX_SRC, "replaceOutsideQuotes"),
-  extractVar(INDEX_SRC, "BUILTIN_NATIVIZATION"),
   extractFunction(INDEX_SRC, "buildNativizationMaps"),
   extractVarObject(INDEX_SRC, "SEMANTIC_FUNCTION_WORDS"),
   extractFunction(INDEX_SRC, "addedContentWords"),
@@ -160,7 +159,7 @@ const extracted = [
 ].join("\n");
 
 const api = new Function(
-  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, BUILTIN_NATIVIZATION, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
+  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
 )();
 
 // --- load + merge databases exactly like the client (ToolPage) ---------------
@@ -329,17 +328,22 @@ section("4. per-domain sweeps");
   check("creative: the sky was very beautiful -> the sky was breathtaking", revised[1], "The sky was breathtaking that evening.");
 }
 
-// ================================================================ 5. BUILT-IN
-section("5. built-in always-on rules");
+// ================================================================ 5. PASS 2 DB-ONLY
+section("5. pass-2 pure-DB layer: DB phrases are the ONLY editor (no builtin rules)");
 {
-  const { revised } = transform([
+  const { revised, stats } = transform([
+    "The robust framework is ready for deployment.",
+    "It is important to note that costs fell.",
+    "Engineers routinely navigate these challenges in production.",
     "Despite of the evidence, the decision stood.",
     "They utilize the tool in weekly reviews.",
-    "Owing to the fact that funding lapsed, the trial stopped.",
   ]);
-  check("despite of -> despite", revised[0], "Despite the evidence, the decision stood.");
-  check("utilize -> use", revised[1], "They use the tool in weekly reviews.");
-  check("owing to the fact that -> because", revised[2], "Because funding lapsed, the trial stopped.");
+  check("robust framework -> solid framework", revised[0], "The solid framework is ready for deployment.");
+  check("it is important to note that -> note that (sentence-start cap)", revised[1], "Note that costs fell.");
+  check("navigate these challenges -> handle these challenges", revised[2], "Engineers routinely handle these challenges in production.");
+  check("'despite of' is NOT edited (builtin rules removed)", revised[3], "Despite of the evidence, the decision stood.");
+  check("'utilize' is NOT edited (builtin rules removed)", revised[4], "They utilize the tool in weekly reviews.");
+  check("3 DB rules fired (no template/builtin credit)", stats.totalMatches, 3);
 }
 
 // ================================================================ 6. QUOTES

@@ -9,10 +9,22 @@
 //      uncovered stiff patterns", so a quiet run has an explanation.
 //   C. Literary anti-over-edit invariant — master native prose (Lolita) stays
 //      untouched and scores >= 98.
+//   D. Re-banded scoring contract — honest, provider-independent scores measured
+//      on what is LEFT (spelling / grammar / density-normalized stiffness),
+//      snapped to the 95/98 display band: a flawless source prints 98, everything
+//      else at most 95, and the revision earns the measured clearing back on a
+//      compressed scale (cap 98). Residual census surfaced; exact input-pinned
+//      reference profiles catch drift.
+//   E. Residual-detector honesty + success-criteria — the deterministic grammar
+//      layer no longer WRITES (Pass 1 is the model's), so offline we assert the
+//      detector catches planted grammar defects and never grows them; the
+//      success-criteria fixture proves DB-only Pass 2 fires on exactly the DB
+//      phrases, preserves UK dialect/footnotes, and lands in the re-band target.
 // Live mode (`--live` / LIVE=1) additionally POSTs the corpus to the deployed
-// worker 3x each and asserts: scores identical on every run, and output bytes
-// identical whenever the SAME provider answered (provider changes caused by an
-// upstream outage are reported, never hidden).
+// worker 3x each and asserts: scores identical on every run, output bytes
+// identical whenever the SAME provider answered (provider is always gemini for
+// both tiers; a change would mean an upstream event), and the LIVE-only grammar
+// fixes for the success-criteria fixture actually landed.
 //
 // Runs of the live mode consume real provider quota; offline mode is free.
 
@@ -27,14 +39,23 @@ const LIVE = process.argv.includes("--live") || process.env.LIVE === "1";
 const REPEATS = 3;
 const WORKER_URL = process.env.WORKER_URL || "https://nativewrite-api.nativewrite-api.workers.dev";
 
-// Each corpus item: { file, domain, tone, mode, minMatched }
+// Each corpus item: { file, domain, tone, mode, minMatched, reference }
 const CORPUS = [
-  { file: "uae.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6 },
-  { file: "academic.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6 },
+  { file: "uae.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "60->92" },
+  { file: "academic.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "60->87" },
   { file: "literary.txt", domain: "creative", tone: "reflective", mode: "academic", minMatched: 0, untouched: true },
-  { file: "business.txt", domain: "business", tone: "professional", mode: "business", minMatched: 1 },
-  { file: "general.txt", domain: "general", tone: "friendly", mode: "general", minMatched: 3 },
-  { file: "military.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6 },
+  { file: "business.txt", domain: "business", tone: "professional", mode: "business", minMatched: 1, reference: "98->98" },
+  { file: "general.txt", domain: "general", tone: "friendly", mode: "general", minMatched: 3, reference: "91->98" },
+  { file: "military.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "77->95" },
+  // Two-pass contract fixture: DB-only Pass 2 must fire on the planted phrases,
+  // preserve UK dialect + footnotes, and the meter must land inside the re-band
+  // target. Grammar/spelling correction is the model's job (Pass 1), so those
+  // are asserted against the LIVE worker only (liveClean).
+  { file: "success-criteria.txt", domain: "general", tone: "neutral", mode: "general", minMatched: 4, reference: "80->96", dbOnly: true, liveClean: true },
+  // Residual-detector honesty suite: the deterministic grammar layer is a
+  // DETECTOR only (no writes), so offline we assert it catches the planted
+  // defects in the source and never reports MORE in the revision.
+  { file: "grammar.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 0, reference: "79->84", grammarDetector: true, minGrammar: 4 },
 ];
 
 // --- Result normalization: only the deterministic contract slices compare. ---
@@ -54,6 +75,8 @@ function normalized(r) {
     detectedDialect: r.detectedDialect,
     databaseStats: r.databaseStats,
     coverage: r.coverage,
+    sourceIssues: r.sourceIssues || {},
+    remainingIssues: r.remainingIssues || {},
   };
 }
 
@@ -187,6 +210,45 @@ async function main() {
 
     check(key + " coverage matched >= " + item.minMatched, cov.matched >= item.minMatched, "see offline coverage");
 
+    // Residual scoring contract (provider-independent, length-normalized):
+    //  - No flat 99: a clean revision can print at most 98, so the meter never
+    //    converges every text to 99 (the defect the 2026-09-14 unfreeze fixed).
+    //  - The residual census must be present and numeric on both sides.
+    //  - item.reference pins the exact honest profile (source->revised) for the
+    //    corpus so drift is caught deterministically.
+    const rem = r0.remainingIssues || {};
+    check(key + " revisedScore <= 98 (no flat 99)", (r0.revisedScore || 0) <= 98, String(r0.originalScore) + "->" + String(r0.revisedScore));
+    check(key + " residual census shape (spelling/grammar/stiffness numeric)",
+      typeof rem.spelling === "number" && typeof rem.grammar === "number" && typeof rem.stiffness === "number",
+      JSON.stringify(rem));
+    if (item.reference) {
+      check(key + " reference profile " + item.reference,
+        String(r0.originalScore) + "->" + String(r0.revisedScore) === item.reference,
+        String(r0.originalScore) + "->" + String(r0.revisedScore));
+    }
+    if (item.grammarDetector) {
+      const src = r0.sourceIssues || {};
+      check(key + " grammar defects detected in source (" + item.minGrammar + "+)", (src.grammar || 0) >= item.minGrammar, "src grammar=" + src.grammar);
+      check(key + " residual grammar never grows in the revision (detector-only)", (rem.grammar || 0) <= (src.grammar || 0), "src=" + src.grammar + " rem=" + rem.grammar);
+    }
+
+    if (item.dbOnly) {
+      const fv = r0.finalVersion || "";
+      // DB-only Pass 2 fired the planted phrases...
+      check(key + " DB rule fired: robust framework -> solid framework", /solid framework/.test(fv), "saw " + fv.slice(0, 220));
+      check(key + " DB rule fired: it is important to note that -> note that", /note that/.test(fv) && !/it is important to note that/.test(fv), "saw " + fv.slice(0, 220));
+      check(key + " DB rule fired: it is worth noting -> note that", /note that/.test(fv) && !/it is worth noting/.test(fv), "saw " + fv.slice(0, 220));
+      check(key + " DB rule fired: navigate these challenges -> handle these challenges", /handle these challenges/.test(fv) && !/navigate these challenges/.test(fv), "saw " + fv.slice(0, 220));
+      // ...and left UK dialect + footnote block intact.
+      check(key + " UK dialect preserved (colonisation/travelled/labelled/characterisation)",
+        ["colonisation", "travelled", "labelled", "characterisation"].every((w) => new RegExp(w, "i").test(fv)), "saw " + fv.slice(0, 260));
+      check(key + " footnote block preserved", /\[1\] Clausewitz/.test(fv) && /\[2\] Ibid/.test(fv), "saw " + fv.slice(-160));
+      // Re-band target: source never prints above 90 with measurable defects and
+      // the revision lands >= 90 (the "heavy vs barely" swing is the fix).
+      check(key + " originalScore <= 90 (source carries 4 measurable defects)", (r0.originalScore || 0) <= 90, String(r0.originalScore));
+      check(key + " revisedScore >= 90 AND <= 98", (r0.revisedScore || 0) >= 90 && (r0.revisedScore || 0) <= 98, String(r0.revisedScore));
+    }
+
     if (item.untouched) {
       const unhanged = (r0.sentences || [])
         .filter((s) => !s.isImmutableFootnote)
@@ -228,6 +290,15 @@ async function main() {
         check(key + " live bytes identical (stable provider)", sigs.size === 1);
       } else {
         console.log("      WARN provider changed mid-run (upstream outage) — byte identity N/A, scores above still enforced");
+      }
+      // LIVE-only grammar/spelling asserts: Pass 1 (the model) must actually fix
+      // the planted defects — the offline path can't, by contract.
+      if (item.liveClean) {
+        for (const r of runs) {
+          const fv = r.norm.finalVersion || "";
+          check(key + " live: spelling fixed (no 'challanges'/'underlaying')", !/challanges|underlaying/.test(fv), "still saw " + fv.slice(0, 260));
+          check(key + " live: grammar fixed (demonstration -> demonstrate)", /demonstrate(?:s|d)? that the solid/.test(fv) || /demonstrat(e|ing)/i.test(fv), "still saw " + fv.slice(0, 260));
+        }
       }
     }
   }
