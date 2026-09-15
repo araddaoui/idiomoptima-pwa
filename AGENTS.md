@@ -182,9 +182,9 @@ Deterministic contract (must never drift):
   its source; otherwise `revisedScore = min(98, originalScore + max(2,
   round(cleared*0.8)))` where `cleared = rawRev - rawOrig`. Residual misspellings
   still cap both at 80. The SAME input always produces the SAME scores regardless
-  of provider. Reference profiles: military 77→95, uae 60→92, academic 60→87,
+  of provider. Reference profiles: military 77→95, uae 60→92, academic 60→92,
   grammar 79→84, business 98→98, general 91→98, literary 98→98, success-criteria
-  80→96 (all committed fixtures, harness-asserted).
+  80→96, kingston 60→92 (all committed fixtures, harness-asserted).
 - **Coverage census** (diagnostic, never applied): `COVERAGE_WATCHLIST` in `index.js`
   (7 items: `the mere fact that`, `more likely to break than not`, `in whose neighbourhood`,
   `such a common denominator`, `is occasioned by`, `do not want to hear`,
@@ -201,6 +201,13 @@ Deterministic contract (must never drift):
 - **Drop/added-word Notes** flag only words NOT covered by a matched DB rule.
   Replacement words from a matched DB rule are whitelisted (`p.tgt`, NOT
   `p.dst`). Footnote/citation words are stripped before both checks.
+- **Citation detection is `[N]`-gated**: a line is treated as a citation (skipped by
+  Pass 2 and the stiff census) only when it STARTS with a `[N]` marker AND is,
+  with the marker stripped, author-year shaped / an "Ibid." / a URL or DOI, or is
+  already `isImmutableFootnote`. Body prose that merely CONTAINS book years
+  ("extending from The Woman Warrior (1976) to China Men (1977)") MUST be
+  nativized — this is why `have affinities with each other→share affinities`
+  fires inside kingston's Book-Titles sentence.
 - **Nativization rule-sets**: worker `DEFAULT_DATABASES.aiDb` = 28 entries;
   `public/ai-natural-database.json` = 3584 entries (the 16 documented additions,
   plus the freeze-safe data entry `robust framework→solid framework`). All 16
@@ -244,5 +251,6 @@ Full verification matrix (required before ANY deploy):
    path, not the `sentences: []` offline call; the military reference now lives as the
    `military.txt` harness fixture.
 6. Corpus fixtures live in `scripts/corpus/` (`uae`, `academic`, `literary`,
-   `business`, `general`, `military`, `grammar`, `success-criteria`); driven by the
+   `business`, `general`, `military`, `grammar`, `success-criteria`, `kingston`);
+   driven by the
    CORPUS table at the top of `scripts/consistency-check.mjs`.

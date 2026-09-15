@@ -2439,10 +2439,13 @@ function applyDatabaseNativization(sentences, dbs, domain) {
     // Skip only ACTUAL footnote/citation lines, not body prose that merely
     // begins with an inline reference marker ("[1] This approach is better
     // suited for analysing..." must still be nativized). A line counts as a
-    // citation when, with a leading [N] stripped, it is author-year shaped,
-    // an "Ibid.", or carries a URL/DOI.
+    // citation only when it STARTS with a [N] marker (or is already flagged
+    // isImmutableFootnote) and, with that marker stripped, is author-year
+    // shaped, an "Ibid.", or carries a URL/DOI. Body prose that merely
+    // contains book years like "The Woman Warrior (1976)" is NOT a citation.
+    var hasMarker = /^\[\d+\]/.test(orig);
     var stripped = orig.replace(/^\s*\[\d+\]\s*/, "");
-    var isCitation = stripped.length > 0 && (
+    var isCitation = hasMarker && stripped.length > 0 && (
       /^\s*Ibid\.?(\s|$)/i.test(stripped) ||
       /^[A-Z][^?!\n]*\(\d{4}\)/.test(stripped) ||
       /https?:\/\//i.test(stripped) ||

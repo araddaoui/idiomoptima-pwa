@@ -42,7 +42,7 @@ const WORKER_URL = process.env.WORKER_URL || "https://nativewrite-api.nativewrit
 // Each corpus item: { file, domain, tone, mode, minMatched, reference }
 const CORPUS = [
   { file: "uae.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "60->92" },
-  { file: "academic.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "60->87" },
+  { file: "academic.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "60->92" },
   { file: "literary.txt", domain: "creative", tone: "reflective", mode: "academic", minMatched: 0, untouched: true },
   { file: "business.txt", domain: "business", tone: "professional", mode: "business", minMatched: 1, reference: "98->98" },
   { file: "general.txt", domain: "general", tone: "friendly", mode: "general", minMatched: 3, reference: "91->98" },
@@ -52,6 +52,11 @@ const CORPUS = [
   // target. Grammar/spelling correction is the model's job (Pass 1), so those
   // are asserted against the LIVE worker only (liveClean).
   { file: "success-criteria.txt", domain: "general", tone: "neutral", mode: "general", minMatched: 4, reference: "80->96", dbOnly: true, liveClean: true },
+  // Real-world acceptance input (user-reported): DB-only Pass 2 must swap the
+  // 5 covered phrases and leave the 2 census patterns uncovered; the model must
+  // NOT restructure ("continuing Maxine Hong Kingston’s aesthetic…") and must
+  // NOT introduce S-V regressions ("have the asset", "strongly brings").
+  { file: "kingston.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 5, reference: "60->92", kingston: true, liveNoSVR: true },
   // Residual-detector honesty suite: the deterministic grammar layer is a
   // DETECTOR only (no writes), so offline we assert it catches the planted
   // defects in the source and never reports MORE in the revision.
@@ -249,6 +254,20 @@ async function main() {
       check(key + " revisedScore >= 90 AND <= 98", (r0.revisedScore || 0) >= 90 && (r0.revisedScore || 0) <= 98, String(r0.revisedScore));
     }
 
+    if (item.kingston) {
+      const fv = r0.finalVersion || "";
+      // Deterministic Pass-2 swaps (DB-only) must all land offline.
+      check(key + " DB rule fired: remaining within the continuity of -> continuing", /continuing Maxine Hong Kingston/.test(fv) && !/remaining within the continuity of/.test(fv), "saw " + fv.slice(0, 260));
+      check(key + " DB rule fired: have affinities with each other -> share affinities", /share affinities/.test(fv) && !/have affinities with each other/.test(fv), "saw " + fv.slice(0, 260));
+      check(key + " DB rule fired: lends itself basically to the mere fact that -> rests essentially on the fact that", /rests essentially on the fact that/.test(fv), "saw " + fv.slice(0, 260));
+      check(key + " DB rule fired: within the parameters of -> within the bounds of", /within the bounds of/.test(fv) && !/within the parameters of/.test(fv), "saw " + fv.slice(0, 260));
+      check(key + " DB rule fired: underpinning representation -> underlying representation", /underlying representation/.test(fv) && !/underpinning representation/.test(fv), "saw " + fv.slice(0, 260));
+      // The two census patterns must stay uncovered (by design).
+      const unc = (r0.coverage || {}).uncovered || [];
+      check(key + " census keeps 'the mere fact that' + 'such a common denominator' uncovered (never auto-edited)",
+        unc.includes("the mere fact that") && unc.includes("such a common denominator"), JSON.stringify(unc));
+    }
+
     if (item.untouched) {
       const unhanged = (r0.sentences || [])
         .filter((s) => !s.isImmutableFootnote)
@@ -298,6 +317,17 @@ async function main() {
           const fv = r.norm.finalVersion || "";
           check(key + " live: spelling fixed (no 'challanges'/'underlaying')", !/challanges|underlaying/.test(fv), "still saw " + fv.slice(0, 260));
           check(key + " live: grammar fixed (demonstration -> demonstrate)", /demonstrate(?:s|d)? that the solid/.test(fv) || /demonstrat(e|ing)/i.test(fv), "still saw " + fv.slice(0, 260));
+        }
+      }
+      // LIVE-only model-honesty assert: Pass 1 must not INTRODUCE grammar
+      // regressions (the old multi-provider path turned "has the asset" into
+      // "have the asset" and "bring" into "brings"). grammar/spelling-only pass
+      // must leave correct S-V untouched.
+      if (item.liveNoSVR) {
+        for (const r of runs) {
+          const fv = r.norm.finalVersion || "";
+          check(key + " live: no S-V regression ('has the asset' kept, no 'have the asset')", /has the asset/.test(fv) && !/have the asset/.test(fv), "saw " + fv.slice(0, 300));
+          check(key + " live: no S-V regression ('strongly bring to mind' kept, no 'strongly brings')", /strongly bring to mind/.test(fv) && !/strongly brings/.test(fv), "saw " + fv.slice(0, 300));
         }
       }
     }
