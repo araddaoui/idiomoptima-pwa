@@ -103,20 +103,20 @@ export function RichTextEditor({ content, onChange, placeholder, disabled }: Ric
       },
     },
     onUpdate: ({ editor }) => {
-      isInternalChange.current = true;
+      if (isInternalChange.current) {
+        isInternalChange.current = false;
+        return;
+      }
       onChange(editor.getHTML());
     },
     editable: !disabled,
   });
 
   useEffect(() => {
-    if (editor && isInternalChange.current) {
-      isInternalChange.current = false;
-      return;
-    }
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
-    }
+    if (!editor) return;
+    if (content === editor.getHTML()) return;
+    isInternalChange.current = true;
+    editor.commands.setContent(content);
   }, [content, editor]);
 
   if (!editor) return null;

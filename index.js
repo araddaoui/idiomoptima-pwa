@@ -382,7 +382,7 @@ function postProcessText(text) {
   if (text.length > 0 && text[0] === text[0].toLowerCase() && text[0] !== text[0].toUpperCase()) {
     text = text[0].toUpperCase() + text.substring(1);
   }
-  text = text.replace(/^[^A-Za-z\u00C0-\u024F\*\[]*/, "");
+  text = text.replace(/^[^A-Za-z0-9\u00C0-\u024F\*\['"\u2018\u2019\u201C\u201D({\[]*/, "");
   text = text.replace(/\bIn additional to\b/g, "In addition to");
   return text;
 }
@@ -2942,11 +2942,6 @@ function ensureValidResult(parsed, originalText, options) {
     }).join("\n\n");
   })();
 
-  // No-shorten guard for overall text (correct, don't bridge)
-  if (finalVersion.length > 0 && originalText.length > 100 && finalVersion.length < originalText.length * 0.7) {
-    finalVersion = originalText;
-  }
-
   // Footnote handling is made idempotent: footnotes are extracted from the
   // ORIGINAL, kept out of the model body, stripped from any model/hallucinated
   // output, and appended EXACTLY ONCE after the final rebuild (below). A page
@@ -2974,6 +2969,14 @@ function ensureValidResult(parsed, originalText, options) {
     bodyOnlyOriginal = normalizeTitleBreaks(bodyOnlyOriginal);
     // Re-strip any footnotes the model echoed inside the body (defensive).
     finalVersion = finalVersion.split(normalizedFootnotes.trim()).filter(function (p) { return p && p.trim(); }).join("\n\n");
+  }
+
+  // No-shorten guard for overall text (correct, don't bridge). Compare against
+  // the BODY-ONLY original (the model never receives the footnote block), so
+  // footnote-heavy manuscripts never trip the guard on their reference section
+  // and discard every edit.
+  if (finalVersion.length > 0 && bodyOnlyOriginal.length > 100 && finalVersion.length < bodyOnlyOriginal.length * 0.7) {
+    finalVersion = bodyOnlyOriginal;
   }
 
   // Re-derive sentences from paragraph-matched diff
