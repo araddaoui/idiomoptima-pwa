@@ -168,12 +168,37 @@ async function runLive(databases, item, text) {
     mode: item.mode,
     databases,
   };
-  const res = await fetch(WORKER_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  return readNdjsonFinal(res);
+  // Gemini returns 503 (high demand) periodically; a "rescued" run (provider
+  // "none", original text unchanged) is NOT a valid determinism sample, so
+  // retry up to 2 extra times until we get a real gemini result. Truncated
+  // streams (no final event) get the same treatment.
+  const RESCUE_RETRIES = 1;
+  let lastErr = null;
+  for (let attempt = 0; attempt <= RESCUE_RETRIES; attempt++) {
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const out = await readNdjsonFinal(res);
+      if ((out.result && out.result.rescued) === true || out.provider === "none") {
+        lastErr = new Error("rescued (upstream 503) — retry " + (attempt + 1));
+        if (attempt < RESCUE_RETRIES) {
+          await new Promise((r) => setTimeout(r, 8000 + attempt * 5000));
+          continue;
+        }
+      }
+      return out;
+    } catch (e) {
+      lastErr = e;
+      if (attempt < RESCUE_RETRIES) {
+        await new Promise((r) => setTimeout(r, 8000 + attempt * 5000));
+        continue;
+      }
+    }
+  }
+  throw lastErr || new Error("live run failed after " + (RESCUE_RETRIES + 1) + " attempts");
 }
 
 // --- Tiny test runner ---------------------------------------------------------
