@@ -1216,7 +1216,7 @@ async function callGeminiRaw(prompt, apiKey) {
   // not yet bound to this project) never makes Gemini a fatal stop. A 404 /
   // "not found" / 429 on one candidate moves on to the next; real auth failures
   // still surface. 3.6 is preferred, older flash models are the fallback.
-  var MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-flash-latest"];
+  var MODEL_CANDIDATES = ["gemini-2.0-flash"];
   var lastError = "";
   for (var ci = 0; ci < MODEL_CANDIDATES.length; ci++) {
     var model = MODEL_CANDIDATES[ci];
@@ -1243,7 +1243,7 @@ async function callGeminiRaw(prompt, apiKey) {
     if (!response.ok) {
       var errBody = await response.text();
       lastError = model + ": " + errBody.substring(0, 200);
-      if (response.status === 404 || response.status === 429 || response.status === 400 || /not found|unavailable|does not exist|invalid argument|invalid_argument/i.test(errBody)) continue;
+      if (response.status === 404 || response.status === 429 || response.status === 400 || response.status === 503 || /not found|unavailable|does not exist|invalid argument|invalid_argument/i.test(errBody)) continue;
       throw new Error("Gemini API error (" + model + "): " + errBody.substring(0, 200));
     }
 
@@ -3925,7 +3925,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
 // /health?probe=1 live-checks each MODEL_CANDIDATE against the configured key
 // so a "changes nothing" symptom is provably a key/model problem, not a code
 // bug. Names the model IDs; never echoes keys or user content.
-var HEALTH_MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-flash-latest"];
+var HEALTH_MODEL_CANDIDATES = ["gemini-2.0-flash"];
 
 async function probeGeminiModels(apiKey) {
   if (!apiKey) return { configured: false, models: [] };
