@@ -188,6 +188,9 @@ async function runLive(databases, item, text) {
           await new Promise((r) => setTimeout(r, 8000 + attempt * 5000));
           continue;
         }
+        // Final attempt came back rescued: it is NOT a valid determinism sample,
+        // so fail loudly instead of returning a no-op as if it were real.
+        throw lastErr;
       }
       return out;
     } catch (e) {
@@ -196,6 +199,8 @@ async function runLive(databases, item, text) {
         await new Promise((r) => setTimeout(r, 8000 + attempt * 5000));
         continue;
       }
+      // Final attempt failed too — live runs must never fake-pass.
+      throw lastErr;
     }
   }
   throw lastErr || new Error("live run failed after " + (RESCUE_RETRIES + 1) + " attempts");

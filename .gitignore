@@ -13,3 +13,8 @@ coverage/
 .wrangler
 .dev.vars*
 !.dev.vars.example
+
+# stray runtime artifacts that must never be committed
+last-response.json
+index.js.bak-*
+api/

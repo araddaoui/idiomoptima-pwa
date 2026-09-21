@@ -42,6 +42,49 @@ export interface TransformationResult {
   };
   tier?: string;
   usage?: number;
+  // Rescue honesty: set when the provider produced no usable revision and the
+  // original text was returned unchanged (safe DB rules still apply). Such runs
+  // do NOT count against the daily limit. providerErrors explains why.
+  rescued?: boolean;
+  providerErrors?: string[];
+  // Residual-defect census (worker-computed): unambiguous counts measured in the
+  // source vs what remains in the revision, so the rubric is explainable.
+  sourceIssues?: { spelling: number; grammar: number; stiffness: number };
+  remainingIssues?: { spelling: number; grammar: number; stiffness: number };
+  // Phase C gated-humanize audit: residual-stiff sentences flagged for the
+  // nativize model pass, how many were rewritten, and why it was skipped.
+  humanize?: {
+    flagged: number;
+    changed: number;
+    skippedReason?: string;
+  };
+  // Phase D scoring rubric: why the two scores landed where they did. The
+  // worker computes it from the SAME deterministic meter the scores use; it is
+  // descriptive only and never feeds back into the scores.
+  rubric?: {
+    display: { originalScore: number; revisedScore: number };
+    meter: { source: number; revised: number; cleared: number; note: string };
+    axes: {
+      spelling: { source: number; remaining: number; sourceHealth: number; remainingHealth: number };
+      grammar: { source: number; remaining: number; sourceHealth: number; remainingHealth: number };
+      stiffness: {
+        source: number; remaining: number; sourceHealth: number; remainingHealth: number;
+        proseSentenceCount: number; rulesConsumed: number;
+      };
+      duplicates: { source: number; remaining: number; sourceHealth: number; remainingHealth: number };
+    };
+    banding: {
+      anyChange: boolean;
+      realChanges: number;
+      dbRulesFired: number;
+      boostApplied: number;
+      nativizedRuleCount: number;
+      spellingCapApplied: boolean;
+      flatByContract: boolean;
+      rule: string;
+    };
+    caveats: { coverageUncovered: number; semanticRiskSentences: number; humanizeSkipped?: string | null };
+  };
 }
 
 const envAny = (import.meta as any).env || {};

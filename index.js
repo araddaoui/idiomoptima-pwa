@@ -268,41 +268,49 @@ async function handleStripeWebhook(request, env) {
     const stripeCustomerId = session.customer;
     const stripeSubscriptionId = session.subscription;
     if (clerkId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
-      const customerEmail = session.customer_details && session.customer_details.email
-        ? session.customer_details.email
-        : (session.metadata && session.metadata.email) || "";
-      await supabaseRpc(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, "upsert_user", {
-        p_clerk_id: clerkId,
-        p_email: customerEmail,
-      });
-      await fetch(env.SUPABASE_URL + "/rest/v1/users?clerk_id=eq." + encodeURIComponent(clerkId), {
-        method: "PATCH",
-        headers: {
-          apikey: env.SUPABASE_SERVICE_KEY,
-          Authorization: "Bearer " + env.SUPABASE_SERVICE_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subscription_tier: "pro",
-          stripe_customer_id: stripeCustomerId,
-          stripe_subscription_id: stripeSubscriptionId,
-        }),
-      });
+      try {
+        const customerEmail = session.customer_details && session.customer_details.email
+          ? session.customer_details.email
+          : (session.metadata && session.metadata.email) || "";
+        await supabaseRpc(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, "upsert_user", {
+          p_clerk_id: clerkId,
+          p_email: customerEmail,
+        });
+        await fetch(env.SUPABASE_URL + "/rest/v1/users?clerk_id=eq." + encodeURIComponent(clerkId), {
+          method: "PATCH",
+          headers: {
+            apikey: env.SUPABASE_SERVICE_KEY,
+            Authorization: "Bearer " + env.SUPABASE_SERVICE_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            subscription_tier: "pro",
+            stripe_customer_id: stripeCustomerId,
+            stripe_subscription_id: stripeSubscriptionId,
+          }),
+        });
+      } catch (e) {
+        console.error("stripe-webhook: checkout completed role-upgrade failed: " + String((e && e.message) || e).substring(0, 200));
+      }
     }
   }
 
   if (event.type === "customer.subscription.deleted") {
     const sub = event.data.object;
     if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
-      await fetch(env.SUPABASE_URL + "/rest/v1/users?stripe_subscription_id=eq." + encodeURIComponent(sub.id), {
-        method: "PATCH",
-        headers: {
-          apikey: env.SUPABASE_SERVICE_KEY,
-          Authorization: "Bearer " + env.SUPABASE_SERVICE_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ subscription_tier: "free" }),
-      });
+      try {
+        await fetch(env.SUPABASE_URL + "/rest/v1/users?stripe_subscription_id=eq." + encodeURIComponent(sub.id), {
+          method: "PATCH",
+          headers: {
+            apikey: env.SUPABASE_SERVICE_KEY,
+            Authorization: "Bearer " + env.SUPABASE_SERVICE_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ subscription_tier: "free" }),
+        });
+      } catch (e) {
+        console.error("stripe-webhook: subscription-deleted downgrade failed: " + String((e && e.message) || e).substring(0, 200));
+      }
     }
   }
 
@@ -1200,7 +1208,10 @@ async function callGemini(text, options, apiKey) {
     "choice, nativize or 'improve' the style, add or remove commas, or rewrite phrasing. The COMPLETE text " +
     "is returned; the deterministic nativization layer runs afterwards, so lexical replacement is not your job.\n" +
     "Text:\n" + text;
+  return callGeminiRaw(prompt, apiKey);
+}
 
+async function callGeminiRaw(prompt, apiKey) {
   // Model candidates rotate so a stale / unprovisioned model ID (e.g. a preview
   // not yet bound to this project) never makes Gemini a fatal stop. A 404 /
   // "not found" / 429 on one candidate moves on to the next; real auth failures
@@ -1262,6 +1273,27 @@ async function callGemini(text, options, apiKey) {
     return String(raw || "");
   }
   throw new Error("Gemini API error: all candidate models failed. Last: " + lastError);
+}
+
+// Dedicated nativize/humanize prompt for the GATED pass (Phase C). Only flagged
+// residual-stiff sentences reach this prompt; every other sentence is untouched
+// so the author's voice is preserved by construction.
+var NATIVIZE_PROMPT =
+  "You are a senior native-English editor at a literary magazine. Rewrite each sentence so it reads " +
+  "the way a fluent native writer actually writes prose — natural diction, idiomatic word choice, " +
+  "unforced phrasing — WITHOUT changing its meaning, facts, names, numbers, dates, hedging, tone, or " +
+  "the author's intended voice. Preserve the dialect convention the author uses (UK/CA/AU/US spellings " +
+  "and idioms). Do not add information, do not drop information, do not restructure the sentence's logic, " +
+  "and do not touch punctuation beyond what the rewrite requires. If a sentence already reads naturally " +
+  "and natively, return 'revised' identical to 'original'. Respond ONLY with JSON:" +
+  ' {"revisions":[{"index":0,"original":"...","revised":"..."},...]} matching every input index in order.';
+
+async function callGeminiNativize(pairs, options, apiKey) {
+  var input = JSON.stringify(pairs.map(function (p) {
+    return { index: p.index, original: String(p.original || "") };
+  })).substring(0, 24000);
+  var prompt = NATIVIZE_PROMPT + "\n\nInput sentences:\n" + input;
+  return callGeminiRaw(prompt, apiKey);
 }
 
 function countMisspellings(text) {
@@ -2502,6 +2534,22 @@ function applyDatabaseNativization(sentences, dbs, domain) {
   return { sentences: sentences, stats: stats };
 }
 
+// Phase-C source-first sweep: applies the deterministic DB nativization rules to
+// the raw SOURCE text BEFORE the grammar model sees it (Pipeline: DB sweep on
+// source -> grammar pass -> gated humanize). Treating the whole body as one
+// unit keeps phrase-level word-boundary swaps quote-safe and citation-gated
+// exactly as the sentence-level backstop does; whole-sentence map entries
+// cannot match a multi-sentence body, which is correct (they fire later on the
+// derived sentence units). Honors paragraph structure so the reassembled text
+// still contains the original \n\n breaks for normalizeTitleBreaks / scoring.
+function nativizeSourceText(text, dbs, domain) {
+  var ZERO = { totalMatches: 0, sentencesChanged: 0, aiPhrases: 0, idioms: 0, lexical: 0 };
+  if (!text || !String(text).trim()) return { text: String(text || ""), stats: ZERO };
+  var units = [{ original: String(text), revised: String(text), isImmutableFootnote: false }];
+  var applied = applyDatabaseNativization(units, dbs, domain);
+  return { text: applied.sentences[0].revised, stats: applied.stats };
+}
+
 // Function words excluded from semantic-fidelity / dropped-content analysis
 // (deliberately NOT including "very"/"one" — a tightening that silently drops
 // those may be worth surfacing).
@@ -2790,6 +2838,71 @@ var COVERAGE_WATCHLIST = [
   "looking forward to receive"
 ];
 
+// Detector-only lexicon for the GATED humanize pass (Phase C). These are the
+// generic AI-ese / non-native / formulaic markers that the deterministic DB
+// layers (aiDb + public databases) do NOT reliably cover or that can survive
+// the DB backstop in partial form. It is NEVER applied as an edit — it only
+// decides which residual-stiff sentences get sent to the humanize model pass.
+// Running it on the REVISED text means any marker a DB rule already removed is
+// invisible here, so gating stays honest about what is still stiff.
+var HUMANIZE_DETECTOR = [
+  /delve\s+into\b/i,
+  /\bin\s+today['\u2019]s\b/i,
+  /\bfast[- ]paced\s+world\b/i,
+  /\bplays?\s+a\s+pivotal\s+role\b/i,
+  /\bunderscores?\b/i,
+  /\bin\s+a\s+bid\s+to\b/i,
+  /\bwhen\s+it\s+comes\s+to\b/i,
+  /\bit\s+is\s+worth\s+(mentioning|noting)\b/i,
+  /\bit\s+is\s+important\s+to\s+(note|mention|highlight)\b/i,
+  /\bit\s+should\s+be\s+noted\b/i,
+  /\bit\s+goes\s+without\s+saying\b/i,
+  /\bthe\s+bottom\s+line\s+is\b/i,
+  /\bat\s+the\s+end\s+of\s+the\s+day\b/i,
+  /\bin\s+this\s+(fast\s+-?\s*)?(ever[- ])?changing\s+(world|landscape)\b/i,
+  /\ba\s+plethora\s+of\b/i,
+  /\btapestry\s+of\b/i,
+  /\bnavigate\s+(the\s+)?(complex|complexities|challenges)\b/i,
+  /\bleverage\b/i,
+  /\butilize\b/i,
+  /\boptimal\b/i,
+  /\bholistic\b/i,
+  /\bparadigm\b/i,
+  /\bfacilitate\b/i
+];
+function detectHumanizeMarkers(text) {
+  if (!text) return 0;
+  var n = 0;
+  for (var i = 0; i < HUMANIZE_DETECTOR.length; i++) {
+    if (HUMANIZE_DETECTOR[i].test(text)) n++;
+  }
+  return n;
+}
+
+// Content-overlap guard used to reject a humanize rewrite that dropped or
+// invented facts (returning only the fraction of content words shared).
+function contentOverlapRatio(a, b) {
+  var norm = function (t) { return String(t || "").replace(/\*\*/g, "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim().split(" "); };
+  var wa = norm(a).filter(Boolean);
+  var wb = norm(b).filter(Boolean);
+  if (!wa.length || !wb.length) return a === b ? 1 : 0;
+  var count = {};
+  var shared = 0;
+  for (var i = 0; i < wa.length; i++) count[wa[i]] = (count[wa[i]] || 0) + 1;
+  for (var j = 0; j < wb.length; j++) {
+    if (count[wb[j]]) { shared++; count[wb[j]]--; }
+  }
+  return shared / Math.min(wa.length, wb.length);
+}
+
+// Heading-shaped check shared by the gated humanize pass (mirrors the
+// deriveHeaderPara/isHeadingPara logic: short, capital-initial, no terminal
+// sentence punctuation, not a footnote marker).
+function isHeadingShapedText(t) {
+  var s = String(t || "").trim().replace(/^\*\*/, "").replace(/\*\*$/, "").trim();
+  return s.length > 0 && s.length < 120 && /^[A-Z]/.test(s) && !/[.!?]$/.test(s) && !/^\[\d+\]/.test(s);
+}
+
 // Identifies the single "stiffest" source sentence: the one carrying the most
 // formulaic / AI-sounding phrasing (aiDb AI-ese entries PLUS the builtin
 // nativization sources). Score = total rule word-displacement (see
@@ -2869,12 +2982,107 @@ function countSourceSentences(text) {
   return n;
 }
 
-function ensureValidResult(parsed, originalText, options) {
+// Gated nativize/humanize pass (Phase C, stage 3 of the pipeline):
+// source-first DB sweep -> grammar pass -> HERE (residual-stiff sentences only).
+// A sentence is flagged for the humanize model call only when, after the
+// deterministic DB backstop, it STILL carries stiff/AI-ese diction the DB layer
+// does not cover (deterministic detector), is prose (not a footnote, a
+// quote-only line, or a heading), and is within a sane length band. Flagged =
+// bounded edit surface; everything else is untouched, so the author's voice is
+// preserved by construction. Offline / no-key runs skip the model call entirely
+// (fully deterministic) and report skippedReason so the UI can be honest.
+// Rewrites are content-overlap guarded and re-routed through the protective
+// passes so meaningful content, quotes, idioms and footnotes survive.
+var HUMANIZE_MAX_SENTENCES = 12;
+var HUMANIZE_MIN_LEN = 40;
+var HUMANIZE_MAX_LEN = 360;
+
+async function humanizeFlaggedSentences(sentences, options, env) {
+  var out = { sentences: sentences, changed: 0, flagged: 0, skippedReason: null };
+  if (!env || !env.GEMINI_API_KEY) {
+    out.skippedReason = "no-api-key";
+    return out;
+  }
+  if (!sentences || !sentences.length) {
+    out.skippedReason = "empty";
+    return out;
+  }
+  var domain = (options && options.domain) || "general";
+  var maps = buildNativizationMaps((options && options.databases) || {}, domain);
+  var flaggedIdx = [];
+  for (var i = 0; i < sentences.length; i++) {
+    var s = sentences[i];
+    if (!s || s.isImmutableFootnote) continue;
+    var orig = String(s.original || "").trim();
+    var rev = String(s.revised || "").trim();
+    if (!rev || rev.length < HUMANIZE_MIN_LEN || rev.length > HUMANIZE_MAX_LEN) continue;
+    if (/\*\*/.test(rev) || /\*\*/.test(orig)) continue;
+    if (/^\[\d+\]/.test(orig) || /^\s*Ibid\.?/i.test(orig)) continue;
+    if (isHeadingShapedText(orig) || isHeadingShapedText(rev)) continue;
+    if (/^["\u201C\u201D].*["\u201C\u201D]$/.test(rev) || /^["\u201C\u201D].*["\u201C\u201D]$/.test(orig)) continue;
+    var residual = scanStiffPhrases(rev, maps);
+    var generic = detectHumanizeMarkers(rev);
+    if (residual.count === 0 && generic === 0) continue;
+    flaggedIdx.push(i);
+    if (flaggedIdx.length >= HUMANIZE_MAX_SENTENCES) break;
+  }
+  out.flagged = flaggedIdx.length;
+  if (flaggedIdx.length === 0) {
+    out.skippedReason = "nothing-flagged";
+    return out;
+  }
+
+  var pairs = flaggedIdx.map(function (i, k) {
+    return { index: k, original: String(sentences[i].revised || "") };
+  });
+  try {
+    var raw = await callGeminiNativize(pairs, options, env.GEMINI_API_KEY);
+    var gparsed = parseJsonFromModel(raw);
+    var revisions = gparsed && Array.isArray(gparsed.revisions) ? gparsed.revisions : null;
+    if (!revisions && gparsed && Array.isArray(gparsed.revised)) revisions = gparsed.revised;
+    if (!revisions && gparsed && Array.isArray(gparsed.sentences)) revisions = gparsed.sentences;
+    if (revisions && revisions.length > 0) {
+      for (var r = 0; r < revisions.length; r++) {
+        var rv = revisions[r];
+        var ridx = rv && rv.index != null ? Number(rv.index) : r;
+        if (isNaN(ridx) || ridx < 0 || ridx >= flaggedIdx.length) continue;
+        var newText = typeof rv.revised === "string" ? rv.revised.trim() : "";
+        if (!newText || newText === "[object Object]") continue;
+        var targetIdx = flaggedIdx[ridx];
+        var target = sentences[targetIdx];
+        if (!target) continue;
+        if (contentOverlapRatio(String(target.revised || ""), newText) < 0.4) continue;
+        newText = postProcessText(newText);
+        newText = protectQuotes(String(target.original || ""), newText);
+        newText = protectInvariantIdioms(String(target.original || ""), newText);
+        newText = restoreDroppedSentence(String(target.original || ""), newText);
+        newText = restoreCurlyApostrophes(String(target.original || ""), newText);
+        newText = fixCommonMisspellingsSafe(newText);
+        newText = capitalizeEnhanced(newText);
+        if (!newText || newText === String(target.revised || "")) continue;
+        target.revised = newText;
+        out.changed++;
+      }
+    } else {
+      out.skippedReason = "unparseable-revisions";
+    }
+  } catch (e) {
+    out.skippedReason = "humanize-error";
+    console.error("humanize pass failed (non-fatal): " + String((e && e.message) || e).substring(0, 300));
+  }
+  return out;
+}
+
+async function ensureValidResult(parsed, originalText, options, env) {
   if (!parsed || typeof parsed !== "object") return null;
 
   var finalVersion = parsed.finalVersion || parsed.final || parsed.text || "";
   if ((!finalVersion || finalVersion.length < 10) && Array.isArray(parsed.sentences) && parsed.sentences.length > 0) {
-    finalVersion = parsed.sentences.map(function(s) { return s.revised || s.native || s.original || s.source || ""; }).filter(function(s) { return s.length > 0; }).join(" ");
+    finalVersion = parsed.sentences
+      .filter(function (s) { return !!s; })
+      .map(function(s) { return s.revised || s.native || s.original || s.source || ""; })
+      .filter(function(s) { return s.length > 0; })
+      .join(" ");
   }
   if (!finalVersion || finalVersion.length < 10) finalVersion = originalText;
   if (!finalVersion || finalVersion.length < 10) return null;
@@ -3023,15 +3231,42 @@ function ensureValidResult(parsed, originalText, options) {
   // exact idiom / AI-ese / lexical replacements from the client DBs to each
   // sentence, then reports honest stats so the diff, suggestions, and score all
   // reflect the nativization instead of double-counting on the client.
-  var databaseStats = { totalMatches: 0, sentencesChanged: 0, aiPhrases: 0, idioms: 0, lexical: 0 };
+  // Phase C: the pipeline ALSO swept the SOURCE before the grammar pass
+  // (nativizeSourceText). The sweep's stats arrive via parsed._preSweepStats and
+  // are the authoritative DB counts; the backstop below re-enforces rules on the
+  // revised text (catching anything the pre-sweep could not see — re-garbles or
+  // model-introduced phrases) and only ADDS its new matches. Pre-swept phrases
+  // are no longer present in revised, so they are never double counted.
+  var preSweepStats = parsed && parsed._preSweepStats ? parsed._preSweepStats : null;
+  var databaseStats = {
+    totalMatches: preSweepStats && typeof preSweepStats.totalMatches === "number" ? preSweepStats.totalMatches : 0,
+    sentencesChanged: preSweepStats && typeof preSweepStats.sentencesChanged === "number" ? preSweepStats.sentencesChanged : 0,
+    aiPhrases: preSweepStats && typeof preSweepStats.aiPhrases === "number" ? preSweepStats.aiPhrases : 0,
+    idioms: preSweepStats && typeof preSweepStats.idioms === "number" ? preSweepStats.idioms : 0,
+    lexical: preSweepStats && typeof preSweepStats.lexical === "number" ? preSweepStats.lexical : 0,
+  };
   if (sentences.length) {
     // Always enforced: DB phrase rules (when provided) PLUS the built-in
     // nativization rules, so a real transformation and honest stats are
     // produced even with an empty database or a conservative model.
     var dbPass = applyDatabaseNativization(sentences, options && options.databases, (options && options.domain) || "general");
     sentences = dbPass.sentences;
-    databaseStats = dbPass.stats;
+    databaseStats.totalMatches += dbPass.stats.totalMatches;
+    databaseStats.sentencesChanged += dbPass.stats.sentencesChanged;
+    databaseStats.aiPhrases += dbPass.stats.aiPhrases;
+    databaseStats.idioms += dbPass.stats.idioms;
+    databaseStats.lexical += dbPass.stats.lexical;
   }
+
+  // Phase C stage 3: gated humanize — only residual-stiff sentences (uncovered
+  // by the DB layers) reach the nativize model call; everything else untouched.
+  var humanizePass = await humanizeFlaggedSentences(sentences, options, env);
+  sentences = humanizePass.sentences;
+  var humanizeInfo = {
+    flagged: humanizePass.flagged,
+    changed: humanizePass.changed,
+    skippedReason: humanizePass.skippedReason,
+  };
 
   // Split any sentence whose revised text begins with a standalone bold heading
   // ("**Conclusion**\nThe findings...") into TWO entries: the heading kept as
@@ -3462,27 +3697,99 @@ function ensureValidResult(parsed, originalText, options) {
 //     errors can never out-score its source.
 //   - Nothing here uses provider identity, temperature, or model — the SAME
 //     source always produces the SAME originalScore/revisedScore.
+  // Capture the raw meter BEFORE banding so the rubric can explain the two
+  // scores honestly: the linear residual 0-100 (source vs revised) and then
+  // the band that snaps them onto the display scale.
+  var rawOrigScore = origScore;
+  var rawRevScore = revScore;
+  var clearedRaw = Math.max(0, revScore - origScore);
   var anyChange =
     realChangeCount > 0 ||
     databaseStats.totalMatches > 0 ||
     remainingSpelling < sourceSpelling ||
     revisedStiffAll < sourceStiffAll ||
     revisedGrammarHits < sourceGrammarHits;
-  var cleared = Math.max(0, revScore - origScore);
   origScore = Math.min(98, Math.max(origScore, 40));
   if (origScore >= 98) origScore = 98;          // flawless source prints 98
   else origScore = Math.min(95, origScore);       // everything else tops at 95
-  if (anyChange && cleared > 0) {
-    var boost = Math.max(2, Math.round(cleared * 0.8));
-    revScore = Math.min(98, origScore + boost);
+  var boostApplied = 0;
+  if (anyChange && clearedRaw > 0) {
+    boostApplied = Math.max(2, Math.round(clearedRaw * 0.8));
+    revScore = Math.min(98, origScore + boostApplied);
   } else {
     revScore = origScore;
   }
+  var spellCapApplied = false;
   if (remainingSpelling > 0) {
+    spellCapApplied = true;
     origScore = Math.min(origScore, 80);
     revScore = Math.min(revScore, 80);
   }
   if (revScore < origScore) revScore = origScore;
+
+  // Phase D: the SCORING RUBRIC — a transparent, self-explanatory audit of why
+  // the two scores landed where they did. Same deterministic measurement applied
+  // to source and revision; the four axes carry raw counts plus a normalized
+  // 0-100 health sub-score each; the meter holds the linear residual before
+  // banding; banding explains the snap rules. Nothing here can affect the
+  // scores (pure description) — it only makes the number fair and explainable.
+  function axisHealth(category, count, proseN, dupOnly) {
+    if (category === "spelling") return count === 0 ? 100 : Math.max(40, 80 - Math.min(40, (count - 1) * 4));
+    if (category === "grammar") return 100 - Math.min(15, count * 3);
+    if (category === "stiffness") return 100 - Math.min(40, Math.round((count / Math.max(1, proseN || 1)) * 30));
+    if (category === "duplicates") return dupOnly ? 85 : 100;
+    return 100;
+  }
+  var semanticRiskCount = 0;
+  for (var _sr in semanticRisks) { if (Object.prototype.hasOwnProperty.call(semanticRisks, _sr)) semanticRiskCount++; }
+  var rubric = {
+    display: { originalScore: origScore, revisedScore: revScore },
+    meter: {
+      source: Math.round(rawOrigScore),
+      revised: Math.round(rawRevScore),
+      cleared: Math.round(clearedRaw),
+      note: "Linear residual meter (0-100, clamped 40-100): the SAME deterministic measurement is applied to source and revision, so a score climbs only when a detected defect actually disappears.",
+    },
+    axes: {
+      spelling: {
+        source: sourceSpelling, remaining: remainingSpelling,
+        sourceHealth: axisHealth("spelling", sourceSpelling, proseSentenceCount),
+        remainingHealth: axisHealth("spelling", remainingSpelling, proseSentenceCount),
+      },
+      grammar: {
+        source: sourceGrammarHits, remaining: revisedGrammarHits,
+        sourceHealth: axisHealth("grammar", sourceGrammarHits, proseSentenceCount),
+        remainingHealth: axisHealth("grammar", revisedGrammarHits, proseSentenceCount),
+      },
+      stiffness: {
+        source: sourceStiffAll, remaining: revisedStiffAll,
+        sourceHealth: axisHealth("stiffness", sourceStiffAll, proseSentenceCount),
+        remainingHealth: axisHealth("stiffness", revisedStiffAll, proseSentenceCount),
+        proseSentenceCount: proseSentenceCount,
+        rulesConsumed: nativizedRuleCount,
+      },
+      duplicates: {
+        source: hasDuplicateWords ? 1 : 0, remaining: 0,
+        sourceHealth: axisHealth("duplicates", 0, proseSentenceCount, hasDuplicateWords),
+        remainingHealth: 100,
+      },
+    },
+    banding: {
+      anyChange: !!anyChange,
+      realChanges: realChangeCount,
+      dbRulesFired: databaseStats.totalMatches,
+      boostApplied: boostApplied,
+      nativizedRuleCount: nativizedRuleCount,
+      spellingCapApplied: spellCapApplied,
+      flatByContract: !anyChange || clearedRaw <= 0,
+      rule: "No measurable change (or flawless source) scores the revision EXACTLY like its source; otherwise revised = min(98, original + max(2, round(cleared*0.8))). originalScore prints 98 only for a measured-flawless source, otherwise at most 95. Residual misspellings cap both sides at 80.",
+    },
+    caveats: {
+      coverageUncovered: coverage.uncovered.length,
+      semanticRiskSentences: semanticRiskCount,
+      humanizeSkipped: humanizePass.skippedReason || null,
+    },
+  };
 
   var preservedFootnoteCount = 0;
   if (savedFootnotes && savedFootnotes.trim()) {
@@ -3602,7 +3909,53 @@ function ensureValidResult(parsed, originalText, options) {
     // remains, so the UI can surface "7 stiff, 0 spelling, 0 grammar -> 0 left".
     sourceIssues: { spelling: sourceSpelling, grammar: sourceGrammarHits, stiffness: sourceStiffAll },
     remainingIssues: { spelling: remainingSpelling, grammar: revisedGrammarHits, stiffness: revisedStiffAll },
+    // Phase C gated-humanize audit: how many sentences were still stiff enough
+    // to be flagged for the nativize model call, how many were actually
+    // rewritten, and why the pass was skipped (no API key offline, nothing
+    // flagged, or a non-fatal model/parse error).
+    humanize: humanizeInfo,
+    // Phase D scoring rubric: why the two scores landed where they did (see
+    // the rubric construction above the score finals — descriptive only, never
+    // consulted by the scores themselves).
+    rubric: rubric,
   };
+}
+
+// --- Gemini model-reachability probe (diagnostic) -------------------------
+// /health?probe=1 live-checks each MODEL_CANDIDATE against the configured key
+// so a "changes nothing" symptom is provably a key/model problem, not a code
+// bug. Names the model IDs; never echoes keys or user content.
+var HEALTH_MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-flash-latest"];
+
+async function probeGeminiModels(apiKey) {
+  if (!apiKey) return { configured: false, models: [] };
+  var results = [];
+  for (var i = 0; i < HEALTH_MODEL_CANDIDATES.length; i++) {
+    var model = HEALTH_MODEL_CANDIDATES[i];
+    var entry = { model: model };
+    try {
+      var resp = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "ping" }] }],
+            generationConfig: { maxOutputTokens: 1, temperature: 0 },
+          }),
+          signal: AbortSignal.timeout(15000),
+        }
+      );
+      entry.status = resp.status;
+      entry.ok = resp.ok;
+    } catch (e) {
+      entry.status = 0;
+      entry.ok = false;
+      entry.error = String((e && e.message) || e).substring(0, 120);
+    }
+    results.push(entry);
+  }
+  return { configured: true, models: results };
 }
 
 export default {
@@ -3616,14 +3969,18 @@ export default {
 
     // -- Health ------------------------------------------------------
     if (request.method === "GET" && path === "/health") {
-      return jsonResponse({
+      var health = {
         status: "ok",
         timestamp: Date.now(),
         configuredProviders: {
           gemini: !!env.GEMINI_API_KEY,
         },
         contract: "two-pass: gemini grammar-only -> deterministic DB nativization",
-      });
+      };
+      if (url.searchParams.get("probe") === "1") {
+        health.geminiModelProbe = await probeGeminiModels(env.GEMINI_API_KEY);
+      }
+      return jsonResponse(health);
     }
 
     // -- Stripe webhook ---------------------------------------------
@@ -3653,7 +4010,8 @@ export default {
         var portalUrl = await createStripePortal(env.STRIPE_SECRET_KEY, portalCustomerId);
         return jsonResponse({ url: portalUrl });
       } catch (e) {
-        return jsonResponse({ error: e.message }, 500);
+        console.error("billing-portal: " + String((e && e.message) || e).substring(0, 200));
+        return jsonResponse({ error: "Could not open the billing portal. Please try again." }, 500);
       }
     }
 
@@ -3665,7 +4023,16 @@ export default {
         if (!checkoutUserId || !env.STRIPE_SECRET_KEY) {
           return jsonResponse({ error: "Authentication required" }, 401);
         }
-        var ccBody = await request.json();
+        if (!env.STRIPE_PRICE_ID) {
+          console.error("create-checkout: STRIPE_PRICE_ID env missing on worker");
+          return jsonResponse({ error: "Server misconfiguration: checkout pricing is not configured." }, 500);
+        }
+        var ccBody;
+        try {
+          ccBody = await request.json();
+        } catch (e) {
+          return jsonResponse({ error: "Invalid JSON body" }, 400);
+        }
         var ccEmail = String(ccBody.email || "");
         if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
           await supabaseRpc(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, "upsert_user", {
@@ -3675,7 +4042,7 @@ export default {
         }
         var checkout = await createStripeCheckout(
           env.STRIPE_SECRET_KEY,
-          env.STRIPE_PRICE_ID || "price_placeholder",
+          env.STRIPE_PRICE_ID,
           checkoutUserId,
           ccEmail,
           env.SUPABASE_URL,
@@ -3683,7 +4050,8 @@ export default {
         );
         return jsonResponse({ url: checkout.url });
       } catch (e) {
-        return jsonResponse({ error: e.message }, 500);
+        console.error("create-checkout: " + String((e && e.message) || e).substring(0, 200));
+        return jsonResponse({ error: "Could not start the checkout session. Please try again." }, 500);
       }
     }
 
@@ -3695,7 +4063,10 @@ export default {
 
       var tier = "free";
       var usage = 0;
-      if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+      if (userId) {
+        if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
+          return jsonResponse({ error: "Server misconfiguration: usage storage is not configured on this worker." }, 500);
+        }
         tier = await getUserTier(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
         usage = await getDailyUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
       }
@@ -3766,13 +4137,28 @@ export default {
       var bodyText = normalizeFootnoteRefs(normalizeTitleBreaks(extracted.body));
       var savedFootnotes = extracted.footnotes;
 
+      // -- Phase C stage 1: deterministic DB sweep on the SOURCE ----------
+      // Nativization rules fire on the author's text BEFORE the grammar model
+      // sees it, so the swaps are embedded in what the model parses (grammar
+      // pass never restores them, per the grammar-only contract). Because
+      // deriveSentencesFromTexts re-builds each sentence's .original from the
+      // AUTHOR text, the residual meter still measures the true source, and the
+      // DB counts travel via parsed._preSweepStats.
+      var originalBodyText = bodyText;
+      var preSweep = nativizeSourceText(bodyText, options.databases, options.domain);
+      bodyText = preSweep.text;
+
       // -- Auth + tier check ----------------------------------------
       var clerkDomain = env.CLERK_DOMAIN || "";
       var userId = await getUserIdFromRequest(request, clerkDomain);
       var tier = "free";
       var usage = 0;
 
-      if (userId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+      if (userId) {
+        if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
+          console.error("transform: authenticated request but Supabase env missing — refusing instead of silently bypassing limits");
+          return jsonResponse({ error: "Server misconfiguration: usage storage is not configured on this worker." }, 500);
+        }
         tier = await getUserTier(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
         usage = await getDailyUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
 
@@ -3839,7 +4225,7 @@ var rescueUsed = false;
             var attemptFn = attempt[1];
             provider = attemptName;
             if (!attemptFn) {
-              providerErrors.push(attemptName + ": skipped (not configured" + (bodyText.length >= 8000 && attemptName !== "gemini" && attemptName !== "deepseek" ? " / too long" : "") + ")");
+              providerErrors.push(attemptName + ": skipped (not configured)");
               attemptTimes.push({ provider: attemptName, ms: 0, ok: false, skipped: true });
               continue;
             }
@@ -3864,12 +4250,7 @@ var rescueUsed = false;
               if (!parsed) {
                 var unparseableMsg = attemptName + ": unparseable model output (length " + String(rawA).length + ")";
                 providerErrors.push(unparseableMsg);
-                console.error(unparseableMsg + " | First 200 chars: " + String(rawA).substring(0, 200));
-              }
-              if (!parsed) {
-                var unparseableMsg = attemptName + ": unparseable model output (length " + String(rawA).length + ")";
-                providerErrors.push(unparseableMsg);
-                console.error(unparseableMsg + " | First 200 chars: " + String(rawA).substring(0, 200));
+                console.error(unparseableMsg);
                 attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
                 pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " could not be parsed — trying the next provider" });
                 continue;
@@ -3933,7 +4314,7 @@ var rescueUsed = false;
             // original text unchanged so users always get a response instead of an
             // error — the deterministic nativization backstop below still applies
             // its safe rules, so the result stays honest and never "zero".
-            parsed = deriveSentencesFromTexts(bodyText, bodyText);
+            parsed = deriveSentencesFromTexts(originalBodyText, bodyText);
             provider = "none";
             rescueUsed = true;
             attemptTimes.push({ provider: "none", ms: 0, ok: true });
@@ -3941,15 +4322,16 @@ var rescueUsed = false;
           }
 
           if (savedFootnotes) parsed._originalFootnotes = savedFootnotes;
+          if (preSweep) parsed._preSweepStats = preSweep.stats;
 
-          var result = ensureValidResult(parsed, text, options);
+          var result = await ensureValidResult(parsed, text, options, env);
           if (!result) {
             pushLine({ ev: "error", message: "Invalid response from AI model" });
             try { controller.close(); } catch (e) {}
             return;
           }
 
-          if (userId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+          if (userId && env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY && !rescueUsed) {
             await incrementUsage(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY, userId);
             usage += 1;
           }
@@ -4013,8 +4395,8 @@ var rescueUsed = false;
       });
 
     } catch (error) {
-      console.error("Worker error:", error);
-      return jsonResponse({ error: String(error.message || error || "Unknown error") }, 500);
+      console.error("Worker error: " + String((error && error.message) || error).substring(0, 300));
+      return jsonResponse({ error: String(error.message || error || "Unknown error").substring(0, 300) }, 500);
     }
   },
 };

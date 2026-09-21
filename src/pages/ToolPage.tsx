@@ -835,6 +835,30 @@ export default function ToolPage() {
                     </div>
                   </div>
 
+                  {/* Rescue honesty banner: provider returned nothing usable */}
+                  {result.rescued && (
+                    <div className="p-4 bg-rose-950/40 border border-rose-500/40 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-rose-200 uppercase tracking-wider mb-0.5 flex items-center gap-1.5">
+                          <Info className="w-3.5 h-3.5" /> Provider returned nothing usable
+                        </p>
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          The AI provider failed to produce a usable revision, so your text was returned unchanged
+                          (only the safe nativization rules were applied). This run did <strong className="text-rose-200">not</strong> count against
+                          your daily limit. Check the Gemini API key / model availability, then retry.
+                        </p>
+                        {result.providerErrors && result.providerErrors.length > 0 && (
+                          <p className="text-[11px] text-rose-300/80 font-mono mt-1.5 break-words">
+                            {result.providerErrors.join(" | ")}
+                          </p>
+                        )}
+                      </div>
+                      <button onClick={handleTransform} className="shrink-0 px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold text-xs transition-all cursor-pointer">
+                        Retry
+                      </button>
+                    </div>
+                  )}
+
                   {/* Full prose view */}
                   {outputViewMode === "fulltext" && (
                     <div className="space-y-4 flex-1">
@@ -1025,9 +1049,15 @@ export default function ToolPage() {
                         <FileText className="w-4 h-4 text-amber-400" /> Diagnostics
                       </h4>
                       {result.timing && (
-                        <div className="p-2 mb-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-200 font-mono">
-                          Provider: {result.provider} &middot; {Math.round(result.timing.totalMs / 1000)}s
-                          {result.timing.attempts.length > 1 ? ` (${result.timing.attempts.length} attempts)` : ""}
+                        <div className={`p-2 mb-3 border rounded-xl text-[11px] font-mono ${result.rescued ? "bg-rose-950/40 border-rose-500/40 text-rose-200" : "bg-amber-500/10 border-amber-500/20 text-amber-200"}`}>
+                          Provider: {result.provider}
+                          {(() => {
+                            const okAttempt = result.timing.attempts.find((a: any) => a.ok && a.provider && a.provider !== "none" && a.provider !== "last");
+                            return okAttempt ? <span> ({okAttempt.provider})</span> : null;
+                          })()}
+                          {" "}&middot; {Math.round(result.timing.totalMs / 1000)}s
+                          {result.timing.attempts.length > 1 ? ` (${result.timing.attempts.length} attempt${result.timing.attempts.length === 1 ? "" : "s"})` : ""}
+                          {result.rescued ? " · RESCUED (not counted against limit)" : ""}
                         </div>
                       )}
                       <div className="space-y-2.5">
@@ -1051,6 +1081,61 @@ export default function ToolPage() {
                               {result.databaseStats.aiPhraseReplacements > 0 && <p>AI-ese phrases replaced: {result.databaseStats.aiPhraseReplacements}</p>}
                               {result.databaseStats.idiomReplacements > 0 && <p>Idiom improvements: {result.databaseStats.idiomReplacements}</p>}
                               {result.databaseStats.lexicalReplacements > 0 && <p>Lexical replacements ({domain}): {result.databaseStats.lexicalReplacements}</p>}
+                              {result.databaseStats.sentencesChanged !== undefined && result.databaseStats.sentencesChanged > 0 && (
+                                <p><strong className="text-amber-300">{result.databaseStats.totalReplacements}</strong> deterministic rule match{result.databaseStats.totalReplacements === 1 ? "" : "es"} · {result.databaseStats.sentencesChanged} sentence{result.databaseStats.sentencesChanged === 1 ? "" : "s"} touched</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {result.rubric && (
+                          <div className="p-3 bg-[#0A1128] border border-slate-500/30 rounded-xl text-xs">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-300 block mb-1.5">Scoring Rubric</span>
+                            <div className="space-y-1 text-slate-300">
+                              {(() => {
+                                const line = (label, a: any) => (
+                                  <p key={label} className="flex justify-between gap-2">
+                                    <span className="text-slate-400">{label}</span>
+                                    <span className="text-right">
+                                      <span className="text-slate-300">{a.source}</span>
+                                      <span className="text-slate-500"> → </span>
+                                      <span className="text-emerald-300">{a.remaining}</span>
+                                      <span className="text-slate-600"> ({a.sourceHealth} → {a.remainingHealth})</span>
+                                    </span>
+                                  </p>
+                                );
+                                const r = result.rubric;
+                                return (
+                                  <>
+                                    {line("Spelling", r.axes.spelling)}
+                                    {line("Grammar", r.axes.grammar)}
+                                    {line("Stiffness", r.axes.stiffness)}
+                                    {line("Duplicate words", r.axes.duplicates)}
+                                    <p className="flex justify-between gap-2 border-t border-slate-700/50 pt-1.5 mt-1">
+                                      <span className="text-slate-400">Residual meter</span>
+                                      <span className="text-right text-slate-300">{r.meter.source} → <span className="text-emerald-300">{r.meter.revised}</span> <span className="text-slate-500">(cleared {r.meter.cleared})</span></span>
+                                    </p>
+                                    <p className="text-[11px] text-slate-500 leading-relaxed mt-1.5">{r.meter.note}</p>
+                                    {(() => {
+                                      const b = r.banding;
+                                      if (b.flatByContract) {
+                                        return <p className="border-t border-slate-700/50 pt-1.5 mt-1.5">No measurable change — revised scored <strong className="text-amber-300">exactly like its source</strong> (no phantom credit).</p>;
+                                      }
+                                      return <p className="border-t border-slate-700/50 pt-1.5 mt-1.5">
+                                        {b.realChanges} real sentence change{b.realChanges === 1 ? "" : "s"} · {b.dbRulesFired} DB rule{b.dbRulesFired === 1 ? "" : "s"} fired{b.dbRulesFired > 0 && b.nativizedRuleCount ? ` (${b.nativizedRuleCount} distinct stiffness rule${b.nativizedRuleCount === 1 ? "" : "s"} consumed)` : ""} · boost <span className="text-emerald-300">+{b.boostApplied}</span>
+                                      </p>;
+                                    })()}
+                                    {r.banding.spellingCapApplied && <p className="text-rose-300/90">Spelling errors remain — both scores capped at 80.</p>}
+                                    {result.humanize && result.humanize.flagged > 0 && (
+                                      <p className="border-t border-slate-700/50 pt-1.5 mt-1.5 text-slate-400">
+                                        Gated humanize pass: <strong className="text-slate-200">{result.humanize.flagged}</strong> residual-stiff sentence{result.humanize.flagged === 1 ? "" : "s"} flagged · <strong className="text-emerald-300">{result.humanize.changed}</strong> rewritten
+                                        {result.humanize.skippedReason && <span className="text-slate-500"> · {({ "no-api-key": "no model key — pass skipped", "nothing-flagged": "none left after rules", "empty": "no sentences", "unparseable-revisions": "model output unparseable", "humanize-error": "non-fatal model error" } as Record<string, string>)[result.humanize.skippedReason] ?? result.humanize.skippedReason}</span>}
+                                      </p>
+                                    )}
+                                    <p className="text-[11px] text-slate-500 leading-relaxed mt-1.5">{r.banding.rule}</p>
+                                  </>
+                                );
+                              })()}
                             </div>
                           </div>
                         )}
