@@ -1213,30 +1213,36 @@ async function callGemini(text, options, apiKey) {
 
 function chunkText(text, maxWords) {
   var limit = maxWords || 800;
-  var paragraphs = (text || "").split(/\r?\n/);
+  var paragraphs = (text || "").split(/\r?\n+/);
   var chunks = [];
   var currentChunk = [];
   var currentWordCount = 0;
 
-  for (var i = 0; i < paragraphs.length; i++) {
-    var p = paragraphs[i];
-    var pWords = p.split(/\s+/).filter(Boolean).length;
+  paragraphs.forEach(function (p) {
+    var trimmed = p.trim();
+    if (!trimmed) return;
+    var m = trimmed.match(/\S+/g);
+    var pWords = m ? m.length : 0;
+    if (pWords === 0) return;
+
     if (currentWordCount + pWords > limit && currentChunk.length > 0) {
-      chunks.push(currentChunk.join("\n"));
+      chunks.push(currentChunk.join("\n\n"));
       currentChunk = [];
       currentWordCount = 0;
     }
-    currentChunk.push(p);
+    currentChunk.push(trimmed);
     currentWordCount += pWords;
-  }
+  });
+
   if (currentChunk.length > 0) {
-    chunks.push(currentChunk.join("\n"));
+    chunks.push(currentChunk.join("\n\n"));
   }
   return chunks;
 }
 
 async function callGeminiWithChunking(bodyText, options, apiKey, pushLine) {
-  var wordCount = (bodyText || "").split(/\s+/).filter(Boolean).length;
+  var m = (bodyText || "").match(/\S+/g);
+  var wordCount = m ? m.length : 0;
   if (wordCount <= 800) {
     return callGemini(bodyText, options, apiKey);
   }
