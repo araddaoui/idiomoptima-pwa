@@ -1211,6 +1211,105 @@ async function callGemini(text, options, apiKey) {
   return callGeminiRaw(prompt, apiKey);
 }
 
+function chunkText(text, maxWords) {
+  var limit = maxWords || 800;
+  var paragraphs = (text || "").split(/\r?\n/);
+  var chunks = [];
+  var currentChunk = [];
+  var currentWordCount = 0;
+
+  for (var i = 0; i < paragraphs.length; i++) {
+    var p = paragraphs[i];
+    var pWords = p.split(/\s+/).filter(Boolean).length;
+    if (currentWordCount + pWords > limit && currentChunk.length > 0) {
+      chunks.push(currentChunk.join("\n"));
+      currentChunk = [];
+      currentWordCount = 0;
+    }
+    currentChunk.push(p);
+    currentWordCount += pWords;
+  }
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk.join("\n"));
+  }
+  return chunks;
+}
+
+async function callGeminiWithChunking(bodyText, options, apiKey, pushLine) {
+  var wordCount = (bodyText || "").split(/\s+/).filter(Boolean).length;
+  if (wordCount <= 800) {
+    return callGemini(bodyText, options, apiKey);
+  }
+
+  var chunks = chunkText(bodyText, 800);
+  if (pushLine) {
+    pushLine({ ev: "tick", pct: 20, phase: "Divided text into " + chunks.length + " chunks for parallel processing..." });
+  }
+
+  var chunkPromises = chunks.map(async function (chunk, idx) {
+    try {
+      var rawResult = await callGemini(chunk, options, apiKey);
+      var parsedResult = parseJsonFromModel(rawResult);
+      if (pushLine) {
+        pushLine({ ev: "tick", pct: Math.min(84, 20 + Math.round(((idx + 1) / chunks.length) * 60)), phase: "Completed chunk " + (idx + 1) + " of " + chunks.length });
+      }
+      return { index: idx, parsed: parsedResult, raw: rawResult, ok: !!parsedResult };
+    } catch (e) {
+      if (pushLine) {
+        pushLine({ ev: "tick", pct: 30, phase: "Chunk " + (idx + 1) + " failed: " + String(e.message || e).substring(0, 100) });
+      }
+      return { index: idx, parsed: null, raw: null, ok: false, error: e };
+    }
+  });
+
+  var results = await Promise.all(chunkPromises);
+  var mergedSentences = [];
+  var mergedFinalParts = [];
+  var allOk = true;
+  var failedIdx = [];
+
+  for (var r = 0; r < results.length; r++) {
+    var res = results[r];
+    if (!res.ok || !res.parsed) {
+      allOk = false;
+      failedIdx.push(r + 1);
+      continue;
+    }
+
+    if (Array.isArray(res.parsed.sentences)) {
+      mergedSentences = mergedSentences.concat(res.parsed.sentences);
+    }
+
+    var chunkFinal = res.parsed.finalVersion || res.parsed.final || res.parsed.text || "";
+    if (!chunkFinal && Array.isArray(res.parsed.sentences)) {
+      chunkFinal = res.parsed.sentences
+        .filter(Boolean)
+        .map(function (s) { return s.revised || s.original || ""; })
+        .join(" ");
+    }
+    if (chunkFinal) {
+      mergedFinalParts.push(chunkFinal);
+    } else {
+      mergedFinalParts.push(chunks[res.index]);
+    }
+  }
+
+  if (!allOk) {
+    throw new Error("Gemini chunked processing failed. Failed chunks: " + failedIdx.join(", "));
+  }
+
+  var mergedFinalVersion = mergedFinalParts.join("\n\n");
+  var mergedParsed = {
+    finalVersion: mergedFinalVersion,
+    sentences: mergedSentences,
+    originalScore: results[0].parsed.originalScore,
+    revisedScore: results[0].parsed.revisedScore,
+    detectedDialect: results[0].parsed.detectedDialect || "US"
+  };
+
+  return JSON.stringify(mergedParsed);
+}
+
 async function callGeminiRaw(prompt, apiKey) {
   // Model candidates rotate so a stale / unprovisioned model ID (e.g. a preview
   // not yet bound to this project) never makes Gemini a fatal stop. A 404 /
@@ -4192,7 +4291,7 @@ export default {
       // If Gemini is down the request fails loudly instead of degrading to a
       // weaker model (the two-pass contract is provider-pure).
       var attempts = [];
-      attempts.push(["gemini", env.GEMINI_API_KEY ? function () { return callGemini(bodyText, options, env.GEMINI_API_KEY); } : null]);
+      attempts.push(["gemini", env.GEMINI_API_KEY ? function () { return callGeminiWithChunking(bodyText, options, env.GEMINI_API_KEY, pushLine); } : null]);
 
       var parsed = null;
       var provider = "none";
