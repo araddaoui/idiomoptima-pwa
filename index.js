@@ -1321,7 +1321,7 @@ async function callGeminiRaw(prompt, apiKey) {
   // not yet bound to this project) never makes Gemini a fatal stop. A 404 /
   // "not found" / 429 on one candidate moves on to the next; real auth failures
   // still surface. 3.6 is preferred, older flash models are the fallback.
-  var MODEL_CANDIDATES = ["gemini-2.0-flash"];
+  var MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-1.5-flash"];
   var lastError = "";
   for (var ci = 0; ci < MODEL_CANDIDATES.length; ci++) {
     var model = MODEL_CANDIDATES[ci];
@@ -4030,7 +4030,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
 // /health?probe=1 live-checks each MODEL_CANDIDATE against the configured key
 // so a "changes nothing" symptom is provably a key/model problem, not a code
 // bug. Names the model IDs; never echoes keys or user content.
-var HEALTH_MODEL_CANDIDATES = ["gemini-2.0-flash"];
+var HEALTH_MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-1.5-flash"];
 
 async function probeGeminiModels(apiKey) {
   if (!apiKey) return { configured: false, models: [] };

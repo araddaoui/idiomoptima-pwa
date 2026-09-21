@@ -84,7 +84,7 @@ The package name is still the legacy `react-example` and worker mame internally
 - **Providers**: Pro = Gemini → OpenRouter → DeepSeek. Free = OpenRouter → Cloudflare AI
   → Gemini → DeepSeek; free texts ≥ 8000 chars skip OpenRouter/Cloudflare and go
   straight to Gemini/DeepSeek. OpenRouter rotates through a hardcoded free-model list
-  on 429/timeout (45s each). Gemini uses `gemini-2.0-flash` with forced JSON,
+  on 429/timeout (45s each). Gemini uses `gemini-3.6-flash` with forced JSON,
   `thinkingBudget: 0`, 90s timeout.
 - **Post-processing pipeline**: `extractFootnoteBlock` (pulls `[N]`/`Ibid.` out of body) →
   `normalizeTitleBreaks` (bolds headings) → `postProcessText` → `reinsertParagraphBreaks`
@@ -166,7 +166,7 @@ Deterministic contract (must never drift):
   ONLY as a residual detector for scoring, never as an editor (the old Stage-A
   write path is gone).
 - **Provider determinism**: Gemini is the ONLY provider for every tier
-  (`MODEL_CANDIDATES = ["gemini-2.0-flash"]`),
+  (`MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-1.5-flash"]`),
   run at `temperature: 0`, `topP: 1`, `maxOutputTokens: 65536`, forced JSON, and
   NO `thinkingConfig`. OpenRouter/DeepSeek/Cloudflare-AI standby were REMOVED.
   There is no failure rotation: if Gemini is down the request fails loudly.
