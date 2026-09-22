@@ -40,6 +40,10 @@ export interface TransformationResult {
     matched: number;
     uncovered: string[];
   };
+  // Advise-only tier (worker-computed): informal-but-acceptable phrasings the
+  // deterministic layer kept as written, with a "consider ..." alternative.
+  // Rendered in the Notes tab under "Register suggestions". Never edited.
+  registerNotes?: string[];
   tier?: string;
   usage?: number;
   // Rescue honesty: set when the provider produced no usable revision and the
@@ -172,6 +176,7 @@ export async function transformText(
   databases?: {
     idiomDatabase?: any[];
     aiPhraseMap?: any[];
+    aiSuggestions?: any[];
     lexicalDatabases?: Record<string, any[]>;
   },
   authToken?: string
@@ -227,6 +232,7 @@ export async function transformText(
           ? {
               aiDb: databases.aiPhraseMap || [],
               idiomDb: databases.idiomDatabase || [],
+              suggestDb: databases.aiSuggestions || [],
               lexicalDb: databases.lexicalDatabases || {},
             }
           : undefined,

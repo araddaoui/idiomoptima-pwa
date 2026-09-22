@@ -240,12 +240,34 @@ Deterministic contract (must never drift):
   ("extending from The Woman Warrior (1976) to China Men (1977)") MUST be
   nativized — this is why `have affinities with each other→share affinities`
   fires inside kingston's Book-Titles sentence.
-- **Nativization rule-sets**: worker `DEFAULT_DATABASES.aiDb` = 28 entries;
-  `public/ai-natural-database.json` = 3584 entries (the 16 documented additions,
+- **Nativization rule-sets**: worker `DEFAULT_DATABASES.aiDb` = 25 entries;
+  `public/ai-natural-database.json` = 3581 entries (the 16 documented additions,
   plus the freeze-safe data entry `robust framework→solid framework`). All 16
   documented additions above remain as DATA (their old code-side template
   families are removed; the aiDb rows are the only place they live now). DB
   growth is data-only and freeze-safe; rule SEMANTICS must not change.
+- **Two-tier nativization (2026-09-22)**: the deterministic layer now splits into
+  an AUTO tier (`aiDb`/`idiomDb`/`lexicalDb` — the ONLY editor; also the ONLY
+  stiffness signal that moves scores via `scanStiffPhrases`) and an ADVISE-ONLY
+  tier (`suggestDb`, shipped from `public/ai-suggestions.json`, floor
+  `DEFAULT_DATABASES.suggestDb`). Advise-only phrases are never rewritten, never
+  count as defects, and surface as `registerNotes` in the Notes tab ("kept as
+  written — consider ..."). This is the policy answer to phrase disputes: a new
+  phrase goes into `ai-suggestions.json` unless it is an unambiguous
+  defect/register lift. Author-approved removals on 2026-09-22 (behavior change):
+  `let us analyze this → we now analyze this` and `let us now analyze this →
+  we now analyze this` were DELETED from all four locations (client DB, floor ×2
+  of the pair) — "Let us analyze this." is idiomatic hortative academic English,
+  and the swap was a false positive; `some sort of → some kind of` was retired
+  from the auto tier (lateral colloquialism swap; the advise-only target is now
+  `some form of`).
+- **Phantom-echo dedup (2026-09-22)**: the ingest path scrubs empty-original
+  sentences whose `revised` verbatim-repeats the previous real sentence
+  (whitespace/case-normalized), and `rebuildFinalVersion` skips the same echo
+  shape, so a provider's trailing duplication ("We now analyze this. We now
+  analyze this.") can no longer reach finalVersion, the diff, or the "Added
+  sentence" note. A genuinely NEW sentence (empty original, DIFFERENT revised)
+  still counts as an added sentence.
 - **Grammar/spelling lives in Pass 1 (live-only)**: the offline/rescue path
   cannot fix grammar by contract. The success-criteria fixture's grammar asserts
   (`challanges→challenges`, `underlaying→underlying`, `demonstration→demonstrate`)

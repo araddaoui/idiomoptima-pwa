@@ -1712,7 +1712,16 @@ function rebuildFinalVersion(originalText, sentences) {
       var origSent = (sObj.original || "").trim();
       if (!origSent) {
         // A genuinely added sentence (empty original). Keep it in the current
-        // paragraph in order so finalVersion stays 1:1 with the sentences list.
+        // paragraph in order so finalVersion stays 1:1 with the sentences list —
+        // UNLESS it is a phantom echo that verbatim-repeats the previous
+        // sentence's revised text (empty-original duplication leak), which must
+        // never surface in the rebuilt final text.
+        var echoRev = String(sObj.revised || "").trim().replace(/\s+/g, " ").toLowerCase();
+        var prevEcho = paraSentences.length > 0 ? String(paraSentences[paraSentences.length - 1].revised || "").trim().replace(/\s+/g, " ").toLowerCase() : "";
+        if (echoRev.length > 0 && echoRev === prevEcho) {
+          sentIdx++;
+          continue;
+        }
         paraSentences.push(sObj);
         sentIdx++;
         continue;
@@ -1737,10 +1746,18 @@ function rebuildFinalVersion(originalText, sentences) {
     }
   }
 
-  // Append remaining unmatched sentences
+  // Append remaining unmatched sentences. Skip phantom echoes that repeat the
+  // last emitted sentence verbatim (whitespace/case-normalized) — the ingest
+  // scrub normally removes these, but the echo can still reach the rebuild tail
+  // for certain output shapes, and it must never surface twice in finalVersion.
   while (sentIdx < sentences.length) {
     var rem = sentences[sentIdx].revised || sentences[sentIdx].original || "";
-    if (rem.trim()) result.push(rem);
+    if (rem.trim()) {
+      var remNorm = String(rem).trim().replace(/\s+/g, " ").toLowerCase();
+      var lastEmittedNorm = result.length > 0 ? String(result[result.length - 1]).trim().replace(/\s+/g, " ").toLowerCase() : "";
+      if (remNorm.length > 0 && remNorm === lastEmittedNorm) { sentIdx++; continue; }
+      result.push(rem);
+    }
     sentIdx++;
   }
 
@@ -2448,11 +2465,8 @@ var DEFAULT_DATABASES = {
   // the public/ JSONs via the client; these entries keep the deterministic layer
   // on task for a bare request.
   aiDb: [
-    { ai: "some sort of", natural: "some kind of" },
     { ai: "went ahead with", natural: "proceeded with" },
     { ai: "go ahead with", natural: "proceed with" },
-    { ai: "let us analyze this", natural: "we now analyze this" },
-    { ai: "let us now analyze this", natural: "we now analyze this" },
     { ai: "as stated earlier", natural: "as noted earlier" },
     { ai: "harks back to", natural: "traces back to" },
     { ai: "levels of certainty about", natural: "confidence in" },
@@ -2476,6 +2490,14 @@ var DEFAULT_DATABASES = {
     { ai: "is a testament to", natural: "attests to" },
     { ai: "a tapestry of", natural: "a mix of" },
     { ai: "regarding for the", natural: "regarding the" }
+  ],
+  // Advise-only tier (register suggestions): fluent-but-informal phrasings the
+  // deterministic layer NEVER auto-edits. They surface as "consider ..."
+  // register notes (kept as written) so the tool never rewrites acceptable
+  // authorial English. See buildNativizationMaps (suggestList) and the
+  // registerNotes construction in ensureValidResult.
+  suggestDb: [
+    { ai: "some sort of", natural: "some form of" }
   ],
   lexicalDb: {
     general: [
@@ -2586,12 +2608,18 @@ function boldHeadingSentences(sentences) {
 }
 
 // Builds deterministic nativization maps from the databases the client sends.
-// Only MULTI-WORD sources participate in phrase-level matching (a bare single
-// common word like "plus" -> "also" is far too risky and changes meaning);
-// full-sentence mappings require the whole sentence to match verbatim. Both are
-// high-precision, so enforcing them never mangles natural prose.
+// TWO TIERS:
+//   - AUTO (aiDb/idiomDb/lexicalDb) -> aiMap/phraseList/sentenceMap. These
+//     phrases are rewritten into `revised`, count toward databaseStats, and are
+//     the ONLY stiffness signal that moves scores (scanStiffPhrases).
+//   - ADVISE-ONLY (suggestDb) -> suggestList. Fluent-but-informal phrasings the
+//     layer leaves untouched; applyDatabaseNativization merely records them so
+//     ensureValidResult can surface a "consider ..." register note. Never
+//     edited, never counted as a defect, never credited in the census.
+// The gates below (stoplists, singletons, collocations, word boundaries) apply
+// to BOTH tiers; the only difference is what happens to a match.
 function buildNativizationMaps(dbs, domain) {
-  var maps = { aiMap: {}, sentenceMap: {}, phraseList: [] };
+  var maps = { aiMap: {}, sentenceMap: {}, phraseList: [], suggestList: [] };
   if (!dbs || typeof dbs !== "object") return maps;
 
   function sourceOf(e) { return e && (e.ai || e.clunky || e.source); }
@@ -2600,7 +2628,7 @@ function buildNativizationMaps(dbs, domain) {
   // NATIVE_STOPLIST / COLLOCATION_PAIRS / SINGLE_WORD_ALLOW / isCollocationLocked
   // live at module scope above (shared with the test harness).
 
-  function push(srcRaw, tgtRaw, cat) {
+  function push(srcRaw, tgtRaw, cat, adviseOnly) {
     var src = String(srcRaw || "").trim();
     var tgt = String(tgtRaw || "").trim();
     if (!src || !tgt) return;
@@ -2617,6 +2645,10 @@ function buildNativizationMaps(dbs, domain) {
     var wordCount = (norm.match(/[A-Za-z0-9'\u2019-]+/g) || []).length;
     var isAllowedSingle = wordCount === 1 && !!SINGLE_WORD_ALLOW[normLow];
     if (wordCount < 2 && !isAllowedSingle) return;
+    if (adviseOnly) {
+      maps.suggestList.push({ src: norm, tgt: tgt });
+      return;
+    }
     var endsSentence = /[.!?]$/.test(norm);
     if (!endsSentence && norm.length >= 6) {
       var key = norm.toLowerCase();
@@ -2642,8 +2674,11 @@ function buildNativizationMaps(dbs, domain) {
   } else if (Array.isArray(lex)) {
     lex.forEach(function (e) { push(sourceOf(e), targetOf(e), "lexical"); });
   }
+  // Advise-only tier: same gate chain, but the entries never fire as edits.
+  if (Array.isArray(dbs.suggestDb)) dbs.suggestDb.forEach(function (e) { push(sourceOf(e), targetOf(e), "ai", true); });
   // Longest-first so a longer phrase wins over its nested shorter fragment.
   maps.phraseList.sort(function (a, b) { return b.src.length - a.src.length; });
+  maps.suggestList.sort(function (a, b) { return b.src.length - a.src.length; });
   return maps;
 }
 
@@ -2774,10 +2809,19 @@ function applyGrammarLayer(text) {
 // sentence (recap-safe via replaceOutsideQuotes, footnote/citation-safe) and
 // reports honest statistics for the suggestions and score. This is the ONLY
 // lexical pass — no built-in word-swap rules or template families exist.
-function applyDatabaseNativization(sentences, dbs, domain) {
+function applyDatabaseNativization(sentences, dbs, domain, opts) {
   var stats = { totalMatches: 0, sentencesChanged: 0, aiPhrases: 0, idioms: 0, lexical: 0 };
   var maps = dbs && typeof dbs === "object" ? buildNativizationMaps(dbs, domain) : buildNativizationMaps({}, domain);
-  if (!sentences || !sentences.length) return { sentences: sentences || [], stats: stats };
+  var collectSuggest = !(opts && opts.collectSuggest === false);
+  // Advise-only tier matchers (never edit; recorded for register notes).
+  var suggestRx = [];
+  for (var sgi = 0; sgi < maps.suggestList.length; sgi++) {
+    var sp = maps.suggestList[sgi];
+    suggestRx.push({ src: sp.src, tgt: sp.tgt, rx: new RegExp("\\b" + escapeRegExp(sp.src) + "\\b", "i") });
+  }
+  var suggestNotes = [];
+  var suggestSeen = {};
+  if (!sentences || !sentences.length) return { sentences: sentences || [], stats: stats, suggestNotes: suggestNotes };
 
   function bump(matchKind) {
     stats.totalMatches++;
@@ -2850,9 +2894,24 @@ function applyDatabaseNativization(sentences, dbs, domain) {
     }
 
     if (changedHere) stats.sentencesChanged++;
+
+    // 3) Advise-only tier: the phrase stays in the text (never rewritten), but
+    // when an informal/varied phrasing is present, record a "consider ..."
+    // register note for the author. Citation/footnote/quote-only lines already
+    // returned above, so this scan only reaches real prose.
+    if (collectSuggest) {
+      for (var ki = 0; ki < suggestRx.length; ki++) {
+        var sr = suggestRx[ki];
+        if (suggestSeen[sr.src]) continue;
+        if (sr.rx.test(s.revised || "")) {
+          suggestSeen[sr.src] = true;
+          suggestNotes.push({ ai: sr.src, natural: sr.tgt });
+        }
+      }
+    }
   });
 
-  return { sentences: sentences, stats: stats };
+  return { sentences: sentences, stats: stats, suggestNotes: suggestNotes };
 }
 
 // Phase-C source-first sweep: applies the deterministic DB nativization rules to
@@ -2867,7 +2926,9 @@ function nativizeSourceText(text, dbs, domain) {
   var ZERO = { totalMatches: 0, sentencesChanged: 0, aiPhrases: 0, idioms: 0, lexical: 0 };
   if (!text || !String(text).trim()) return { text: String(text || ""), stats: ZERO };
   var units = [{ original: String(text), revised: String(text), isImmutableFootnote: false }];
-  var applied = applyDatabaseNativization(units, dbs, domain);
+  // collectSuggest: false — the pre-sweep is an EDITING pass; register notes are
+  // recorded once by the ensureValidResult backstop against the final sentences.
+  var applied = applyDatabaseNativization(units, dbs, domain, { collectSuggest: false });
   return { text: applied.sentences[0].revised, stats: applied.stats };
 }
 
@@ -3579,6 +3640,17 @@ async function ensureValidResult(parsed, originalText, options, env) {
     databaseStats.lexical += dbPass.stats.lexical;
   }
 
+  // Advise-only tier -> register notes: phrases the deterministic layer chose
+  // NOT to auto-edit (fluent-but-informal). Surfaced as suggestions so the
+  // author can decide; the prose itself never changes. Distinct phrases only,
+  // capped at 5 to keep the Notes panel readable.
+  var registerNotes = [];
+  if (dbPass && dbPass.suggestNotes && dbPass.suggestNotes.length) {
+    dbPass.suggestNotes.slice(0, 5).forEach(function (rn) {
+      registerNotes.push("\u201C" + rn.ai + "\u201D is informal; consider \u201C" + rn.natural + "\u201D in academic writing (kept as written).");
+    });
+  }
+
   // Phase C stage 3: gated humanize — only residual-stiff sentences (uncovered
   // by the DB layers) reach the nativize model call; everything else untouched.
   var humanizePass = await humanizeFlaggedSentences(sentences, options, env);
@@ -4225,6 +4297,9 @@ async function ensureValidResult(parsed, originalText, options, env) {
     finalVersion: finalVersion,
     sentences: sentences,
     suggestions: suggestions,
+    // Advise-only tier: informal-but-acceptable phrasings left untouched, with
+    // a "consider ..." alternative. Observable, author-decided, never scored.
+    registerNotes: registerNotes,
     explanation: summary,
     detectedDialect: dialect,
     databaseStats: databaseStats,
@@ -4478,7 +4553,8 @@ export default {
         }
       }
       var hasAnyDb = clientDb && ((Array.isArray(clientDb.aiDb) && clientDb.aiDb.length > 0) ||
-        (Array.isArray(clientDb.idiomDb) && clientDb.idiomDb.length > 0) || anyLex);
+        (Array.isArray(clientDb.idiomDb) && clientDb.idiomDb.length > 0) ||
+        (Array.isArray(clientDb.suggestDb) && clientDb.suggestDb.length > 0) || anyLex);
       options.databases = hasAnyDb ? clientDb : DEFAULT_DATABASES;
 
       if (!text) {
@@ -4608,6 +4684,27 @@ var rescueUsed = false;
                   if (s && s.revised === "[object Object]") s.revised = "";
                   return s;
                 });
+                // Phantom-echo scrub: a provider occasionally appends a sentence
+                // whose original is EMPTY and whose revised text repeats the
+                // previous real sentence verbatim (an alignment echo — e.g. the
+                // "We now analyze this. We now analyze this." duplication seen in
+                // production). Dropping those BEFORE coverage/scoring keeps the
+                // diff, notes, rebuild, and scores honest. A genuinely NEW
+                // sentence (empty original but DIFFERENT revised) still counts as
+                // an added sentence.
+                var scrubbed = [];
+                var lastEchoOrigNorm = "";
+                var lastEchoRevNorm = "";
+                for (var se = 0; se < parsed.sentences.length; se++) {
+                  var sen = parsed.sentences[se] || {};
+                  var emptyEcho = !String(sen.original || "").trim();
+                  var revNorm = String(sen.revised || "").trim().replace(/\s+/g, " ").toLowerCase();
+                  if (emptyEcho && revNorm.length > 0 && (revNorm === lastEchoOrigNorm || revNorm === lastEchoRevNorm)) continue;
+                  scrubbed.push(sen);
+                  if (sen.original && String(sen.original).trim()) lastEchoOrigNorm = String(sen.original).trim().replace(/\s+/g, " ").toLowerCase();
+                  if (String(sen.revised || "").trim()) lastEchoRevNorm = revNorm;
+                }
+                if (scrubbed.length !== parsed.sentences.length) parsed.sentences = scrubbed;
               }
               if (!parsed) {
                 var unparseableMsg = attemptName + ": unparseable model output (length " + String(rawA).length + ")";
