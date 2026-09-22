@@ -194,6 +194,16 @@ Deterministic contract (must never drift):
   provider (Gemini included) is still held to the DROP/cover axis (`back`) so
   truncation rotates. Fallbacks keep both axes + both 0.5 floors; added-word
   Notes still surface genuinely odd additions.
+  **Authoritative-accept (2026-09-22)**: Gemini's parseable, coverage-passing
+  output is ALWAYS accepted, flat or edited — the no-content-change rotation
+  applies only to fallback providers. A grammatically clean source that
+  legitimately yields no model edits completes in a SINGLE attempt (~Gemini
+  latency) instead of rotating through weaker fallbacks for ~99s. Accepted
+  attempts carry `noop: !modelEdited` so the Diagnostics tag reads "no
+  grammar/spelling defects found" for clean sources (honest flat, per the
+  scoring contract). Empty-manuscript output is never accepted from any
+  provider. Fallback exit paths (failure / all-provider flat → last parseable
+  no-op accepted) are unchanged.
 - **Score = re-banded measured residual**, provider-independent: raw residual
   meter unchanged (spelling cap 80, duplicated-word cap 85, grammar 3/hit cap 15,
   stiffness density `min(40, round(stiff/proseCount*30))`, floor 40); then the

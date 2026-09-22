@@ -4647,10 +4647,26 @@ var rescueUsed = false;
               // otherwise the request silently returns a flat, unchanged score.
               // We deliberately do NOT gate this on our deterministic phrase DB
               // hitting: a text can be stiff in ways our rules do not cover, and
-              // only a stronger model can fix those. After every configured
-              // provider has been tried, the last parseable no-op is accepted and
-              // scored honestly (flat = correct) via parsedHasRealChanges.
-              if (!hasRealContentChange(parsed, bodyText) && ai < attempts.length - 1) {
+              // only a stronger model can fix those. GEMINI IS EXEMPT: it is the
+              // Pass-1 grammar/spelling authority (two-pass contract), so its
+              // parseable, coverage-passing output is accepted as authoritative
+              // immediately — flat or edited. A clean source legitimately yields
+              // no edits, and waiting on fallbacks that are weaker by design only
+              // wastes the run (99s for a flat manuscript). Fallbacks keep the
+              // rotation; the last parseable no-op is still accepted and scored
+              // honestly (flat = correct).
+              var modelEdited = hasRealContentChange(parsed, bodyText);
+              if ((parsed.finalVersion || "").trim() === "") {
+                // Empty manuscript: not acceptable from any provider, Gemini
+                // included. An empty body would wipe the source text.
+                var emptyMsg = attemptName + ": returned an empty manuscript — rotating to next provider";
+                providerErrors.push(emptyMsg);
+                console.error(emptyMsg);
+                attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
+                pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " returned an empty manuscript — trying next provider" });
+                continue;
+              }
+              if (!modelEdited && attemptName !== "gemini" && ai < attempts.length - 1) {
                 if (!lastParsed) { lastParsed = parsed; lastParsedProvider = attemptName; }
                 providerErrors.push(attemptName + ": returned the text without any edits — rotating to next provider");
                 console.error(attemptName + " returned the text without any edits — rotating to the next provider");
@@ -4658,7 +4674,7 @@ var rescueUsed = false;
                 pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: attemptName + " returned no edits — trying next provider" });
                 continue;
               }
-              attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: true });
+              attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: true, noop: !modelEdited });
               answeredOk = true;
               pushLine({ ev: "tick", pct: 86, phase: "Model returned from " + attemptName + " — running deterministic nativization rules" });
               break;

@@ -1060,7 +1060,14 @@ export default function ToolPage() {
                           {result.rescued ? " · RESCUED (not counted against limit)" : ""}
                           {(() => {
                             const noopAttempt = result.timing.attempts.find((a: any) => a.noop);
-                            return !result.rescued && noopAttempt ? " · flat (model made no edits — deterministic rules only)" : "";
+                            if (result.rescued || !noopAttempt) return "";
+                            // Gemini accepted flat means the source had no
+                            // grammar/spelling defects — a good outcome, not a
+                            // failure. Fallback-accepted flat keeps the blunt
+                            // wording.
+                            return result.provider === "gemini"
+                              ? " · no grammar/spelling defects found — deterministic nativization rules only"
+                              : " · flat (model made no edits — deterministic rules only)";
                           })()}
                         </div>
                       )}
