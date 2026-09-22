@@ -166,7 +166,7 @@ Deterministic contract (must never drift):
   ONLY as a residual detector for scoring, never as an editor (the old Stage-A
   write path is gone).
 - **Provider determinism**: Gemini is the ONLY provider for every tier
-  (`MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-1.5-flash"]`),
+  (`MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash"]`),
   run at `temperature: 0`, `topP: 1`, `maxOutputTokens: 65536`, forced JSON, and
   NO `thinkingConfig`. OpenRouter/DeepSeek/Cloudflare-AI standby were REMOVED.
   There is no failure rotation: if Gemini is down the request fails loudly.

@@ -1321,7 +1321,7 @@ async function callGeminiRaw(prompt, apiKey) {
   // not yet bound to this project) never makes Gemini a fatal stop. A 404 /
   // "not found" / 429 on one candidate moves on to the next; real auth failures
   // still surface. 3.6 is preferred, older flash models are the fallback.
-  var MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-1.5-flash"];
+  var MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash"];
   var lastError = "";
   for (var ci = 0; ci < MODEL_CANDIDATES.length; ci++) {
     var model = MODEL_CANDIDATES[ci];
@@ -1797,6 +1797,7 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
         explanation: "",
         isImmutableFootnote: origIsCitation || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig) || /^\s*Ibid\.?/i.test(orig),
         paragraphIndex: p,
+        semanticRisk: undefined,
       });
     }
     // Emit revised sentences that have no original counterpart (e.g., a split sentence),
@@ -1844,7 +1845,7 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
         var looksLikeFragment = addClean.length > 0 && addClean.length < 140 && !/\b(is|are|was|were|has|have|had|the|a|an|to|of|in|on|for|with|that|this|it|they|we|you|i|he|she)\b/i.test(addClean);
         var midWordBreak = /[a-z][a-z0-9'\u2019]*\s+\S*$/.test(addClean) && !isCompleteSentence;
         if (!isCompleteSentence && (looksLikeFragment || midWordBreak)) continue;
-        result.push({ original: "", revised: addText, explanation: "", isImmutableFootnote: false, paragraphIndex: p });
+        result.push({ original: "", revised: addText, explanation: "", isImmutableFootnote: false, paragraphIndex: p, semanticRisk: undefined });
       }
     }
     // Remove hallucinated/echo copies from finalVersion (the LAST occurrence is the extra one).
@@ -3421,6 +3422,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
             explanation: s.explanation,
             isImmutableFootnote: s.isImmutableFootnote,
             paragraphIndex: s.paragraphIndex,
+            semanticRisk: undefined,
           });
         } else {
           seenHeadings[headKey] = true;
@@ -3430,6 +3432,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
             explanation: s.explanation === "No corrections needed." ? "No corrections needed." : "Formatted as heading.",
             isImmutableFootnote: false,
             paragraphIndex: s.paragraphIndex,
+            semanticRisk: undefined,
           });
           split.push({
             original: s.original,
@@ -3437,6 +3440,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
             explanation: s.explanation,
             isImmutableFootnote: s.isImmutableFootnote,
             paragraphIndex: s.paragraphIndex,
+            semanticRisk: undefined,
           });
         }
       } else {
@@ -3989,6 +3993,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
           explanation: "No corrections needed.",
           isImmutableFootnote: true,
           paragraphIndex: fnStarPara + fi,
+          semanticRisk: undefined,
         });
       });
   }
@@ -4030,7 +4035,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
 // /health?probe=1 live-checks each MODEL_CANDIDATE against the configured key
 // so a "changes nothing" symptom is provably a key/model problem, not a code
 // bug. Names the model IDs; never echoes keys or user content.
-var HEALTH_MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-1.5-flash"];
+var HEALTH_MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash"];
 
 async function probeGeminiModels(apiKey) {
   if (!apiKey) return { configured: false, models: [] };
