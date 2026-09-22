@@ -7,7 +7,7 @@ and "nativize prose" web app. Conceptually 2 layers:
 
 - **Frontend** — React 19 + Vite 6 + Tailwind v4 + TipTap rich text editor SPA.
   Uses shadcn/ui tokens, lucide icons, motion, sonner. Served via Vercel.
-- **Backend** — a single-file Cloudflare Worker (`nativewrite-api`, `index.js`, ~2200 lines)
+- **Backend** — a single-file Cloudflare Worker (`nativewrite-api`, `index.js`, ~4500 lines)
   that verifies Clerk JWTs, enforces usage tiers, and calls LLM providers
   (Gemini → OpenRouter free-model rotation → Cloudflare AI) with a large
   deterministic post-processing pipeline.
@@ -132,9 +132,7 @@ Keep API keys out of commits.
   compat 2026-08-19) and `wrangler.jsonc` (`react-example`, compat 2026-06-08,
   `nodejs_compat`). The build emits a `dist/wrangler.json`. Verify which one is the
   source of truth before changing Worker config.
-- **Uncommitted changes** currently in the worktree: `src/pages/ToolPage.tsx` and
-  `src/services/geminiService.ts` only if locally modified beyond the committed
-  audit-hardening work (HEAD `61ac999`). Stray untracked files:
+- **Stray untracked files** (diagnostic leftovers, safe to delete):
   `index.js.bak-20260828-131457`, `last-response.json`.
 - **Public copy is now aligned with enforcement**: the worker limits authenticated free
   users to 4 requests/day (each capped at 800 words) (`users.subscription_tier`

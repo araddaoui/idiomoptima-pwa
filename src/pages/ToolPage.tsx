@@ -1058,6 +1058,16 @@ export default function ToolPage() {
                           {" "}&middot; {Math.round(result.timing.totalMs / 1000)}s
                           {result.timing.attempts.length > 1 ? ` (${result.timing.attempts.length} attempt${result.timing.attempts.length === 1 ? "" : "s"})` : ""}
                           {result.rescued ? " · RESCUED (not counted against limit)" : ""}
+                          {(() => {
+                            const noopAttempt = result.timing.attempts.find((a: any) => a.noop);
+                            return !result.rescued && noopAttempt ? " · flat (model made no edits — deterministic rules only)" : "";
+                          })()}
+                        </div>
+                      )}
+                      {!result.rescued && result.providerErrors && result.providerErrors.length > 0 && (
+                        <div className="p-2.5 mb-3 border border-amber-500/20 bg-amber-500/5 rounded-xl">
+                          <p className="text-[10px] uppercase font-bold tracking-wider text-amber-400 mb-1">Provider errors (non-fatal — a fallback answered)</p>
+                          <p className="text-[11px] font-mono text-amber-200/80 break-words leading-relaxed">{result.providerErrors.join(" | ")}</p>
                         </div>
                       )}
                       <div className="space-y-2.5">
