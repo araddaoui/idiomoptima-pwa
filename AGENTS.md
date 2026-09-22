@@ -81,11 +81,14 @@ The package name is still the legacy `react-example` and worker mame internally
   run limit → HTTP 429 with `limitReached: true`; over 800 words on free → HTTP 429
   with `wordLimitReached: true`. Usage
   increments only for authenticated users; **anonymous requests bypass limits entirely**.
-- **Providers**: Pro = Gemini → OpenRouter → DeepSeek. Free = OpenRouter → Cloudflare AI
-  → Gemini → DeepSeek; free texts ≥ 8000 chars skip OpenRouter/Cloudflare and go
-  straight to Gemini/DeepSeek. OpenRouter rotates through a hardcoded free-model list
-  on 429/timeout (45s each). Gemini uses `gemini-3.6-flash` with forced JSON,
-  `thinkingBudget: 0`, 90s timeout.
+- **Providers**: Gemini is the ONLY primary provider (every tier) — forced JSON,
+  `thinkingBudget: 0`, 90s timeout. Behind it sits a free fallback chain that
+  engages ONLY after Gemini exhausts its own model rotation (3.6 → 2.5):
+  OpenRouter (hardcoded free-model rotation) → OpenCode Zen free →
+  DeepSeek → Cloudflare Workers AI (`AI` binding, zero extra key). A missing
+  key/binding skips that provider; if every provider is unconfigured the request
+  never errors — it rescues to the original text plus the deterministic DB
+  backstop. Fallback chunks run at `concurrency: 2` (free-tier rate limits).
 - **Post-processing pipeline**: `extractFootnoteBlock` (pulls `[N]`/`Ibid.` out of body) →
   `normalizeTitleBreaks` (bolds headings) → `postProcessText` → `reinsertParagraphBreaks`
   → sentence-level passes (`protectQuotes`, `protectAcademicRegister`,
@@ -113,7 +116,7 @@ Worker secrets (set via `wrangler secret put`):
 - `CLERK_DOMAIN`
 - `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
 - `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`
-- `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `DEEPSEEK_API_KEY`
+- `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `OPENCODE_ZEN_API_KEY`, `DEEPSEEK_API_KEY`
 - `AI` (Cloudflare Workers AI binding, per `wrangler.toml`)
 
 Other files present: `.dev.vars`, `.env`, `.env.local` (local secrets), `.env.txt`.
@@ -165,12 +168,17 @@ Deterministic contract (must never drift):
   and the template credit in scoring were all REMOVED. The grammar layer exists
   ONLY as a residual detector for scoring, never as an editor (the old Stage-A
   write path is gone).
-- **Provider determinism**: Gemini is the ONLY provider for every tier
+- **Provider determinism**: Gemini is the ONLY primary provider for every tier
   (`MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash"]`),
   run at `temperature: 0`, `topP: 1`, `maxOutputTokens: 65536`, forced JSON, and
-  NO `thinkingConfig`. OpenRouter/DeepSeek/Cloudflare-AI standby were REMOVED.
-  There is no failure rotation: if Gemini is down the request fails loudly.
-  Which model actually answered is audited (`timing.attempts`). No
+  NO `thinkingConfig`. Fallback chain (strictly behind Gemini, only after its
+  model rotation is exhausted): OpenRouter free → OpenCode Zen free → DeepSeek →
+  Cloudflare Workers AI; fallback chunks run at `concurrency: 2`; a missing
+  key/binding skips that provider. With no provider configured the request
+  NEVER errors — it rescues to the original text plus the deterministic DB
+  backstop (anonymised requests and every failure mode still return HTTP 200).
+  Which provider answered is audited (`timing.attempts`); on a flat/no-edit
+  success the label names the provider that actually returned the text. No
   temperature/sampling variation is allowed to affect output.
 - **Score = re-banded measured residual**, provider-independent: raw residual
   meter unchanged (spelling cap 80, duplicated-word cap 85, grammar 3/hit cap 15,

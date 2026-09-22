@@ -18,3 +18,5 @@ coverage/
 last-response.json
 index.js.bak-*
 api/
+
+.env*

@@ -1199,16 +1199,20 @@ function detectDialect(text) {
   return "US";
 }
 
-async function callGemini(text, options, apiKey) {
+function buildGrammarPrompt(text, options) {
   var dialect = options.forcedDialect || "the most likely";
-  var prompt =
+  return (
     "Domain: " + options.domain + "\nTone: " + options.tone + "\nMode: " + options.mode + "\nDialect: " + dialect + "\n\n" +
     "TASK: Fix grammar and spelling errors ONLY — subject-verb agreement, wrong verb tenses, misspellings, " +
     "wrong articles (a/an/the), and clearly wrong prepositions. Do NOT restructure sentences, change word " +
     "choice, nativize or 'improve' the style, add or remove commas, or rewrite phrasing. The COMPLETE text " +
     "is returned; the deterministic nativization layer runs afterwards, so lexical replacement is not your job.\n" +
-    "Text:\n" + text;
-  return callGeminiRaw(prompt, apiKey);
+    "Text:\n" + text
+  );
+}
+
+async function callGemini(text, options, apiKey) {
+  return callGeminiRaw(buildGrammarPrompt(text, options), apiKey);
 }
 
 function chunkText(text, maxWords) {
@@ -1316,6 +1320,99 @@ async function callGeminiWithChunking(bodyText, options, apiKey, pushLine) {
   return JSON.stringify(mergedParsed);
 }
 
+// Provider-agnostic chunked wrapper used by the FALLBACK providers. Gemini
+// keeps its own parallel path (callGeminiWithChunking) byte-identical; the
+// free providers are rate-limited (OpenRouter free ~20 req/min), so their
+// chunks run with a bounded concurrency instead of a parallel firehose.
+async function callProviderWithChunking(bodyText, chunkFn, pushLine, opts) {
+  var cfg = opts || {};
+  var m = (bodyText || "").match(/\S+/g);
+  var wordCount = m ? m.length : 0;
+  if (wordCount <= 800) {
+    return chunkFn(bodyText);
+  }
+
+  var chunks = chunkText(bodyText, 800);
+  if (pushLine) {
+    pushLine({ ev: "tick", pct: 20, phase: "Divided text into " + chunks.length + " chunks for bounded-concurrency processing..." });
+  }
+
+  var results = [];
+  var cursor = 0;
+  async function worker() {
+    while (cursor < chunks.length) {
+      var idx = cursor;
+      cursor++;
+      var chunk = chunks[idx];
+      try {
+        var rawResult = await chunkFn(chunk);
+        var parsedResult = parseJsonFromModel(rawResult);
+        if (pushLine) {
+          pushLine({ ev: "tick", pct: Math.min(84, 20 + Math.round(((idx + 1) / chunks.length) * 60)), phase: "Completed chunk " + (idx + 1) + " of " + chunks.length });
+        }
+        results[idx] = { index: idx, parsed: parsedResult, raw: rawResult, ok: !!parsedResult };
+      } catch (e) {
+        if (pushLine) {
+          pushLine({ ev: "tick", pct: 30, phase: "Chunk " + (idx + 1) + " failed: " + String(e.message || e).substring(0, 100) });
+        }
+        results[idx] = { index: idx, parsed: null, raw: null, ok: false, error: e };
+      }
+    }
+  }
+
+  var limit = cfg.concurrency || Infinity;
+  var workerCount = limit === Infinity ? chunks.length : Math.max(1, Math.min(limit, chunks.length));
+  var workers = [];
+  for (var w = 0; w < workerCount; w++) workers.push(worker());
+  await Promise.all(workers);
+
+  var mergedSentences = [];
+  var mergedFinalParts = [];
+  var allOk = true;
+  var failedIdx = [];
+
+  for (var r = 0; r < results.length; r++) {
+    var res = results[r];
+    if (!res || !res.ok || !res.parsed) {
+      allOk = false;
+      failedIdx.push(r + 1);
+      continue;
+    }
+
+    if (Array.isArray(res.parsed.sentences)) {
+      mergedSentences = mergedSentences.concat(res.parsed.sentences);
+    }
+
+    var chunkFinal = res.parsed.finalVersion || res.parsed.final || res.parsed.text || "";
+    if (!chunkFinal && Array.isArray(res.parsed.sentences)) {
+      chunkFinal = res.parsed.sentences
+        .filter(Boolean)
+        .map(function (s) { return s.revised || s.original || ""; })
+        .join(" ");
+    }
+    if (chunkFinal) {
+      mergedFinalParts.push(chunkFinal);
+    } else {
+      mergedFinalParts.push(chunks[res.index]);
+    }
+  }
+
+  if (!allOk) {
+    throw new Error("chunked fallback processing failed. Failed chunks: " + failedIdx.join(", "));
+  }
+
+  var mergedFinalVersion = mergedFinalParts.join("\n\n");
+  var mergedParsed = {
+    finalVersion: mergedFinalVersion,
+    sentences: mergedSentences,
+    originalScore: results[0].parsed.originalScore,
+    revisedScore: results[0].parsed.revisedScore,
+    detectedDialect: results[0].parsed.detectedDialect || "US"
+  };
+
+  return JSON.stringify(mergedParsed);
+}
+
 async function callGeminiRaw(prompt, apiKey) {
   // Model candidates rotate so a stale / unprovisioned model ID (e.g. a preview
   // not yet bound to this project) never makes Gemini a fatal stop. A 404 /
@@ -1378,6 +1475,137 @@ async function callGeminiRaw(prompt, apiKey) {
     return String(raw || "");
   }
   throw new Error("Gemini API error: all candidate models failed. Last: " + lastError);
+}
+
+// --- Fallback providers (OpenRouter free -> Zen free -> DeepSeek -> Workers AI)
+// Every fallback returns the same JSON *string* the main loop's parseJsonFromModel
+// consumes, so rotation, no-edit guards, coverage checks and rescue are shared.
+var OPENROUTER_FREE_MODELS = [
+  "google/gemma-4-26b-a4b-it:free",
+  "nvidia/nemotron-3-super-120b-a12b:free",
+  "openai/gpt-oss-20b:free",
+  "openrouter/free"
+];
+
+var ZEN_FREE_MODELS = [
+  "ling-3.0-flash-fin-free",
+  "nemotron-3.5-lightning-free",
+  "mimo-v2.6-flash-free"
+];
+
+var WORKERS_AI_MODEL = "@cf/openai/gpt-oss-20b";
+
+async function callChatCompletions(baseUrl, model, apiKey, prompt, opts) {
+  var cfg = opts || {};
+  var withoutJsonMode = false;
+  while (true) {
+    var body = {
+      model: model,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0,
+      max_tokens: 8192
+    };
+    if (cfg.jsonMode !== false && !withoutJsonMode) {
+      body.response_format = { type: "json_object" };
+    }
+    var response = await fetch(baseUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + apiKey
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(cfg.timeoutMs || 90000)
+    });
+    if (!response.ok && response.status === 400 && cfg.jsonMode !== false && !withoutJsonMode) {
+      withoutJsonMode = true;
+      continue;
+    }
+    if (!response.ok) {
+      var errBody = await response.text();
+      throw new Error(model + ": " + errBody.substring(0, 200));
+    }
+    var data = await response.json();
+    var content = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    return String(content || "");
+  }
+}
+
+async function callOpenRouter(prompt, apiKey) {
+  var lastError = "";
+  for (var mi = 0; mi < OPENROUTER_FREE_MODELS.length; mi++) {
+    var model = OPENROUTER_FREE_MODELS[mi];
+    try {
+      return await callChatCompletions("https://openrouter.ai/api/v1/chat/completions", model, apiKey, prompt, { jsonMode: true });
+    } catch (e) {
+      lastError = model + ": " + String((e && e.message) || e).substring(0, 200);
+    }
+  }
+  throw new Error("OpenRouter: all free models failed. Last: " + lastError);
+}
+
+async function callZenFree(prompt, apiKey) {
+  var lastError = "";
+  for (var zi = 0; zi < ZEN_FREE_MODELS.length; zi++) {
+    var model = ZEN_FREE_MODELS[zi];
+    try {
+      return await callChatCompletions("https://opencode.ai/zen/v1/chat/completions", model, apiKey, prompt, { jsonMode: true });
+    } catch (e) {
+      lastError = model + ": " + String((e && e.message) || e).substring(0, 200);
+    }
+  }
+  throw new Error("OpenCode Zen: all free models failed. Last: " + lastError);
+}
+
+async function callDeepSeek(prompt, apiKey) {
+  return callChatCompletions("https://api.deepseek.com/chat/completions", "deepseek-chat", apiKey, prompt, { jsonMode: true });
+}
+
+async function callWorkersAI(prompt, ai) {
+  var data = await ai.run(WORKERS_AI_MODEL, {
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: prompt }
+    ],
+    temperature: 0,
+    max_tokens: 8192
+  });
+  var content = data && (data.response || (data.result && data.result.response) || "");
+  return String(content || "");
+}
+
+// Chip each chunk through the SAME grammar-only prompt the Gemini path uses,
+// with bounded concurrency for the rate-limited free providers.
+function grammarChunked(bodyText, options, pushLine, concurrency, providerFn) {
+  return callProviderWithChunking(bodyText, function (chunk) {
+    return providerFn(buildGrammarPrompt(chunk, options));
+  }, pushLine, { concurrency: concurrency });
+}
+
+// Gemini is the ONLY primary provider; these rotate in strictly behind it and
+// only after Gemini's own model candidates (3.6 -> 2.5) are exhausted. Missing
+// keys/bindings are skipped by the caller's attempts loop.
+function buildProviderAttempts(bodyText, options, pushLine, env) {
+  var attempts = [];
+  attempts.push(["gemini", env.GEMINI_API_KEY ? function () {
+    return callGeminiWithChunking(bodyText, options, env.GEMINI_API_KEY, pushLine);
+  } : null]);
+  attempts.push(["openrouter", env.OPENROUTER_API_KEY ? function () {
+    return grammarChunked(bodyText, options, pushLine, 2, function (prompt) { return callOpenRouter(prompt, env.OPENROUTER_API_KEY); });
+  } : null]);
+  attempts.push(["zen", env.OPENCODE_ZEN_API_KEY ? function () {
+    return grammarChunked(bodyText, options, pushLine, 2, function (prompt) { return callZenFree(prompt, env.OPENCODE_ZEN_API_KEY); });
+  } : null]);
+  attempts.push(["deepseek", env.DEEPSEEK_API_KEY ? function () {
+    return grammarChunked(bodyText, options, pushLine, 2, function (prompt) { return callDeepSeek(prompt, env.DEEPSEEK_API_KEY); });
+  } : null]);
+  attempts.push(["workersai", env.AI ? function () {
+    return grammarChunked(bodyText, options, pushLine, 2, function (prompt) { return callWorkersAI(prompt, env.AI); });
+  } : null]);
+  return attempts;
 }
 
 // Dedicated nativize/humanize prompt for the GATED pass (Phase C). Only flagged
@@ -4068,6 +4296,25 @@ async function probeGeminiModels(apiKey) {
   return { configured: true, models: results };
 }
 
+// Workers AI reachability probe — the no-key backstop that keeps /health green
+// even during a Google-side outage.
+async function probeWorkersAI(ai) {
+  if (!ai) return { configured: false };
+  try {
+    var data = await ai.run(WORKERS_AI_MODEL, {
+      messages: [
+        { role: "system", content: "Reply with exactly: pong" },
+        { role: "user", content: "ping" }
+      ],
+      temperature: 0,
+      max_tokens: 1
+    });
+    return { configured: true, ok: true, response: String((data && data.response) || "pong").substring(0, 40) };
+  } catch (e) {
+    return { configured: true, ok: false, error: String((e && e.message) || e).substring(0, 120) };
+  }
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
@@ -4084,11 +4331,16 @@ export default {
         timestamp: Date.now(),
         configuredProviders: {
           gemini: !!env.GEMINI_API_KEY,
+          openrouter: !!env.OPENROUTER_API_KEY,
+          zen: !!env.OPENCODE_ZEN_API_KEY,
+          deepseek: !!env.DEEPSEEK_API_KEY,
+          workersai: !!env.AI,
         },
-        contract: "two-pass: gemini grammar-only -> deterministic DB nativization",
+        contract: "two-pass: gemini grammar-only -> deterministic DB nativization (free fallback chain behind)",
       };
       if (url.searchParams.get("probe") === "1") {
         health.geminiModelProbe = await probeGeminiModels(env.GEMINI_API_KEY);
+        health.workersAIProbe = await probeWorkersAI(env.AI);
       }
       return jsonResponse(health);
     }
@@ -4296,18 +4548,19 @@ export default {
       }
 
       // -- Provider routing ------------------------------------------
-      // Single provider contract: Gemini is the ONLY provider (all tiers).
-      // temperature 0 + no thinkingConfig keeps output deterministic; the
+      // Gemini is the ONLY primary provider (all tiers): temperature 0 + no
+      // thinkingConfig + forced JSON keeps output deterministic, and the
       // deterministic DB nativization layer runs after in ensureValidResult.
-      // If Gemini is down the request fails loudly instead of degrading to a
-      // weaker model (the two-pass contract is provider-pure).
-      var attempts = [];
-      attempts.push(["gemini", env.GEMINI_API_KEY ? function () { return callGeminiWithChunking(bodyText, options, env.GEMINI_API_KEY, pushLine); } : null]);
+      // Behind Gemini sits a free fallback chain (OpenRouter free -> Zen free
+      // -> DeepSeek -> Workers AI) that engages ONLY after Gemini exhausts its
+      // own model rotation. A missing key/binding skips that provider.
+      var attempts = buildProviderAttempts(bodyText, options, pushLine, env);
 
       var parsed = null;
       var provider = "none";
       var lastParsed = null;
       var lastParsedProvider = "";
+      var answeredOk = false;
       var providerErrors = [];
 var rescueUsed = false;
       var attemptTimes = [];
@@ -4399,6 +4652,7 @@ var rescueUsed = false;
                 continue;
               }
               attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: true });
+              answeredOk = true;
               pushLine({ ev: "tick", pct: 86, phase: "Model returned from " + attemptName + " — running deterministic nativization rules" });
               break;
             } catch (e) {
@@ -4410,7 +4664,7 @@ var rescueUsed = false;
             }
           }
 
-          if (!parsed && lastParsed) {
+          if (!answeredOk && lastParsed) {
             // Every provider returned no edits / failed; return the last
             // parseable result so the request still completes with an honest
             // (flat) outcome.
