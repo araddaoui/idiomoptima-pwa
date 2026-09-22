@@ -4586,6 +4586,14 @@ var rescueUsed = false;
             var attemptStartMs = Date.now();
             pushLine({ ev: "tick", pct: Math.min(84, 18 + attemptTimes.length * 6), phase: "Contacting " + attemptName + " — this can take up to 45–90s" });
             try {
+              // Keep the NDJSON stream alive during long provider waits: edge
+              // proxies have torn down idle responses, surfacing as a silent
+              // "Stream ended without a final result". Same pct as the
+              // "Contacting" tick, so the client never advances progress from
+              // these pings (progress is monotonic, never fabricated).
+              var heartbeat = setInterval(function () {
+                pushLine({ ev: "tick", pct: Math.min(84, 18 + attemptTimes.length * 6), phase: attemptName + " is still working — this can take up to 45–90s" });
+              }, 12000);
               var rawA = await attemptFn();
               parsed = parseJsonFromModel(rawA);
               if (parsed && (parsed.finalVersion === "[object Object]" ||
@@ -4660,6 +4668,8 @@ var rescueUsed = false;
               console.error(attemptName + " failed:", e && e.message);
               attemptTimes.push({ provider: attemptName, ms: Date.now() - attemptStartMs, ok: false });
               pushLine({ ev: "tick", pct: Math.min(88, 22 + attemptTimes.length * 6), phase: "Trying next model provider (" + attemptName + " failed)" });
+            } finally {
+              clearInterval(heartbeat);
             }
           }
 

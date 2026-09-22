@@ -266,6 +266,7 @@ export async function transformText(
       const decoder = new TextDecoder();
       let buffer = "";
       let lastPct = 10;
+      let streamError: string | null = null;
 
       try {
         while (true) {
@@ -276,29 +277,41 @@ export async function transformText(
           buffer = lines.pop() || "";
           for (const line of lines) {
             if (!line.trim()) continue;
+            let evt: any;
             try {
-              const evt = JSON.parse(line);
-              if (evt.ev === "final") {
-                data = evt.result;
-              } else if (evt.ev === "error") {
-                throw new Error(evt.message || "The AI service is temporarily unavailable.");
-              } else if (evt.ev === "phase" || evt.ev === "tick") {
-                // Forward real worker milestones to both bars — monotonically
-                // increasing, never fabricated.
-                if (typeof evt.pct === "number" && evt.pct > lastPct) {
-                  lastPct = evt.pct;
-                }
-                if (onProgress) onProgress(lastPct, 0, 1, evt.phase || "Working...");
+              evt = JSON.parse(line);
+            } catch {
+              continue;
+            }
+            if (evt.ev === "final") {
+              data = evt.result;
+            } else if (evt.ev === "error") {
+              // Surface the worker's real failure instead of the generic no-final
+              // message. A throw here used to be swallowed by the parse catch,
+              // leaving only "Stream ended..." no matter what the worker said.
+              streamError = evt.message || "The AI service is temporarily unavailable.";
+              break;
+            } else if (evt.ev === "phase" || evt.ev === "tick") {
+              // Forward real worker milestones to both bars — monotonically
+              // increasing, never fabricated.
+              if (typeof evt.pct === "number" && evt.pct > lastPct) {
+                lastPct = evt.pct;
               }
-            } catch {}
+              if (onProgress) onProgress(lastPct, 0, 1, evt.phase || "Working...");
+            }
           }
+          if (streamError) break;
         }
+      } catch (e) {
+        // Network/browser stream error: the edge dropped the connection without
+        // emitting a worker error event (e.g. during a long provider wait).
+        streamError = (e as Error)?.message || "The connection to the transformation server was lost.";
       } finally {
         reader.releaseLock();
       }
 
       if (!data!) {
-        throw new Error("Stream ended without a final result from the worker.");
+        throw new Error(streamError || "Stream ended without a final result from the worker.");
       }
     } else {
       // --- Legacy fallback: old worker returns plain JSON -------------------
