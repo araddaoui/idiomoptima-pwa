@@ -1414,11 +1414,11 @@ async function callProviderWithChunking(bodyText, chunkFn, pushLine, opts) {
 }
 
 async function callGeminiRaw(prompt, apiKey) {
-  // Model candidates rotate so a stale / unprovisioned model ID (e.g. a preview
-  // not yet bound to this project) never makes Gemini a fatal stop. A 404 /
-  // "not found" / 429 on one candidate moves on to the next; real auth failures
-  // still surface. 3.6 is preferred, older flash models are the fallback.
-  var MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash"];
+  // 3.6-flash is the only candidate: older flash models are retired
+  // (gemini-2.5-flash now 404s with "no longer available to new users"). A 404 /
+  // 429 / 503 on the single candidate moves the whole attempt to the fallback
+  // chain; real auth failures still surface.
+  var MODEL_CANDIDATES = ["gemini-3.6-flash"];
   var lastError = "";
   for (var ci = 0; ci < MODEL_CANDIDATES.length; ci++) {
     var model = MODEL_CANDIDATES[ci];
@@ -1493,8 +1493,6 @@ var ZEN_FREE_MODELS = [
   "mimo-v2.6-flash-free"
 ];
 
-var WORKERS_AI_MODEL = "@cf/openai/gpt-oss-20b";
-
 async function callChatCompletions(baseUrl, model, apiKey, prompt, opts) {
   var cfg = opts || {};
   var withoutJsonMode = false;
@@ -1506,7 +1504,7 @@ async function callChatCompletions(baseUrl, model, apiKey, prompt, opts) {
         { role: "user", content: prompt }
       ],
       temperature: 0,
-      max_tokens: 8192
+max_tokens: cfg.maxTokens || 16384
     };
     if (cfg.jsonMode !== false && !withoutJsonMode) {
       body.response_format = { type: "json_object" };
@@ -1539,12 +1537,14 @@ async function callOpenRouter(prompt, apiKey) {
   for (var mi = 0; mi < OPENROUTER_FREE_MODELS.length; mi++) {
     var model = OPENROUTER_FREE_MODELS[mi];
     try {
-      return await callChatCompletions("https://openrouter.ai/api/v1/chat/completions", model, apiKey, prompt, { jsonMode: true });
+      var content = await callChatCompletions("https://openrouter.ai/api/v1/chat/completions", model, apiKey, prompt, { jsonMode: true, timeoutMs: 60000, maxTokens: 16384 });
+      if (parseJsonFromModel(content)) return content;
+      lastError = model + ": unparseable model output (length " + String(content).length + ")";
     } catch (e) {
       lastError = model + ": " + String((e && e.message) || e).substring(0, 200);
     }
   }
-  throw new Error("OpenRouter: all free models failed. Last: " + lastError);
+  throw new Error("OpenRouter: all free models failed or returned unparseable output. Last: " + lastError);
 }
 
 async function callZenFree(prompt, apiKey) {
@@ -1552,29 +1552,47 @@ async function callZenFree(prompt, apiKey) {
   for (var zi = 0; zi < ZEN_FREE_MODELS.length; zi++) {
     var model = ZEN_FREE_MODELS[zi];
     try {
-      return await callChatCompletions("https://opencode.ai/zen/v1/chat/completions", model, apiKey, prompt, { jsonMode: true });
+      var content = await callChatCompletions("https://opencode.ai/zen/v1/chat/completions", model, apiKey, prompt, { jsonMode: true, timeoutMs: 60000, maxTokens: 16384 });
+      if (parseJsonFromModel(content)) return content;
+      lastError = model + ": unparseable model output (length " + String(content).length + ")";
     } catch (e) {
       lastError = model + ": " + String((e && e.message) || e).substring(0, 200);
     }
   }
-  throw new Error("OpenCode Zen: all free models failed. Last: " + lastError);
+  throw new Error("OpenCode Zen: all free models failed or returned unparseable output. Last: " + lastError);
 }
 
 async function callDeepSeek(prompt, apiKey) {
-  return callChatCompletions("https://api.deepseek.com/chat/completions", "deepseek-chat", apiKey, prompt, { jsonMode: true });
+  return callChatCompletions("https://api.deepseek.com/chat/completions", "deepseek-chat", apiKey, prompt, { jsonMode: true, timeoutMs: 60000, maxTokens: 16384 });
 }
 
+var WORKERS_AI_MODELS = [
+  "@cf/meta/llama-3.1-8b-instruct",
+  "@cf/qwen/qwen1.5-14b-chat-awq",
+  "@cf/openai/gpt-oss-20b"
+];
+
 async function callWorkersAI(prompt, ai) {
-  var data = await ai.run(WORKERS_AI_MODEL, {
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: prompt }
-    ],
-    temperature: 0,
-    max_tokens: 8192
-  });
-  var content = data && (data.response || (data.result && data.result.response) || "");
-  return String(content || "");
+  var lastError = "";
+  for (var wi = 0; wi < WORKERS_AI_MODELS.length; wi++) {
+    var model = WORKERS_AI_MODELS[wi];
+    try {
+      var data = await ai.run(model, {
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0,
+        max_tokens: 16384
+      });
+      var content = data && (data.response || (data.result && data.result.response) || "");
+      if (content && parseJsonFromModel(content)) return content;
+      lastError = model + ": " + (content ? "unparseable model output (length " + String(content).length + ")" : "empty response");
+    } catch (e) {
+      lastError = model + ": " + String((e && e.message) || e).substring(0, 200);
+    }
+  }
+  throw new Error("Workers AI: all models failed or returned unusable output. Last: " + lastError);
 }
 
 // Chip each chunk through the SAME grammar-only prompt the Gemini path uses,
@@ -4263,7 +4281,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
 // /health?probe=1 live-checks each MODEL_CANDIDATE against the configured key
 // so a "changes nothing" symptom is provably a key/model problem, not a code
 // bug. Names the model IDs; never echoes keys or user content.
-var HEALTH_MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash"];
+var HEALTH_MODEL_CANDIDATES = ["gemini-3.6-flash"];
 
 async function probeGeminiModels(apiKey) {
   if (!apiKey) return { configured: false, models: [] };
@@ -4297,22 +4315,28 @@ async function probeGeminiModels(apiKey) {
 }
 
 // Workers AI reachability probe — the no-key backstop that keeps /health green
-// even during a Google-side outage.
+// even during a Google-side outage. Probes the same rotation the transform uses
+// and reports which model actually answered.
 async function probeWorkersAI(ai) {
   if (!ai) return { configured: false };
-  try {
-    var data = await ai.run(WORKERS_AI_MODEL, {
-      messages: [
-        { role: "system", content: "Reply with exactly: pong" },
-        { role: "user", content: "ping" }
-      ],
-      temperature: 0,
-      max_tokens: 1
-    });
-    return { configured: true, ok: true, response: String((data && data.response) || "pong").substring(0, 40) };
-  } catch (e) {
-    return { configured: true, ok: false, error: String((e && e.message) || e).substring(0, 120) };
+  for (var wi = 0; wi < WORKERS_AI_MODELS.length; wi++) {
+    var model = WORKERS_AI_MODELS[wi];
+    try {
+      var data = await ai.run(model, {
+        messages: [
+          { role: "system", content: "Reply with exactly: pong" },
+          { role: "user", content: "ping" }
+        ],
+        temperature: 0,
+        max_tokens: 1
+      });
+      var reply = String((data && data.response) || "pong").substring(0, 40);
+      if (reply) return { configured: true, ok: true, model: model, response: reply };
+    } catch (e) {
+      continue;
+    }
   }
+  return { configured: true, ok: false, error: "all Workers AI models failed (" + WORKERS_AI_MODELS.length + " tried)" };
 }
 
 export default {

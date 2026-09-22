@@ -169,11 +169,14 @@ Deterministic contract (must never drift):
   ONLY as a residual detector for scoring, never as an editor (the old Stage-A
   write path is gone).
 - **Provider determinism**: Gemini is the ONLY primary provider for every tier
-  (`MODEL_CANDIDATES = ["gemini-3.6-flash", "gemini-2.5-flash"]`),
+  (`MODEL_CANDIDATES = ["gemini-3.6-flash"]` — older flash models are retired and
+  404 on new accounts, so they are NOT in the rotation),
   run at `temperature: 0`, `topP: 1`, `maxOutputTokens: 65536`, forced JSON, and
-  NO `thinkingConfig`. Fallback chain (strictly behind Gemini, only after its
-  model rotation is exhausted): OpenRouter free → OpenCode Zen free → DeepSeek →
-  Cloudflare Workers AI; fallback chunks run at `concurrency: 2`; a missing
+  NO `thinkingConfig`. Fallback chain (strictly behind Gemini): OpenRouter free →
+  OpenCode Zen free → DeepSeek → Cloudflare Workers AI; fallback chunks run at
+  `concurrency: 2`, fallback call timeout 60s (Gemini keeps 90s), and each
+  fallback model's output is parse-validated (non-JSON output rotates to the next
+  model; Workers AI probes a rotation of models). A missing
   key/binding skips that provider. With no provider configured the request
   NEVER errors — it rescues to the original text plus the deterministic DB
   backstop (anonymised requests and every failure mode still return HTTP 200).
