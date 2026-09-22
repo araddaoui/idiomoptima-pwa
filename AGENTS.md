@@ -9,7 +9,7 @@ and "nativize prose" web app. Conceptually 2 layers:
   Uses shadcn/ui tokens, lucide icons, motion, sonner. Served via Vercel.
 - **Backend** — a single-file Cloudflare Worker (`nativewrite-api`, `index.js`, ~2200 lines)
   that verifies Clerk JWTs, enforces usage tiers, and calls LLM providers
-  (Gemini → OpenRouter free-model rotation → DeepSeek → Cloudflare AI) with a large
+  (Gemini → OpenRouter free-model rotation → Cloudflare AI) with a large
   deterministic post-processing pipeline.
 
 Auth: Clerk. Data: Supabase (`users`, `usage` tables). Payments: Stripe subscriptions.
@@ -83,12 +83,16 @@ The package name is still the legacy `react-example` and worker mame internally
   increments only for authenticated users; **anonymous requests bypass limits entirely**.
 - **Providers**: Gemini is the ONLY primary provider (every tier) — forced JSON,
   `thinkingBudget: 0`, 90s timeout. Behind it sits a free fallback chain that
-  engages ONLY after Gemini exhausts its own model rotation (3.6 → 2.5):
-  OpenRouter (hardcoded free-model rotation) → OpenCode Zen free →
-  DeepSeek → Cloudflare Workers AI (`AI` binding, zero extra key). A missing
+  engages ONLY after Gemini exhausts its own model rotation (3.6):
+  OpenRouter (hardcoded free-model rotation) →
+  Cloudflare Workers AI (`AI` binding, zero extra key). A missing
   key/binding skips that provider; if every provider is unconfigured the request
   never errors — it rescues to the original text plus the deterministic DB
   backstop. Fallback chunks run at `concurrency: 2` (free-tier rate limits).
+  OpenCode Zen free and DeepSeek were RETIRED as fallbacks on 2026-09-22: Zen
+  free models reject standalone API keys (`FreeTierError: can only be used from
+  within OpenCode`) and the DeepSeek account had no balance. Do NOT re-add them
+  without a working paid key.
 - **Post-processing pipeline**: `extractFootnoteBlock` (pulls `[N]`/`Ibid.` out of body) →
   `normalizeTitleBreaks` (bolds headings) → `postProcessText` → `reinsertParagraphBreaks`
   → sentence-level passes (`protectQuotes`, `protectAcademicRegister`,
@@ -116,7 +120,7 @@ Worker secrets (set via `wrangler secret put`):
 - `CLERK_DOMAIN`
 - `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
 - `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`
-- `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `OPENCODE_ZEN_API_KEY`, `DEEPSEEK_API_KEY`
+- `GEMINI_API_KEY`, `OPENROUTER_API_KEY`
 - `AI` (Cloudflare Workers AI binding, per `wrangler.toml`)
 
 Other files present: `.dev.vars`, `.env`, `.env.local` (local secrets), `.env.txt`.
@@ -173,7 +177,7 @@ Deterministic contract (must never drift):
   404 on new accounts, so they are NOT in the rotation),
   run at `temperature: 0`, `topP: 1`, `maxOutputTokens: 65536`, forced JSON, and
   NO `thinkingConfig`. Fallback chain (strictly behind Gemini): OpenRouter free →
-  OpenCode Zen free → DeepSeek → Cloudflare Workers AI; fallback chunks run at
+  Cloudflare Workers AI; fallback chunks run at
   `concurrency: 2`, fallback call timeout 60s (Gemini keeps 90s), and each
   fallback model's output is parse-validated (non-JSON output rotates to the next
   model; Workers AI probes a rotation of models). A missing

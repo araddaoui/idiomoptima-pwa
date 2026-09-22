@@ -1477,7 +1477,7 @@ async function callGeminiRaw(prompt, apiKey) {
   throw new Error("Gemini API error: all candidate models failed. Last: " + lastError);
 }
 
-// --- Fallback providers (OpenRouter free -> Zen free -> DeepSeek -> Workers AI)
+// --- Fallback providers (OpenRouter free -> Workers AI)
 // Every fallback returns the same JSON *string* the main loop's parseJsonFromModel
 // consumes, so rotation, no-edit guards, coverage checks and rescue are shared.
 var OPENROUTER_FREE_MODELS = [
@@ -1485,12 +1485,6 @@ var OPENROUTER_FREE_MODELS = [
   "nvidia/nemotron-3-super-120b-a12b:free",
   "openai/gpt-oss-20b:free",
   "openrouter/free"
-];
-
-var ZEN_FREE_MODELS = [
-  "ling-3.0-flash-fin-free",
-  "nemotron-3.5-lightning-free",
-  "mimo-v2.6-flash-free"
 ];
 
 async function callChatCompletions(baseUrl, model, apiKey, prompt, opts) {
@@ -1547,25 +1541,6 @@ async function callOpenRouter(prompt, apiKey) {
   throw new Error("OpenRouter: all free models failed or returned unparseable output. Last: " + lastError);
 }
 
-async function callZenFree(prompt, apiKey) {
-  var lastError = "";
-  for (var zi = 0; zi < ZEN_FREE_MODELS.length; zi++) {
-    var model = ZEN_FREE_MODELS[zi];
-    try {
-      var content = await callChatCompletions("https://opencode.ai/zen/v1/chat/completions", model, apiKey, prompt, { jsonMode: true, timeoutMs: 60000, maxTokens: 16384 });
-      if (parseJsonFromModel(content)) return content;
-      lastError = model + ": unparseable model output (length " + String(content).length + ")";
-    } catch (e) {
-      lastError = model + ": " + String((e && e.message) || e).substring(0, 200);
-    }
-  }
-  throw new Error("OpenCode Zen: all free models failed or returned unparseable output. Last: " + lastError);
-}
-
-async function callDeepSeek(prompt, apiKey) {
-  return callChatCompletions("https://api.deepseek.com/chat/completions", "deepseek-chat", apiKey, prompt, { jsonMode: true, timeoutMs: 60000, maxTokens: 16384 });
-}
-
 var WORKERS_AI_MODELS = [
   "@cf/meta/llama-3.1-8b-instruct",
   "@cf/qwen/qwen1.5-14b-chat-awq",
@@ -1604,7 +1579,7 @@ function grammarChunked(bodyText, options, pushLine, concurrency, providerFn) {
 }
 
 // Gemini is the ONLY primary provider; these rotate in strictly behind it and
-// only after Gemini's own model candidates (3.6 -> 2.5) are exhausted. Missing
+// only after Gemini's own model rotation (3.6) is exhausted. Missing
 // keys/bindings are skipped by the caller's attempts loop.
 function buildProviderAttempts(bodyText, options, pushLine, env) {
   var attempts = [];
@@ -1613,12 +1588,6 @@ function buildProviderAttempts(bodyText, options, pushLine, env) {
   } : null]);
   attempts.push(["openrouter", env.OPENROUTER_API_KEY ? function () {
     return grammarChunked(bodyText, options, pushLine, 2, function (prompt) { return callOpenRouter(prompt, env.OPENROUTER_API_KEY); });
-  } : null]);
-  attempts.push(["zen", env.OPENCODE_ZEN_API_KEY ? function () {
-    return grammarChunked(bodyText, options, pushLine, 2, function (prompt) { return callZenFree(prompt, env.OPENCODE_ZEN_API_KEY); });
-  } : null]);
-  attempts.push(["deepseek", env.DEEPSEEK_API_KEY ? function () {
-    return grammarChunked(bodyText, options, pushLine, 2, function (prompt) { return callDeepSeek(prompt, env.DEEPSEEK_API_KEY); });
   } : null]);
   attempts.push(["workersai", env.AI ? function () {
     return grammarChunked(bodyText, options, pushLine, 2, function (prompt) { return callWorkersAI(prompt, env.AI); });
@@ -4356,8 +4325,6 @@ export default {
         configuredProviders: {
           gemini: !!env.GEMINI_API_KEY,
           openrouter: !!env.OPENROUTER_API_KEY,
-          zen: !!env.OPENCODE_ZEN_API_KEY,
-          deepseek: !!env.DEEPSEEK_API_KEY,
           workersai: !!env.AI,
         },
         contract: "two-pass: gemini grammar-only -> deterministic DB nativization (free fallback chain behind)",
@@ -4575,9 +4542,9 @@ export default {
       // Gemini is the ONLY primary provider (all tiers): temperature 0 + no
       // thinkingConfig + forced JSON keeps output deterministic, and the
       // deterministic DB nativization layer runs after in ensureValidResult.
-      // Behind Gemini sits a free fallback chain (OpenRouter free -> Zen free
-      // -> DeepSeek -> Workers AI) that engages ONLY after Gemini exhausts its
-      // own model rotation. A missing key/binding skips that provider.
+      // Behind Gemini sits a free fallback chain (OpenRouter free -> Workers
+      // AI) that engages ONLY after Gemini exhausts its own model rotation.
+      // A missing key/binding skips that provider.
       var attempts = buildProviderAttempts(bodyText, options, pushLine, env);
 
       var parsed = null;
