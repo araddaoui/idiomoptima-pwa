@@ -187,6 +187,15 @@ Deterministic contract (must never drift):
   Which provider answered is audited (`timing.attempts`); on a flat/no-edit
   success the label names the provider that actually returned the text. No
   temperature/sampling variation is allowed to affect output.
+  **Invention-coverage gate (2026-09-22)**: the attempt-acceptance gate at
+  `buildProviderAttempts` rejects a provider whose output shares <50% content
+  words with the source (`contentCoverage`). Gemini (Pass-1 grammar authority)
+  is exempt from the INVENTION axis (`fwd`) — its grammar/spelling corrections
+  legitimately introduce inflected/corrected forms (`buyed`→`bought`,
+  `go`→`went`) that the axis cannot distinguish from fabrication — but EVERY
+  provider (Gemini included) is still held to the DROP/cover axis (`back`) so
+  truncation rotates. Fallbacks keep both axes + both 0.5 floors; added-word
+  Notes still surface genuinely odd additions.
 - **Score = re-banded measured residual**, provider-independent: raw residual
   meter unchanged (spelling cap 80, duplicated-word cap 85, grammar 3/hit cap 15,
   stiffness density `min(40, round(stiff/proseCount*30))`, floor 40); then the

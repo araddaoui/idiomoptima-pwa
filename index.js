@@ -4614,7 +4614,15 @@ var rescueUsed = false;
                 if (outTxt.trim().length > 0) {
                   var fwd = contentCoverage(outTxt, bodyText);
                   var back = contentCoverage(bodyText, outTxt);
-                  if (fwd < 0.5 || back < 0.5) {
+                  // Gemini is the Pass-1 grammar authority (two-pass contract):
+                  // its corrections legitimately replace source tokens with
+                  // inflected/spelled forms ("buyed"->"bought", "go"->"went"),
+                  // which the invention axis (fwd) cannot distinguish from
+                  // fabrication. The primary model is held only to the
+                  // drop/cover axis (back) so truncation still rotates;
+                  // fallbacks keep both axes and the 0.5 floors. Added-word
+                  // Notes still surface genuinely odd additions for the author.
+                  if (back < 0.5 || (attemptName !== "gemini" && fwd < 0.5)) {
                     var fidMsg = attemptName + ": response dropped or invented too much content (forward " + fwd.toFixed(2) + ", backward " + back.toFixed(2) + ") — rotating";
                     providerErrors.push(fidMsg);
                     console.error(fidMsg);
