@@ -2682,13 +2682,15 @@ function buildNativizationMaps(dbs, domain) {
   return maps;
 }
 
-// --- Universal grammar layer (residual DETECTOR only) -------------------------
+// --- Universal grammar layer (certified editor + residual meter) --------------
 // The "known and standard" grammar every text shares. These are language-wide,
 // structural, high-confidence rules — deliberately conservative (a regex grammar
 // layer only certifies what it can verify; the MODEL's correction phase handles
-// the broad grammar in Pass 1). This layer NEVER edits text: it exists only as a
-// deterministic residual meter (`applyGrammarLayer(...).fixes`) for scoring and
-// the census. Every rule is quote-safe (via replaceOutsideQuotes).
+// the broad grammar in Pass 1). Authorized 2026-09-25: this layer is now ALSO a
+// deterministic WRITE path for the unambiguous shapes below (sv-agreement,
+// coordinated bare verbs, spacing, series/Oxford + citation commas). It remains
+// the residual meter for scoring and the census (`applyGrammarLayer(...).fixes`).
+// Every rule is quote-safe (via replaceOutsideQuotes).
 var GRAMMAR_PLURAL_NOUNS = [
   "findings","results","factors","studies","analyses","policies","approaches",
   "strategies","mechanisms","processes","outcomes","implications","developments",
@@ -2704,6 +2706,50 @@ var GRAMMAR_SINGULAR_NOUNS = [
 // A preceding modal/auxiliary means "have"/"do" is the bare infinitive, not a
 // finite form agreeing with the pronoun: "Did she have...", "Does he have...",
 // "Will it do...". The pronoun-agreement rules must never reorder those.
+// --- Certified agreement / coordination rules (editor + meter) ----------------
+// S-V agreement on INFLECTED finite verbs, bound to the same curated noun tables
+// below. A window of up to two intensifier adverbs is allowed between subject and
+// verb; modals/auxiliaries are never in that window, so neither rule can reorder
+// "will show", "can work", etc. Every construct is a defect whose fix is fully
+// deterministic, so the SAME table both edits and measures (no drift). MUST be
+// declared ABOVE GRAMMAR_RULES: the sv-finite rule regexes are built at module
+// load from these strings (var-hoisting would otherwise inject "undefined").
+var CERTIFIED_INTENSIFIERS =
+  "clearly|often|also|still|even|just|quite|simply|largely|mainly|primarily|chiefly|" +
+  "typically|usually|frequently|constantly|readily|directly|strongly|ultimately|eventually|" +
+  "effectively|easily|actively|plainly|evidently|markedly|notably|visibly|consistently|" +
+  "repeatedly|persistently";
+var CERTIFIED_FINITE_S =
+  "shows|demonstrates|indicates|suggests|reveals|provides|constitutes|requires|creates|poses|" +
+  "offers|plays|affects|describes|explains|argues|claims|asserts|examines|explores|" +
+  "increases|decreases|leads|contributes|enables|allows|helps|tends|remains|seems|appears|" +
+  "exists|differs|occurs|results|manifests|illustrates|highlights|emphasizes|" +
+  "underlines|involves|depends|reflects|affirms";
+var CERTIFIED_FINITE_BARE =
+  "show|demonstrate|indicate|suggest|reveal|provide|constitute|require|create|pose|offer|play|" +
+  "affect|describe|explain|argue|claim|assert|examine|explore|discuss|increase|decrease|lead|" +
+  "contribute|enable|allow|help|tend|remain|seem|appear|exist|differ|occur|result|manifest|" +
+  "illustrate|highlight|emphasize|underline|involve|depend|reflect|affirm";
+// Past-tense clause heads that demand an -ed form on a following coordinated
+// bare verb ("These changes saw ... and manifest" -> "... and manifested").
+var CERTIFIED_PAST_HEADS =
+  "saw|showed|made|had|became|marked|unfolded|began|reflected|triggered|generated|spurred|" +
+  "sparked|brought|led|produced|took|gave|moved|grew|developed|started|continued|resulted|" +
+  "remained|emerged|occurred|demonstrated|illustrated|rendered|represented|established|created|" +
+  "introduced|initiated|conducted|presented|offered|provided|reported|examined|described|" +
+  "argued|concluded|claimed|asserted|enabled|allowed|contributed|helped|witnessed|experienced|" +
+  "ensured|drew|invoked|signalled|signaled|constituted|involved|entailed|included|responded";
+var CERTIFIED_PAST_TAIL =
+  "in|with|from|on|at|as|by|for|through|during|across|among|under|over|between|alongside|off|out|up|down";
+// Bare verbs a past-tense coordinate must NOT end in -ed when the object of a
+// causative ("saw literacy emerge") — these are EXCLUDED from the coordinated
+// rule so a genuinely causative construction is never "corrected".
+var CERTIFIED_COORD_BARE =
+  "manifest|occur|result|emerge|arise|constitute|involve|entail|include|represent|respond|" +
+  "conduct|perform|undertake|initiate|advance|act|form|produce|express|assert|affirm|depict|expound";
+var CERTIFIED_PAST_HEADS_RE = new RegExp("\\b(" + CERTIFIED_PAST_HEADS + ")\\b", "i");
+var CERTIFIED_COORD_RE = new RegExp(
+  "\\b(and)\\s+(" + CERTIFIED_COORD_BARE + ")\\b(?=\\s+(" + CERTIFIED_PAST_TAIL + ")\\b)", "gi");
 var AUX_PRECEDER = {
   did: 1, "didnt": 1, "didnt't": 1, do: 1, does: 1, will: 1, would: 1, can: 1,
   could: 1, shall: 1, should: 1, may: 1, might: 1, must: 1, wont: 1, wouldnt: 1,
@@ -2743,6 +2789,24 @@ var GRAMMAR_RULES = [
   { id: "doubled-subject",
     re: /\b(the\s+)?(study|analysis|approach|government|policy|system|process|findings|survey|research|work|text|chapter|article|paper|book|argument|field|model|project|report|section|paragraph|thesis|theory|strategy|programme|program|initiative|regime|state|country|army|force|coalition|alliance|company|team|department|school|court|council|committee|party|union|staff|faculty|society|economy|market|sector|industry)\s+(it|they)\s+(shows|show|reveals|reveal|demonstrates|demonstrate|highlights|highlight|is|are|was|were|has|have|concludes|conclude|argues|argue|explains|explain|provides|provide|illustrates|illustrate|suggests|suggest|indicates|indicate|claims|claim|asserts|assert|describes|describe|examines|examine|explores|explore|discusses|discuss|advances|advanced|advance|entered|enters|emerges|emerged|moves|moved|acts|acted|responds|responded|reacts|reacted|differs|differed|agrees|agreed|declines|declined|grows|grew|rises|rose|exerts|exerted|exercises|exercised|pursues|pursued|promotes|promoted|implements|implemented|launches|launched|conducts|conducted|opposes|opposed|resists|resisted|supports|supported|expands|expanded|extends|extended|mobilizes|mobilized|deploys|deployed|marches|marched|withdraws|withdrew|intervenes|intervened|escalates|escalated)\b/gi,
     repl: function (m) { return (m[1] || "") + m[2] + " " + m[4]; } },
+  // S-V agreement on INFLECTED finite verbs: a plural noun never takes an -s
+  // finite verb, a singular noun always does (present tense, no modal in the
+  // window — modals are never in CERTIFIED_INTENSIFIERS). These extend the
+  // is/was/has frames above to the full finite-verb table deterministically.
+  { id: "sv-finite-plural",
+    re: new RegExp("\\b(the\\s+)?(" + GRAMMAR_PLURAL_NOUNS.join("|") + ")((?:\\s+(?:" + CERTIFIED_INTENSIFIERS + ")){0,2})\\s+(" + CERTIFIED_FINITE_S + ")\\b", "gi"),
+    repl: function (m) { return (m[1] || "") + m[2] + m[3] + " " + m[4].replace(/s$/i, ""); } },
+  { id: "sv-finite-singular",
+    re: new RegExp("\\b(the\\s+)?(" + GRAMMAR_SINGULAR_NOUNS.join("|") + ")((?:\\s+(?:" + CERTIFIED_INTENSIFIERS + ")){0,2})\\s+(" + CERTIFIED_FINITE_BARE + ")\\b", "gi"),
+    guard: function (s, idx) {
+      // Never "fix" a subjunctive clause ("...requires that the study show ..."):
+      // the bare V form is correct after an advice/necessity frame + "that".
+      // The frame may sit a few words ahead of the verb, so scan the window up
+      // to the noun and require <trigger> ... that ... <end>.
+      var pre = s.slice(Math.max(0, idx - 90), idx);
+      return /(suggest(?:ed)?|recommend(?:s|ed)?|request(?:s|ed)?|demand(?:s|ed)?|insist(?:s|ed)?|propos(?:e|es|ed)?|require(?:s|d)?|important|essential|vital|necessary|adamant)\b[^.!?\n\u2019]{0,60}\bthat\b[^.!?\n\u2019]{0,50}$/i.test(pre);
+    },
+    repl: function (m) { return (m[1] || "") + m[2] + m[3] + " " + m[4] + "s"; } },
 ];
 // Governed-preposition pairs (wrong preposition -> the head verb's true
 // complement). Universal collocations, not per-text patches.
@@ -2762,12 +2826,21 @@ var GRAMMAR_PREPOSITIONS = [
   { re: /\b(could|should|would|must|might)\s+of\b/gi, good: function (m) { return m[1] + " have"; } },
   { re: /\bthe\s+reason\s+is\s+because\b/gi, good: function (m) { return "the reason is that"; } },
 ];
+
 // Applies the grammar layer to a prose block; quote-safe, footnote lines must be
-// excluded by the caller. Returns { text, fixes } so the SAME detector counts
-// source vs revised defects for scoring (fully deterministic, provider-free).
+// excluded by the caller. Returns { text, fixes, grammar, punctuation }.
+//   - text: the deterministic, machine-verifiable corrections applied
+//   - fixes: total edits (backward-compatible)
+//   - grammar: S-V / article / preposition / doubled-subject defects
+//   - punctuation: citation commas, series (Oxford) commas, and spacing defects
+// The SAME function is both the certified editor (the per-sentence polish pass)
+// and the residual meter for scoring — a score climbs only when a defect the
+// editor can actually fix truly disappears.
 function applyGrammarLayer(text) {
-  if (!text) return { text: text || "", fixes: 0 };
+  if (!text) return { text: text || "", fixes: 0, grammar: 0, punctuation: 0 };
   var fixes = 0;
+  var grammarFixes = 0;
+  var punctFixes = 0;
   var out = replaceOutsideQuotes(String(text), function (seg) {
     var s = seg;
     for (var i = 0; i < GRAMMAR_RULES.length; i++) {
@@ -2780,6 +2853,7 @@ function applyGrammarLayer(text) {
         s = s.substring(0, res.index) + rep + s.substring(res.index + res[0].length);
         re.lastIndex = res.index + rep.length;
         fixes++;
+        grammarFixes++;
       }
     }
     for (var j = 0; j < GRAMMAR_PREPOSITIONS.length; j++) {
@@ -2791,11 +2865,98 @@ function applyGrammarLayer(text) {
         s = s.substring(0, res.index) + good + s.substring(res.index + res[0].length);
         pr.lastIndex = res.index + good.length;
         fixes++;
+        grammarFixes++;
       }
     }
+    // --- Certified punctuation & spacing (quote-safe via the segment split) ---
+    // 1) Spacing: no space before , . ; : ! ? ; a missing space after , ; :
+    //    when glued to a letter or an opening quote; collapse 2+ spaces; no
+    //    space just inside parentheses. Numeric separators ("2,600") are never
+    //    touched (a comma between digits is skipped below).
+    s = s.replace(/[ \t]+([,.;:!?])/g, function (m, p) { punctFixes++; return p; });
+    s = s.replace(/([,;:])(?=[A-Za-z"\u201C\u2018])/g, function (m, p) { punctFixes++; return p + " "; });
+    s = s.replace(/ {2,}/g, " ");
+    s = s.replace(/[ \t]+([)\]])/g, function (m, p) { punctFixes++; return p; });
+    s = s.replace(/\( [ \t]+/g, "(");
+    // 2) Series (Oxford) comma in a 3+ item list: "A, B and C" -> "A, B, and C",
+    //    auto-inserted regardless of dialect, but ONLY when the list is clearly a
+    //    list: a list-introducer word sits just before it, or at least one item
+    //    is capitalized. This keeps "review, discuss and approve" (a verb chain,
+    //    both forms acceptable) untouched while fixing genuine noun lists like
+    //    "not just philological, stylistic and structural".
+    var introSignal = /\b(not\s+just|not\s+only|both|among|such\s+as|including|namely|e\.g\.|for\s+example|in\s+particular|the\s+following|between|whether|like)\s+[A-Za-z'\u2019]*$/i;
+    var oxfordRe = /\b([A-Za-z\u00C0-\u024F][\w'\u2019\u00C0-\u024F-]{0,40}),\s+([a-zA-Z\u00C0-\u024F][\w'\u2019\u00C0-\u024F-]{0,40}(?:\s+[a-zA-Z\u00C0-\u024F][\w'\u2019\u00C0-\u024F-]{0,40}){0,1})\s+and\s+([a-zA-Z\u00C0-\u024F][\w'\u2019\u00C0-\u024F-]{0,40}(?:\s+[a-zA-Z\u00C0-\u024F][\w'\u2019\u00C0-\u024F-]{0,40}){0,1})\b/gi;
+    s = s.replace(oxfordRe, function (ox, item1, item2, item3, oxOff, whole) {
+      // Never touch an already-correct list (item2 already carries a comma).
+      if (/,\s*$/.test(item2) || /,\s*$/.test(item1)) return ox;
+      // Refuse when the "and" is really a clause connector ("... , B and C that").
+      var after = whole.slice(oxOff + ox.length);
+      if (/^(and|or|but|which|who|that|when|where|if|in|on|as|to|by|with|from|of|than)\b/i.test(after)) return ox;
+      // Refuse verb chains (all items lowercase single verbs like review/discuss).
+      var verbish = /^(is|are|was|were|has|have|had|be|been|do|does|did|show|shows|shown|showed|examine|examines|examined|review|reviews|reviewed|discuss|discusses|discussed|analyze|analyzes|analyzed|analyse|analyses|analysed|test|tests|tested|study|studies|studied|develop|develops|developed|evaluate|evaluates|evaluated|assess|assesses|assessed|support|supports|supported|promote|promotes|promoted)$/i;
+      var itemsAllLow = !/[A-Z]/.test(item1) && !/[A-Z]/.test(item2) && !/[A-Z]/.test(item3);
+      if (itemsAllLow && verbish.test(item1.split(/\s+/)[0]) && verbish.test(item2.split(/\s+/)[0]) && verbish.test(item3.split(/\s+/)[0])) return ox;
+      // List-introducer word immediately before item1 (ONE char of item1 is
+      // included so the signal's following word is visible), OR a proper-noun
+      // list where EVERY item is capitalized ("London, Paris and Rome").
+      // Clause chains ("The eagle soared, the bear slept and the fox hunted")
+      // satisfy neither signature; item1 is a SINGLE word so an introducer like
+      // "just" / "both" can never be swallowed into it, and items 2-3 are capped
+      // at two words each so a comma ending an earlier clause ("..., but also
+      // its functional and dialectal") stops matching.
+      var sigPref = whole.slice(Math.max(0, oxOff - 48), oxOff + 1);
+      var sig = introSignal.test(sigPref) ||
+        (/[A-Z]/.test(item1) && /[A-Z]/.test(item2) && /[A-Z]/.test(item3));
+      if (!sig) return ox;
+      punctFixes++;
+      return item1 + ", " + item2 + ", and " + item3;
+    });
+    // 3) Citation comma: "Name Year" -> "Name, Year" inside a parenthetical group
+    //    that already carries at least two name+year elements. A lone "(1976)" or
+    //    book-title year without list context is never touched.
+    s = s.replace(/\(([^()]{1,400})\)/g, function (cm, inner) {
+      var nameYear = /^[A-Za-z][^|\n]*?\b(1[89]\d{2}|20\d{2})\b/;
+      // Split the parenthetical group on SEMICOLONS only — each element is one
+      // citation ("Altoma, 1969"). Splitting on commas would chop each element
+      // into "Name" + "year" and the ≥2-name+year gate could never fire.
+      var listEls = inner.split(/\s*;\s*/);
+      var yearCount = 0;
+      listEls.forEach(function (el) {
+        if (nameYear.test(el)) yearCount++;
+      });
+      if (yearCount < 2) return cm;
+      var newInner = inner.replace(/\b([A-Z][\w.'\u2019&]*(\s+(?:and|&)\s+[A-Z][\w.'\u2019]*)?)\s+(1[89]\d{2}|20\d{2})\b/g, function (mm, name, two, year) {
+        punctFixes++;
+        return name + ", " + year;
+      });
+      return "(" + newInner + ")";
+    });
+    // 4) Coordinated bare verb after a past-tense clause head (S-V tense
+    //    agreement, grammar category): "saw a transition ... and manifest in"
+    //    -> "... and manifested in".
+    s = s.replace(CERTIFIED_COORD_RE, function (cm, andWord, bareVerb, tail, off, whole) {
+      var pre = s.slice(Math.max(0, off - 260), off + 4);
+      // Require a past-tense clause head earlier in the same clause window and
+      // no second "and" between the head and this coordinate (a fresh subject
+      // starts a parallel clause where the bare form may be legitimate).
+      var tailPre = pre.replace(/\b(and)\s+(?:[A-Za-z\u2019']+\s+){1,9}?/gi, " ");
+      if (!CERTIFIED_PAST_HEADS_RE.test(tailPre)) return cm;
+      var ed = /e$/.test(bareVerb) ? bareVerb + "d" : bareVerb + "ed";
+      grammarFixes++;
+      return andWord + " " + ed;
+    });
     return s;
   });
-  return { text: out, fixes: fixes };
+  return { text: out, fixes: fixes, grammar: grammarFixes, punctuation: punctFixes };
+}
+
+// Certified per-sentence polish: the deterministic editor wrapper, skipped for
+// footnote/citation lines (their punctuation and wording are the author's).
+function applyCertifiedPolish(text, isFootnote) {
+  if (!text) return text;
+  if (isFootnote) return text;
+  if (/^\s*\[\d+\]/.test(text) || /^\s*Ibid\.?/i.test(text)) return text;
+  return applyGrammarLayer(text).text;
 }
 
 // --- Nativization is DATABASE-DRIVEN ONLY (two-pass contract) -----------------
@@ -3588,7 +3749,12 @@ async function ensureValidResult(parsed, originalText, options, env) {
   sentences = sentences.map(function(s) {
     s.revised = postProcessText(s.revised);
     // Grammar correction is the MODEL's job (Pass 1); the deterministic grammar
-    // layer here exists ONLY as a residual detector for scoring, never an editor.
+    // and punctuation layer below re-verifies every sentence with the SAME rules
+    // that drive the residual meter (applyGrammarLayer), fixing machine-verifiable
+    // defects — citation commas, series commas, spacing, S-V number agreement on
+    // inflected verbs, coordinated bare-verb tense — that the model may have
+    // skipped. Editor and meter share one code path, so a score climbs only when
+    // a defect this pass can actually fix disappears.
     if (s.original && s.revised && s.original !== s.revised) {
       s.revised = protectQuotes(s.original, s.revised);
       s.revised = protectAcademicRegister(s.original, s.revised);
@@ -3605,6 +3771,10 @@ async function ensureValidResult(parsed, originalText, options, env) {
     s.revised = nativePolish(s.revised);
     s.revised = fixCommonMisspellingsSafe(s.revised);
     s.revised = capitalizeEnhanced(s.revised);
+    // Certified deterministic polish on EVERY sentence (unchanged ones included):
+    // machine-verifiable punctuation/spacing/agreement defects are fixed here so
+    // they are never left to the provider's discretion.
+    s.revised = applyCertifiedPolish(s.revised, s.isImmutableFootnote);
     s.revised = addQuestionMark(s.revised, s.original);
     return s;
   });
@@ -3957,24 +4127,32 @@ async function ensureValidResult(parsed, originalText, options, env) {
   var proseSentenceCount = Math.max(1, scoringProse(sentences).length);
   var sourceGrammarHits = 0;
   var revisedGrammarHits = 0;
+  var sourcePunctHits = 0;
+  var revisedPunctHits = 0;
   scoringProse(sentences).forEach(function (s) {
     // Quote-only sentences are skipped by every editing pass, so they must not
     // count as an untouchable residual defect in the measurement either (the
     // noted Lolita-untouched corpus stays at the native 98-98 this way).
     if (/^".*"$/.test((s.original || "").trim()) || /^".*"$/.test((s.revised || "").trim())) return;
-    sourceGrammarHits += applyGrammarLayer(s.original || "").fixes;
-    revisedGrammarHits += applyGrammarLayer(s.revised || "").fixes;
+    var srcLayer = applyGrammarLayer(s.original || "");
+    var revLayer = applyGrammarLayer(s.revised || "");
+    sourceGrammarHits += srcLayer.grammar;
+    revisedGrammarHits += revLayer.grammar;
+    sourcePunctHits += srcLayer.punctuation;
+    revisedPunctHits += revLayer.punctuation;
   });
   var sourceStiffAll = sourceStiffness;
   var revisedStiffAll = revisedStiffness;
-  function measuredResidual(spelling, grammarHits, stiffAll, dupWords) {
-    var score = 100 - Math.min(15, grammarHits * 3) - Math.min(40, Math.round((stiffAll / proseSentenceCount) * 30));
+  function measuredResidual(spelling, grammarHits, punctHits, stiffAll, dupWords) {
+    var score = 100 - Math.min(15, grammarHits * 3)
+                  - Math.min(10, punctHits * 2)
+                  - Math.min(40, Math.round((stiffAll / proseSentenceCount) * 30));
     if (spelling > 0) score = Math.min(score, 80);
     if (dupWords) score = Math.min(score, 85);
     return Math.min(100, Math.max(40, score));
   }
-  var origScore = measuredResidual(sourceSpelling, sourceGrammarHits, sourceStiffAll, hasDuplicateWords);
-  var revScore = measuredResidual(remainingSpelling, revisedGrammarHits, revisedStiffAll, false);
+  var origScore = measuredResidual(sourceSpelling, sourceGrammarHits, sourcePunctHits, sourceStiffAll, hasDuplicateWords);
+  var revScore = measuredResidual(remainingSpelling, revisedGrammarHits, revisedPunctHits, revisedStiffAll, false);
 
   // Count REAL content changes (ignore trivial punctuation/case-only rewrites
   // from the AI echo that padded earlier scores). Also EXCLUDE changes confined
@@ -4104,7 +4282,8 @@ async function ensureValidResult(parsed, originalText, options, env) {
     databaseStats.totalMatches > 0 ||
     remainingSpelling < sourceSpelling ||
     revisedStiffAll < sourceStiffAll ||
-    revisedGrammarHits < sourceGrammarHits;
+    revisedGrammarHits < sourceGrammarHits ||
+    revisedPunctHits < sourcePunctHits;
   origScore = Math.min(98, Math.max(origScore, 40));
   if (origScore >= 98) origScore = 98;          // flawless source prints 98
   else origScore = Math.min(95, origScore);       // everything else tops at 95
@@ -4132,6 +4311,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
   function axisHealth(category, count, proseN, dupOnly) {
     if (category === "spelling") return count === 0 ? 100 : Math.max(40, 80 - Math.min(40, (count - 1) * 4));
     if (category === "grammar") return 100 - Math.min(15, count * 3);
+    if (category === "punctuation") return 100 - Math.min(10, count * 2);
     if (category === "stiffness") return 100 - Math.min(40, Math.round((count / Math.max(1, proseN || 1)) * 30));
     if (category === "duplicates") return dupOnly ? 85 : 100;
     return 100;
@@ -4156,6 +4336,11 @@ async function ensureValidResult(parsed, originalText, options, env) {
         source: sourceGrammarHits, remaining: revisedGrammarHits,
         sourceHealth: axisHealth("grammar", sourceGrammarHits, proseSentenceCount),
         remainingHealth: axisHealth("grammar", revisedGrammarHits, proseSentenceCount),
+      },
+      punctuation: {
+        source: sourcePunctHits, remaining: revisedPunctHits,
+        sourceHealth: axisHealth("punctuation", sourcePunctHits, proseSentenceCount),
+        remainingHealth: axisHealth("punctuation", revisedPunctHits, proseSentenceCount),
       },
       stiffness: {
         source: sourceStiffAll, remaining: revisedStiffAll,
@@ -4210,6 +4395,9 @@ async function ensureValidResult(parsed, originalText, options, env) {
   }
   if (epistemicRestoreCount > 0) {
     reviewNotes.push("Note — " + epistemicRestoreCount + " revision" + (epistemicRestoreCount === 1 ? "" : "s") + " hardened the author's epistemic stance (e.g. suggests \u2192 shows, may \u2192 will) and " + (epistemicRestoreCount === 1 ? "was" : "were") + " restored to the original hedging under the voice-preservation rule.");
+  }
+  if (sourcePunctHits > 0 && revisedPunctHits < sourcePunctHits) {
+    reviewNotes.push("Note — " + (sourcePunctHits - revisedPunctHits) + " punctuation/spacing defect" + (sourcePunctHits - revisedPunctHits === 1 ? "" : "s") + " (e.g. missing citation or series commas) corrected deterministically." + (revisedPunctHits > 0 ? " " + revisedPunctHits + " remain." : ""));
   }
   if (addedWords.length > 0) {
     reviewNotes.push("Note — the revision adds words that appear nowhere in the source (possibly invented detail): " + addedWords.join(", ") + (addedWords.length === 8 ? " (and more)" : "") + ". Confirm the added detail is intended.");

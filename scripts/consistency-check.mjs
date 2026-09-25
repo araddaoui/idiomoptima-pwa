@@ -15,11 +15,17 @@
 //      else at most 95, and the revision earns the measured clearing back on a
 //      compressed scale (cap 98). Residual census surfaced; exact input-pinned
 //      reference profiles catch drift.
-//   E. Residual-detector honesty + success-criteria — the deterministic grammar
-//      layer no longer WRITES (Pass 1 is the model's), so offline we assert the
-//      detector catches planted grammar defects and never grows them; the
-//      success-criteria fixture proves DB-only Pass 2 fires on exactly the DB
-//      phrases, preserves UK dialect/footnotes, and lands in the re-band target.
+//   E. Residual-honesty + certified write path — the deterministic layer keeps
+//      Pass 1 (the model) grammar-only and never swaps words, but a "certified"
+//      editor (authorized 2026-09-25) deterministically WRITES the unambiguous,
+//      machine-verifiable fixes Pass 1 may skip: spacing, series (Oxford) commas
+//      regardless of dialect, citation commas inside multi-citation paren groups,
+//      sv-agreement with a finite-verb window, and coordinated bare verbs after a
+//      past-tense clause head. Offline we assert the detector catches planted
+//      grammar defects and never grows them (monotone), the success-criteria
+//      fixture proves DB-only Pass 2 still fires on exactly the DB phrases and
+//      preserves UK dialect/footnotes, and the planted grammar corpus now lands
+//      at 79->96 because the certified layer actually clears the residual.
 // Live mode (`--live` / LIVE=1) additionally POSTs the corpus to the deployed
 // worker 3x each and asserts: scores identical on every run, output bytes
 // identical whenever the SAME provider answered (provider is always gemini for
@@ -57,10 +63,12 @@ const CORPUS = [
   // NOT restructure ("continuing Maxine Hong Kingston’s aesthetic…") and must
   // NOT introduce S-V regressions ("have the asset", "strongly brings").
   { file: "kingston.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 5, reference: "60->92", kingston: true, liveNoSVR: true },
-  // Residual-detector honesty suite: the deterministic grammar layer is a
-  // DETECTOR only (no writes), so offline we assert it catches the planted
-  // defects in the source and never reports MORE in the revision.
-  { file: "grammar.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 0, reference: "79->84", grammarDetector: true, minGrammar: 4 },
+  // Residual-honesty suite: the certified deterministic layer DETECTS planted
+  // defects in the source and — for unambiguous machine-verifiable shapes
+  // (sv-agreement, coordinated bare verbs, comma/spacing) — WRITES the fix, so
+  // offline the planted grammar corpus now lands at 79->96 (the 84 pin predates
+  // the certified write path; the revision actually clears the residual now).
+  { file: "grammar.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 0, reference: "79->96", grammarDetector: true, minGrammar: 4 },
 ];
 
 // --- Result normalization: only the deterministic contract slices compare. ---

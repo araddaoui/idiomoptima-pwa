@@ -21,7 +21,7 @@
 //      for "is any difference being made".
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const INDEX_SRC = readFileSync(join(ROOT, "index.js"), "utf8");
@@ -554,6 +554,70 @@ section("10. boldHeadingSentences re-bolds titles the model may have stripped");
     /result\.timing = \{\s*provider: provider,\s*totalMs: Date\.now\(\) - providerStartMs,\s*attempts: attemptTimes,\s*\};/.test(INDEX_SRC),
     true
   );
+}
+
+// ==================== 11. CERTIFIED DETERMINISTIC GRAMMAR/PUNCTUATION LAYER
+// Authorized 2026-09-25 (scope: auto-Oxford regardless of dialect, citation
+// commas, spacing, sv-agreement + coordinated bare verbs; deterministic WRITES
+// in the offline/rescue path; grading now follows the quality gap).
+section("11. certified deterministic grammar/punctuation layer (offline worker pipeline)");
+{
+  // Drive the REAL worker's rescue path (no provider keys) so the certified
+  // edits and the re-banded scoring run on actual production code.
+  const { default: worker } = await import(pathToFileURL(join(ROOT, "index.js")));
+  const SAMPLE = [
+    "Background ",
+    "",
+    "The publication in 1959 of Ferguson\u2019s Diglossia opened the gates on a plethora of Arabic sociolinguistic studies and compilations (Altoma, 1969; Badawi & Hinds, 1986; Blau, 1977; Fishman 1967; Holes, 1987; Maamouri, 1967; Shubashy, 2004, etc.). \u2018Diglossia\u2019 marked the start of an era in which Arabic linguistic scholarship enlarged its purview to include not just philological, stylistic and structural aspects of codified Arabic, but also its functional and dialectal dimensions. Between 1959 and 2011, three major transformations unfolded with crucial impact on the standing of Arabic. The first is the rise in rates of Arabic literacy among Arab populations as of the 1950s and 60s. The second dates back approximately to the mid-1980s and refers to what Ong (1988) calls the \u2018technologizing of the word\u2019, the emergence of word processing in Arabic and the subsequent localization of the web in Arabic around the mid-1990s. These changes saw a transition from massive illiteracy to wider access to digital Arabic literacy mediated by social networks, and manifest in the third transformation, the Arab Spring.",
+  ].join("\n");
+  const guardDb = { aiDb: [{ ai: "a plethora of", natural: "a host of" }], idiomDb: [], suggestDb: [], lexicalDb: {} };
+
+  async function run(text, forcedDialect = "") {
+    const req = new Request("https://nativewrite-api.nativewrite-api.workers.dev/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, domain: "academic", forcedDialect, databases: guardDb }),
+    });
+    const resp = await worker.fetch(req, {});
+    const raw = await resp.text();
+    const line = raw.split(/\r?\n/).filter((l) => l.trim()).pop() || "{}";
+    let data = JSON.parse(line);
+    while (data && typeof data === "object" && data.result && !data.finalVersion) data = data.result;
+    return data;
+  }
+  const has = (v, needle) => String(v || "").includes(needle);
+
+  {
+    const out = await run(SAMPLE);
+    const fv = out.finalVersion;
+    check("citation comma written (Fishman, 1967)", has(fv, "Fishman, 1967"), true);
+    check("no bare 'Fishman 1967' remains", has(fv, "Fishman 1967"), false);
+    check("Oxford comma written regardless of dialect", has(fv, "philological, stylistic, and structural"), true);
+    check("two-item list left alone ('functional and dialectal')", /but also its functional and dialectal/.test(fv), true);
+    check("coordinated bare verb fixed ('and manifested in')", has(fv, "and manifested in"), true);
+    check("heading bold preserved", /\*\*Background\*\*/.test(fv), true);
+    check("DB sweep still runs ('a host of')", has(fv, "a host of"), true);
+    check("grading follows the quality gap (original 85..92)", out.originalScore >= 85 && out.originalScore <= 92, true);
+    check("fully-cleaned revision scores 98", out.revisedScore, 98);
+  }
+  {
+    const out = await run(SAMPLE, "uk");
+    check("UK-flagged text STILL receives the Oxford comma", has(out.finalVersion, "philological, stylistic, and structural"), true);
+  }
+  {
+    const guard = async (sentence, needle, present) => {
+      const out = await run(sentence);
+      check((present ? "kept: " : "fixed: ") + "'" + needle + "' in '" + sentence.slice(0, 42) + "...'", has(out.finalVersion, needle), present);
+    };
+    await guard("The committee will review, discuss and approve the proposal.", "review, discuss and approve", true);
+    await guard("The journal requires that the study show its limitations clearly.", "study show", true);
+    await guard("The study show the results of the survey.", "study shows", true);
+    await guard("These results hardly shows any improvement over time.", "results hardly show", true);
+    await guard("The Woman Warrior (1976) and China Men (1977) share affinities with each other.", "(1976)", true);
+    await guard("Ferguson wrote in 1967 his classic study of diglossia.", "in 1967 his", true);
+    await guard("The budget reached 2,600 in 1967, and 3,400 in 1976.", "2,600", true);
+    await guard("The data was collected,but the sample stayed small.", "collected, but", true);
+  }
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

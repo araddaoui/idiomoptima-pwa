@@ -98,7 +98,8 @@ The package name is still the legacy `react-example` and worker mame internally
   → sentence-level passes (`protectQuotes`, `protectAcademicRegister`,
   `restoreStructuralMarkers`, `protectInvariantIdioms`, `restoreDroppedSentence`,
   `restoreCurlyApostrophes`, `restoreLeadingEllipsis`, `nativePolish`,
-  `fixCommonMisspellingsSafe`, `capitalizeEnhanced`, `addQuestionMark`) →
+  `fixCommonMisspellingsSafe`, `capitalizeEnhanced`, `applyCertifiedPolish`,
+  `addQuestionMark`) →
   `rebuildFinalVersion` → scoring → `postProcessSuggestions`.
 - **Scoring**: residual misspellings cap scores at 80; otherwise
   `revScore = min(98, 91 + realChangeCount*2)`; `origScore` docked proportionally.
@@ -162,14 +163,36 @@ Deterministic contract (must never drift):
 
 - **Two-pass pipeline**: Pass 1 = Gemini grammar/spelling/S-V correction ONLY
   (never adds/removes commas, never rewrites for style, never swaps word choice).
-  Pass 2 = deterministic regex lexical replacement from the client DB families
+  **Certified edit layer (authorized 2026-09-25)** sits running per sentence
+  between Pass 1 and Pass 2 (in the sentence map AFTER `capitalizeEnhanced`,
+  BEFORE `addQuestionMark`, via `applyCertifiedPolish`): a deterministic WRITE
+  path for only the explicitly approved shapes — spacing defects, series
+  (Oxford) commas auto-inserted REGARDLESS of dialect, citation commas inside
+  multi-citation paren groups, sv-agreement on the curated noun+finite tables,
+  and coordinated bare verbs after a past-tense clause head. The certified
+  layer is bound by the guards below so it never rewrites verb chains
+  ("review, discuss and approve"), subjunctive clauses ("requires that the
+  study show"), causative "saw X emerge", lone "(1976)"/book-title years,
+  numeric separators ("2,600"), or quotes; comma-splices/run-ons remain
+  ADVISORY-ONLY (never rewritten, no new Notes). Pass 2 = deterministic regex
+  lexical replacement from the client DB families
   (aiDb AI-ese → idioms → domain lexical), longest-first, word-boundary,
   quote-safe, collocation-guarded, applied to each sentence's `revised` only.
   There are NO code-side nativization rules in Pass 2 beyond the DB layer: the
   builtin word-swap map, the slot-template families, the prompt example list,
-  and the template credit in scoring were all REMOVED. The grammar layer exists
-  ONLY as a residual detector for scoring, never as an editor (the old Stage-A
-  write path is gone).
+  and the template credit in scoring were all REMOVED. The grammar layer is
+  BOTH the certified editor above AND the residual meter for scoring (a score
+  climbs only when a defect the editor can actually fix truly disappears; the
+  old Stage-A write path — model HTML rewriting — remains gone).
+- **Certified-layer invariants (must never drift)**: the SAME tables drive the
+  editor and the meter (no drift). `sv-finite-plural`/`sv-finite-singular`
+  never reorder a modal (modals are absent from `CERTIFIED_INTENSIFIERS`) and
+  `sv-finite-singular` never edits a subjunctive clause; the -s/+s transforms
+  are only sound for the curated verb lists (no -y / -z / -x / -ch / -sh bases
+  remain). Oxford fires ONLY with a list-introducer immediately before item1 or
+  with every item capitalized; items 2-3 max two words and item1 a single word.
+  Citation commas fire ONLY inside a parenthetical with ≥2 name+year elements
+  split on semicolons. Scored punctuation axis: `min(10, punctHits*2)`.
 - **Provider determinism**: Gemini is the ONLY primary provider for every tier
   (`MODEL_CANDIDATES = ["gemini-3.6-flash"]` — older flash models are retired and
   404 on new accounts, so they are NOT in the rotation),
@@ -205,18 +228,22 @@ Deterministic contract (must never drift):
   provider. Fallback exit paths (failure / all-provider flat → last parseable
   no-op accepted) are unchanged.
 - **Score = re-banded measured residual**, provider-independent: raw residual
-  meter unchanged (spelling cap 80, duplicated-word cap 85, grammar 3/hit cap 15,
-  stiffness density `min(40, round(stiff/proseCount*30))`, floor 40); then the
+  meter (spelling cap 80, duplicated-word cap 85, grammar 3/hit cap 15,
+  punctuation `min(10, punctHits*2)`, stiffness density
+  `min(40, round(stiff/proseCount*30))`, floor 40); then the
   BAND snaps it onto the display scale — `originalScore` = 98 only when the
   source is measured flawless (raw >= 98), otherwise at most 95; if nothing
   measurable changed (`anyChange` = no real sentence change AND no DB rule fired
-  AND no spelling/stiffness/grammar clearing) the revision scores EXACTLY like
-  its source; otherwise `revisedScore = min(98, originalScore + max(2,
+  AND no spelling/stiffness/grammar/punctuation clearing) the revision scores
+  EXACTLY like its source; otherwise `revisedScore = min(98, originalScore + max(2,
   round(cleared*0.8)))` where `cleared = rawRev - rawOrig`. Residual misspellings
   still cap both at 80. The SAME input always produces the SAME scores regardless
   of provider. Reference profiles: military 77→95, uae 60→92, academic 60→92,
-  grammar 79→84, business 98→98, general 91→98, literary 98→98, success-criteria
-  80→96, kingston 60→92 (all committed fixtures, harness-asserted).
+  grammar 79→96, business 98→98, general 91→98, literary 98→98, success-criteria
+  80→96, kingston 60→92 (all committed fixtures, harness-asserted). The grammar
+  pin moved 79→84 to 79→96 on 2026-09-25 because the certified layer now WRITES
+  the unambiguous planted defects it previously only counted; the pinned
+  user-original sample (Ferguson/Diglossia abstract) measures 89→98.
 - **Coverage census** (diagnostic, never applied): `COVERAGE_WATCHLIST` in `index.js`
   (7 items: `the mere fact that`, `more likely to break than not`, `in whose neighbourhood`,
   `such a common denominator`, `is occasioned by`, `do not want to hear`,
@@ -268,15 +295,20 @@ Deterministic contract (must never drift):
   analyze this.") can no longer reach finalVersion, the diff, or the "Added
   sentence" note. A genuinely NEW sentence (empty original, DIFFERENT revised)
   still counts as an added sentence.
-- **Grammar/spelling lives in Pass 1 (live-only)**: the offline/rescue path
-  cannot fix grammar by contract. The success-criteria fixture's grammar asserts
-  (`challanges→challenges`, `underlaying→underlying`, `demonstration→demonstrate`)
-  run against the LIVE worker only; offline, the harness asserts the DB-only
-  fires (robust framework, `it is important to note that`, `it is worth noting`,
-  `navigate these challenges`), UK-dialect preservation (`colonisation`,
-  `travelled`, `labelled`, `characterisation`), footnote preservation, and the
-  80→96 band. Grammar defects are detected deterministically via
-  `applyGrammarLayer(...).fixes` (detector-only).
+- **Grammar/spelling lives in Pass 1 (live-only)** — EXCEPT the certified shapes:
+  the offline/rescue path still cannot fix the model's broad grammar by contract,
+  but the certified layer now WRITES the unambiguous sv/punctuation/spacing
+  defects deterministically even offline. The success-criteria fixture's grammar
+  asserts (`challanges→challenges`, `underlaying→underlying`,
+  `demonstration→demonstrate`) run against the LIVE worker only; offline, the
+  harness asserts the DB-only fires (robust framework, `it is important to note
+  that`, `it is worth noting`, `navigate these challenges`), UK-dialect
+  preservation (`colonisation`, `travelled`, `labelled`, `characterisation`),
+  footnote preservation, the 80→96 band, and the certified-layer fixtures
+  (`npm test` section 11: citation comma, Oxford regardless of dialect, spacing,
+  sv-finite, coordinated bare verb, subjunctive/verb-chain/numeric guards) plus
+  the grammar corpus pin 79→96. Grammar defects are detected deterministically
+  via the same `applyGrammarLayer(...)` that edits (editor == meter).
 - **Known/accepted behavior (NOT bugs)**: model-performed synonym swaps not covered by
   any rule (e.g. `places`, `within`, `designated`, `taken`, `land`, `puts`) stay
   surfaced in the Notes by design. Anonymous requests bypass usage limits; free tier =
@@ -291,11 +323,12 @@ Full verification matrix (required before ANY deploy):
 1. `node --check index.js`
 2. `npm run lint` (tsc --noEmit) and `npm run build`
 3. `npm test` (`scripts/test-transform.mjs`, includes heading + added-word-note
-   regressions and the DB-only Pass-2 suite)
+   regressions, the DB-only Pass-2 suite, and section 11 — the certified
+   grammar/punctuation layer fixtures, incl. the pinned 89→98 user sample)
 4. `npm run consistency` (`scripts/consistency-check.mjs`): offline determinism ×3 per
    corpus fixture, coverage thresholds per field, Lolita-untouched invariant, re-banded
-   reference pins (incl. military 77→95 and success-criteria 80→96), DB-only/dialect/
-   footnote asserts, residual-detector honesty. Live provider audit is opt-in:
+   reference pins (incl. military 77→95, success-criteria 80→96, grammar 79→96),
+   DB-only/dialect/footnote asserts, residual-honesty. Live provider audit is opt-in:
    `npm run consistency:live` (consumes quota; asserts live scores invariant, bytes
    identical when the same provider answers, and the Live-only grammar fixes land).
 5. Local temp suites (not committed): master-test.cjs (83), auditfix-test.cjs (23),
