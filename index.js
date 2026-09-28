@@ -737,7 +737,10 @@ function fixCommonMisspellings(s) {
     "consistant": "consistent", "consistancy": "consistency", "adeqaute": "adequate",
     "adequeate": "adequate", "credibilty": "credibility", "reliablity": "reliability",
     "relevence": "relevance", "relevancy": "relevance", "interpritation": "interpretation",
-    "interpratation": "interpretation", "representive": "representative"
+    "interpratation": "interpretation", "representive": "representative",
+    "sociolinguistc": "sociolinguistic", "scholorship": "scholarship",
+    "transision": "transition", "challanges": "challenges",
+    "underlaying": "underlying", "writting": "writing"
   };
   var words = s.split(/(\b)/);
   var replaced = 0;
@@ -1641,7 +1644,8 @@ function countMisspellings(text) {
     "paralel","paralell","peice","persue","playright","practicly","previlege","probabbly","profesional",
     "promiss","prophacy","qestion","recomend","referance","repossed","repitition","resaurant","reserach",
     "retorick","ritainment","seperately","similiar","sophmore","souds","spesific","supercede","tatoo",
-    "thresold","tomorow","uneccessary","unforseen","usefull","vacume","volumn","withold","yeild"
+    "thresold","tomorow","uneccessary","unforseen","usefull","vacume","volumn","withold","yeild",
+    "sociolinguistc","scholorship","transision","challanges","underlaying","writting"
   ];
   var lower = String(text).toLowerCase();
   var count = 0;
@@ -2850,6 +2854,13 @@ function applyGrammarLayer(text) {
       while ((res = re.exec(s)) !== null) {
         if (rule.guard && rule.guard(s, res.index)) { re.lastIndex = res.index + res[0].length; continue; }
         var rep = rule.repl(res);
+        // Preserve sentence-initial capitalization: "An university" -> "a
+        // university" must render as "A university ..." when the match opened
+        // the sentence with a capital (surfaced by the capitalization axis as a
+        // real finalVersion defect the certified layer itself introduced).
+        if (/^[A-Z]/.test(res[0]) && /^[a-z]/.test(rep)) {
+          rep = rep.charAt(0).toUpperCase() + rep.slice(1);
+        }
         s = s.substring(0, res.index) + rep + s.substring(res.index + res[0].length);
         re.lastIndex = res.index + rep.length;
         fixes++;
@@ -3248,15 +3259,25 @@ function droppedContentWords(originalText, finalText, options) {
   // and "powered" was falsely flagged as dropped).
   var finalNorm = " " + String(finalText || "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z]+/g, " ") + " ";
   var finalTokens = finalNorm.split(/\s+/).filter(Boolean);
+  // Spelling-aware token set: a source misspelling that the revision corrected
+  // ("sociolinguistc" -> "sociolinguistic") must never read as a dropped word,
+  // so every token is also indexed under its spell-fixed form (editor == meter:
+  // the same map that corrects the text feeds the comparison).
+  var spellNorm = function (w) {
+    var t = String(w || "").toLowerCase().replace(/[^a-z]+/g, "");
+    var fixed = fixCommonMisspellings(t);
+    return (fixed === t || !fixed) ? t : String(fixed).toLowerCase();
+  };
   var finalTokenSet = {};
-  finalTokens.forEach(function (t) { finalTokenSet[t] = 1; });
+  finalTokens.forEach(function (t) { finalTokenSet[t] = 1; finalTokenSet[spellNorm(t)] = 1; });
   var out = [];
   var seen = {};
   String(originalText || "").split(/\s+/).forEach(function (raw) {
     baseKeys(raw).forEach(function (k) {
       if (seen[k] || allowed[k]) return;
       seen[k] = 1;
-      if (!finalHas(k)) out.push(k);
+      if (finalHas(k) || finalTokenSet[spellNorm(k)]) return;
+      out.push(k);
     });
   });
   // Longer words are more likely substantive content, so surface the genuine
@@ -3300,8 +3321,17 @@ function addedContentWords(originalText, finalText, options) {
   } catch (e) { /* DB phrase maps are optional */ }
   var origNorm = " " + String(originalText || "").toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/[^a-z]+/g, " ") + " ";
   var origTokens = origNorm.split(/\s+/).filter(Boolean);
+  // Spelling-aware source set: the revision spelling out a word the source
+  // misspelled ("sociolinguistic" correcting "sociolinguistc") must never be
+  // reported as "possibly invented detail" (editor == meter: the same map that
+  // corrects the text feeds the comparison).
+  var spellNorm = function (w) {
+    var t = String(w || "").toLowerCase().replace(/[^a-z]+/g, "");
+    var fixed = fixCommonMisspellings(t);
+    return (fixed === t || !fixed) ? t : String(fixed).toLowerCase();
+  };
   var origTokensSet = {};
-  origTokens.forEach(function (t) { origTokensSet[t] = 1; });
+  origTokens.forEach(function (t) { origTokensSet[t] = 1; origTokensSet[spellNorm(t)] = 1; });
   var out = [];
   var seen = {};
   String(finalText || "").split(/\s+/).forEach(function (raw) {
@@ -3309,6 +3339,8 @@ function addedContentWords(originalText, finalText, options) {
       if (seen[k] || allowed[k]) return;
       seen[k] = 1;
       if (origTokensSet[k]) return;
+      var kn = spellNorm(k);
+      if (kn !== k && origTokensSet[kn]) return;
       // Morphological tolerance: "considerations" next to source "consideration"
       // (added word is a prefix of a source token) or the reverse (prefix of the
       // added word is a source token) is a form of the author's word, not an
@@ -4129,6 +4161,8 @@ async function ensureValidResult(parsed, originalText, options, env) {
   var revisedGrammarHits = 0;
   var sourcePunctHits = 0;
   var revisedPunctHits = 0;
+  var sourceCapsHits = 0;
+  var revisedCapsHits = 0;
   scoringProse(sentences).forEach(function (s) {
     // Quote-only sentences are skipped by every editing pass, so they must not
     // count as an untouchable residual defect in the measurement either (the
@@ -4140,19 +4174,26 @@ async function ensureValidResult(parsed, originalText, options, env) {
     revisedGrammarHits += revLayer.grammar;
     sourcePunctHits += srcLayer.punctuation;
     revisedPunctHits += revLayer.punctuation;
+    // Capitalization defect: a prose sentence that starts with a lowercase
+    // letter that capitalizeEnhanced would raise (editor == meter). Seeds are
+    // counted only at the sentence head so abbreviations like "e.g." / "Dr."
+    // inside the sentence are never docked.
+    if (/^[a-z]/.test((s.original || "").trim())) sourceCapsHits++;
+    if (/^[a-z]/.test((s.revised || "").trim())) revisedCapsHits++;
   });
   var sourceStiffAll = sourceStiffness;
   var revisedStiffAll = revisedStiffness;
-  function measuredResidual(spelling, grammarHits, punctHits, stiffAll, dupWords) {
+  function measuredResidual(spelling, grammarHits, punctHits, capsHits, stiffAll, dupWords) {
     var score = 100 - Math.min(15, grammarHits * 3)
                   - Math.min(10, punctHits * 2)
+                  - Math.min(5, capsHits)
                   - Math.min(40, Math.round((stiffAll / proseSentenceCount) * 30));
     if (spelling > 0) score = Math.min(score, 80);
     if (dupWords) score = Math.min(score, 85);
     return Math.min(100, Math.max(40, score));
   }
-  var origScore = measuredResidual(sourceSpelling, sourceGrammarHits, sourcePunctHits, sourceStiffAll, hasDuplicateWords);
-  var revScore = measuredResidual(remainingSpelling, revisedGrammarHits, revisedPunctHits, revisedStiffAll, false);
+  var origScore = measuredResidual(sourceSpelling, sourceGrammarHits, sourcePunctHits, sourceCapsHits, sourceStiffAll, hasDuplicateWords);
+  var revScore = measuredResidual(remainingSpelling, revisedGrammarHits, revisedPunctHits, revisedCapsHits, revisedStiffAll, false);
 
   // Count REAL content changes (ignore trivial punctuation/case-only rewrites
   // from the AI echo that padded earlier scores). Also EXCLUDE changes confined
@@ -4254,21 +4295,19 @@ async function ensureValidResult(parsed, originalText, options, env) {
   }
 
 // Deterministic re-banded scoring — the meter is the raw residual measurement,
-// then the BAND snaps it onto the honest display scale both providers agree on:
-//   - originalScore prints at most 95 UNLESS the source is measured flawless
-//     (raw >= 98), which prints 98. A near-perfect source (96/97) still reads 95,
-//     so a revision always has visible headroom.
-//   - When nothing measurable changed (no real sentence change, no DB rule
-//     fired, no spelling/stiffness/grammar improvement) the revision is scored
-//     EXACTLY like its source (revised == original) — no phantom credit.
-//   - Otherwise the revision earns the measured improvement back on a
-//     compressed scale: revised = min(98, original + max(2, round(cleared*0.8)))
-//     where cleared = rawRevised - rawSource (the SAME deterministic rubric
-//     applied to both texts). The +2 floor guarantees a genuine correction
-//     visibly matters; cap 98 keeps a perfect revision from colliding with a
-//     hypothetical perfect source.
-//   - Residual misspellings still cap BOTH at 80, so a revised text carrying
-//     errors can never out-score its source.
+// then the BAND snaps it onto the honest display scale both providers agree on.
+// USER CONTRACT (approved 2026-09-28, replaces the older flat-by-contract rule):
+//   - The input and output scores must remain the same ONLY and ONLY when no
+//     transformation has taken place. If the two are of top-notch quality, the
+//     same score of 98 applies.
+//   - The output should ALMOST ALWAYS be higher than the input, except when the
+//     two are of high quality.
+//   - All types of errors, depending on severity, are factored into the score:
+//     spelling, punctuation, word choice, AI-ese, grammar, transition,
+//     capitalization, and anything else the deterministic meter can measure.
+//   - Revised text never scores above 98.
+//   - An output inferior to the input defeats the purpose of the platform: the
+//     revised score is NEVER lower than its source.
 //   - Nothing here uses provider identity, temperature, or model — the SAME
 //     source always produces the SAME originalScore/revisedScore.
   // Capture the raw meter BEFORE banding so the rubric can explain the two
@@ -4283,14 +4322,23 @@ async function ensureValidResult(parsed, originalText, options, env) {
     remainingSpelling < sourceSpelling ||
     revisedStiffAll < sourceStiffAll ||
     revisedGrammarHits < sourceGrammarHits ||
-    revisedPunctHits < sourcePunctHits;
+    revisedPunctHits < sourcePunctHits ||
+    revisedCapsHits < sourceCapsHits;
   origScore = Math.min(98, Math.max(origScore, 40));
   if (origScore >= 98) origScore = 98;          // flawless source prints 98
   else origScore = Math.min(95, origScore);       // everything else tops at 95
   var boostApplied = 0;
-  if (anyChange && clearedRaw > 0) {
+  if (anyChange) {
+    // A transformation landed (real edit, DB rule, or any axis clearing), so
+    // the revision is scored ABOVE its source. The +2 floor guarantees even a
+    // minor-real edit (a synonym swap the meter cannot measure) visibly moves
+    // the grade; measured headroom earns the compressed credit on top. The
+    // 98 ceiling preserves the top-notch corner: a flawless source and a
+    // flawless revision read 98/98 (identical is reserved for a true no-op or
+    // that corner).
     boostApplied = Math.max(2, Math.round(clearedRaw * 0.8));
     revScore = Math.min(98, origScore + boostApplied);
+    if (revScore < origScore) revScore = origScore;   // never punish (platform promise)
   } else {
     revScore = origScore;
   }
@@ -4312,6 +4360,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
     if (category === "spelling") return count === 0 ? 100 : Math.max(40, 80 - Math.min(40, (count - 1) * 4));
     if (category === "grammar") return 100 - Math.min(15, count * 3);
     if (category === "punctuation") return 100 - Math.min(10, count * 2);
+    if (category === "capitalization") return 100 - Math.min(5, count);
     if (category === "stiffness") return 100 - Math.min(40, Math.round((count / Math.max(1, proseN || 1)) * 30));
     if (category === "duplicates") return dupOnly ? 85 : 100;
     return 100;
@@ -4342,6 +4391,11 @@ async function ensureValidResult(parsed, originalText, options, env) {
         sourceHealth: axisHealth("punctuation", sourcePunctHits, proseSentenceCount),
         remainingHealth: axisHealth("punctuation", revisedPunctHits, proseSentenceCount),
       },
+      capitalization: {
+        source: sourceCapsHits, remaining: revisedCapsHits,
+        sourceHealth: axisHealth("capitalization", sourceCapsHits, proseSentenceCount),
+        remainingHealth: axisHealth("capitalization", revisedCapsHits, proseSentenceCount),
+      },
       stiffness: {
         source: sourceStiffAll, remaining: revisedStiffAll,
         sourceHealth: axisHealth("stiffness", sourceStiffAll, proseSentenceCount),
@@ -4362,8 +4416,8 @@ async function ensureValidResult(parsed, originalText, options, env) {
       boostApplied: boostApplied,
       nativizedRuleCount: nativizedRuleCount,
       spellingCapApplied: spellCapApplied,
-      flatByContract: !anyChange || clearedRaw <= 0,
-      rule: "No measurable change (or flawless source) scores the revision EXACTLY like its source; otherwise revised = min(98, original + max(2, round(cleared*0.8))). originalScore prints 98 only for a measured-flawless source, otherwise at most 95. Residual misspellings cap both sides at 80.",
+      flatByContract: !anyChange,
+      rule: "Input and output scores are identical ONLY when no transformation took place (or when both are top-notch at the 98 ceiling). The output is almost always scored ABOVE its source: any real edit, DB rule fire, or axis clearing earns revised = min(98, original + max(2, round(cleared*0.8))), so a minor-but-real transformation visibly matters. originalScore prints 98 only for a measured-flawless source, otherwise at most 95. Residual misspellings cap both sides at 80; the revised score is never lower than its source.",
     },
     caveats: {
       coverageUncovered: coverage.uncovered.length,
@@ -4398,6 +4452,9 @@ async function ensureValidResult(parsed, originalText, options, env) {
   }
   if (sourcePunctHits > 0 && revisedPunctHits < sourcePunctHits) {
     reviewNotes.push("Note — " + (sourcePunctHits - revisedPunctHits) + " punctuation/spacing defect" + (sourcePunctHits - revisedPunctHits === 1 ? "" : "s") + " (e.g. missing citation or series commas) corrected deterministically." + (revisedPunctHits > 0 ? " " + revisedPunctHits + " remain." : ""));
+  }
+  if (sourceCapsHits > 0 && revisedCapsHits < sourceCapsHits) {
+    reviewNotes.push("Note — " + (sourceCapsHits - revisedCapsHits) + " sentence start" + (sourceCapsHits - revisedCapsHits === 1 ? "" : "s") + " raised from a lowercase to a capital letter.");
   }
   if (addedWords.length > 0) {
     reviewNotes.push("Note — the revision adds words that appear nowhere in the source (possibly invented detail): " + addedWords.join(", ") + (addedWords.length === 8 ? " (and more)" : "") + ". Confirm the added detail is intended.");
@@ -4495,8 +4552,8 @@ async function ensureValidResult(parsed, originalText, options, env) {
     // Residual-defect census (the "counts" half of the residual 0-100 + counts
     // contract): unambiguous counts of what was measured in source vs what
     // remains, so the UI can surface "7 stiff, 0 spelling, 0 grammar -> 0 left".
-    sourceIssues: { spelling: sourceSpelling, grammar: sourceGrammarHits, stiffness: sourceStiffAll },
-    remainingIssues: { spelling: remainingSpelling, grammar: revisedGrammarHits, stiffness: revisedStiffAll },
+    sourceIssues: { spelling: sourceSpelling, grammar: sourceGrammarHits, punctuation: sourcePunctHits, capitalization: sourceCapsHits, stiffness: sourceStiffAll },
+    remainingIssues: { spelling: remainingSpelling, grammar: revisedGrammarHits, punctuation: revisedPunctHits, capitalization: revisedCapsHits, stiffness: revisedStiffAll },
     // Phase C gated-humanize audit: how many sentences were still stiff enough
     // to be flagged for the nativize model call, how many were actually
     // rewritten, and why the pass was skipped (no API key offline, nothing

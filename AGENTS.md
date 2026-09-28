@@ -101,8 +101,9 @@ The package name is still the legacy `react-example` and worker mame internally
   `fixCommonMisspellingsSafe`, `capitalizeEnhanced`, `applyCertifiedPolish`,
   `addQuestionMark`) →
   `rebuildFinalVersion` → scoring → `postProcessSuggestions`.
-- **Scoring**: residual misspellings cap scores at 80; otherwise
-  `revScore = min(98, 91 + realChangeCount*2)`; `origScore` docked proportionally.
+- **Scoring**: see the re-banded scored-residual contract below (the old
+  `91 + realChangeCount*2` formula is gone). The scoring meter also mirrors the
+  certified editor so a score only climbs when a detected defect disappears.
 - **Stripe**: `/create-checkout` creates a subscription session (price from
   `STRIPE_PRICE_ID`); `/stripe-webhook` verifies HMAC manually, sets tier pro on
   checkout completion, resets to free on subscription deleted.
@@ -193,6 +194,12 @@ Deterministic contract (must never drift):
   with every item capitalized; items 2-3 max two words and item1 a single word.
   Citation commas fire ONLY inside a parenthetical with ≥2 name+year elements
   split on semicolons. Scored punctuation axis: `min(10, punctHits*2)`.
+  Scored capitalization axis: `min(5, capsHits)` on sentence-head lowercase
+  starts (trimmed, per scoring sentence, so `e.g.`/`Dr.` never trip it).
+  GRAMMAR_RULES replacements preserve the matched text's leading case — the
+  `an-a-eu-words` article rewrite must never emit a lowercase sentence start
+  (2026-09-28: the caps axis surfaced exactly this shipping defect in the
+  grammar fixture; fixed and the 79→96 pin restored).
 - **Provider determinism**: Gemini is the ONLY primary provider for every tier
   (`MODEL_CANDIDATES = ["gemini-3.6-flash"]` — older flash models are retired and
   404 on new accounts, so they are NOT in the rotation),
@@ -227,23 +234,36 @@ Deterministic contract (must never drift):
   scoring contract). Empty-manuscript output is never accepted from any
   provider. Fallback exit paths (failure / all-provider flat → last parseable
   no-op accepted) are unchanged.
-- **Score = re-banded measured residual**, provider-independent: raw residual
-  meter (spelling cap 80, duplicated-word cap 85, grammar 3/hit cap 15,
-  punctuation `min(10, punctHits*2)`, stiffness density
-  `min(40, round(stiff/proseCount*30))`, floor 40); then the
-  BAND snaps it onto the display scale — `originalScore` = 98 only when the
-  source is measured flawless (raw >= 98), otherwise at most 95; if nothing
-  measurable changed (`anyChange` = no real sentence change AND no DB rule fired
-  AND no spelling/stiffness/grammar/punctuation clearing) the revision scores
-  EXACTLY like its source; otherwise `revisedScore = min(98, originalScore + max(2,
-  round(cleared*0.8)))` where `cleared = rawRev - rawOrig`. Residual misspellings
-  still cap both at 80. The SAME input always produces the SAME scores regardless
-  of provider. Reference profiles: military 77→95, uae 60→92, academic 60→92,
-  grammar 79→96, business 98→98, general 91→98, literary 98→98, success-criteria
-  80→96, kingston 60→92 (all committed fixtures, harness-asserted). The grammar
-  pin moved 79→84 to 79→96 on 2026-09-25 because the certified layer now WRITES
-  the unambiguous planted defects it previously only counted; the pinned
-  user-original sample (Ferguson/Diglossia abstract) measures 89→98.
+- **Score = measurable-behavioral gap**, provider-independent. USER POLICY
+  (approved 2026-09-28, replaces the older flat-by-contract rule): "The input
+  and output scores must remain the same only and only when no transformation
+  has taken place."; "All types of errors, depending on severity, are factored
+  in the score: spelling, punctuation, word choice, AI, grammar, transition,
+  capitalization, anything."; "The output should almost always be higher than
+  the input, except when the two are of high quality."; "Revised text should
+  never score above 98."; a top-notch source that stays top-notch reads 98/98.
+  Raw residual meter (spelling cap 80, duplicated-word cap 85, grammar 3/hit
+  cap 15, punctuation `min(10, punctHits*2)`, capitalization
+  `min(5, capsHits)` sentence-head starts, stiffness density
+  `min(40, round(stiff/proseCount*30))`, floor 40); then the BAND snaps it onto
+  the display scale — `originalScore` = 98 only when the source is measured
+  flawless (raw >= 98), otherwise at most 95; **`anyChange` is the ONLY gate**
+  (any real sentence change OR DB rule fire OR spelling/stiffness/grammar/
+  punctuation/capitalization clearing). With `!anyChange` the revision scores
+  EXACTLY like its source; otherwise `revisedScore = min(98, originalScore +
+  max(2, round(cleared*0.8)))` where `cleared = rawRev - rawOrig` — a
+  minor-but-real edit still earns at least +2, and the revised score is NEVER
+  below its source (`revScore < origScore` clamps up). Residual misspellings
+  still cap both at 80. The SAME input always produces the SAME scores
+  regardless of provider. Reference profiles: military 77→95, uae 60→92,
+  academic 60→92, grammar 79→96, business 98→98, general 91→98, literary 98→98,
+  success-criteria 80→96, kingston 60→92 (all committed fixtures,
+  harness-asserted). The grammar pin 79→96 (2026-09-25) still holds; the
+  capitalization axis (2026-09-28) surfaced and FIXED a shipping certified-layer
+  defect the meter could not previously see — the `an-a-eu-words` article rule
+  rewrote sentence-initial "An university" as "a university", lowering the first
+  letter of the final draft. The pinned user-original sample (Ferguson/Diglossia
+  abstract) measures 89→98.
 - **Coverage census** (diagnostic, never applied): `COVERAGE_WATCHLIST` in `index.js`
   (7 items: `the mere fact that`, `more likely to break than not`, `in whose neighbourhood`,
   `such a common denominator`, `is occasioned by`, `do not want to hear`,

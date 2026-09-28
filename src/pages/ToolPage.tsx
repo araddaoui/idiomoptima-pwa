@@ -1146,6 +1146,8 @@ export default function ToolPage() {
                                   <>
                                     {line("Spelling", r.axes.spelling)}
                                     {line("Grammar", r.axes.grammar)}
+                                    {line("Punctuation", r.axes.punctuation)}
+                                    {line("Capitalization", r.axes.capitalization)}
                                     {line("Stiffness", r.axes.stiffness)}
                                     {line("Duplicate words", r.axes.duplicates)}
                                     <p className="flex justify-between gap-2 border-t border-slate-700/50 pt-1.5 mt-1">
@@ -1156,7 +1158,7 @@ export default function ToolPage() {
                                     {(() => {
                                       const b = r.banding;
                                       if (b.flatByContract) {
-                                        return <p className="border-t border-slate-700/50 pt-1.5 mt-1.5">No measurable change — revised scored <strong className="text-amber-300">exactly like its source</strong> (no phantom credit).</p>;
+                                        return <p className="border-t border-slate-700/50 pt-1.5 mt-1.5">No edits — input and output scores are identical because nothing changed.</p>;
                                       }
                                       return <p className="border-t border-slate-700/50 pt-1.5 mt-1.5">
                                         {b.realChanges} real sentence change{b.realChanges === 1 ? "" : "s"} · {b.dbRulesFired} DB rule{b.dbRulesFired === 1 ? "" : "s"} fired{b.dbRulesFired > 0 && b.nativizedRuleCount ? ` (${b.nativizedRuleCount} distinct stiffness rule${b.nativizedRuleCount === 1 ? "" : "s"} consumed)` : ""} · boost <span className="text-emerald-300">+{b.boostApplied}</span>

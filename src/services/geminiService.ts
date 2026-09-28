@@ -53,8 +53,8 @@ export interface TransformationResult {
   providerErrors?: string[];
   // Residual-defect census (worker-computed): unambiguous counts measured in the
   // source vs what remains in the revision, so the rubric is explainable.
-  sourceIssues?: { spelling: number; grammar: number; stiffness: number };
-  remainingIssues?: { spelling: number; grammar: number; stiffness: number };
+  sourceIssues?: { spelling: number; grammar: number; punctuation: number; capitalization: number; stiffness: number };
+  remainingIssues?: { spelling: number; grammar: number; punctuation: number; capitalization: number; stiffness: number };
   // Phase C gated-humanize audit: residual-stiff sentences flagged for the
   // nativize model pass, how many were rewritten, and why it was skipped.
   humanize?: {
@@ -71,6 +71,8 @@ export interface TransformationResult {
     axes: {
       spelling: { source: number; remaining: number; sourceHealth: number; remainingHealth: number };
       grammar: { source: number; remaining: number; sourceHealth: number; remainingHealth: number };
+      punctuation: { source: number; remaining: number; sourceHealth: number; remainingHealth: number };
+      capitalization: { source: number; remaining: number; sourceHealth: number; remainingHealth: number };
       stiffness: {
         source: number; remaining: number; sourceHealth: number; remainingHealth: number;
         proseSentenceCount: number; rulesConsumed: number;

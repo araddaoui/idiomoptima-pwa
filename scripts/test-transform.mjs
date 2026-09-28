@@ -152,6 +152,7 @@ const extracted = [
   extractFunction(INDEX_SRC, "escapeRegExp"),
   extractFunction(INDEX_SRC, "normalizeSentenceKey"),
   extractFunction(INDEX_SRC, "replaceOutsideQuotes"),
+  extractFunction(INDEX_SRC, "fixCommonMisspellings"),
   extractFunction(INDEX_SRC, "buildNativizationMaps"),
   extractVarObject(INDEX_SRC, "SEMANTIC_FUNCTION_WORDS"),
   extractFunction(INDEX_SRC, "addedContentWords"),
@@ -159,7 +160,7 @@ const extracted = [
 ].join("\n");
 
 const api = new Function(
-  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
+  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, fixCommonMisspellings, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
 )();
 
 // --- load + merge databases exactly like the client (ToolPage) ---------------
@@ -603,6 +604,15 @@ section("11. certified deterministic grammar/punctuation layer (offline worker p
   {
     const out = await run(SAMPLE, "uk");
     check("UK-flagged text STILL receives the Oxford comma", has(out.finalVersion, "philological, stylistic, and structural"), true);
+  }
+  {
+    // New scoring contract (2026-09-28): scores are identical ONLY when no
+    // transformation took place — a genuinely pristine source must score flat.
+    const pristine = "The library opens at eight, and the morning queue forms before the doors. Students borrow, read, and return every volume on time.";
+    const out = await run(pristine);
+    check("no-op (zero edits) scores input === output", out.originalScore === out.revisedScore, true);
+    check("no-op on pristine source prints 98", out.originalScore, 98);
+    check("no-op banding flatByContract true", out.rubric && out.rubric.banding && out.rubric.banding.flatByContract, true);
   }
   {
     const guard = async (sentence, needle, present) => {
