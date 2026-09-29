@@ -235,40 +235,60 @@ Deterministic contract (must never drift):
   provider. Fallback exit paths (failure / all-provider flat → last parseable
   no-op accepted) are unchanged.
 - **Score = measurable-behavioral gap**, provider-independent. USER POLICY
-  (approved 2026-09-28, replaces the older flat-by-contract rule): "The input
-  and output scores must remain the same only and only when no transformation
-  has taken place."; "All types of errors, depending on severity, are factored
-  in the score: spelling, punctuation, word choice, AI, grammar, transition,
-  capitalization, anything."; "The output should almost always be higher than
-  the input, except when the two are of high quality."; "Revised text should
-  never score above 98."; a top-notch source that stays top-notch reads 98/98.
-  Raw residual meter (spelling cap 80, duplicated-word cap 85, grammar 3/hit
-  cap 15, punctuation `min(10, punctHits*2)`, capitalization
-  `min(5, capsHits)` sentence-head starts, stiffness density
-  `min(40, round(stiff/proseCount*30))`, floor 40); then the BAND snaps it onto
-  the display scale — **`originalScore` prints 98 ONLY when the source is
-  measured flawless (raw >= 98) AND left untouched (parity gate, 2026-09-29);
-  a flawless-MEASUREMENT source the editor improves was not genuinely
-  top-notch, so it drops to 95**; everything else at most 95. `anyChange` is
-  the transformation gate (any real sentence change OR DB rule fire OR
-  spelling/stiffness/grammar/punctuation/capitalization clearing). With
-  `!anyChange` the revision scores EXACTLY like its source; otherwise
-  `revisedScore = min(98, originalScore + max(2, round(cleared*0.8)))` where
-  `cleared = rawRev - rawOrig` — a minor-but-real edit still earns at least +2,
-  and the revised score is NEVER below its source (`revScore < origScore`
-  clamps up). Residual misspellings
-  still cap both at 80. The SAME input always produces the SAME scores
-  regardless of provider. The banding decision itself lives in the pure
-  `resolveBandedScores` function and is unit-asserted (test-transform section
-  12 — identical ONLY on a true no-op; 98/98 now impossible when a
-  transformation landed). Reference profiles: military 77→95, uae 60→92,
-  academic 60→92, grammar 79→96, business 95→97 (fires 1 DB rule; its old
-  98→98 was itself a masked-ceiling rerun of the parity bug — a measured
-  defect was painted 98 on both sides), general 91→98, literary 98→98 (the
-  one genuine untouched 98/98 corner), success-criteria 80→96, kingston 60→92
-  (all committed fixtures, harness-asserted). The grammar pin 79→96 (2026-09-25) still holds; the
-  capitalization axis (2026-09-28) surfaced and FIXED a shipping certified-layer
-  defect the meter could not previously see — the `an-a-eu-words` article rule
+  (approved 2026-09-28): "The input and output scores must remain the same only
+  and only when no transformation has taken place."; "All types of errors,
+  depending on severity, are factored in the score: spelling, punctuation, word
+  choice, AI, grammar, transition, capitalization, anything."; "The output
+  should almost always be higher than the input, except when the two are of
+  high quality."; "Revised text should never score above 98."; a top-notch
+  source that stays top-notch reads 98/98.
+  **Severity-weighted deduction rubric (USER CONTRACT, values approved
+  2026-09-29, replaces the old weighted-residual formula)**: start at 100 and
+  subtract per detected defect class — `DEDUCTION_RULES` (grammar & usage −4
+  cap −16; spelling −3 cap −12; word choice / AI-ese / phrasing −3 cap −12;
+  punctuation incl. unbalanced brackets −3 cap −12; duplication/echo −3 cap
+  −12; capitalization −3 cap −12; register slip −2 cap −6; floor 40; hard
+  80 spelling / hard 85 duplicate ceilings). The census is applied to source
+  AND revision (source defects = Tier-A counts + Tier-B evidence + stiffness +
+  spelling + duplicates; revision = the deterministic remainder). **Tier A** =
+  the certified editor==meter shapes, now incl. unbalanced `(`/`)` `[`/`]`
+  counting (count-only, never auto-fixed — docks BOTH sides when it persists)
+  and the curated `VERB_PREP_CORRECTIONS` (discuss about, emphasize on, mention
+  about, comprise of — write+count). **Tier B** = `classifyRealEdits(after,
+  before)`: a real Pass-1 sentence change not already caught by Tier A is
+  attributed to a class (modal/aux/verb-inflection or preposition swap →
+  grammar; content-word swap → word choice; else phrasing) and charged to the
+  SOURCE only, so the revised side genuinely reflects the defect being gone;
+  per-sentence dedupe so one defect never double-charges, and spelling evidence
+  is always dropped (the atomic spell meter owns it). **Register** docks only a
+  suggestDb phrase present in the source the model replaced (never a phrase
+  left in place).
+  Then the BAND snaps the meter onto the display scale —
+  **`originalScore` prints 98 ONLY when the source is measured flawless
+  (raw >= 98) AND left untouched (parity gate, 2026-09-29); a
+  flawless-MEASUREMENT source the editor improves was not genuinely top-notch,
+  so it drops to 95**; everything else at most 95. `anyChange` is the
+  transformation gate (any real sentence change OR DB rule fire OR axis
+  clearing). With `!anyChange` the revision scores EXACTLY like its source;
+  otherwise **FULL-DELTA banding**: `revisedScore = min(98, originalScore +
+  cleared)` where `cleared = rawRev - rawOrig` (the whole deduction the editor
+  removed), and a +2 seed only when the meter measured a flat gap (a real,
+  unmeasurable improvement such as tense consistency). The revised score is
+  NEVER below its source (`revScore < origScore` clamps up). Residual
+  misspellings still cap both at 80. The SAME input always produces the SAME
+  scores regardless of provider. The banding decision lives in the pure
+  `resolveBandedScores` and the census/deduction math in `applyDeductions` and
+  `classifyRealEdits` (unit-asserted, test-transform sections 12 + 13).
+  Reference profiles (deduction-rubric pins, harness-asserted): military 76→98,
+  uae 72→98, academic 72→98, grammar 72→98 (4+ planted defects, all within
+  editor scope — a fully-cleaned revision honestly reaches the 98 ceiling),
+  business 93→98 (fires 1 DB rule; old 95→97 was the parity-era pin), general
+  80→98, literary 98→98 (the one genuine untouched 98/98 corner),
+  success-criteria 78→98, kingston 72→98 (all committed fixtures,
+  harness-asserted).
+  The capitalization axis (2026-09-28) surfaced and FIXED a shipping
+  certified-layer defect the meter could not previously see — the
+  `an-a-eu-words` article rule
   rewrote sentence-initial "An university" as "a university", lowering the first
   letter of the final draft. The pinned user-original sample (Ferguson/Diglossia
   abstract) measures 89→98.
@@ -332,10 +352,10 @@ Deterministic contract (must never drift):
   harness asserts the DB-only fires (robust framework, `it is important to note
   that`, `it is worth noting`, `navigate these challenges`), UK-dialect
   preservation (`colonisation`, `travelled`, `labelled`, `characterisation`),
-  footnote preservation, the 80→96 band, and the certified-layer fixtures
+  footnote preservation, the 84→98 sample band, and the certified-layer fixtures
   (`npm test` section 11: citation comma, Oxford regardless of dialect, spacing,
   sv-finite, coordinated bare verb, subjunctive/verb-chain/numeric guards) plus
-  the grammar corpus pin 79→96. Grammar defects are detected deterministically
+  the grammar corpus pin 72→98. Grammar defects are detected deterministically
   via the same `applyGrammarLayer(...)` that edits (editor == meter).
 - **Known/accepted behavior (NOT bugs)**: model-performed synonym swaps not covered by
   any rule (e.g. `places`, `within`, `designated`, `taken`, `land`, `puts`) stay
@@ -351,11 +371,13 @@ Full verification matrix (required before ANY deploy):
 1. `node --check index.js`
 2. `npm run lint` (tsc --noEmit) and `npm run build`
 3. `npm test` (`scripts/test-transform.mjs`, includes heading + added-word-note
-   regressions, the DB-only Pass-2 suite, and section 11 — the certified
-   grammar/punctuation layer fixtures, incl. the pinned 89→98 user sample)
+   regressions, the DB-only Pass-2 suite, section 11 — the certified
+   grammar/punctuation layer fixtures incl. the pinned 89→98 user sample, the
+   parity gate in section 12, and the severity-rubric + Tier-B classifier pins
+   in section 13)
 4. `npm run consistency` (`scripts/consistency-check.mjs`): offline determinism ×3 per
    corpus fixture, coverage thresholds per field, Lolita-untouched invariant, re-banded
-   reference pins (incl. military 77→95, success-criteria 80→96, grammar 79→96),
+   reference pins (incl. military 76→98, success-criteria 78→98, grammar 72→98),
    DB-only/dialect/footnote asserts, residual-honesty. Live provider audit is opt-in:
    `npm run consistency:live` (consumes quota; asserts live scores invariant, bytes
    identical when the same provider answers, and the Live-only grammar fixes land).

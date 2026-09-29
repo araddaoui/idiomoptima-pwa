@@ -89,6 +89,13 @@ export interface TransformationResult {
       flatByContract: boolean;
       rule: string;
     };
+    // Severity-weighted deduction audit (2026-09-29): per-class count x per =
+    // total, charged to source vs revision, so every point is explainable.
+    deductions?: {
+      source: Record<string, { count: number; per: number; total: number }>;
+      revised: Record<string, { count: number; per: number; total: number }>;
+      rules: Record<string, { per: number; cap: number; maxInstances: number }>;
+    };
     caveats: { coverageUncovered: number; semanticRiskSentences: number; humanizeSkipped?: string | null };
   };
 }

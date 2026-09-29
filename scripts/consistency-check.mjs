@@ -26,8 +26,11 @@
 //      past-tense clause head. Offline we assert the detector catches planted
 //      grammar defects and never grows them (monotone), the success-criteria
 //      fixture proves DB-only Pass 2 still fires on exactly the DB phrases and
-//      preserves UK dialect/footnotes, and the planted grammar corpus now lands
-//      at 79->96 because the certified layer actually clears the residual.
+//      preserves UK dialect/footnotes, and the planted grammar corpus lands at
+//      72->98 under the severity-weighted deduction rubric (grammar -4 / others
+//      -3 per DEDUCTION_RULES; full-delta banding returns the entire cleared
+//      deduction to a fully-cleaned revision, so a corpus whose defects are all
+//      inside the editor's scope honestly reaches the 98 ceiling).
 // Live mode (`--live` / LIVE=1) additionally POSTs the corpus to the deployed
 // worker 3x each and asserts: scores identical on every run, output bytes
 // identical whenever the SAME provider answered (provider is always gemini for
@@ -49,28 +52,29 @@ const WORKER_URL = process.env.WORKER_URL || "https://nativewrite-api.nativewrit
 
 // Each corpus item: { file, domain, tone, mode, minMatched, reference }
 const CORPUS = [
-  { file: "uae.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "60->92" },
-  { file: "academic.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "60->92" },
+  { file: "uae.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "72->98" },
+  { file: "academic.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "72->98" },
   { file: "literary.txt", domain: "creative", tone: "reflective", mode: "academic", minMatched: 0, untouched: true },
-  { file: "business.txt", domain: "business", tone: "professional", mode: "business", minMatched: 1, reference: "95->97" },
-  { file: "general.txt", domain: "general", tone: "friendly", mode: "general", minMatched: 3, reference: "91->98" },
-  { file: "military.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "77->95" },
+  { file: "business.txt", domain: "business", tone: "professional", mode: "business", minMatched: 1, reference: "93->98" },
+  { file: "general.txt", domain: "general", tone: "friendly", mode: "general", minMatched: 3, reference: "80->98" },
+  { file: "military.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "76->98" },
   // Two-pass contract fixture: DB-only Pass 2 must fire on the planted phrases,
   // preserve UK dialect + footnotes, and the meter must land inside the re-band
   // target. Grammar/spelling correction is the model's job (Pass 1), so those
   // are asserted against the LIVE worker only (liveClean).
-  { file: "success-criteria.txt", domain: "general", tone: "neutral", mode: "general", minMatched: 4, reference: "80->96", dbOnly: true, liveClean: true },
+  { file: "success-criteria.txt", domain: "general", tone: "neutral", mode: "general", minMatched: 4, reference: "78->98", dbOnly: true, liveClean: true },
   // Real-world acceptance input (user-reported): DB-only Pass 2 must swap the
   // 5 covered phrases and leave the 2 census patterns uncovered; the model must
   // NOT restructure ("continuing Maxine Hong Kingston’s aesthetic…") and must
   // NOT introduce S-V regressions ("have the asset", "strongly brings").
-  { file: "kingston.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 5, reference: "60->92", kingston: true, liveNoSVR: true },
+  { file: "kingston.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 5, reference: "72->98", kingston: true, liveNoSVR: true },
   // Residual-honesty suite: the certified deterministic layer DETECTS planted
   // defects in the source and — for unambiguous machine-verifiable shapes
   // (sv-agreement, coordinated bare verbs, comma/spacing) — WRITES the fix, so
-  // offline the planted grammar corpus now lands at 79->96 (the 84 pin predates
-  // the certified write path; the revision actually clears the residual now).
-  { file: "grammar.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 0, reference: "79->96", grammarDetector: true, minGrammar: 4 },
+  // offline the planted grammar corpus lands at 72->98 under the severity
+  // rubric (the 79->96 pin predates the deduction table; full-delta banding now
+  // hands the whole cleared deduction to the cleaned revision).
+  { file: "grammar.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 0, reference: "72->98", grammarDetector: true, minGrammar: 4 },
 ];
 
 // --- Result normalization: only the deterministic contract slices compare. ---

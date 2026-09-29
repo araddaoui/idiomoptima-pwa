@@ -153,7 +153,14 @@ const extracted = [
   extractFunction(INDEX_SRC, "normalizeSentenceKey"),
   extractFunction(INDEX_SRC, "replaceOutsideQuotes"),
   extractFunction(INDEX_SRC, "fixCommonMisspellings"),
+  extractFunction(INDEX_SRC, "countMisspellings"),
   extractFunction(INDEX_SRC, "resolveBandedScores"),
+  extractVarObject(INDEX_SRC, "DEDUCTION_RULES"),
+  extractVar(INDEX_SRC, "MODAL_AUX_WORDS"),
+  extractVar(INDEX_SRC, "PREPOSITION_WORDS"),
+  extractFunction(INDEX_SRC, "tokenDiffTokens"),
+  extractFunction(INDEX_SRC, "classifyRealEdits"),
+  extractFunction(INDEX_SRC, "applyDeductions"),
   extractFunction(INDEX_SRC, "buildNativizationMaps"),
   extractVarObject(INDEX_SRC, "SEMANTIC_FUNCTION_WORDS"),
   extractFunction(INDEX_SRC, "addedContentWords"),
@@ -161,7 +168,7 @@ const extracted = [
 ].join("\n");
 
 const api = new Function(
-  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, fixCommonMisspellings, resolveBandedScores, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
+  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, fixCommonMisspellings, countMisspellings, resolveBandedScores, DEDUCTION_RULES, classifyRealEdits, applyDeductions, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
 )();
 
 // --- load + merge databases exactly like the client (ToolPage) ---------------
@@ -599,8 +606,14 @@ section("11. certified deterministic grammar/punctuation layer (offline worker p
     check("coordinated bare verb fixed ('and manifested in')", has(fv, "and manifested in"), true);
     check("heading bold preserved", /\*\*Background\*\*/.test(fv), true);
     check("DB sweep still runs ('a host of')", has(fv, "a host of"), true);
-    check("grading follows the quality gap (original 85..92)", out.originalScore >= 85 && out.originalScore <= 92, true);
-    check("fully-cleaned revision scores 98", out.revisedScore, 98);
+    // Severity-weighted deduction rubric (2026-09-29): the source pays per class
+    // (grammar -4, word-choice -3 ×2, punctuation -3 ×2 = -16 -> 84); the clean
+    // revision earns the FULL delta back (full-delta banding) -> 98.
+    check("grading follows the quality gap (original 84)", out.originalScore, 84);
+    check("fully-cleaned revision scores 98 (full delta)", out.revisedScore, 98);
+    const dd = out.rubric && out.rubric.deductions;
+    check("deductions ledger audits the source classes", !!(dd && dd.source && dd.source.grammar && dd.source.wordChoice && dd.source.punctuation), true);
+    check("deductions ledger credits a clean revision", !!(dd && dd.revised && Object.keys(dd.revised).length === 0), true);
   }
   {
     const out = await run(SAMPLE, "uk");
@@ -662,12 +675,18 @@ section("12. parity gate — identical scores ONLY when no transformation took p
   }
   {
     const b = r(90, 100, { anyChange: true, remainingSpelling: 0 });
-    check("raw 90 cleared 10 -> +8 boosted", b.originalScore, 90);
+    check("raw 90 cleared 10 -> +10 full delta", b.originalScore, 90);
     check("revised capped at 98 never above", b.revisedScore, 98);
   }
   {
     const b = r(60, 100, { anyChange: true, remainingSpelling: 0 });
-    check("raw 60 cleared 40 -> +32 boosted", b.revisedScore, 92);
+    check("raw 60 cleared 40 -> +40 full delta, capped 98", b.revisedScore, 98);
+  }
+  {
+    // FULL-DELTA exact pass-through: the revision inherits the whole measured
+    // deduction, minus the persisting residual defect it could not clear.
+    const b = r(86, 97, { anyChange: true, remainingSpelling: 0 });
+    check("cleared deduction passes through exactly (86 -> 97)", b.revisedScore, 97);
   }
   {
     const b = r(100, 100, { anyChange: true, remainingSpelling: 2 });
@@ -681,6 +700,64 @@ section("12. parity gate — identical scores ONLY when no transformation took p
   {
     const b = r(100, 100, { anyChange: false, remainingSpelling: 0 });
     check("no-op 98/98 still flat (Lolita/business/literary corner kept)", b.originalScore === 98 && b.revisedScore === 98, true);
+  }
+}
+
+// ==================== 13. SEVERITY-WEIGHTED DEDUCTION RUBRIC (2026-09-29)
+// User-approved values: grammar -4 (cap -16), spelling -3, word-choice -3,
+// punctuation -3, duplication -3, capitalization -3 (each cap -12), register -2
+// (cap -6). Tier-B evidence classification charges a real Pass-1 edit to the
+// SOURCE; full-delta banding hands the whole cleared deduction to the revision.
+section("13. severity-weighted deduction rubric + Tier-B classifier");
+{
+  const cls = api.classifyRealEdits;
+  const ded = api.applyDeductions;
+  {
+    // The exact user-reported ASI manuscript shapes.
+    check("tense modal switch -> grammar", cls("This could beat any international industrial states, but we have long devised their independence. Some sit on meetings without purpose.", "This could beat any international industrial states, but we had long devised their independence. Some sit in meetings without purpose.").grammar, 1);
+    check("preposition swap -> grammar", cls("We review the report in the meeting.", "We review the report at the meeting.").grammar, 1);
+    check("content-word swap -> word choice", cls("They obtained a result.", "They achieved a result.").wordChoice, 1);
+    check("case-only -> capitalization", cls("the proposal was approved.", "The proposal was approved.").capitalization, 1);
+    // Punctuation-marker-only deltas (paren/comma/shift) are NOT Tier-B evidence:
+    // content tokens match, so the balanced-paren/Unbalanced counters in the
+    // certified editor own the punctuation class (Tier A).
+    check("paren-only change stays Tier-A (no Tier-B re-charge)", cls("The claim (Smith 1999", "The claim (Smith, 1999").punctuation, 0);
+    check("misspelling fix -> spelling (owned by spell meter)", cls("This was a challanges.", "This was a challenge.").spelling, 1);
+  }
+  {
+    const d = ded({ grammar: 1, wordChoice: 2, punctuation: 2 });
+    check("deduction math: 1x4 + 2x3 + 2x3 = 84", d.score, 84);
+    const cap = ded({ grammar: 9 });
+    check("per-class cap: 9 grammar hits capped at -16", cap.score, 84);
+    const floor = ded({ grammar: 255, spelling: 255, wordChoice: 255, punctuation: 255, capitalization: 255, duplication: 255, register: 255 });
+    check("floor 40 holds across all capped classes", floor.score, 40);
+    const spell = ded({ spelling: 3 });
+    check("spelling hard 80 ceiling", spell.score, 80);
+  }
+  {
+    // Tier-A write path: the curated verb+preposition table + unbalanced-bracket
+    // count land through the certified editor (editor == meter), all quote-safe
+    // via the real worker rescue path.
+    const { default: worker } = await import(pathToFileURL(join(ROOT, "index.js")));
+    const db = { aiDb: [], idiomDb: [], suggestDb: [], lexicalDb: {} };
+    async function run(text) {
+      const req = new Request("https://nativewrite-api.nativewrite-api.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, domain: "academic", databases: db }),
+      });
+      const resp = await worker.fetch(req, {});
+      const raw = await resp.text();
+      const line = raw.split(/\r?\n/).filter((l) => l.trim()).pop() || "{}";
+      let data = JSON.parse(line);
+      while (data && typeof data === "object" && data.result && !data.finalVersion) data = data.result;
+      return data;
+    }
+    const hard = "The committee will discuss about the plan, and the report draws on Altoma (Campbell, 1999); Sport, 1996) for the fuller picture and remains unfinished.";
+    const out = await run(hard);
+    check("Tier-A writes 'discuss about' -> 'discuss'", !out.finalVersion.includes("discuss about"), true);
+    check("unbalanced bracket persists (count-only, never auto-fixed)", out.finalVersion.includes("Sport, 1996) for"), true);
+    check("punctuation deduction charged on BOTH sides (paren left in)", !!(out.rubric && out.rubric.deductions && out.rubric.deductions.revised && out.rubric.deductions.revised.punctuation), true);
   }
 }
 

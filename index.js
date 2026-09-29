@@ -2831,6 +2831,29 @@ var GRAMMAR_PREPOSITIONS = [
   { re: /\bthe\s+reason\s+is\s+because\b/gi, good: function (m) { return "the reason is that"; } },
 ];
 
+// TIER-A verb+preposition collocations (unambiguous non-native shapes only).
+// These WRITE (certified editor) AND count (grammar class), quote-safe. Verb
+// chains like "sit on meetings" are deliberately NOT here — a preposition swap
+// is instead evidenced by Tier-B classification of the model's edit.
+var VERB_PREP_CORRECTIONS = [
+  { re: /\bdiscuss\s+about\b/gi, good: function (m) { return "discuss"; } },
+  { re: /\bemphas[ei]z[ei]s?\s+on\b/gi, good: function (m) { return m[0].replace(/\s+on\b/i, ""); } },
+  { re: /\bmention\s+about\b/gi, good: function (m) { return "mention"; } },
+  { re: /\bcompris[ei]s?\s+of\b/gi, good: function (m) { return m[0].replace(/\s+of\b/i, ""); } },
+];
+
+// Count-only, never-write punctuation defect: unbalanced parentheses / square
+// brackets in a prose span ("(Campbell, 1999); Sport, 1996)" is a stray closer).
+function countUnbalancedBrackets(s) {
+  var open = 0, close = 0;
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charAt(i);
+    if (c === "(" || c === "[") open++;
+    else if (c === ")" || c === "]") close++;
+  }
+  return open !== close ? 1 : 0;
+}
+
 // Applies the grammar layer to a prose block; quote-safe, footnote lines must be
 // excluded by the caller. Returns { text, fixes, grammar, punctuation }.
 //   - text: the deterministic, machine-verifiable corrections applied
@@ -2875,6 +2898,19 @@ function applyGrammarLayer(text) {
         if (/^[A-Z]/.test(res[0]) && !/^[A-Z]/.test(good)) good = good.charAt(0).toUpperCase() + good.slice(1);
         s = s.substring(0, res.index) + good + s.substring(res.index + res[0].length);
         pr.lastIndex = res.index + good.length;
+        fixes++;
+        grammarFixes++;
+      }
+    }
+    // TIER-A verb+preposition collocations: two back-to-back replaces cannot
+    // starve each other ("discuss about it" only fires once per occurrence).
+    for (var vp = 0; vp < VERB_PREP_CORRECTIONS.length; vp++) {
+      var vpRule = VERB_PREP_CORRECTIONS[vp];
+      var vpRe = new RegExp(vpRule.re.source, vpRule.re.flags);
+      while ((res = vpRe.exec(s)) !== null) {
+        var vpGood = String(typeof vpRule.good === "function" ? vpRule.good(res) : vpRule.good);
+        s = s.substring(0, res.index) + vpGood + s.substring(res.index + res[0].length);
+        vpRe.lastIndex = res.index + vpGood.length;
         fixes++;
         grammarFixes++;
       }
@@ -2956,6 +2992,10 @@ function applyGrammarLayer(text) {
       grammarFixes++;
       return andWord + " " + ed;
     });
+    // 5) Unbalanced parentheses / square brackets (COUNT-ONLY, never fixed — a
+    //    deterministic editor cannot know the author's intent; the defect still
+    //    docks the punctuation class on BOTH sides when it persists).
+    punctFixes += countUnbalancedBrackets(s);
     return s;
   });
   return { text: out, fixes: fixes, grammar: grammarFixes, punctuation: punctFixes };
@@ -3564,7 +3604,12 @@ function resolveBandedScores(rawOrig, rawRev, opts) {
   var boostApplied = 0;
   var revScore;
   if (anyChange) {
-    boostApplied = Math.max(2, Math.round(cleared * 0.8));
+    // FULL-DELTA banding (approved 2026-09-29): the revision earns back the
+    // ENTIRE measured deduction — score reflects the real quality gap. When the
+    // meter measured a flat gap (a genuine improvement the meter cannot see,
+    // e.g. tense consistency), fall back to a +2 seed so honesty never becomes
+    // a 0-win.
+    boostApplied = cleared > 0 ? cleared : 2;
     revScore = Math.min(98, origScore + boostApplied);
     if (revScore < origScore) revScore = origScore; // never punish (platform promise)
   } else {
@@ -3584,6 +3629,141 @@ function resolveBandedScores(rawOrig, rawRev, opts) {
     flatByContract: !anyChange,
     spellCapApplied: spellCapApplied,
   };
+}
+
+// Severity-weighted deduction rubric (USER CONTRACT, values approved 2026-09-29).
+// Single source of truth for BOTH the raw residual meter and the audit UI. The
+// table is harness-pinned so any future value change must be a deliberate edit.
+//   Grammar & usage (sv, tense, article, preposition, doubled subject): -4 (cap -16)
+//   Spelling: -3 (cap -12; hard 80-ceiling separately)
+//   Word choice / AI-ese / phrasing: -3 (cap -12)
+//   Punctuation (incl. unbalanced brackets): -3 (cap -12)
+//   Duplicates / echo: -3 (cap -12; hard 85-ceiling separately)
+//   Capitalization: -3 (cap -12)
+//   Register slip (deterministic only): -2 (cap -6)
+var DEDUCTION_RULES = {
+  grammar: { per: 4, cap: 16, maxInstances: 4 },
+  spelling: { per: 3, cap: 12, maxInstances: 4 },
+  wordChoice: { per: 3, cap: 12, maxInstances: 4 },
+  punctuation: { per: 3, cap: 12, maxInstances: 4 },
+  duplication: { per: 3, cap: 12, maxInstances: 4 },
+  capitalization: { per: 3, cap: 12, maxInstances: 4 },
+  register: { per: 2, cap: 6, maxInstances: 3 },
+};
+
+// Multiset token difference. Returns:
+//   removed = tokens present ONLY in b (introduced by the revision)
+//   added   = tokens present ONLY in a (dropped from the source)
+function tokenDiffTokens(a, b) {
+  var counts = {};
+  String(a || "").toLowerCase().split(/[^a-z0-9']+/).forEach(function (w) {
+    if (!w) return;
+    counts[w] = (counts[w] || 0) + 1;
+  });
+  var introduced = [];
+  String(b || "").toLowerCase().split(/[^a-z0-9']+/).forEach(function (w) {
+    if (!w) return;
+    if (counts[w] > 0) counts[w]--;
+    else introduced.push(w);
+  });
+  var dropped = [];
+  Object.keys(counts).forEach(function (w) {
+    for (var i = 0; i < counts[w]; i++) dropped.push(w);
+  });
+  return { removed: introduced, added: dropped };
+}
+
+// TIER-B evidence classifier: for a REAL Pass-1 sentence change the deterministic
+// meter cannot see, attribute the edit to the defect class it most plausibly
+// fixes, so the SOURCE is charged and the revision credited. Grammar defect
+// classes (sv/tense/article/preposition) are Tier-A's job and never double-charge
+// here — the callers dedupe per sentence. Pure function (unit-pinned).
+var MODAL_AUX_WORDS = [
+  "can","could","would","should","shall","will","may","might","must","ought","need",
+  "is","are","was","were","be","been","being","am","has","have","had","do","does","did",
+  "go","goes","went","gone","buy","buys","bought","say","says","said","make","makes","made",
+  "see","sees","saw","seen","take","takes","took","given","get","gets","got","gotten",
+  "manifests","manifested","began","begun","hold","held","devise","devises","devised"
+];
+var PREPOSITION_WORDS = [
+  "in","on","at","to","for","of","from","by","with","about","into","onto","upon","within",
+  "without","among","between","through","over","under","against","toward","towards"
+];
+function classifyRealEdits(before, after) {
+  var cls = { grammar: 0, spelling: 0, punctuation: 0, capitalization: 0, wordChoice: 0 };
+  if (!before || !after) return cls;
+  // Case-only delta (same words, caps differ) is a capitalization repair.
+  if (String(before).toLowerCase().replace(/[^a-z0-9 ]/g, "") ===
+      String(after).toLowerCase().replace(/[^a-z0-9 ]/g, "")) {
+    cls.capitalization = 1;
+    return cls;
+  }
+  var d = tokenDiffTokens(before, after);
+  // `srcOnly` = tokens in the source the revision dropped; `revOnly` = tokens
+  // the revision introduced (the classifier charges the source, so a defect is
+  // evidence when its token came from the SOURCE side).
+  var srcOnly = d.added, revOnly = d.removed;
+  if (srcOnly.length === 0 && revOnly.length === 0) return cls;
+  var i;
+  // Spelling: a SOURCE token the deterministic editor would rewrite.
+  for (i = 0; i < srcOnly.length; i++) {
+    if (countMisspellings(srcOnly[i]) > 0) { cls.spelling = 1; return cls; }
+  }
+  // Punctuation markers are the ONLY difference (content words match).
+  var contentChanged = srcOnly.some(function (w) { return /[a-z]/.test(w); }) ||
+                       revOnly.some(function (w) { return /[a-z]/.test(w); });
+  if (!contentChanged) { cls.punctuation = 1; return cls; }
+  // Grammar: modal/auxiliary/verb switch, preposition swap, inflection of a
+  // matched stem (transformation -> transformations).
+  for (i = 0; i < srcOnly.length; i++) {
+    if (MODAL_AUX_WORDS.indexOf(srcOnly[i]) >= 0) { cls.grammar = 1; break; }
+    if (PREPOSITION_WORDS.indexOf(srcOnly[i]) >= 0) { cls.grammar = 1; break; }
+  }
+  if (!cls.grammar) {
+    for (i = 0; i < revOnly.length; i++) {
+      if (MODAL_AUX_WORDS.indexOf(revOnly[i]) >= 0) { cls.grammar = 1; break; }
+      if (PREPOSITION_WORDS.indexOf(revOnly[i]) >= 0) { cls.grammar = 1; break; }
+    }
+  }
+  if (cls.grammar) return cls;
+  // Singular/plural inflection of the SAME stem.
+  for (var r = 0; r < srcOnly.length && !cls.grammar; r++) {
+    for (var a2 = 0; a2 < revOnly.length; a2++) {
+      if (srcOnly[r] + "s" === revOnly[a2] || revOnly[a2] + "s" === srcOnly[r] ||
+          (srcOnly[r].length > 4 && revOnly[a2].length > 4 &&
+           (srcOnly[r].slice(0, -2) === revOnly[a2].slice(0, -1) ||
+            srcOnly[r].slice(0, -1) === revOnly[a2].slice(0, -2)))) {
+        cls.grammar = 1;
+        break;
+      }
+    }
+  }
+  if (cls.grammar) return cls;
+  // Every remaining real edit is, at minimum, a wording/register improvement.
+  cls.wordChoice = 1;
+  return cls;
+}
+
+// Apply the severity-weighted deduction table to a set of measured defect
+// counts. Returns { score, deducts: { class: { count, per, total } } }.
+function applyDeductions(defects, rules) {
+  rules = rules || DEDUCTION_RULES;
+  defects = defects || {};
+  var score = 100;
+  var deducts = {};
+  Object.keys(rules).forEach(function (c) {
+    var cnt = defects[c] || 0;
+    if (!cnt) return;
+    var r = rules[c];
+    var charged = Math.min(cnt, r.maxInstances || Math.floor(r.cap / r.per));
+    var total = Math.min(r.cap, charged * r.per);
+    score -= total;
+    deducts[c] = { count: cnt, per: r.per, total: total };
+  });
+  if ((defects.spelling || 0) > 0) score = Math.min(score, 80);   // hard ceiling
+  if ((defects.duplication || 0) > 0) score = Math.min(score, 85); // hard ceiling
+  score = Math.min(100, Math.max(40, score));
+  return { score: score, deducts: deducts };
 }
 
 // How many prose sentences does the SOURCE actually have? Used to reconcile the
@@ -4201,19 +4381,21 @@ async function ensureValidResult(parsed, originalText, options, env) {
   // is the honest remainder). Template-family hits are counted once per phrase
   // and merged with the DB/builtin stiffness scan (never double-docked).
   var proseSentenceCount = Math.max(1, scoringProse(sentences).length);
+  var srcLayerCounts = {};
   var sourceGrammarHits = 0;
   var revisedGrammarHits = 0;
   var sourcePunctHits = 0;
   var revisedPunctHits = 0;
   var sourceCapsHits = 0;
   var revisedCapsHits = 0;
-  scoringProse(sentences).forEach(function (s) {
+  sentences.forEach(function (s, si) {
     // Quote-only sentences are skipped by every editing pass, so they must not
     // count as an untouchable residual defect in the measurement either (the
     // noted Lolita-untouched corpus stays at the native 98-98 this way).
     if (/^".*"$/.test((s.original || "").trim()) || /^".*"$/.test((s.revised || "").trim())) return;
     var srcLayer = applyGrammarLayer(s.original || "");
     var revLayer = applyGrammarLayer(s.revised || "");
+    srcLayerCounts[si] = { grammar: srcLayer.grammar, punctuation: srcLayer.punctuation };
     sourceGrammarHits += srcLayer.grammar;
     revisedGrammarHits += revLayer.grammar;
     sourcePunctHits += srcLayer.punctuation;
@@ -4227,17 +4409,13 @@ async function ensureValidResult(parsed, originalText, options, env) {
   });
   var sourceStiffAll = sourceStiffness;
   var revisedStiffAll = revisedStiffness;
-  function measuredResidual(spelling, grammarHits, punctHits, capsHits, stiffAll, dupWords) {
-    var score = 100 - Math.min(15, grammarHits * 3)
-                  - Math.min(10, punctHits * 2)
-                  - Math.min(5, capsHits)
-                  - Math.min(40, Math.round((stiffAll / proseSentenceCount) * 30));
-    if (spelling > 0) score = Math.min(score, 80);
-    if (dupWords) score = Math.min(score, 85);
-    return Math.min(100, Math.max(40, score));
+  // Severity-weighted residual meter (USER CONTRACT 2026-09-29): build a defect
+  // count per class and apply the DEDUCTION_RULES table. Same deterministic
+  // measurement on source and revised, so a score climbs ONLY when a real,
+  // detected defect disappears.
+  function measuredResidual(defects) {
+    return applyDeductions(defects || {}).score;
   }
-  var origScore = measuredResidual(sourceSpelling, sourceGrammarHits, sourcePunctHits, sourceCapsHits, sourceStiffAll, hasDuplicateWords);
-  var revScore = measuredResidual(remainingSpelling, revisedGrammarHits, revisedPunctHits, revisedCapsHits, revisedStiffAll, false);
 
   // Count REAL content changes (ignore trivial punctuation/case-only rewrites
   // from the AI echo that padded earlier scores). Also EXCLUDE changes confined
@@ -4291,6 +4469,15 @@ async function ensureValidResult(parsed, originalText, options, env) {
 
   var realChangeCount = 0;
   var magnitudeAll = 0;
+  // TIER-B evidence ledger: defect classes the deterministic meter cannot
+  // directly measure (tense consistency, a model-side preposition swap, a
+  // phrasing lift) are attributed to the sentence's REAL Pass-1 change and
+  // charged to the SOURCE only; the revision is credited because the defect is
+  // gone there. Spelling is never re-charged here — the atomic spelling meter
+  // already docks every fixed misspelling exactly once. Per-sentence dedupe
+  // ensures a defect Tier A already caught (grammar/punctuation on the SOURCE
+  // sentence) is never charged a second time.
+  var evidenceClassCounts = { grammar: 0, wordChoice: 0, punctuation: 0, capitalization: 0 };
   sentences.forEach(function (s, si) {
     // Semantically-flagged sentences must not inflate the score: their edit is
     // unverifiable (may have flipped meaning), so it cards no credit.
@@ -4321,7 +4508,54 @@ async function ensureValidResult(parsed, originalText, options, env) {
     if (contentTokenSeq(before) === contentTokenSeq(after)) return;
     realChangeCount++;
     magnitudeAll += Math.max(1, tokenDiffMagnitude(oq, rq));
+    // TIER-B: classify this real edit. Deleted misspellings are owned by the
+    // spelling meter; and a class Tier A already caught on THIS source sentence
+    // is not charged a second time (editor == meter, no double-dock).
+    var clsEdit = classifyRealEdits(before, after);
+    delete clsEdit.spelling;
+    var la = srcLayerCounts[si] || { grammar: 0, punctuation: 0 };
+    if (clsEdit.grammar && la.grammar > 0) clsEdit.grammar = 0;
+    if (clsEdit.punctuation && la.punctuation > 0) clsEdit.punctuation = 0;
+    ["grammar", "wordChoice", "punctuation", "capitalization"].forEach(function (c) {
+      if (clsEdit[c]) evidenceClassCounts[c] += clsEdit[c];
+    });
   });
+
+  // REGISTER class (advise-only tier, deterministic only): a suggestDb phrase
+  // present in the SOURCE that the model replaced is a register slip the editor
+  // nudged away — charge the source, credit the revision. A phrase left in
+  // place stays advisory (second-order, never docked on either side).
+  var suggestList = [];
+  var suggestSeeds = (options && options.databases && options.databases.suggestDb) || [];
+  suggestSeeds.concat(DEFAULT_DATABASES.suggestDb).forEach(function (e) {
+    var srcPhrase = String((e && (e.ai || e.src)) || "").trim().toLowerCase();
+    if (srcPhrase && suggestList.indexOf(srcPhrase) === -1) suggestList.push(srcPhrase);
+  });
+  var sourceRegister = 0;
+  var sugBody = String(bodyOnlyOriginal || "").toLowerCase();
+  var sugRevBody = String(bodyFinalForWords || finalVersion || "").toLowerCase();
+  suggestList.forEach(function (ph) {
+    if (sugBody.indexOf(ph) !== -1 && sugRevBody.indexOf(ph) === -1) sourceRegister++;
+  });
+
+  // Build both defect ledgers and measure. Evidence charges the source only,
+  // so the revised ledger carries the pure deterministic remainder.
+  var sourceDefects = {
+    spelling: sourceSpelling, grammar: sourceGrammarHits + evidenceClassCounts.grammar,
+    wordChoice: sourceStiffAll + evidenceClassCounts.wordChoice,
+    punctuation: sourcePunctHits + evidenceClassCounts.punctuation,
+    capitalization: sourceCapsHits + evidenceClassCounts.capitalization,
+    duplication: hasDuplicateWords ? 1 : 0, register: sourceRegister
+  };
+  var revDefects = {
+    spelling: remainingSpelling, grammar: revisedGrammarHits,
+    wordChoice: revisedStiffAll, punctuation: revisedPunctHits,
+    capitalization: revisedCapsHits, duplication: 0, register: 0
+  };
+  var sourceDeductRes = applyDeductions(sourceDefects);
+  var revDeductRes = applyDeductions(revDefects);
+  var origScore = measuredResidual(sourceDefects);
+  var revScore = measuredResidual(revDefects);
 
   // Stiffest-sentence prioritization: find the source sentence carrying the most
   // AI-sounding phrasing and confirm the revision actually addressed it. When it
@@ -4404,7 +4638,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
       source: Math.round(rawOrigScore),
       revised: Math.round(rawRevScore),
       cleared: Math.round(clearedRaw),
-      note: "Linear residual meter (0-100, clamped 40-100): the SAME deterministic measurement is applied to source and revision, so the meter reflects detected defects only; the band then snaps the display scores so a 98-tag requires an untouched source (any real edit the meter cannot see still lifts the revision above a 95-capped source).",
+      note: "Severity-weighted deduction meter (40-100): the SAME deterministic defect census is applied to source and revision, and each detected defect docks its class per the DEDUCTION_RULES table (grammar -4, spelling/word-choice/punctuation/duplication/capitalization -3, register -2, per-class caps). The band then snaps the display scores so a 98-tag requires an untouched source; model-side edits a deterministic meter cannot see (tense, preposition, phrasing) are charged to the source via Tier-B classification so the gap reflects real quality, not luck.",
     },
     axes: {
       spelling: {
@@ -4448,7 +4682,12 @@ async function ensureValidResult(parsed, originalText, options, env) {
       nativizedRuleCount: nativizedRuleCount,
       spellingCapApplied: spellCapApplied,
       flatByContract: !anyChange,
-      rule: "Input and output scores are identical ONLY when no transformation took place. A measured-flawless source prints 98 only when it was ALSO left untouched; the instant the editor improves a source (any real edit, DB rule fire, or axis clearing), that source was not genuinely top-notch, so it prints at most 95 and the revision is scored ABOVE it: revised = min(98, original + max(2, round(cleared*0.8))). Residual misspellings cap both sides at 80; the revised score is never lower than its source.",
+      rule: "Input and output scores are identical ONLY when no transformation took place. A measured-flawless source prints 98 only when it was ALSO left untouched; the instant the editor improves a source (any real edit, DB rule fire, or axis clearing), that source was not genuinely top-notch, so it prints at most 95 and the revision is scored ABOVE it. FULL-DELTA banding (2026-09-29): revised = min(98, original + cleared) where cleared is the raw deduction the meter removed; when the meter measures a flat gap (a real improvement it cannot see, e.g. tense consistency) a +2 seed still lifts the revision. Residual misspellings cap both sides at 80; the revised score is never lower than its source.",
+    },
+    deductions: {
+      source: sourceDeductRes.deducts,
+      revised: revDeductRes.deducts,
+      rules: DEDUCTION_RULES,
     },
     caveats: {
       coverageUncovered: coverage.uncovered.length,
@@ -4483,6 +4722,10 @@ async function ensureValidResult(parsed, originalText, options, env) {
   }
   if (sourcePunctHits > 0 && revisedPunctHits < sourcePunctHits) {
     reviewNotes.push("Note — " + (sourcePunctHits - revisedPunctHits) + " punctuation/spacing defect" + (sourcePunctHits - revisedPunctHits === 1 ? "" : "s") + " (e.g. missing citation or series commas) corrected deterministically." + (revisedPunctHits > 0 ? " " + revisedPunctHits + " remain." : ""));
+  }
+  var evidenceTotal = evidenceClassCounts.grammar + evidenceClassCounts.wordChoice + evidenceClassCounts.punctuation + evidenceClassCounts.capitalization;
+  if (evidenceTotal > 0) {
+    reviewNotes.push("Note — " + evidenceTotal + " improvement" + (evidenceTotal === 1 ? "" : "s") + " outside the deterministic editor's own scope (e.g. tense consistency, preposition or phrasing changes) — honesty rule docks the source " + (evidenceTotal === 1 ? "once" : "per class") + " for them via the deduction rubric unless a certified edit already covered the sentence.");
   }
   if (sourceCapsHits > 0 && revisedCapsHits < sourceCapsHits) {
     reviewNotes.push("Note — " + (sourceCapsHits - revisedCapsHits) + " sentence start" + (sourceCapsHits - revisedCapsHits === 1 ? "" : "s") + " raised from a lowercase to a capital letter.");

@@ -1155,6 +1155,35 @@ export default function ToolPage() {
                                       <span className="text-right text-slate-300">{r.meter.source} → <span className="text-emerald-300">{r.meter.revised}</span> <span className="text-slate-500">(cleared {r.meter.cleared})</span></span>
                                     </p>
                                     <p className="text-[11px] text-slate-500 leading-relaxed mt-1.5">{r.meter.note}</p>
+                                    {r.deductions && (() => {
+                                      const dd = r.deductions;
+                                      const ordered = [
+                                        ["grammar", "Grammar & usage"],
+                                        ["spelling", "Spelling"],
+                                        ["wordChoice", "Word choice / phrasing"],
+                                        ["punctuation", "Punctuation"],
+                                        ["capitalization", "Capitalization"],
+                                        ["duplication", "Duplicates"],
+                                        ["register", "Register"],
+                                      ] as const;
+                                      const srcRows = ordered.filter(([k]) => dd.source[k] && dd.source[k].total > 0);
+                                      const revRows = ordered.filter(([k]) => dd.revised[k] && dd.revised[k].total > 0);
+                                      if (srcRows.length === 0 && revRows.length === 0) return null;
+                                      const row = (label: string, d: { count: number; per: number; total: number }, color: string) => (
+                                        <p key={label} className="flex justify-between gap-2">
+                                          <span className="text-slate-400">{label}</span>
+                                          <span className={color}>{d.count} × −{d.per} = −{d.total}</span>
+                                        </p>
+                                      );
+                                      return (
+                                        <div className="border-t border-slate-700/50 pt-1.5 mt-1.5 space-y-0.5">
+                                          <span className="text-[9px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Deductions</span>
+                                          {srcRows.map(([k, l]) => row(l, dd.source[k], "text-rose-300"))}
+                                          {revRows.map(([k, l]) => row(`${l} (left in revision)`, dd.revised[k], "text-amber-300"))}
+                                          {srcRows.length === 0 && <p className="text-slate-500">No measured defects — 0 points deducted.</p>}
+                                        </div>
+                                      );
+                                    })()}
                                     {(() => {
                                       const b = r.banding;
                                       if (b.flatByContract) {
