@@ -10,11 +10,13 @@
 //   C. Literary anti-over-edit invariant — master native prose (Lolita) stays
 //      untouched and scores >= 98.
 //   D. Re-banded scoring contract — honest, provider-independent scores measured
-//      on what is LEFT (spelling / grammar / density-normalized stiffness),
-//      snapped to the 95/98 display band: a flawless source prints 98, everything
-//      else at most 95, and the revision earns the measured clearing back on a
-//      compressed scale (cap 98). Residual census surfaced; exact input-pinned
-//      reference profiles catch drift.
+//      on what is LEFT (spelling / grammar / punctuation / capitalization /
+//      density-normalized stiffness), snapped to the display band: a source
+//      prints 98 ONLY when measured flawless AND left untouched; the instant a
+//      transformation lands (real edit, DB rule, or axis clearing) the source
+//      caps at 95 and the revision scores ABOVE it on a compressed scale
+//      (cap 98). Residual census surfaced; exact input-pinned reference
+//      profiles catch drift.
 //   E. Residual-honesty + certified write path — the deterministic layer keeps
 //      Pass 1 (the model) grammar-only and never swaps words, but a "certified"
 //      editor (authorized 2026-09-25) deterministically WRITES the unambiguous,
@@ -50,7 +52,7 @@ const CORPUS = [
   { file: "uae.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "60->92" },
   { file: "academic.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "60->92" },
   { file: "literary.txt", domain: "creative", tone: "reflective", mode: "academic", minMatched: 0, untouched: true },
-  { file: "business.txt", domain: "business", tone: "professional", mode: "business", minMatched: 1, reference: "98->98" },
+  { file: "business.txt", domain: "business", tone: "professional", mode: "business", minMatched: 1, reference: "95->97" },
   { file: "general.txt", domain: "general", tone: "friendly", mode: "general", minMatched: 3, reference: "91->98" },
   { file: "military.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "77->95" },
   // Two-pass contract fixture: DB-only Pass 2 must fire on the planted phrases,

@@ -3542,6 +3542,50 @@ function hasRealSentenceChange(original, revised) {
   return true;
 }
 
+// Deterministic score banding — the ONLY place the raw residual meter is snapped
+// onto the display scale. PARITY CONTRACT (approved 2026-09-28, closed for good
+// 2026-09-29): input and output scores are identical ONLY and ONLY when no
+// transformation took place. A measured-flawless source (raw >= 98) prints 98
+// ONLY when it was ALSO left untouched; a flawless-measurement source the
+// editor nevertheless improved was NOT genuinely top-notch (the editor proves
+// it), so it drops into the 95 band and the revision is scored ABOVE it. This
+// is what kills the recurring "98 -> 98 despite real edits" lack-of-parity:
+// any real edit, DB rule fire, or axis clearing forces the revision higher.
+// Revised never exceeds 98 and never scores below its source. Pure function so
+// the parity corners are unit-asserted in scripts/test-transform.mjs (must stay
+// in sync with resolveBandedScores there).
+function resolveBandedScores(rawOrig, rawRev, opts) {
+  opts = opts || {};
+  var anyChange = !!opts.anyChange;
+  var origScore = Math.min(98, Math.max(rawOrig, 40));
+  if (origScore >= 98) origScore = anyChange ? 95 : 98; // flawless = untouched
+  else origScore = Math.min(95, origScore);
+  var cleared = Math.max(0, rawRev - rawOrig);
+  var boostApplied = 0;
+  var revScore;
+  if (anyChange) {
+    boostApplied = Math.max(2, Math.round(cleared * 0.8));
+    revScore = Math.min(98, origScore + boostApplied);
+    if (revScore < origScore) revScore = origScore; // never punish (platform promise)
+  } else {
+    revScore = origScore;
+  }
+  var spellCapApplied = false;
+  if (opts.remainingSpelling > 0) {
+    spellCapApplied = true;
+    origScore = Math.min(origScore, 80);
+    revScore = Math.min(revScore, 80);
+  }
+  if (revScore < origScore) revScore = origScore;
+  return {
+    originalScore: origScore,
+    revisedScore: revScore,
+    boostApplied: boostApplied,
+    flatByContract: !anyChange,
+    spellCapApplied: spellCapApplied,
+  };
+}
+
 // How many prose sentences does the SOURCE actually have? Used to reconcile the
 // diagnostics count ("11 improved + 4 preserved" vs the real 14-sentence input)
 // when the alignment step re-segments the model output.
@@ -4296,12 +4340,15 @@ async function ensureValidResult(parsed, originalText, options, env) {
 
 // Deterministic re-banded scoring — the meter is the raw residual measurement,
 // then the BAND snaps it onto the honest display scale both providers agree on.
-// USER CONTRACT (approved 2026-09-28, replaces the older flat-by-contract rule):
+// USER CONTRACT (approved 2026-09-28, parity closed for good 2026-09-29):
 //   - The input and output scores must remain the same ONLY and ONLY when no
-//     transformation has taken place. If the two are of top-notch quality, the
-//     same score of 98 applies.
+//     transformation has taken place. A measured-flawless source prints 98 ONLY
+//     when it is ALSO left untouched; if the editor improved it, the source was
+//     not genuinely top-notch and prints at most 95, so the revision lands
+//     above it. The 98/98 corner belongs to the true no-op (Lolita / business /
+//     literary fixtures).
 //   - The output should ALMOST ALWAYS be higher than the input, except when the
-//     two are of high quality.
+//     two are of high quality (i.e. untouched).
 //   - All types of errors, depending on severity, are factored into the score:
 //     spelling, punctuation, word choice, AI-ese, grammar, transition,
 //     capitalization, and anything else the deterministic meter can measure.
@@ -4309,7 +4356,8 @@ async function ensureValidResult(parsed, originalText, options, env) {
 //   - An output inferior to the input defeats the purpose of the platform: the
 //     revised score is NEVER lower than its source.
 //   - Nothing here uses provider identity, temperature, or model — the SAME
-//     source always produces the SAME originalScore/revisedScore.
+//     source always produces the SAME originalScore/revisedScore. The banding
+//     decision itself lives in resolveBandedScores (unit-asserted).
   // Capture the raw meter BEFORE banding so the rubric can explain the two
   // scores honestly: the linear residual 0-100 (source vs revised) and then
   // the band that snaps them onto the display scale.
@@ -4324,31 +4372,14 @@ async function ensureValidResult(parsed, originalText, options, env) {
     revisedGrammarHits < sourceGrammarHits ||
     revisedPunctHits < sourcePunctHits ||
     revisedCapsHits < sourceCapsHits;
-  origScore = Math.min(98, Math.max(origScore, 40));
-  if (origScore >= 98) origScore = 98;          // flawless source prints 98
-  else origScore = Math.min(95, origScore);       // everything else tops at 95
-  var boostApplied = 0;
-  if (anyChange) {
-    // A transformation landed (real edit, DB rule, or any axis clearing), so
-    // the revision is scored ABOVE its source. The +2 floor guarantees even a
-    // minor-real edit (a synonym swap the meter cannot measure) visibly moves
-    // the grade; measured headroom earns the compressed credit on top. The
-    // 98 ceiling preserves the top-notch corner: a flawless source and a
-    // flawless revision read 98/98 (identical is reserved for a true no-op or
-    // that corner).
-    boostApplied = Math.max(2, Math.round(clearedRaw * 0.8));
-    revScore = Math.min(98, origScore + boostApplied);
-    if (revScore < origScore) revScore = origScore;   // never punish (platform promise)
-  } else {
-    revScore = origScore;
-  }
-  var spellCapApplied = false;
-  if (remainingSpelling > 0) {
-    spellCapApplied = true;
-    origScore = Math.min(origScore, 80);
-    revScore = Math.min(revScore, 80);
-  }
-  if (revScore < origScore) revScore = origScore;
+  var banded = resolveBandedScores(rawOrigScore, rawRevScore, {
+    anyChange: !!anyChange,
+    remainingSpelling: remainingSpelling,
+  });
+  origScore = banded.originalScore;
+  revScore = banded.revisedScore;
+  var boostApplied = banded.boostApplied;
+  var spellCapApplied = banded.spellCapApplied;
 
   // Phase D: the SCORING RUBRIC — a transparent, self-explanatory audit of why
   // the two scores landed where they did. Same deterministic measurement applied
@@ -4373,7 +4404,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
       source: Math.round(rawOrigScore),
       revised: Math.round(rawRevScore),
       cleared: Math.round(clearedRaw),
-      note: "Linear residual meter (0-100, clamped 40-100): the SAME deterministic measurement is applied to source and revision, so a score climbs only when a detected defect actually disappears.",
+      note: "Linear residual meter (0-100, clamped 40-100): the SAME deterministic measurement is applied to source and revision, so the meter reflects detected defects only; the band then snaps the display scores so a 98-tag requires an untouched source (any real edit the meter cannot see still lifts the revision above a 95-capped source).",
     },
     axes: {
       spelling: {
@@ -4417,7 +4448,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
       nativizedRuleCount: nativizedRuleCount,
       spellingCapApplied: spellCapApplied,
       flatByContract: !anyChange,
-      rule: "Input and output scores are identical ONLY when no transformation took place (or when both are top-notch at the 98 ceiling). The output is almost always scored ABOVE its source: any real edit, DB rule fire, or axis clearing earns revised = min(98, original + max(2, round(cleared*0.8))), so a minor-but-real transformation visibly matters. originalScore prints 98 only for a measured-flawless source, otherwise at most 95. Residual misspellings cap both sides at 80; the revised score is never lower than its source.",
+      rule: "Input and output scores are identical ONLY when no transformation took place. A measured-flawless source prints 98 only when it was ALSO left untouched; the instant the editor improves a source (any real edit, DB rule fire, or axis clearing), that source was not genuinely top-notch, so it prints at most 95 and the revision is scored ABOVE it: revised = min(98, original + max(2, round(cleared*0.8))). Residual misspellings cap both sides at 80; the revised score is never lower than its source.",
     },
     caveats: {
       coverageUncovered: coverage.uncovered.length,

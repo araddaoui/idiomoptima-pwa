@@ -246,19 +246,27 @@ Deterministic contract (must never drift):
   cap 15, punctuation `min(10, punctHits*2)`, capitalization
   `min(5, capsHits)` sentence-head starts, stiffness density
   `min(40, round(stiff/proseCount*30))`, floor 40); then the BAND snaps it onto
-  the display scale — `originalScore` = 98 only when the source is measured
-  flawless (raw >= 98), otherwise at most 95; **`anyChange` is the ONLY gate**
-  (any real sentence change OR DB rule fire OR spelling/stiffness/grammar/
-  punctuation/capitalization clearing). With `!anyChange` the revision scores
-  EXACTLY like its source; otherwise `revisedScore = min(98, originalScore +
-  max(2, round(cleared*0.8)))` where `cleared = rawRev - rawOrig` — a
-  minor-but-real edit still earns at least +2, and the revised score is NEVER
-  below its source (`revScore < origScore` clamps up). Residual misspellings
+  the display scale — **`originalScore` prints 98 ONLY when the source is
+  measured flawless (raw >= 98) AND left untouched (parity gate, 2026-09-29);
+  a flawless-MEASUREMENT source the editor improves was not genuinely
+  top-notch, so it drops to 95**; everything else at most 95. `anyChange` is
+  the transformation gate (any real sentence change OR DB rule fire OR
+  spelling/stiffness/grammar/punctuation/capitalization clearing). With
+  `!anyChange` the revision scores EXACTLY like its source; otherwise
+  `revisedScore = min(98, originalScore + max(2, round(cleared*0.8)))` where
+  `cleared = rawRev - rawOrig` — a minor-but-real edit still earns at least +2,
+  and the revised score is NEVER below its source (`revScore < origScore`
+  clamps up). Residual misspellings
   still cap both at 80. The SAME input always produces the SAME scores
-  regardless of provider. Reference profiles: military 77→95, uae 60→92,
-  academic 60→92, grammar 79→96, business 98→98, general 91→98, literary 98→98,
-  success-criteria 80→96, kingston 60→92 (all committed fixtures,
-  harness-asserted). The grammar pin 79→96 (2026-09-25) still holds; the
+  regardless of provider. The banding decision itself lives in the pure
+  `resolveBandedScores` function and is unit-asserted (test-transform section
+  12 — identical ONLY on a true no-op; 98/98 now impossible when a
+  transformation landed). Reference profiles: military 77→95, uae 60→92,
+  academic 60→92, grammar 79→96, business 95→97 (fires 1 DB rule; its old
+  98→98 was itself a masked-ceiling rerun of the parity bug — a measured
+  defect was painted 98 on both sides), general 91→98, literary 98→98 (the
+  one genuine untouched 98/98 corner), success-criteria 80→96, kingston 60→92
+  (all committed fixtures, harness-asserted). The grammar pin 79→96 (2026-09-25) still holds; the
   capitalization axis (2026-09-28) surfaced and FIXED a shipping certified-layer
   defect the meter could not previously see — the `an-a-eu-words` article rule
   rewrote sentence-initial "An university" as "a university", lowering the first

@@ -153,6 +153,7 @@ const extracted = [
   extractFunction(INDEX_SRC, "normalizeSentenceKey"),
   extractFunction(INDEX_SRC, "replaceOutsideQuotes"),
   extractFunction(INDEX_SRC, "fixCommonMisspellings"),
+  extractFunction(INDEX_SRC, "resolveBandedScores"),
   extractFunction(INDEX_SRC, "buildNativizationMaps"),
   extractVarObject(INDEX_SRC, "SEMANTIC_FUNCTION_WORDS"),
   extractFunction(INDEX_SRC, "addedContentWords"),
@@ -160,7 +161,7 @@ const extracted = [
 ].join("\n");
 
 const api = new Function(
-  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, fixCommonMisspellings, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
+  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, fixCommonMisspellings, resolveBandedScores, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
 )();
 
 // --- load + merge databases exactly like the client (ToolPage) ---------------
@@ -627,6 +628,59 @@ section("11. certified deterministic grammar/punctuation layer (offline worker p
     await guard("Ferguson wrote in 1967 his classic study of diglossia.", "in 1967 his", true);
     await guard("The budget reached 2,600 in 1967, and 3,400 in 1976.", "2,600", true);
     await guard("The data was collected,but the sample stayed small.", "collected, but", true);
+  }
+}
+
+// ==================== 12. PARITY GATE (resolveBandedScores) — must never regress
+// Authorized 2026-09-29 after a user-reported "98 -> 98 despite 2 real edits"
+// lack-of-parity: a measured-flawless source prints 98 ONLY when it was ALSO
+// left untouched; a flawless-measurement source the editor improved drops into
+// the 95 band and the revision must score above it. These assertions pin the
+// pure function every real run is banded through.
+section("12. parity gate — identical scores ONLY when no transformation took place");
+{
+  const r = api.resolveBandedScores;
+  {
+    const b = r(100, 100, { anyChange: false, remainingSpelling: 0 });
+    check("true no-op, flawless source -> 98/98 identical", b.originalScore === 98 && b.revisedScore === 98, true);
+    check("true no-op flatByContract true", b.flatByContract, true);
+  }
+  {
+    // The exact reported case: 2 real model edits, meter cannot see them
+    // (raw 100->100, cleared 0). Original must leave the 98 tier; revision above.
+    const b = r(100, 100, { anyChange: true, remainingSpelling: 0 });
+    check("edited flawless-measured source NO LONGER prints 98 (drops to 95)", b.originalScore, 95);
+    check("edited source revision scores ABOVE source (95 -> 97)", b.revisedScore, 97);
+    check("floor boost +2 when cleared is unmeasurable", b.boostApplied, 2);
+    check("parity: 98 -> 98 exactly when a transformation took place", b.originalScore === b.revisedScore, false);
+  }
+  {
+    const b = r(97, 100, { anyChange: true, remainingSpelling: 0 });
+    check("sub-98 measured source stays in the 95 band", b.originalScore, 95);
+    check("cleared sub-98 result above source and below 98", b.revisedScore >= 96 && b.revisedScore <= 98, true);
+    check("flatByContract false whenever a transformation landed", b.flatByContract, false);
+  }
+  {
+    const b = r(90, 100, { anyChange: true, remainingSpelling: 0 });
+    check("raw 90 cleared 10 -> +8 boosted", b.originalScore, 90);
+    check("revised capped at 98 never above", b.revisedScore, 98);
+  }
+  {
+    const b = r(60, 100, { anyChange: true, remainingSpelling: 0 });
+    check("raw 60 cleared 40 -> +32 boosted", b.revisedScore, 92);
+  }
+  {
+    const b = r(100, 100, { anyChange: true, remainingSpelling: 2 });
+    check("residual misspellings cap BOTH sides at 80", b.originalScore === 80 && b.revisedScore === 80, true);
+    check("spell cap surfaced", b.spellCapApplied, true);
+  }
+  {
+    const b = r(55, 60, { anyChange: true, remainingSpelling: 0 });
+    check("revised never below source (platform promise)", b.revisedScore >= b.originalScore, true);
+  }
+  {
+    const b = r(100, 100, { anyChange: false, remainingSpelling: 0 });
+    check("no-op 98/98 still flat (Lolita/business/literary corner kept)", b.originalScore === 98 && b.revisedScore === 98, true);
   }
 }
 
