@@ -115,20 +115,56 @@ async function readNdjsonFinal(res) {
   for await (const chunk of res.body) buf += new TextDecoder().decode(chunk);
   let result = null;
   let provider = null;
+  let terminal = null; // "final" | "error" | null
+  let rid = null;
+  let lastPhase = "";
   for (const line of buf.split("\n")) {
     if (!line.trim()) continue;
     try {
       const evt = JSON.parse(line);
-      if (evt.ev === "final") result = evt.result;
-      if (evt.ev === "error") throw new Error(evt.message);
+      if (evt.rid) rid = evt.rid;
+      if (evt.phase) lastPhase = evt.phase;
+      if (evt.ev === "final") {
+        result = evt.result;
+        terminal = "final";
+      }
+      if (evt.ev === "error") {
+        terminal = "error";
+        // A worker-reported error is a REAL answer, not a truncated stream.
+        // Count it distinctly so the two are never conflated in the report.
+        truncatedStreams.counted++;
+        truncatedStreams.errors.push({ rid, code: evt.code || null, message: evt.message, detail: evt.detail || null });
+        throw new Error(evt.message || "worker error event");
+      }
     } catch (e) {
-      if (e && e.message && e.message !== "Unexpected token e in JSON at position 0") throw e;
+      if (e && e.message && !/JSON at position|Unexpected token/i.test(e.message)) throw e;
     }
   }
-  if (!result) throw new Error("No final event in worker stream");
+  if (!result) {
+    // A stream that ended with NO terminal event is the signature of the
+    // platform killing the invocation mid-run (observed as
+    // `outcome: exceededCpu` in `wrangler tail`). This used to be retried and
+    // then quietly forgotten, which hid a ~20% failure rate for weeks.
+    // It is now counted and reported so it can never be masked again.
+    truncatedStreams.counted++;
+    truncatedStreams.truncated.push({
+      rid,
+      lastPhase,
+      bytes: buf.length,
+      note: "stream ended with no terminal event (platform termination)",
+    });
+    throw new Error(
+      "TRUNCATED STREAM: no terminal event (rid=" + (rid || "?") +
+      ", lastPhase=" + JSON.stringify(lastPhase) + ", bytes=" + buf.length + ")"
+    );
+  }
   provider = result.provider;
   return { result, provider };
 }
+
+// Truncated/errored stream tallies, surfaced in the final report. Populated by
+// readNdjsonFinal above; declared here so the counters exist before first use.
+const truncatedStreams = { counted: 0, truncated: [], errors: [] };
 
 function loadDatabases() {
   const ai = JSON.parse(readFileSync(join(ROOT, "public", "ai-natural-database.json"), "utf8"));
@@ -184,8 +220,13 @@ async function runLive(databases, item, text) {
   };
   // Gemini returns 503 (high demand) periodically; a "rescued" run (provider
   // "none", original text unchanged) is NOT a valid determinism sample, so
-  // retry up to 2 extra times until we get a real gemini result. Truncated
-  // streams (no final event) get the same treatment.
+  // retry up to 2 extra times until we get a real gemini result.
+  //
+  // NOTE: a TRUNCATED stream (no terminal event — the platform killing the
+  // invocation) is deliberately NOT treated as a retryable sample. It is
+  // counted in `truncatedStreams` and reported, because silently retrying it
+  // is what allowed a ~20% production failure rate to go unnoticed. It is only
+  // tolerated on a non-final attempt; the final attempt throws.
   const RESCUE_RETRIES = 1;
   let lastErr = null;
   for (let attempt = 0; attempt <= RESCUE_RETRIES; attempt++) {
@@ -378,9 +419,31 @@ async function main() {
   }
 
   console.log("");
+  console.log("== Stream integrity (truncated streams must be ZERO) ==");
+  if (truncatedStreams.counted === 0) {
+    console.log("  OK - every worker stream ended with a terminal event");
+  } else {
+    console.log("  " + truncatedStreams.counted + " stream(s) ended abnormally:");
+    truncatedStreams.truncated.forEach((t) =>
+      console.log("  - TRUNCATED rid=" + t.rid + " lastPhase=" + JSON.stringify(t.lastPhase) + " bytes=" + t.bytes)
+    );
+    truncatedStreams.errors.forEach((e) =>
+      console.log("  - ERROR rid=" + e.rid + " code=" + e.code + " :: " + e.message)
+    );
+  }
+
+  console.log("");
   console.log(passes + " passed, " + fails + " failed");
   if (fails > 0) {
     failures.forEach((f) => console.log("  - " + f));
+    process.exitCode = 1;
+  }
+  // A truncated stream is a hard failure even if every assertion above passed:
+  // it means the platform killed the invocation, which is exactly the
+  // production bug this check exists to make impossible to ignore.
+  if (truncatedStreams.truncated.length > 0) {
+    console.error("");
+    console.error("FAILED: " + truncatedStreams.truncated.length + " truncated worker stream(s) — the worker was terminated mid-request.");
     process.exitCode = 1;
   }
 }

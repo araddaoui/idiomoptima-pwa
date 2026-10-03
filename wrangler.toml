@@ -4,3 +4,16 @@ compatibility_date = "2026-08-19"
 
 [ai]
 binding = "AI"
+
+# NOTE: a `[limits] cpu_ms` block was TRIED here and REJECTED by the API:
+#   "CPU limits are not supported for the Free plan." [code: 100328]
+# This account is on Workers Free, whose CPU allowance is 10ms/request. That is
+# the real reason the platform was terminating the worker mid-stream
+# (`outcome: exceededCpu`), surfacing to users as "Stream ended without a final
+# result from the worker."
+#
+# To raise the ceiling, upgrade to Workers Paid ($5/mo) and re-add:
+#   [limits]
+#   cpu_ms = 300000
+# Until then the fix is to stay UNDER the allowance — see the memoization in
+# deriveSentencesFromTexts (index.js), which cut pipeline CPU ~5.5x.

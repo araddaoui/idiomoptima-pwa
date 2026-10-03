@@ -218,6 +218,41 @@ export async function transformText(
   // Progress is driven entirely by real NDJSON events from the worker.
   // No fake timer — every tick the user sees is a genuine server milestone.
 
+  const run = () => runTransform(
+    text, domain, tone, forcedDialect, onProgress, activeMode, mode, autoReason, databases, authToken
+  );
+
+  try {
+    return await run();
+  } catch (err: any) {
+    // A run that produced no final result is almost always the platform
+    // terminating the worker (observed: `outcome: exceededCpu`). The worker
+    // already completed its provider call before dying, so one automatic
+    // retry usually succeeds — and it is the only retry we make, so a
+    // genuinely broken request still surfaces its error.
+    if (!err || !err.retryable) throw err;
+    if (onProgress) onProgress(err.lastPct || 10, 0, 1, "The connection was interrupted — reconnecting...");
+    return await run();
+  }
+}
+
+async function runTransform(
+  text: string,
+  domain: string,
+  tone: string,
+  forcedDialect: string | undefined,
+  onProgress: ((percent: number, chunkIndex: number, totalChunks: number, debugMessage?: string) => void) | undefined,
+  activeMode: string,
+  mode: string,
+  autoReason: string,
+  databases: {
+    idiomDatabase?: any[];
+    aiPhraseMap?: any[];
+    aiSuggestions?: any[];
+    lexicalDatabases?: Record<string, any[]>;
+  } | undefined,
+  authToken: string | undefined
+): Promise<TransformationResult> {
   try {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -282,6 +317,10 @@ export async function transformText(
       let buffer = "";
       let lastPct = 10;
       let streamError: string | null = null;
+      let streamErrorCode: string | null = null;
+      let streamErrorDetail: string | null = null;
+      let streamErrorRid: string | null = null;
+      let lastPhase = "";
 
       try {
         while (true) {
@@ -298,6 +337,7 @@ export async function transformText(
             } catch {
               continue;
             }
+            if (evt.rid) streamErrorRid = evt.rid;
             if (evt.ev === "final") {
               data = evt.result;
             } else if (evt.ev === "error") {
@@ -305,6 +345,8 @@ export async function transformText(
               // message. A throw here used to be swallowed by the parse catch,
               // leaving only "Stream ended..." no matter what the worker said.
               streamError = evt.message || "The AI service is temporarily unavailable.";
+              streamErrorCode = evt.code || null;
+              streamErrorDetail = evt.detail || null;
               break;
             } else if (evt.ev === "phase" || evt.ev === "tick") {
               // Forward real worker milestones to both bars — monotonically
@@ -312,6 +354,7 @@ export async function transformText(
               if (typeof evt.pct === "number" && evt.pct > lastPct) {
                 lastPct = evt.pct;
               }
+              if (evt.phase) lastPhase = evt.phase;
               if (onProgress) onProgress(lastPct, 0, 1, evt.phase || "Working...");
             }
           }
@@ -326,7 +369,30 @@ export async function transformText(
       }
 
       if (!data!) {
-        throw new Error(streamError || "Stream ended without a final result from the worker.");
+        // No final result. Either the worker sent a real `error` event (we have
+        // its message/code/detail), or the platform killed the invocation before
+        // it could answer and we got a truncated body. These are DIFFERENT
+        // failures and must not collapse into one opaque string: the truncated
+        // case is retryable, the explicit-error case usually is not.
+        const rid = streamErrorRid ? ` (ref ${streamErrorRid})` : "";
+        if (streamError) {
+          const err: any = new Error(
+            `${streamError}${streamErrorDetail ? ` — ${streamErrorDetail}` : ""}${rid}`
+          );
+          err.code = streamErrorCode;
+          // A worker-reported failure is a real answer: retrying it verbatim
+          // would just repeat the same failure (and burn another provider call).
+          err.retryable = false;
+          throw err;
+        }
+        const where = lastPhase ? ` It stopped while: "${lastPhase}".` : "";
+        const err: any = new Error(
+          `The server ended the connection before the transformation finished.${where} This is usually temporary, so trying once more.${rid}`
+        );
+        err.code = "no-final-result";
+        err.retryable = true;
+        err.lastPct = lastPct;
+        throw err;
       }
     } else {
       // --- Legacy fallback: old worker returns plain JSON -------------------
@@ -448,6 +514,18 @@ export async function transformText(
     }
     if (error && (error as any).notEnglish) {
       (finalError as any).notEnglish = true;
+    }
+    // Carry the stream-failure diagnostics through the re-wrap. Without these
+    // the outer retry in transformText() can never see that a run was
+    // retryable, and the truncated-stream recovery would be silently dead code.
+    if (error && (error as any).retryable !== undefined) {
+      (finalError as any).retryable = (error as any).retryable;
+    }
+    if (error && (error as any).code !== undefined) {
+      (finalError as any).code = (error as any).code;
+    }
+    if (error && (error as any).lastPct !== undefined) {
+      (finalError as any).lastPct = (error as any).lastPct;
     }
     throw finalError;
   }
