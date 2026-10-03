@@ -269,21 +269,44 @@ Deterministic contract (must never drift):
   is always dropped (the atomic spell meter owns it). **Register** docks only a
   suggestDb phrase present in the source the model replaced (never a phrase
   left in place).
-  **Duplication is measured on BOTH sides (2026-10-03)** — it used to be
-  measured on the source only, with the revision's class hardcoded to `0`, so a
-  doubled word that survived to `finalVersion` scored 98/98 while shipping the
-  slip and the hard 85 duplicate ceiling could never fire on a revision. Both
-  sides now run the same `countDoubledFunctionWords`, which is deliberately
-  NARROWER than the historical `/\b(\w+)\s+\1\b/`: it counts only a doubled
-  article / preposition / conjunction / pronoun / auxiliary via a single
-  captured alternation back-referenced (`\1`) — two separate alternations would
-  match any adjacent function-word pair like "it is" / "of the" and charge
-  virtually every sentence — it excludes `had` ("he had had enough"), `that`
-  ("she said that that"), and adverbs ("very very"), and the gap must be
-  horizontal whitespace so a word straddling a line/paragraph break is never
-  charged. It stays **COUNT-ONLY: no write rule**, by explicit user decision
-  (2026-10-03) — the certified layer must not auto-edit doublings, so the
-  revision is simply scored honestly instead.
+  **Duplication is BOTH written and measured (2026-10-03)** — it was first added
+  as a count-only meter (the revision's class had been hardcoded to `0`, so a
+  doubled word surviving to `finalVersion` scored 98/98 while shipping the slip
+  and the hard 85 duplicate ceiling could never fire on a revision), and later
+  the SAME DAY the owner reversed the count-only decision and made the certified
+  layer **fix** doublings outright. `applyGrammarLayer` now returns a
+  `duplication` count alongside `grammar`/`punctuation` and collapses the doubled
+  word in the same pass, so the source is charged and the residual genuinely
+  clears (editor == meter, one pattern via `doubledWordRe()`). Scope is
+  deliberately CLOSED-CLASS only (`DUP_FUNCTION_WORDS`): articles, prepositions,
+  conjunctions, pronouns, auxiliaries. Content words are NOT touched — their
+  legitimate exceptions (imperatives/interjections in dialogue: `Go go`,
+  `stop stop`, `amen amen`) are not reliably separable by a comma test and would
+  need a hand-maintained allowlist. Every guard is load-bearing:
+   - `had` excluded (`he had had`), adverbs excluded (`very very` emphasis),
+     `that` excluded (`she said that that`);
+   - `\b … \b` is REQUIRED — without it a word TAIL reads as a duplicate
+     (`th`+`is` | `is` → `is is`; `tea`+`m` | `met` → `m m`);
+   - the gap is HORIZONTAL WHITESPACE ONLY, so a comma cannot sit in it. That is
+     what spares deliberate repetition — the owner's example
+     `this is very, very good`, plus `yes, yes`, `no, no` and quoted `"no, no"` —
+     and it also blocks sentence/line/paragraph boundaries;
+   - ONE captured alternation back-referenced with `\1`, so only a word doubled
+     IMMEDIATELY after itself matches (two separate alternations would match any
+     adjacent function-word pair like `it is` / `of the` and charge virtually
+     every sentence);
+   - the edit increments `dupFixes`, NEVER `grammarFixes`, so one slip is not
+     docked twice (`grammar −4` AND `duplication −3`);
+   - it runs AFTER the spacing rules, so `the  the` (double space) normalises
+     first and is then collapsed; and it sits inside the `replaceOutsideQuotes`
+     segment, so quoted text is safe for free.
+  The meter counts PER SENTENCE via the census, not over the whole document,
+  because the editor works per sentence and skips footnote / `[N]` citation
+  lines and quoted text — a document-wide count could charge for a doubling the
+  editor may not fix, i.e. a residual that can never clear.
+  NOTE (pre-existing, unrelated): the DB has a `very <adj>` → `<adj>` AI-ese
+  family, so `very very important` loses "very" in Pass 2 regardless of this
+  rule; that is the DB layer, not the doubling editor.
   Then the BAND snaps the meter onto the display scale —
   **`originalScore` prints 98 ONLY when the source is measured flawless
   (raw >= 98) AND left untouched (parity gate, 2026-09-29); a
@@ -395,8 +418,9 @@ Full verification matrix (required before ANY deploy):
    regressions, the DB-only Pass-2 suite, section 11 — the certified
    grammar/punctuation layer fixtures incl. the pinned 89→98 user sample, the
    parity gate in section 12, the severity-rubric + Tier-B classifier pins
-   in section 13, and section 14 — the revision-side duplication meter + the
-   inflected verb+prep rules; 143 checks total)
+   in section 13, section 14 — the revision-side duplication meter + the
+   inflected verb+prep rules, and section 15 — the doubled-word WRITE in the
+   certified pass incl. every deliberate-repetition guard; 174 checks total)
 4. `npm run consistency` (`scripts/consistency-check.mjs`): offline determinism ×3 per
    corpus fixture, coverage thresholds per field, Lolita-untouched invariant, re-banded
    reference pins (incl. military 76→98, success-criteria 78→98, grammar 72→98),

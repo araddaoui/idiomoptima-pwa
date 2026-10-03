@@ -2860,19 +2860,21 @@ function countUnbalancedBrackets(s) {
   return open !== close ? 1 : 0;
 }
 
-// Count-only duplicate-word meter (NOT a write rule — the meter-only policy of
-// 2026-10-03 keeps the certified layer out of this). A doubled
-// article / preposition / conjunction / pronoun / auxiliary ("the the", "of of",
-// "and and") is always a slip, so it docks whichever side actually shows it.
+// DOUBLED CLOSED-CLASS WORD — both the certified WRITE (in applyGrammarLayer)
+// and the meter (via the returned `duplication` count). A doubled article /
+// preposition / conjunction / pronoun / auxiliary ("the the", "of of",
+// "and and") is a slip, so the editor collapses it AND the class dockets it.
 // Deliberately NARROWER than the historical /\b(\w+)\s+\1\b/ detector:
 //   - `had` is excluded — "he had had enough" is correct English;
 //   - adverbs/intensifiers are excluded — "very very" is deliberate emphasis;
 //   - `that` is excluded — "that that" is ordinary in quoted speech;
-//   - the gap must be HORIZONTAL whitespace, so a doubled word straddling a line
-//     or paragraph break ("...of the\n\nThe study") is never charged.
-// The revision side is measured with this same function, so a duplicate that
-// survives to `finalVersion` docks the REVISION too instead of the revision
-// silently reporting 0 and printing 98 on text that still ships the slip.
+//   - the gap must be HORIZONTAL whitespace, so a doubled word straddling a
+//     line or paragraph break ("...of the\n\nThe study") is never charged, and
+//     — because a comma cannot sit in a whitespace-only gap — deliberate
+//     comma-separated repetition is never touched: "this is very, very good",
+//     "yes, yes", "no, no".
+// The writer and the counter share ONE pattern factory, so editor == meter
+// cannot drift: a defect the editor can fix always clears on the revision side.
 var DUP_FUNCTION_WORDS = [
   "a", "an", "the",
   "and", "or", "but", "nor", "yet",
@@ -2885,34 +2887,44 @@ var DUP_FUNCTION_WORDS = [
   "it", "its", "he", "she", "they", "we", "you", "them", "his", "her",
   "their", "our", "your", "this", "these", "those",
 ];
+// Single source of truth for "what counts as a doubled word". Built per call so
+// the /g lastIndex can never leak between calls.
+//   - ONE captured alternation, back-referenced with \1, so only a word doubled
+//     IMMEDIATELY after itself matches. (Two separate alternations would match
+//     any adjacent pair of function words — "it is", "of the" — and charge
+//     virtually every sentence.)
+//   - \b on both sides, so a word TAIL never reads as a duplicate ("th"+"is"
+//     would otherwise match "is is"; "tea"+"m met" would match "m m").
+function doubledWordRe() {
+  return new RegExp("\\b(" + DUP_FUNCTION_WORDS.join("|") + ")[^\\S\\n]+\\1\\b", "gi");
+}
+// Standalone count over the same shared pattern — the unit-test entry point
+// (the production path uses doubledWordRe() inline inside applyGrammarLayer and
+// reads its `duplication` count, so meter and editor cannot drift).
 function countDoubledFunctionWords(s) {
   if (!s) return 0;
-  // Built per call (not cached at module scope) so the /g lastIndex can never
-  // leak between calls, and so the meter stays a pure function of its input.
-  // The alternation is captured ONCE and back-referenced, so only a word
-  // doubled IMMEDIATELY after itself counts. (Two separate alternations would
-  // match any adjacent pair of function words — "it is", "of the" — and charge
-  // virtually every sentence.)
-  var words = DUP_FUNCTION_WORDS.join("|");
-  var re = new RegExp("\\b(" + words + ")[^\\S\\n]+\\1\\b", "gi");
-  var hits = String(s).match(re);
+  var hits = String(s).match(doubledWordRe());
   return hits ? hits.length : 0;
 }
 
 // Applies the grammar layer to a prose block; quote-safe, footnote lines must be
-// excluded by the caller. Returns { text, fixes, grammar, punctuation }.
+// excluded by the caller. Returns { text, fixes, grammar, punctuation, duplication }.
 //   - text: the deterministic, machine-verifiable corrections applied
 //   - fixes: total edits (backward-compatible)
 //   - grammar: S-V / article / preposition / doubled-subject defects
 //   - punctuation: citation commas, series (Oxford) commas, and spacing defects
+//   - duplication: doubled closed-class words ("the the") — counted in its OWN
+//     class, deliberately NOT added to `grammar`, so one slip is never docked
+//     twice (grammar -4 AND duplication -3).
 // The SAME function is both the certified editor (the per-sentence polish pass)
 // and the residual meter for scoring — a score climbs only when a defect the
 // editor can actually fix truly disappears.
 function applyGrammarLayer(text) {
-  if (!text) return { text: text || "", fixes: 0, grammar: 0, punctuation: 0 };
+  if (!text) return { text: text || "", fixes: 0, grammar: 0, punctuation: 0, duplication: 0 };
   var fixes = 0;
   var grammarFixes = 0;
   var punctFixes = 0;
+  var dupFixes = 0;
   var out = replaceOutsideQuotes(String(text), function (seg) {
     var s = seg;
     for (var i = 0; i < GRAMMAR_RULES.length; i++) {
@@ -2970,6 +2982,33 @@ function applyGrammarLayer(text) {
     s = s.replace(/ {2,}/g, " ");
     s = s.replace(/[ \t]+([)\]])/g, function (m, p) { punctFixes++; return p; });
     s = s.replace(/\( [ \t]+/g, "(");
+    // 1b) Doubled closed-class word ("the the", "of of", "and and") — collapse
+    //     to the FIRST word. Runs AFTER spacing so "the  the" (double space)
+    //     is normalised first and then caught here.
+    //
+    //     Why the pattern is shaped the way it is (each guard is load-bearing):
+    //       - DUP_FUNCTION_WORDS is a closed-class list, because a blanket
+    //         "any word twice" rule would destroy "very very" (emphasis) and
+    //         "had had" (the perfect). Deliberately absent: had, that, very,
+    //         and adverbs generally.
+    //       - \b ... \b is required: without it the tail of a word reads as a
+    //         duplicate — "th"+"is" | "is" becomes "is is", "tea"+"m" | "met"
+    //         becomes "m m".
+    //       - the gap is HORIZONTAL WHITESPACE ONLY, so a comma cannot sit in
+    //         it. That is what protects deliberate repetition, including the
+    //         owner's example "this is very, very good", plus "yes, yes",
+    //         "no, no" and quoted '"no, no"'. The same gap also blocks a
+    //         sentence or line boundary ("...drawn from the.\n\nThe study").
+    //     Quote-safe for free: this runs inside the replaceOutsideQuotes
+    //     segment, and applyCertifiedPolish (the only caller) skips footnote
+    //     and [N] / Ibid. lines.
+    //     Counted as `duplication`, NOT `grammar`, so the defect is charged
+    //     exactly once by the class that owns it.
+    s = s.replace(doubledWordRe(), function (m, w) {
+      dupFixes++;
+      fixes++;
+      return w;
+    });
     // 2) Series (Oxford) comma in a 3+ item list: "A, B and C" -> "A, B, and C",
     //    auto-inserted regardless of dialect, but ONLY when the list is clearly a
     //    list: a list-introducer word sits just before it, or at least one item
@@ -3043,7 +3082,10 @@ function applyGrammarLayer(text) {
     punctFixes += countUnbalancedBrackets(s);
     return s;
   });
-  return { text: out, fixes: fixes, grammar: grammarFixes, punctuation: punctFixes };
+  return {
+    text: out, fixes: fixes, grammar: grammarFixes,
+    punctuation: punctFixes, duplication: dupFixes
+  };
 }
 
 // Certified per-sentence polish: the deterministic editor wrapper, skipped for
@@ -4374,7 +4416,13 @@ async function ensureValidResult(parsed, originalText, options, env) {
   // here — a quality score is measured, never guessed, and a weak provider that
   // under-rated clean input previously pinned production originals to the 62
   // floor while a lone cosmetic swap granted a +9 revised bump.
-  var sourceDupHits = countDoubledFunctionWords(originalText);
+  // Duplication is counted per sentence inside the census loop below (via
+  // applyGrammarLayer's `duplication` count), NOT over the whole document: the
+  // editor works per sentence and skips footnote / [N] citation lines and
+  // quoted text, so a document-wide count could charge for a doubling the
+  // editor is forbidden to fix — a residual that can never clear.
+  var sourceDupHits = 0;
+  var revisedDupHits = 0;
   var remainingSpelling = countMisspellings(sentences.map(function (s) { return s.revised || ""; }).join(" "));
   var sourceSpelling = countMisspellings(bodyOnlyOriginal);
   var stiffMaps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
@@ -4440,11 +4488,16 @@ async function ensureValidResult(parsed, originalText, options, env) {
     if (/^".*"$/.test((s.original || "").trim()) || /^".*"$/.test((s.revised || "").trim())) return;
     var srcLayer = applyGrammarLayer(s.original || "");
     var revLayer = applyGrammarLayer(s.revised || "");
-    srcLayerCounts[si] = { grammar: srcLayer.grammar, punctuation: srcLayer.punctuation };
+    srcLayerCounts[si] = { grammar: srcLayer.grammar, punctuation: srcLayer.punctuation, duplication: srcLayer.duplication };
     sourceGrammarHits += srcLayer.grammar;
     revisedGrammarHits += revLayer.grammar;
     sourcePunctHits += srcLayer.punctuation;
     revisedPunctHits += revLayer.punctuation;
+    // Doubled closed-class words: editor == meter. The certified layer collapses
+    // them, so a source hit is charged and then genuinely clears on the
+    // revision — never a residual the author cannot remove.
+    sourceDupHits += srcLayer.duplication;
+    revisedDupHits += revLayer.duplication;
     // Capitalization defect: a prose sentence that starts with a lowercase
     // letter that capitalizeEnhanced would raise (editor == meter). Seeds are
     // counted only at the sentence head so abbreviations like "e.g." / "Dr."
@@ -4592,12 +4645,9 @@ async function ensureValidResult(parsed, originalText, options, env) {
     capitalization: sourceCapsHits + evidenceClassCounts.capitalization,
     duplication: sourceDupHits, register: sourceRegister
   };
-  // The revision is re-measured, never assumed clean: a duplicated function word
-  // that reached finalVersion docks the revision (and trips the hard 85 ceiling)
-  // rather than being silently reported as 0.
-  var revisedDupHits = countDoubledFunctionWords(
-    typeof bodyFinalForWords === "string" && bodyFinalForWords ? bodyFinalForWords : finalVersion
-  );
+  // The revision is re-measured, never assumed clean: a doubled function word the
+  // editor could not reach (e.g. inside a quotation) still docks the revision and
+  // trips the hard 85 ceiling, rather than being silently reported as 0.
   var revDefects = {
     spelling: remainingSpelling, grammar: revisedGrammarHits,
     wordChoice: revisedStiffAll, punctuation: revisedPunctHits,

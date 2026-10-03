@@ -166,6 +166,7 @@ const extracted = [
   extractFunction(INDEX_SRC, "addedContentWords"),
   extractFunction(INDEX_SRC, "applyDatabaseNativization"),
   extractVar(INDEX_SRC, "DUP_FUNCTION_WORDS"),
+  extractFunction(INDEX_SRC, "doubledWordRe"),
   extractFunction(INDEX_SRC, "countDoubledFunctionWords"),
 ].join("\n");
 
@@ -766,7 +767,10 @@ section("13. severity-weighted deduction rubric + Tier-B classifier");
 // Live defects found 2026-10-03 by probing the deployed worker end to end:
 //   (a) the revision ledger hardcoded duplication to 0, so a doubled word that
 //       survived to finalVersion scored 98/98 while shipping the slip, and the
-//       hard 85 duplicate ceiling could never fire on a revision;
+//       hard 85 duplicate ceiling could never fire on a revision. NOTE: a later
+//       owner decision the same day ALSO made the certified layer fix doublings
+//       outright (section 15); the meter change here is what makes that
+//       measurable on both sides;
 //   (b) VERB_PREP_CORRECTIONS matched only base forms, so "discussed about",
 //       "comprised of" and "emphasised on" reached the shipped text (past tense
 //       is the commonest form in academic prose). Section 13 only tested the
@@ -808,14 +812,18 @@ section("14. revision-side duplication meter + inflected verb+prep");
       return data;
     }
 
-    // (a) The regression that shipped: a surviving doubled function word must be
-    // visible on the REVISION side, not silently reported as 0.
+    // (a) The regression that shipped: the revision's duplication class used to
+    // be hardcoded to 0, so a surviving doubled word scored 98/98 while shipping
+    // the slip. The class is now genuinely measured on BOTH sides — and since
+    // the 2026-10-03 reversal the editor also FIXES the doubling, so the source
+    // is charged and the residual genuinely clears. Section 15 carries the full
+    // write/no-write matrix; these assertions pin the ledger itself.
     const dupOut = await run("The team noted that the the sample was small.");
-    check("doubled word survives (no write rule by policy)", dupOut.finalVersion.includes("the the"), true);
-    check("revision duplication is now MEASURED, not hardcoded 0", dupOut.rubric.axes.duplicates.remaining, 1);
-    check("revision-side duplication deduction charged", dupOut.rubric.deductions.revised.duplication.count, 1);
-    check("source-side duplication still charged", dupOut.rubric.deductions.source.duplication.count, 1);
-    check("revision capped by the hard 85 duplicate ceiling", dupOut.revisedScore <= 85, true);
+    check("source-side duplication charged", dupOut.rubric.deductions.source.duplication.count, 1);
+    check("doubled word now FIXED by the certified pass", dupOut.finalVersion.includes("the sample"), true);
+    check("residual clears on the revision (not a permanent cap)", dupOut.rubric.axes.duplicates.remaining, 0);
+    check("no revision-side duplication deduction", dupOut.rubric.deductions.revised.duplication, undefined);
+    check("revision escapes the hard 85 duplicate ceiling", dupOut.revisedScore > 85, true);
 
     // Clean text must NOT be charged on either side (no false-positive regression).
     const cleanOut = await run("The team noted that he had had enough time to review the sample.");
@@ -829,6 +837,95 @@ section("14. revision-side duplication meter + inflected verb+prep");
     check("'emphasised on' -> 'emphasised'", !vp.finalVersion.includes("emphasised on"), true);
     check("verb form PRESERVED (no de-inflection to 'discuss')", /\bdiscussed\b/.test(vp.finalVersion), true);
     check("3rd-person 'discusses about' fires", !/\bdiscusses about\b/.test(await run("The committee discusses about the plan.").then((r) => r.finalVersion)), true);
+  }
+}
+
+// Owner decision 2026-10-03 (reversing the count-only policy): a doubled
+// closed-class word / article is now FIXED in the certified grammar pass, while
+// deliberate repetition is left alone — "this is very, very good" must survive
+// untouched. Runs through the real worker.fetch path, so it also proves the
+// certified editor and the duplication meter agree (editor == meter).
+section("15. doubled-word WRITE in the certified pass (deliberate repetition spared)");
+{
+  const dup = api.countDoubledFunctionWords;
+  {
+    // The \b guard: without it a word TAIL reads as a duplicate. These two are
+    // the regression that made \b mandatory.
+    check("\\b guard: 'this is ...' is NOT 'is is'", dup("this is very, very good."), 0);
+    check("\\b guard: 'The team met' is NOT 'm m'", dup("The team met."), 0);
+    check("detects 'the the'", dup("Note that the the team met."), 1);
+    check("detects two ('the the ... of of')", dup("the the team and of of it"), 2);
+  }
+  {
+    const { default: worker } = await import(pathToFileURL(join(ROOT, "index.js")));
+    const db = { aiDb: [], idiomDb: [], suggestDb: [], lexicalDb: {} };
+    async function run(text) {
+      const req = new Request("https://nativewrite-api.nativewrite-api.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, domain: "academic", databases: db }),
+      });
+      const resp = await worker.fetch(req, {});
+      const raw = await resp.text();
+      const line = raw.split(/\r?\n/).filter((l) => l.trim()).pop() || "{}";
+      let data = JSON.parse(line);
+      while (data && typeof data === "object" && data.result && !data.finalVersion) data = data.result;
+      return data;
+    }
+
+    // --- MUST be fixed -------------------------------------------------
+    for (const [before, after] of [
+      ["The team noted that the the sample was small.", "the sample"],
+      ["A range of of values was observed.", "A range of values"],
+      ["The team and and the plan clashed.", "The team and the plan"],
+      ["It was an an unusual case.", "It was an unusual case"],
+      ["The the report was late.", "The report"],
+    ]) {
+      const out = await run(before);
+      check(`fixed: "${before.slice(0, 34)}..."`, out.finalVersion.includes(after), true);
+    }
+    // First word's case is kept ("The the" -> "The", never "the").
+    check("case preserved: 'The the' -> 'The'", (await run("The the report was late.")).finalVersion.trim().startsWith("The report"), true);
+    // Spacing runs first, so a double-space doubling is still caught.
+    check("spacing runs first: 'the  the' collapsed", (await run("The team reviewed the  the plan.")).finalVersion.includes("the plan"), true);
+
+    // --- MUST NOT be touched (owner requirement + regressions) --------
+    for (const [label, text, keep] of [
+      ["owner example: 'very, very good'", "This is very, very good.", "very, very good"],
+      ["comma repetition: 'yes, yes'", "The answer was yes, yes.", "yes, yes"],
+      ["comma repetition: 'no, no'", "The answer was no, no.", "no, no"],
+      ["emphasis: 'very very' (no comma)", "It is very very important.", "very very"],
+      ["perfect: 'had had'", "He had had enough time.", "had had"],
+      ["quoted speech: 'that that'", "She said that that was fine.", "that that"],
+      ["quoted comma repetition", 'He said "no, no" firmly.', '"no, no"'],
+      ["\\b guard: 'this is ...' kept", "This is very, very good.", "This is"],
+      ["\\b guard: 'The team met' kept", "The team met.", "The team met"],
+    ]) {
+      const out = await run(text);
+      check(`kept: ${label}`, out.finalVersion.includes(keep), true);
+    }
+
+    // --- editor == meter ----------------------------------------------
+    // Source charged, then genuinely cleared by the editor on the revision.
+    const fixed = await run("The team noted that the the sample was small.");
+    check("source charged for the doubling", fixed.rubric.deductions.source.duplication.count, 1);
+    check("revision CLEARED (editor fixed it)", fixed.rubric.axes.duplicates.remaining, 0);
+    check("no revision-side duplication deduction", fixed.rubric.deductions.revised.duplication, undefined);
+    check("revision no longer capped at 85", fixed.revisedScore > 85, true);
+    check("revision scores above source", fixed.revisedScore >= fixed.originalScore, true);
+    // Editor == meter: the same class that charged the source is now 0.
+    check("axes show source 1 -> remaining 0", fixed.rubric.axes.duplicates.source, 1);
+
+    // Deliberate repetition is never charged on EITHER side.
+    const kept = await run("This is very, very good and he had had enough time.");
+    check("deliberate repetition uncharged on the source", kept.rubric.axes.duplicates.source, 0);
+    check("deliberate repetition uncharged on the revision", kept.rubric.axes.duplicates.remaining, 0);
+    check("no duplication deduction at all", kept.rubric.deductions.source.duplication, undefined);
+
+    // Footnote / citation lines are the author's: never edited, never charged.
+    const cited = await run("The the sample was small.\n\n[1] See the the appendix for details.");
+    check("footnote line NOT edited", cited.finalVersion.includes("[1] See the the appendix"), true);
+    check("body doubling still fixed", cited.finalVersion.includes("The sample was small"), true);
   }
 }
 
