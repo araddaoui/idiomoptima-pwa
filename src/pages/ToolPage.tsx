@@ -1061,7 +1061,11 @@ export default function ToolPage() {
                           Provider: {result.provider}
                           {(() => {
                             const okAttempt = result.timing.attempts.find((a: any) => a.ok && a.provider && a.provider !== "none" && a.provider !== "last");
-                            return okAttempt ? <span> ({okAttempt.provider})</span> : null;
+                            // The parenthetical names the attempt that actually
+                            // answered, so it only earns its place when it DIFFERS
+                            // from the outer label (rotation / rescue). Rendering it
+                            // unconditionally produced "gemini (gemini)".
+                            return okAttempt && okAttempt.provider !== result.provider ? <span> ({okAttempt.provider})</span> : null;
                           })()}
                           {" "}&middot; {Math.round(result.timing.totalMs / 1000)}s
                           {result.timing.attempts.length > 1 ? ` (${result.timing.attempts.length} attempt${result.timing.attempts.length === 1 ? "" : "s"})` : ""}

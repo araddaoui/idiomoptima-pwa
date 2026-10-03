@@ -168,10 +168,11 @@ const extracted = [
   extractVar(INDEX_SRC, "DUP_FUNCTION_WORDS"),
   extractFunction(INDEX_SRC, "doubledWordRe"),
   extractFunction(INDEX_SRC, "countDoubledFunctionWords"),
+  extractFunction(INDEX_SRC, "detectDialect"),
 ].join("\n");
 
 const api = new Function(
-  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, fixCommonMisspellings, countMisspellings, resolveBandedScores, DEDUCTION_RULES, classifyRealEdits, applyDeductions, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords, countDoubledFunctionWords };"
+  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, fixCommonMisspellings, countMisspellings, resolveBandedScores, DEDUCTION_RULES, classifyRealEdits, applyDeductions, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords, countDoubledFunctionWords, detectDialect };"
 )();
 
 // --- load + merge databases exactly like the client (ToolPage) ---------------
@@ -200,11 +201,34 @@ function buildDbs() {
   return {
     aiDb: buildAiDb(),
     idiomDb: loadJson("idioms-clunky-native.json"),
+    // ToolPage also ships the ADVISE-ONLY tier (public/ai-suggestions.json).
+    // The harness omitted it, which silently made the whole tier invisible to
+    // every test that drives the worker with DBS — the reason the one-entry
+    // stub went unnoticed.
+    suggestDb: loadJson("ai-suggestions.json"),
     lexicalDb: buildLexicalDb(),
   };
 }
 
 const DBS = buildDbs();
+// The REAL worker module, imported once at module scope so every section that
+// needs to drive actual production code (certified layer, scoring, stream
+// integrity) shares a single instance.
+const { default: worker } = await import(pathToFileURL(join(ROOT, "index.js")));
+
+// Drive the REAL worker end to end (offline: no provider keys, so this is the
+// deterministic rescue path — exactly the code the scoring meter reads).
+async function runWithDbs(text, domain = "academic", dbs = DBS) {
+  const req = new Request("https://nativewrite-api.nativewrite-api.workers.dev/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, domain, tone: "neutral", mode: "hybrid", databases: dbs }),
+  });
+  const raw = await (await worker.fetch(req, {})).text();
+  let data = JSON.parse(raw.split(/\r?\n/).filter((l) => l.trim()).pop() || "{}");
+  while (data && typeof data === "object" && data.result && !data.finalVersion) data = data.result;
+  return data;
+}
 
 function transform(sentences, domain = "general") {
   const input = sentences.map((original) => ({ original, revised: original, paragraphIndex: 0 }));
@@ -576,7 +600,8 @@ section("11. certified deterministic grammar/punctuation layer (offline worker p
 {
   // Drive the REAL worker's rescue path (no provider keys) so the certified
   // edits and the re-banded scoring run on actual production code.
-  const { default: worker } = await import(pathToFileURL(join(ROOT, "index.js")));
+  // `worker` itself is imported once at module scope above, so the later
+  // stream-integrity section (16) can drive the same real worker instance.
   const SAMPLE = [
     "Background ",
     "",
@@ -927,6 +952,205 @@ section("15. doubled-word WRITE in the certified pass (deliberate repetition spa
     check("footnote line NOT edited", cited.finalVersion.includes("[1] See the the appendix"), true);
     check("body doubling still fixed", cited.finalVersion.includes("The sample was small"), true);
   }
+}
+
+section("16. stream integrity: EVERY run ends with a terminal event (no truncated streams)");
+{
+  // Regression guard for the production bug where the platform terminated the
+  // worker mid-stream (`outcome: exceededCpu`) and the client could only report
+  // "Stream ended without a final result from the worker." A stream that closes
+  // with neither `final` nor `error` is indistinguishable from success until it
+  // is not, so the worker now guarantees a terminal event in a `finally` block.
+  const driveStream = async (payload) => {
+    const req = new Request("https://nativewrite-api.nativewrite-api.workers.dev/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const resp = await worker.fetch(req, {});
+    // Pre-stream rejections (empty text, non-English) answer with a real JSON
+    // error status, never a truncated stream. Assert that explicitly so this
+    // test cannot be satisfied by an early return.
+    if (!resp.ok) {
+      const body = await resp.json().catch(() => ({}));
+      return { httpStatus: resp.status, terminal: "http-error", error: body.error || "" };
+    }
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let terminal = null;
+    let rid = null;
+    let events = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        const evt = JSON.parse(line);
+        events++;
+        if (evt.rid) rid = evt.rid;
+        if (evt.ev === "final") terminal = "final";
+        if (evt.ev === "error") terminal = "error";
+      }
+    }
+    return { terminal, rid, events };
+  };
+
+  const prose = "The committee conducted a comprehensive review of the methodology utilized by the research team. It was observed that a significant number of participants were not able to utilize the resources effectively. The mere fact that the timeline was very tight meant the team had to make use of every avenue.";
+
+  // Representative shapes: plain, multi-paragraph, quoted, unicode, long.
+  const cases = [
+    ["plain prose", prose],
+    ["multi-paragraph", prose + "\n\n" + prose + "\n\nThe data was very robust and the results framework was not really needed."],
+    ["quoted text", 'The report noted that "the mere fact that the timeline was tight" caused delays. Furthermore, it was observed that a significant number of participants were not able to utilize the resources effectively.'],
+    ["unicode + emphasis", "The naïve café analysis — “quoted” ‘text’ — showed a significant result. It was observed that a significant number of participants were not able to utilize the available resources effectively."],
+    ["long (multi-chunk path)", prose.repeat(30)],
+  ];
+
+  for (const [label, text] of cases) {
+    const out = await driveStream({ text, domain: "academic", tone: "formal", mode: "auto", databases: DBS });
+    check("stream ends with a terminal event: " + label, out.terminal, "final");
+    check("terminal event carries a correlation id: " + label, typeof out.rid === "string" && out.rid.length > 0, true);
+    check("stream is not empty: " + label, out.events > 1, true);
+  }
+
+  // Pre-stream rejections must be honest HTTP errors, never silent truncations.
+  const empty = await driveStream({ text: "   ", domain: "academic", mode: "auto", databases: DBS });
+  check("empty text -> real HTTP error, not a truncated stream", empty.terminal, "http-error");
+  check("empty text error is non-empty", typeof empty.error === "string" && empty.error.length > 0, true);
+}
+
+section("17. advise-only tier is real (B1), coherent, and never edits (B1+B4)");
+{
+  // 2026-10-03 audit: the ADVISE-ONLY tier shipped with exactly ONE entry
+  // (`some sort of`), identical to the DEFAULT_DATABASES floor, so the whole
+  // tier was unreachable — `registerNotes` could never fire for real prose and
+  // the Notes-tab "kept as written" affordance was dead. A live academic
+  // passage containing "one can understand that" and "not to mention that"
+  // reported zero register notes. The inventory is now populated; these checks
+  // are the regression guard so it cannot silently collapse back to a stub.
+
+  const SUGGEST = loadJson("ai-suggestions.json");
+  const normKey = (s) => String(s || "").toLowerCase().replace(/[""\u201C\u201D]/g, "").replace(/\s+/g, " ").trim();
+
+  check("advise tier is non-trivial (not a stub)", SUGGEST.length > 50, true);
+  check("worker floor still carries advise entries", api.DEFAULT_DATABASES.suggestDb.length > 0, true);
+
+  const VALID_KINDS = ["informal", "filler", "cliche", "formulaic"];
+  const seen = new Map();
+  let badShape = 0, badKind = 0, identity = 0, dupes = 0;
+  for (const e of SUGGEST) {
+    const s = normKey(e.ai), t = normKey(e.natural);
+    if (!s || !t || s.split(" ").length < 2) badShape++;
+    if (!VALID_KINDS.includes(String(e.kind || "").toLowerCase())) badKind++;
+    if (s === t) identity++;
+    if (seen.has(s)) dupes++;
+    seen.set(s, e);
+  }
+  check("every advise entry has a multi-word source and a target", badShape, 0);
+  check("every advise entry declares a valid kind (drives the note copy)", badKind, 0);
+  check("no identity pairs (the map builder would silently drop them)", identity, 0);
+  check("no duplicate advise sources", dupes, 0);
+
+  // Coherent policy: an advise entry must not ALSO be an auto-tier rewrite, or
+  // the tool would tell the author to consider a phrasing it just replaced.
+  const autoSources = new Set();
+  for (const e of DBS.aiDb) autoSources.add(normKey(e.ai || e.clunky));
+  for (const e of DBS.idiomDb) autoSources.add(normKey(e.ai || e.clunky));
+  for (const d of ["academic", "business", "creative", "general"])
+    for (const e of DBS.lexicalDb[d] || []) autoSources.add(normKey(e.ai || e.clunky));
+  const conflicts = SUGGEST.filter((e) => autoSources.has(normKey(e.ai)));
+  check("no advise entry overlaps the auto tier", conflicts.map((e) => e.ai).join(", "), "");
+
+  // --- the load-bearing invariant: ADVISE-ONLY NEVER EDITS -------------------
+  // A text saturated with advise-tier phrases must come back byte-identical and
+  // must not move a single scoring axis. This is what keeps the tier
+  // "data-only and freeze-safe" (AGENTS.md) true.
+  const sat = "We should figure out the plan and deal with the risk. It is the elephant in the room. She tends to burn the midnight oil and touch base often, so she makes a decision late. In the nick of time we find out that a lot of people kind of agree, and there is no doubt that things like this happen every day. One can see that the tip of the iceberg is not the whole problem.";
+  const satOut = await runWithDbs(sat, "academic", DBS);
+  check("advise-only text is NOT rewritten", satOut.finalVersion.trim() === sat.trim(), true);
+  check("advise-only text docks no stiffness on the source", satOut.rubric.axes.stiffness.source, 0);
+  check("advise-only text docks no stiffness on the revision", satOut.rubric.axes.stiffness.remaining, 0);
+  check("advise-only text docks no word-choice deduction (source)", satOut.rubric.deductions.source.wordChoice, undefined);
+  check("advise-only text docks no word-choice deduction (revised)", satOut.rubric.deductions.revised.wordChoice, undefined);
+  // `register` is charged only when the MODEL replaced an advise phrase. Pass 1
+  // is grammar-only and the advise tier never edits, so it must stay uncharged
+  // offline — an author is never docked for acceptable English.
+  check("advise-only text docks no register deduction", satOut.rubric.deductions.source.register, undefined);
+  check("advise-only text scores identically on both sides", satOut.originalScore, satOut.revisedScore);
+  check("advise-only text produces register notes", (satOut.registerNotes || []).length > 0, true);
+  check("register notes are capped at 5", (satOut.registerNotes || []).length <= 5, true);
+
+  // --- B1 regression guard: the exact phrases the audit found invisible ------
+  const audit = await runWithDbs(
+    "Whether it is the spiritual that she sings, or the child calling her a name, one can understand that Martine could not see herself as a survivor. Babies are innocent creatures, not to mention that they cannot even speak yet.",
+    "academic", DBS);
+  const joined = (audit.registerNotes || []).join(" | ");
+  check("advise note fires on 'one can understand that'", joined.includes("one can understand that"), true);
+  check("advise note fires on 'not to mention that'", joined.includes("not to mention that"), true);
+
+  // --- B4: the note must name the ACTUAL register issue and the ACTUAL domain.
+  check("note reports the entry's kind, not a blanket 'informal'", /“one can understand that” is formulaic/.test(joined), true);
+  check("note targets the requested register (academic)", joined.includes("in academic writing"), true);
+  // Kind labelling is asserted on SINGLE-phrase inputs: registerNotes is capped
+  // at 5, so a saturated text would drop the phrase under test.
+  const fillerOut = await runWithDbs("She had a lot of questions about the schedule.", "academic", DBS);
+  check("filler entries are labelled 'filler'", /“a lot of” is filler/.test((fillerOut.registerNotes || []).join(" | ")), true);
+  const clicheOut = await runWithDbs("It is the elephant in the room, and everyone knows it.", "academic", DBS);
+  check("cliche entries are labelled 'is a cliche'", /“the elephant in the room” is a cliche/.test((clicheOut.registerNotes || []).join(" | ")), true);
+  const bizOut = await runWithDbs("We need to figure out a plan for the quarter.", "business", DBS);
+  check("note targets business writing for a business document", (bizOut.registerNotes || []).join(" ").includes("in business writing"), true);
+  const genOut = await runWithDbs("We need to figure out a plan for the quarter.", "general", DBS);
+  check("note targets formal writing for a general document", (genOut.registerNotes || []).join(" ").includes("in formal writing"), true);
+  const creOut = await runWithDbs("We need to figure out a plan for the quarter.", "creative", DBS);
+  check("note targets creative writing for a creative document", (creOut.registerNotes || []).join(" ").includes("in creative writing"), true);
+}
+
+section("18. detectDialect: UK markers present, US false-positive traps absent");
+{
+  // 2026-10-03 audit: the UK list omitted `foetus` — the single most
+  // distinctively British spelling in the language — so a UK academic passage
+  // using it twice reported "US" on the offline/rescue path. Two further traps
+  // found while fixing it, both of which a naive regex reintroduces:
+  //   * `\w+is(ed|es|ing)` also matches ADVISE/REVISE/COMPRISE/PROMISE/
+  //     PRECISE/CONCISE — all correct US English.
+  //   * "analyses" is the ordinary US plural of "analysis", and "fetus"/"grey"
+  //     are accepted US spellings, so none of them are UK markers.
+  const d = api.detectDialect;
+  for (const t of [
+    "A foetus in her womb could in no way be real.",
+    "We need to analyse the colour of the behaviour.",
+    "She travelled a labelled distance amid characterisation.",
+    "The centre of gravity shifted towards a paediatric cohort.",
+    "He recognised the anaemia and the defence line.",
+    "A programme of colonisation and generalisation followed.",
+    "Amongst the neighbours, the theatre metre measured oddly.",
+    "The haematology report noted a haemorrhage.",
+  ]) check(`detectDialect -> UK: ${JSON.stringify(t.slice(0, 42))}`, d(t), "UK");
+
+  for (const t of [
+    "She advises the committee and revises the draft.",
+    "The study comprises three phases and promises results.",
+    "It is a precise and concise summary of a precise problem.",
+    "Such an exercise will surprise everyone and arise often.",
+    "The analyses show a clear pattern across all sites.",
+    "The manager will devise a plan and supervise the team.",
+    "He organized the meeting and memorized the schedule.",
+    "The fetus is a fetus, and the fibers of the meter align.",
+    "A grey day; the storey above was empty.",
+    "The license was practiced in a center near the theater.",
+    "She optimized the process and summarized the results.",
+  ]) check(`detectDialect -> US: ${JSON.stringify(t.slice(0, 42))}`, d(t), "US");
+
+  // Canadian/Australian English uses UK spellings, so those regions must be
+  // tested FIRST or every Canadian text with "colour" reads as UK.
+  check("CA wins over UK spellings", d("In Canada the colour of the behaviour matters."), "CA");
+  check("AU wins over UK spellings", d("Australian centres emphasise behaviour and colour."), "AU");
+  check("empty text falls back to US", d(""), "US");
+  check("neutral text falls back to US", d("The report reached a conclusion."), "US");
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

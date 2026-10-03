@@ -1194,11 +1194,32 @@ function postProcessSuggestions(suggestions, originalText, finalText, sentences,
   return suggs;
 }
 
+// Deterministic dialect detector (diagnostic only). A CLOSED list of
+// high-signal spellings: every family is a genuine -ise/-our/-re-/-ll- pattern
+// rather than one-off words. It deliberately contains NO generic regex over
+// `\w+is(ed|es|ing)` — that shape also matches advise, revise, comprise,
+// promise, surprise, arise, exercise, precise and concise, which are correct
+// US English and would misreport almost every academic text as UK. Likewise
+// "analyses" and "grey" are accepted US spellings, so they are not markers.
+// Order matters: Canadian and Australian English use UK spellings, so those
+// regions are tested FIRST or every Canadian text with "colour" reads as UK.
 function detectDialect(text) {
   var lower = (text || "").toLowerCase();
-  if (/\b(colour|behaviour|favour|flavour|harbour|labour|behaviour|towards|amongst|whilst|analyse[sd]?|analysing|organisation|organise[sd]?|prioritise[sd]?|recognise[sd]?|defence|offence|licence|practise|cheque|programme|centre|theatre|metre|fibre|colonisation|travelled|labelled|characterisation)\b/i.test(lower)) return "UK";
   if (/\bcanada\b|\bcanadian\b/.test(lower)) return "CA";
   if (/\baustralia\b|\baustralian\b/.test(lower)) return "AU";
+  // -our / -re- / -ll- / -ogue families
+  if (/\b(colour|behaviour|favour|flavour|harbour|labour|neighbour\w*|odour|endeavour|rigour|vigour|savour|valour|honour\w*)\b/.test(lower)) return "UK";
+  if (/\b(defence|offence|licence|practise|pretense|pretence)\b/.test(lower)) return "UK";
+  if (/\b(centre|theatre|metre|fibre|calibre|sceptic|sceptical|sulphur|anaemia|paediatric|paediatrics|diarrhoea|oedema)\b/.test(lower)) return "UK";
+  if (/\b(cheque|programme|enrol|fulfil|instil|skilful|wilful|judgement|ageing|fuelled|travelling|labelling|marvellous)\b/.test(lower)) return "UK";
+  if (/\b(towards|amongst|whilst|learnt|aluminium|manoeuvre|moustache|plough|tyre)\b/.test(lower)) return "UK";
+  // Medical / biological -a- vs -ae- and -oe- forms (incl. the one the old list
+  // was missing outright: `foetus`, the most distinctively British spelling).
+  if (/\b(foetus|foetal|foetuses|haemorrhage\w*|haemophilia|gynaecolog\w*|orthopaedic\w*|gonorrhoea|oedema|paediatric\w*|anaemi\w*|diarrhoea)\b/.test(lower)) return "UK";
+  // -ise / -isation verbs, listed exhaustively on purpose. NOTE the `[sd]?`
+  // suffix must never include a bare "es": "analyses" is the ordinary US plural
+  // of "analysis", not a British spelling.
+  if (/\b(analys(?:e|ed|ing)|organise[sd]?|organising|organisational|prioritise[sd]?|recognise[sd]?|recognisable|realise[sd]?|realisation|normalise[sd]?|formalise[sd]?|summarise[sd]?|minimise[sd]?|maximise[sd]?|utilise[sd]?|utilising|visualise[sd]?|apologise[sd]?|criticise[sd]?|emphasise[sd]?|specialise[sd]?|standardise[sd]?|stabilise[sd]?|characterise[sd]?|characterisation|categorise[sd]?|authorise[sd]?|itemise[sd]?|memorise[sd]?|modernise[sd]?|optimise[sd]?|colonisation|generalisation|randomise[sd]?|legalise[sd]?|penalise[sd]?|revitalise[sd]?|sterilise[sd]?|symbolise[sd]?|sympathise[sd]?|theorise[sd]?)\b/.test(lower)) return "UK";
   return "US";
 }
 
@@ -1317,7 +1338,7 @@ async function callGeminiWithChunking(bodyText, options, apiKey, pushLine) {
     sentences: mergedSentences,
     originalScore: results[0].parsed.originalScore,
     revisedScore: results[0].parsed.revisedScore,
-    detectedDialect: results[0].parsed.detectedDialect || "US"
+    detectedDialect: results[0].parsed.detectedDialect || detectDialect(bodyText)
   };
 
   return JSON.stringify(mergedParsed);
@@ -1410,7 +1431,7 @@ async function callProviderWithChunking(bodyText, chunkFn, pushLine, opts) {
     sentences: mergedSentences,
     originalScore: results[0].parsed.originalScore,
     revisedScore: results[0].parsed.revisedScore,
-    detectedDialect: results[0].parsed.detectedDialect || "US"
+    detectedDialect: results[0].parsed.detectedDialect || detectDialect(bodyText)
   };
 
   return JSON.stringify(mergedParsed);
@@ -1919,15 +1940,38 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
   var origParas = toParagraphs(originalText);
   var revParas = toParagraphs(finalVersion);
   var result = [];
+  // ---- Memoization -------------------------------------------------------
+  // Paragraph alignment below is an O(origParas x revParas) comparison, and each
+  // comparison used to re-normalize and re-tokenize BOTH sides from scratch.
+  // That made a long document cost O(P^2) full tokenizations — the actual CPU
+  // hot spot (measured: ~73% of CPU in tokenMap/normalizeText/tokenSimilarity),
+  // and the reason the platform could terminate the worker mid-stream.
+  //
+  // Every helper here is a PURE function of its input string, so caching on the
+  // string is behaviour-preserving: the same inputs yield the same maps, and the
+  // maps are only ever read (never mutated) after construction. Keying by the
+  // raw string keeps semantics identical to recomputing.
+  var normCache = new Map();
+  var tokenMapCache = new Map();
+  var contentSetCache = new Map();
   function normalizeText(t) {
-    return String(t || "").replace(/\*\*/g, "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+    var key = String(t || "");
+    var hit = normCache.get(key);
+    if (hit !== undefined) return hit;
+    var out = key.replace(/\*\*/g, "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+    normCache.set(key, out);
+    return out;
   }
   function tokenMap(text) {
+    var key = String(text || "");
+    var hit = tokenMapCache.get(key);
+    if (hit !== undefined) return hit;
     var map = {};
-    var toks = normalizeText(text).split(" ");
+    var toks = normalizeText(key).split(" ");
     for (var i = 0; i < toks.length; i++) {
       if (toks[i]) map[toks[i]] = (map[toks[i]] || 0) + 1;
     }
+    tokenMapCache.set(key, map);
     return map;
   }
   function tokenSimilarity(a, b) {
@@ -1973,13 +2017,18 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
       var rev = "";
       var sbIdx = -1;
       var sbScore = 0;
+      var CONTENT_STOPWORD_RE = /^(a|an|the|is|are|was|were|of|in|on|at|to|for|and|or|but|not|with|from|by|that|this|these|those|it|its|as|also|than|more|most|such|been|being|have|has|had|do|does|did|will|would|can|could|should|may|might|shall|there|their|they|we|you|i|he|she|it's|be|would|which|who|what|when|where|how|so|then|after|before)$/i;
       function contentSet(text) {
+        var key = String(text || "");
+        var hit = contentSetCache.get(key);
+        if (hit !== undefined) return hit;
         var set = {};
-        normalizeText(text).split(" ").forEach(function (w) {
-          if (w && !/^(a|an|the|is|are|was|were|of|in|on|at|to|for|and|or|but|not|with|from|by|that|this|these|those|it|its|as|also|than|more|most|such|been|being|have|has|had|do|does|did|will|would|can|could|should|may|might|shall|there|their|they|we|you|i|he|she|it's|be|would|which|who|what|when|where|how|so|then|after|before)$/i.test(w)) {
+        normalizeText(key).split(" ").forEach(function (w) {
+          if (w && !CONTENT_STOPWORD_RE.test(w)) {
             set[w] = true;
           }
         });
+        contentSetCache.set(key, set);
         return set;
       }
       var origContentSet = contentSet(orig);
@@ -2629,10 +2678,19 @@ function buildNativizationMaps(dbs, domain) {
   function sourceOf(e) { return e && (e.ai || e.clunky || e.source); }
   function targetOf(e) { return e && (e.natural || e.native || e.target); }
 
+  // Advise-only entries may carry a `kind` so the register note can name the
+  // actual register issue instead of calling everything "informal". Unknown /
+  // missing values fall back to "informal", which is what this tier shipped
+  // with before kinds existed.
+  function kindOf(e) {
+    var k = String((e && (e.kind || e.note)) || "").toLowerCase().trim();
+    return (k === "cliche" || k === "filler" || k === "formulaic") ? k : "informal";
+  }
+
   // NATIVE_STOPLIST / COLLOCATION_PAIRS / SINGLE_WORD_ALLOW / isCollocationLocked
   // live at module scope above (shared with the test harness).
 
-  function push(srcRaw, tgtRaw, cat, adviseOnly) {
+  function push(srcRaw, tgtRaw, cat, adviseOnly, adviseEntry) {
     var src = String(srcRaw || "").trim();
     var tgt = String(tgtRaw || "").trim();
     if (!src || !tgt) return;
@@ -2650,7 +2708,7 @@ function buildNativizationMaps(dbs, domain) {
     var isAllowedSingle = wordCount === 1 && !!SINGLE_WORD_ALLOW[normLow];
     if (wordCount < 2 && !isAllowedSingle) return;
     if (adviseOnly) {
-      maps.suggestList.push({ src: norm, tgt: tgt });
+      maps.suggestList.push({ src: norm, tgt: tgt, kind: kindOf(adviseEntry) });
       return;
     }
     var endsSentence = /[.!?]$/.test(norm);
@@ -2679,7 +2737,7 @@ function buildNativizationMaps(dbs, domain) {
     lex.forEach(function (e) { push(sourceOf(e), targetOf(e), "lexical"); });
   }
   // Advise-only tier: same gate chain, but the entries never fire as edits.
-  if (Array.isArray(dbs.suggestDb)) dbs.suggestDb.forEach(function (e) { push(sourceOf(e), targetOf(e), "ai", true); });
+  if (Array.isArray(dbs.suggestDb)) dbs.suggestDb.forEach(function (e) { push(sourceOf(e), targetOf(e), "ai", true, e); });
   // Longest-first so a longer phrase wins over its nested shorter fragment.
   maps.phraseList.sort(function (a, b) { return b.src.length - a.src.length; });
   maps.suggestList.sort(function (a, b) { return b.src.length - a.src.length; });
@@ -2907,6 +2965,17 @@ function countDoubledFunctionWords(s) {
   return hits ? hits.length : 0;
 }
 
+// Pre-compiled mirrors of the three rule tables, built once at module load.
+// applyGrammarLayer runs per sentence, and it used to call `new RegExp(...)`
+// for every rule on every segment — so a document of N sentences recompiled
+// N x (rules) regexes. These are the SAME patterns (identical .source/.flags),
+// so behaviour is unchanged; only the compilation is hoisted. Every consumer
+// resets `lastIndex = 0` before scanning, because these are /g regexes and the
+// shared instance would otherwise carry scan position across sentences.
+var GRAMMAR_RULES_COMPILED = GRAMMAR_RULES.map(function (r) { return new RegExp(r.re.source, r.re.flags); });
+var GRAMMAR_PREPOSITIONS_COMPILED = GRAMMAR_PREPOSITIONS.map(function (r) { return new RegExp(r.re.source, r.re.flags); });
+var VERB_PREP_COMPILED = VERB_PREP_CORRECTIONS.map(function (r) { return new RegExp(r.re.source, r.re.flags); });
+
 // Applies the grammar layer to a prose block; quote-safe, footnote lines must be
 // excluded by the caller. Returns { text, fixes, grammar, punctuation, duplication }.
 //   - text: the deterministic, machine-verifiable corrections applied
@@ -2929,7 +2998,14 @@ function applyGrammarLayer(text) {
     var s = seg;
     for (var i = 0; i < GRAMMAR_RULES.length; i++) {
       var rule = GRAMMAR_RULES[i];
-      var re = new RegExp(rule.re.source, rule.re.flags);
+      // Compiled ONCE at module load, not per segment. This runs per sentence,
+      // so rebuilding every rule's RegExp on each call was the single largest
+      // avoidable cost in the deterministic layer (the CPU hot spot implicated
+      // in the platform terminating the worker mid-stream). lastIndex is reset
+      // at loop entry because these are /g regexes and would otherwise carry
+      // scan position between sentences.
+      var re = GRAMMAR_RULES_COMPILED[i];
+      re.lastIndex = 0;
       var res;
       while ((res = re.exec(s)) !== null) {
         if (rule.guard && rule.guard(s, res.index)) { re.lastIndex = res.index + res[0].length; continue; }
@@ -2949,7 +3025,8 @@ function applyGrammarLayer(text) {
     }
     for (var j = 0; j < GRAMMAR_PREPOSITIONS.length; j++) {
       var pp = GRAMMAR_PREPOSITIONS[j];
-      var pr = new RegExp(pp.re.source, pp.re.flags);
+      var pr = GRAMMAR_PREPOSITIONS_COMPILED[j];
+      pr.lastIndex = 0;
       while ((res = pr.exec(s)) !== null) {
         var good = String(typeof pp.good === "function" ? pp.good(res) : pp.good);
         if (/^[A-Z]/.test(res[0]) && !/^[A-Z]/.test(good)) good = good.charAt(0).toUpperCase() + good.slice(1);
@@ -2963,7 +3040,8 @@ function applyGrammarLayer(text) {
     // starve each other ("discuss about it" only fires once per occurrence).
     for (var vp = 0; vp < VERB_PREP_CORRECTIONS.length; vp++) {
       var vpRule = VERB_PREP_CORRECTIONS[vp];
-      var vpRe = new RegExp(vpRule.re.source, vpRule.re.flags);
+      var vpRe = VERB_PREP_COMPILED[vp];
+      vpRe.lastIndex = 0;
       while ((res = vpRe.exec(s)) !== null) {
         var vpGood = String(typeof vpRule.good === "function" ? vpRule.good(res) : vpRule.good);
         s = s.substring(0, res.index) + vpGood + s.substring(res.index + res[0].length);
@@ -3116,7 +3194,7 @@ function applyDatabaseNativization(sentences, dbs, domain, opts) {
   var suggestRx = [];
   for (var sgi = 0; sgi < maps.suggestList.length; sgi++) {
     var sp = maps.suggestList[sgi];
-    suggestRx.push({ src: sp.src, tgt: sp.tgt, rx: new RegExp("\\b" + escapeRegExp(sp.src) + "\\b", "i") });
+    suggestRx.push({ src: sp.src, tgt: sp.tgt, kind: sp.kind, rx: new RegExp("\\b" + escapeRegExp(sp.src) + "\\b", "i") });
   }
   var suggestNotes = [];
   var suggestSeen = {};
@@ -3204,7 +3282,7 @@ function applyDatabaseNativization(sentences, dbs, domain, opts) {
         if (suggestSeen[sr.src]) continue;
         if (sr.rx.test(s.revised || "")) {
           suggestSeen[sr.src] = true;
-          suggestNotes.push({ ai: sr.src, natural: sr.tgt });
+          suggestNotes.push({ ai: sr.src, natural: sr.tgt, kind: sr.kind });
         }
       }
     }
@@ -4157,10 +4235,30 @@ async function ensureValidResult(parsed, originalText, options, env) {
   // NOT to auto-edit (fluent-but-informal). Surfaced as suggestions so the
   // author can decide; the prose itself never changes. Distinct phrases only,
   // capped at 5 to keep the Notes panel readable.
+  // The reason and the target register are BOTH derived from the request, not
+  // hardcoded: an entry is tagged `kind` in ai-suggestions.json (informal /
+  // filler / cliche / formulaic) and the closing register names the domain the
+  // author actually asked for. Before this, every note read "... in academic
+  // writing" even for a business or creative document, and every phrase was
+  // called "informal" whether it was a filler hedge or a business cliche.
+  var REGISTER_KIND_REASON = {
+    informal: "is informal",
+    filler: "is filler",
+    cliche: "is a cliche",
+    formulaic: "is formulaic"
+  };
+  var REGISTER_TARGET = {
+    academic: "in academic writing",
+    business: "in business writing",
+    creative: "in creative writing",
+    general: "in formal writing"
+  };
+  var registerTarget = REGISTER_TARGET[String((options && options.domain) || "general").toLowerCase()] || REGISTER_TARGET.general;
   var registerNotes = [];
   if (dbPass && dbPass.suggestNotes && dbPass.suggestNotes.length) {
     dbPass.suggestNotes.slice(0, 5).forEach(function (rn) {
-      registerNotes.push("\u201C" + rn.ai + "\u201D is informal; consider \u201C" + rn.natural + "\u201D in academic writing (kept as written).");
+      var why = REGISTER_KIND_REASON[rn.kind] || REGISTER_KIND_REASON.informal;
+      registerNotes.push("\u201C" + rn.ai + "\u201D " + why + "; consider \u201C" + rn.natural + "\u201D " + registerTarget + " (kept as written).");
     });
   }
 
@@ -5255,12 +5353,29 @@ var rescueUsed = false;
       var streamEncoder = new TextEncoder();
       var controllerRef = null;
       var streamErrors = [];
+      // Correlation id stamped on every event, so a user-visible failure can be
+      // tied to the exact `wrangler tail` invocation that produced it.
+      var requestId = "req-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+      // A run is only "answered" once a TERMINAL event (final or error) reached
+      // the stream. Anything else leaves the client holding a truncated body,
+      // which is the useless "Stream ended without a final result from the
+      // worker." message. When the platform kills the isolate (e.g.
+      // `outcome: exceededCpu`) NOTHING is emitted, so we also mirror to
+      // console.error — that is the only channel that survives termination.
+      var terminalSent = false;
       function pushLine(obj) {
+        if (obj && obj.ev) obj.rid = requestId;
         try {
           controllerRef.enqueue(streamEncoder.encode(JSON.stringify(obj) + "\n"));
         } catch (e) {
           streamErrors.push("pushLine(" + (obj && obj.ev) + "): " + String((e && e.message) || e));
         }
+      }
+      // Terminal events go through here so the finally-block can tell whether
+      // the client was actually given an answer.
+      function pushTerminal(obj) {
+        terminalSent = true;
+        pushLine(obj);
       }
 
       var streamBody = new ReadableStream({
@@ -5432,7 +5547,11 @@ var rescueUsed = false;
 
           var result = await ensureValidResult(parsed, text, options, env);
           if (!result) {
-            pushLine({ ev: "error", message: "Invalid response from AI model" });
+            pushTerminal({
+              ev: "error",
+              code: "invalid-result",
+              message: "The AI service returned a result that could not be processed. Please try again.",
+            });
             try { controller.close(); } catch (e) {}
             return;
           }
@@ -5478,11 +5597,36 @@ var rescueUsed = false;
           }
 
           pushLine({ ev: "phase", pct: 98, phase: "Finalizing output..." });
-          pushLine({ ev: "final", pct: 100, result: result });
+          pushTerminal({ ev: "final", pct: 100, result: result });
           } catch (err) {
             streamErrors.push("body: " + String((err && err.stack) || (err && err.message) || err));
-            pushLine({ ev: "error", message: "Transform pipeline failed: " + String((err && err.message) || err), detail: streamErrors.join(" | ") });
+            pushTerminal({
+              ev: "error",
+              code: "pipeline-failed",
+              message: "The transformation could not be completed. Please try again.",
+              detail: String((err && err.message) || err),
+              diagnostics: streamErrors.join(" | "),
+            });
           } finally {
+            // Safety net: NEVER let a run end without a terminal event. A
+            // truncated stream is indistinguishable from success on the client
+            // until it is not, and the user only ever sees a generic message.
+            // If we get here without one, name the reason and the request id.
+            if (!terminalSent) {
+              console.error(
+                "transform: stream closed with NO terminal event (" + requestId +
+                ", provider=" + (provider || "none") + ", elapsed=" + (Date.now() - providerStartMs) + "ms" +
+                (streamErrors.length ? ", streamErrors=" + streamErrors.join(" | ") : "") + ")"
+              );
+              pushTerminal({
+                ev: "error",
+                code: "no-final-result",
+                message: "The transformation was interrupted before it finished. This is usually temporary — please try again.",
+                detail: "No final result was produced (" + (Date.now() - providerStartMs) + "ms, provider=" + (provider || "none") + ")",
+                attempts: attemptTimes,
+                providerErrors: providerErrors,
+              });
+            }
             try { controller.close(); } catch (e) {}
           }
         },

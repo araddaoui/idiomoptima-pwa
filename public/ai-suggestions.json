@@ -1,6 +1,432 @@
 [
   {
     "ai": "some sort of",
-    "natural": "some form of"
+    "natural": "some form of",
+    "kind": "informal"
+  },
+  {
+    "ai": "one can understand that",
+    "natural": "it can be seen that",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "one can see that",
+    "natural": "it is clear that",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "one can argue that",
+    "natural": "it can be argued that",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "it is possible that",
+    "natural": "possibly",
+    "kind": "filler"
+  },
+  {
+    "ai": "it is reasonable to assume that",
+    "natural": "presumably",
+    "kind": "filler"
+  },
+  {
+    "ai": "it is my understanding that",
+    "natural": "I understand that",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "there is no doubt that",
+    "natural": "undoubtedly",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "it is undeniable that",
+    "natural": "undeniably",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "it is not possible to",
+    "natural": "one cannot",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a lot of",
+    "natural": "much or many",
+    "kind": "filler"
+  },
+  {
+    "ai": "lots of",
+    "natural": "many",
+    "kind": "filler"
+  },
+  {
+    "ai": "a great deal of",
+    "natural": "much",
+    "kind": "filler"
+  },
+  {
+    "ai": "a fair amount of",
+    "natural": "much",
+    "kind": "filler"
+  },
+  {
+    "ai": "kind of",
+    "natural": "somewhat",
+    "kind": "filler"
+  },
+  {
+    "ai": "sort of",
+    "natural": "somewhat",
+    "kind": "filler"
+  },
+  {
+    "ai": "pretty much",
+    "natural": "largely",
+    "kind": "filler"
+  },
+  {
+    "ai": "to some extent",
+    "natural": "partly",
+    "kind": "filler"
+  },
+  {
+    "ai": "to a great extent",
+    "natural": "largely",
+    "kind": "filler"
+  },
+  {
+    "ai": "to a lesser extent",
+    "natural": "less",
+    "kind": "filler"
+  },
+  {
+    "ai": "given the fact that",
+    "natural": "because",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "in order for",
+    "natural": "for",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "has the ability to",
+    "natural": "can",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "have the ability to",
+    "natural": "can",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "it is essential to",
+    "natural": "essential",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "the extent to which",
+    "natural": "how far",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "not to mention that",
+    "natural": "not to mention",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "the majority of",
+    "natural": "most",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "for the majority of",
+    "natural": "most",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "the largest part of",
+    "natural": "most",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a small number of",
+    "natural": "a few",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a number of",
+    "natural": "several",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a variety of",
+    "natural": "several",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a significant number of",
+    "natural": "many",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a wide range of",
+    "natural": "many",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a wide variety of",
+    "natural": "many",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a great many",
+    "natural": "many",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a myriad of",
+    "natural": "many",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "a wealth of",
+    "natural": "much",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "one of the most",
+    "natural": "among the most",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "things like",
+    "natural": "such as",
+    "kind": "informal"
+  },
+  {
+    "ai": "more and more",
+    "natural": "increasingly",
+    "kind": "informal"
+  },
+  {
+    "ai": "at the moment",
+    "natural": "currently",
+    "kind": "informal"
+  },
+  {
+    "ai": "each and every",
+    "natural": "every",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "when all is said and done",
+    "natural": "ultimately",
+    "kind": "cliche"
+  },
+  {
+    "ai": "in this regard",
+    "natural": "here",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "in this respect",
+    "natural": "here",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "in the wake of",
+    "natural": "after",
+    "kind": "cliche"
+  },
+  {
+    "ai": "at the forefront of",
+    "natural": "leading",
+    "kind": "cliche"
+  },
+  {
+    "ai": "on the whole",
+    "natural": "overall",
+    "kind": "cliche"
+  },
+  {
+    "ai": "all things considered",
+    "natural": "overall",
+    "kind": "cliche"
+  },
+  {
+    "ai": "moving forward",
+    "natural": "from now on",
+    "kind": "cliche"
+  },
+  {
+    "ai": "at its core",
+    "natural": "essentially",
+    "kind": "cliche"
+  },
+  {
+    "ai": "in essence",
+    "natural": "essentially",
+    "kind": "cliche"
+  },
+  {
+    "ai": "of great importance",
+    "natural": "important",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "to be blunt",
+    "natural": "bluntly",
+    "kind": "informal"
+  },
+  {
+    "ai": "make a decision",
+    "natural": "decide",
+    "kind": "informal"
+  },
+  {
+    "ai": "make a choice",
+    "natural": "choose",
+    "kind": "informal"
+  },
+  {
+    "ai": "take into account",
+    "natural": "consider",
+    "kind": "formulaic"
+  },
+  {
+    "ai": "get rid of",
+    "natural": "remove",
+    "kind": "informal"
+  },
+  {
+    "ai": "find out",
+    "natural": "discover",
+    "kind": "informal"
+  },
+  {
+    "ai": "figure out",
+    "natural": "determine",
+    "kind": "informal"
+  },
+  {
+    "ai": "look into",
+    "natural": "investigate",
+    "kind": "informal"
+  },
+  {
+    "ai": "point out",
+    "natural": "note",
+    "kind": "informal"
+  },
+  {
+    "ai": "set up",
+    "natural": "establish",
+    "kind": "informal"
+  },
+  {
+    "ai": "put together",
+    "natural": "produce",
+    "kind": "informal"
+  },
+  {
+    "ai": "come up with",
+    "natural": "devise",
+    "kind": "informal"
+  },
+  {
+    "ai": "deal with",
+    "natural": "address",
+    "kind": "informal"
+  },
+  {
+    "ai": "the tip of the iceberg",
+    "natural": "the first sign",
+    "kind": "cliche"
+  },
+  {
+    "ai": "a double-edged sword",
+    "natural": "a mixed blessing",
+    "kind": "cliche"
+  },
+  {
+    "ai": "the best of both worlds",
+    "natural": "an ideal situation",
+    "kind": "cliche"
+  },
+  {
+    "ai": "the elephant in the room",
+    "natural": "the obvious problem",
+    "kind": "cliche"
+  },
+  {
+    "ai": "par for the course",
+    "natural": "quite normal",
+    "kind": "cliche"
+  },
+  {
+    "ai": "a baptism of fire",
+    "natural": "a difficult beginning",
+    "kind": "cliche"
+  },
+  {
+    "ai": "the last straw",
+    "natural": "the final incident",
+    "kind": "cliche"
+  },
+  {
+    "ai": "under the weather",
+    "natural": "unwell",
+    "kind": "informal"
+  },
+  {
+    "ai": "on the same page",
+    "natural": "in agreement",
+    "kind": "informal"
+  },
+  {
+    "ai": "in the nick of time",
+    "natural": "just in time",
+    "kind": "cliche"
+  },
+  {
+    "ai": "a blessing in disguise",
+    "natural": "a hidden benefit",
+    "kind": "cliche"
+  },
+  {
+    "ai": "the ball is in your court",
+    "natural": "the decision is yours",
+    "kind": "cliche"
+  },
+  {
+    "ai": "a double take",
+    "natural": "a second look",
+    "kind": "informal"
+  },
+  {
+    "ai": "rule of thumb",
+    "natural": "general rule",
+    "kind": "cliche"
+  },
+  {
+    "ai": "pull the trigger",
+    "natural": "act",
+    "kind": "informal"
+  },
+  {
+    "ai": "keep in the loop",
+    "natural": "keep informed",
+    "kind": "informal"
+  },
+  {
+    "ai": "take a step back",
+    "natural": "step back",
+    "kind": "informal"
+  },
+  {
+    "ai": "look at something in a different way",
+    "natural": "reconsider it",
+    "kind": "cliche"
   }
 ]

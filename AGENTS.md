@@ -380,6 +380,48 @@ Deterministic contract (must never drift):
   and the swap was a false positive; `some sort of → some kind of` was retired
   from the auto tier (lateral colloquialism swap; the advise-only target is now
   `some form of`).
+  **Advise tier populated (2026-10-03)**: the tier shipped as a ONE-entry stub
+  (`some sort of`), identical to the `DEFAULT_DATABASES` floor, which made the whole
+  tier unreachable — `registerNotes` could never fire and `DEDUCTION_RULES.register`
+  was dead. `public/ai-suggestions.json` now ships **86 entries**, each tagged
+  `kind` (`informal` / `filler` / `cliche` / `formulaic`) so the note names the real
+  register issue instead of calling everything "informal", and the note's closing
+  register is derived from `options.domain` (academic / business / creative /
+  formal) instead of a hardcoded "in academic writing". Entries were validated
+  against all 7121 auto-tier sources: NO advise entry may share a source phrase with
+  the auto tier, and the auto tier must not PRODUCE an advise source (advising
+  against a phrasing the editor just writes is incoherent) — 13 candidates were
+  dropped for that reason (`nowadays`, `in light of`, `carry out`, `touch base`,
+  `circle back`, `food for thought`, `by and large`, `hit the nail on the head`,
+  `jump the gun`, `burn the midnight oil`, `go the extra mile`, `it is crucial to`,
+  `it is worth noting`). The tier remains strictly data-only and freeze-safe:
+  `push()` routes advise entries straight to `suggestList` and NEVER into
+  `phraseList`, so `scanStiffPhrases` cannot see them and scores cannot move.
+  **The `register` DEDUCTION stays model-gated BY DESIGN**: `sourceRegister` charges
+  only a suggestDb phrase the MODEL replaced, and Pass 1 is grammar-only, so it is
+  ~always 0 offline. That is deliberate — an author must never be docked for
+  acceptable English; do not "fix" it by charging phrases left in place. Section 17
+  of `npm test` is the regression guard (non-stub size, no auto-tier overlap,
+  advise-only-never-edits, notes fire, kind/domain-aware copy).
+- **Dialect detection (`detectDialect`, diagnostic only — never edits)**: a CLOSED
+  list of high-signal UK spellings, tested CA → AU → UK → US because Canadian and
+  Australian English use UK spellings (every Canadian text with "colour" used to
+  report UK). 2026-10-03: the list omitted `foetus` — the most distinctively
+  British spelling in the language — so a UK academic passage using it twice
+  reported "US" on the offline/rescue path; it now also covers `haemorrhage`,
+  `gynaecolog*`, `orthopaedic*`, `anaemi*`, `oedema`, `gonorrhoea`, plus the
+  `-our`/`-re-`/`-ll-`/`-ise` families. Two traps are load-bearing: there must be NO
+  generic `\w+is(ed|es|ing)` pattern (it also matches ADVISE, REVISE, COMPRISE,
+  PROMISE, PRECISE, CONCISE — correct US English), and no `[sd]?` suffix may include
+  a bare "es" (`analyses` is the ordinary US plural of "analysis"). `fetus`, `grey`
+  and `analyses` are accepted US spellings and are deliberately NOT markers. The
+  chunked-response merges in `callGeminiWithChunking` / `callProviderWithChunking`
+  fall back to `detectDialect(bodyText)` instead of a hardcoded `"US"`.
+- **Provider label (2026-10-03)**: `ToolPage` renders `Provider: {result.provider}` and
+  used to append the winning attempt's name unconditionally, printing
+  `gemini (gemini)`. It now renders the parenthetical only when the attempt differs
+  from the outer label (forward-compatible if `result.provider` ever becomes a
+  composite rotation label).
 - **Phantom-echo dedup (2026-09-22)**: the ingest path scrubs empty-original
   sentences whose `revised` verbatim-repeats the previous real sentence
   (whitespace/case-normalized), and `rebuildFinalVersion` skips the same echo
@@ -419,8 +461,11 @@ Full verification matrix (required before ANY deploy):
    grammar/punctuation layer fixtures incl. the pinned 89→98 user sample, the
    parity gate in section 12, the severity-rubric + Tier-B classifier pins
    in section 13, section 14 — the revision-side duplication meter + the
-   inflected verb+prep rules, and section 15 — the doubled-word WRITE in the
-   certified pass incl. every deliberate-repetition guard; 174 checks total)
+   inflected verb+prep rules, section 15 — the doubled-word WRITE in the
+   certified pass incl. every deliberate-repetition guard, section 16 —
+   stream integrity, section 17 — the advise-only tier (non-stub, no auto-tier
+   overlap, never edits, kind/domain-aware register notes) and section 18 —
+   `detectDialect` UK markers vs the US false-positive traps; 239 checks total)
 4. `npm run consistency` (`scripts/consistency-check.mjs`): offline determinism ×3 per
    corpus fixture, coverage thresholds per field, Lolita-untouched invariant, re-banded
    reference pins (incl. military 76→98, success-criteria 78→98, grammar 72→98),
