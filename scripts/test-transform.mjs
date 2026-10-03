@@ -165,10 +165,12 @@ const extracted = [
   extractVarObject(INDEX_SRC, "SEMANTIC_FUNCTION_WORDS"),
   extractFunction(INDEX_SRC, "addedContentWords"),
   extractFunction(INDEX_SRC, "applyDatabaseNativization"),
+  extractVar(INDEX_SRC, "DUP_FUNCTION_WORDS"),
+  extractFunction(INDEX_SRC, "countDoubledFunctionWords"),
 ].join("\n");
 
 const api = new Function(
-  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, fixCommonMisspellings, countMisspellings, resolveBandedScores, DEDUCTION_RULES, classifyRealEdits, applyDeductions, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords };"
+  extracted + "\n;return { DEFAULT_DATABASES, escapeRegExp, normalizeSentenceKey, replaceOutsideQuotes, fixCommonMisspellings, countMisspellings, resolveBandedScores, DEDUCTION_RULES, classifyRealEdits, applyDeductions, buildNativizationMaps, applyDatabaseNativization, boldHeadingSentences, addedContentWords, countDoubledFunctionWords };"
 )();
 
 // --- load + merge databases exactly like the client (ToolPage) ---------------
@@ -758,6 +760,75 @@ section("13. severity-weighted deduction rubric + Tier-B classifier");
     check("Tier-A writes 'discuss about' -> 'discuss'", !out.finalVersion.includes("discuss about"), true);
     check("unbalanced bracket persists (count-only, never auto-fixed)", out.finalVersion.includes("Sport, 1996) for"), true);
     check("punctuation deduction charged on BOTH sides (paren left in)", !!(out.rubric && out.rubric.deductions && out.rubric.deductions.revised && out.rubric.deductions.revised.punctuation), true);
+  }
+}
+
+// Live defects found 2026-10-03 by probing the deployed worker end to end:
+//   (a) the revision ledger hardcoded duplication to 0, so a doubled word that
+//       survived to finalVersion scored 98/98 while shipping the slip, and the
+//       hard 85 duplicate ceiling could never fire on a revision;
+//   (b) VERB_PREP_CORRECTIONS matched only base forms, so "discussed about",
+//       "comprised of" and "emphasised on" reached the shipped text (past tense
+//       is the commonest form in academic prose). Section 13 only tested the
+//       base form, which is why CI stayed green.
+// Policy: duplication is COUNT-ONLY (no new write rule); the verb+prep
+// inflections are write fixes that must preserve the author's verb form.
+section("14. revision-side duplication meter + inflected verb+prep");
+{
+  const dup = api.countDoubledFunctionWords;
+  {
+    check("catches 'the the'", dup("Note that the the team met."), 1);
+    check("catches 'of of'", dup("a matter of of concern"), 1);
+    check("catches 'and and'", dup("the result and and the claim"), 1);
+    check("counts every occurrence", dup("the the team and and the plan of of"), 3);
+    check("case-insensitive", dup("The the team met."), 1);
+    // Legitimate English doubles must NOT be charged.
+    check("'had had' is legitimate (perfect) -> 0", dup("he had had enough time"), 0);
+    check("'that that' is legitimate (quoted speech) -> 0", dup("she said that that was fine"), 0);
+    check("'very very' is deliberate emphasis -> 0", dup("it is very very important"), 0);
+    // A doubled word straddling a line/paragraph break is not a defect.
+    check("no charge across a paragraph break", dup("drawn from the source.\n\nThe source is thin."), 0);
+    check("clean prose -> 0", dup("The committee reviewed the report and approved the plan."), 0);
+    check("empty input -> 0", dup(""), 0);
+  }
+  {
+    const { default: worker } = await import(pathToFileURL(join(ROOT, "index.js")));
+    const db = { aiDb: [], idiomDb: [], suggestDb: [], lexicalDb: {} };
+    async function run(text) {
+      const req = new Request("https://nativewrite-api.nativewrite-api.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, domain: "academic", databases: db }),
+      });
+      const resp = await worker.fetch(req, {});
+      const raw = await resp.text();
+      const line = raw.split(/\r?\n/).filter((l) => l.trim()).pop() || "{}";
+      let data = JSON.parse(line);
+      while (data && typeof data === "object" && data.result && !data.finalVersion) data = data.result;
+      return data;
+    }
+
+    // (a) The regression that shipped: a surviving doubled function word must be
+    // visible on the REVISION side, not silently reported as 0.
+    const dupOut = await run("The team noted that the the sample was small.");
+    check("doubled word survives (no write rule by policy)", dupOut.finalVersion.includes("the the"), true);
+    check("revision duplication is now MEASURED, not hardcoded 0", dupOut.rubric.axes.duplicates.remaining, 1);
+    check("revision-side duplication deduction charged", dupOut.rubric.deductions.revised.duplication.count, 1);
+    check("source-side duplication still charged", dupOut.rubric.deductions.source.duplication.count, 1);
+    check("revision capped by the hard 85 duplicate ceiling", dupOut.revisedScore <= 85, true);
+
+    // Clean text must NOT be charged on either side (no false-positive regression).
+    const cleanOut = await run("The team noted that he had had enough time to review the sample.");
+    check("'had had' text: zero duplication on BOTH sides", cleanOut.rubric.axes.duplicates.source + cleanOut.rubric.axes.duplicates.remaining, 0);
+    check("'had had' text: no duplication deduction on the revision", cleanOut.rubric.deductions.revised.duplication, undefined);
+
+    // (b) Inflected verb+preposition forms must fire AND keep the verb form.
+    const vp = await run("The committee discussed about the plan and the study comprised of two parts, so the author emphasised on the evidence.");
+    check("'discussed about' -> 'discussed'", !vp.finalVersion.includes("discussed about"), true);
+    check("'comprised of' -> 'comprised'", !vp.finalVersion.includes("comprised of"), true);
+    check("'emphasised on' -> 'emphasised'", !vp.finalVersion.includes("emphasised on"), true);
+    check("verb form PRESERVED (no de-inflection to 'discuss')", /\bdiscussed\b/.test(vp.finalVersion), true);
+    check("3rd-person 'discusses about' fires", !/\bdiscusses about\b/.test(await run("The committee discusses about the plan.").then((r) => r.finalVersion)), true);
   }
 }
 

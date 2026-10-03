@@ -2835,11 +2835,17 @@ var GRAMMAR_PREPOSITIONS = [
 // These WRITE (certified editor) AND count (grammar class), quote-safe. Verb
 // chains like "sit on meetings" are deliberately NOT here — a preposition swap
 // is instead evidenced by Tier-B classification of the model's edit.
+// TIER-A verb+preposition collocations. Each rule now matches the FULL
+// inflection set (base / -s / -ed / -ing) — past tense is the commonest form in
+// academic prose, and the previous base-only patterns let "discussed about",
+// "comprised of" and "emphasised on" reach the shipped text. `good` strips only
+// the stranded preposition and PRESERVES the author's verb form, so
+// "discussed about" -> "discussed" (never de-inflected back to "discuss").
 var VERB_PREP_CORRECTIONS = [
-  { re: /\bdiscuss\s+about\b/gi, good: function (m) { return "discuss"; } },
-  { re: /\bemphas[ei]z[ei]s?\s+on\b/gi, good: function (m) { return m[0].replace(/\s+on\b/i, ""); } },
-  { re: /\bmention\s+about\b/gi, good: function (m) { return "mention"; } },
-  { re: /\bcompris[ei]s?\s+of\b/gi, good: function (m) { return m[0].replace(/\s+of\b/i, ""); } },
+  { re: /\bdiscuss(?:es|ed|ing)?\s+about\b/gi, good: function (m) { return m[0].replace(/\s+about\b/i, ""); } },
+  { re: /\bemphasi[sz](?:e|es|ed|ing)\s+on\b/gi, good: function (m) { return m[0].replace(/\s+on\b/i, ""); } },
+  { re: /\bmention(?:s|ed|ing)?\s+about\b/gi, good: function (m) { return m[0].replace(/\s+about\b/i, ""); } },
+  { re: /\bcompris(?:e|es|ed|ing)\s+of\b/gi, good: function (m) { return m[0].replace(/\s+of\b/i, ""); } },
 ];
 
 // Count-only, never-write punctuation defect: unbalanced parentheses / square
@@ -2852,6 +2858,45 @@ function countUnbalancedBrackets(s) {
     else if (c === ")" || c === "]") close++;
   }
   return open !== close ? 1 : 0;
+}
+
+// Count-only duplicate-word meter (NOT a write rule — the meter-only policy of
+// 2026-10-03 keeps the certified layer out of this). A doubled
+// article / preposition / conjunction / pronoun / auxiliary ("the the", "of of",
+// "and and") is always a slip, so it docks whichever side actually shows it.
+// Deliberately NARROWER than the historical /\b(\w+)\s+\1\b/ detector:
+//   - `had` is excluded — "he had had enough" is correct English;
+//   - adverbs/intensifiers are excluded — "very very" is deliberate emphasis;
+//   - `that` is excluded — "that that" is ordinary in quoted speech;
+//   - the gap must be HORIZONTAL whitespace, so a doubled word straddling a line
+//     or paragraph break ("...of the\n\nThe study") is never charged.
+// The revision side is measured with this same function, so a duplicate that
+// survives to `finalVersion` docks the REVISION too instead of the revision
+// silently reporting 0 and printing 98 on text that still ships the slip.
+var DUP_FUNCTION_WORDS = [
+  "a", "an", "the",
+  "and", "or", "but", "nor", "yet",
+  "of", "in", "on", "at", "to", "by", "with", "from", "as", "into", "onto",
+  "than", "between", "among", "through", "during", "against", "about", "over",
+  "under", "for", "per", "via",
+  "is", "are", "was", "were", "be", "been", "being", "am",
+  "has", "have", "will", "would", "can", "could", "should", "may", "might",
+  "must", "do", "does", "did",
+  "it", "its", "he", "she", "they", "we", "you", "them", "his", "her",
+  "their", "our", "your", "this", "these", "those",
+];
+function countDoubledFunctionWords(s) {
+  if (!s) return 0;
+  // Built per call (not cached at module scope) so the /g lastIndex can never
+  // leak between calls, and so the meter stays a pure function of its input.
+  // The alternation is captured ONCE and back-referenced, so only a word
+  // doubled IMMEDIATELY after itself counts. (Two separate alternations would
+  // match any adjacent pair of function words — "it is", "of the" — and charge
+  // virtually every sentence.)
+  var words = DUP_FUNCTION_WORDS.join("|");
+  var re = new RegExp("\\b(" + words + ")[^\\S\\n]+\\1\\b", "gi");
+  var hits = String(s).match(re);
+  return hits ? hits.length : 0;
 }
 
 // Applies the grammar layer to a prose block; quote-safe, footnote lines must be
@@ -4329,7 +4374,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
   // here — a quality score is measured, never guessed, and a weak provider that
   // under-rated clean input previously pinned production originals to the 62
   // floor while a lone cosmetic swap granted a +9 revised bump.
-  var hasDuplicateWords = /\b(\w+)\s+\1\b/.test(originalText);
+  var sourceDupHits = countDoubledFunctionWords(originalText);
   var remainingSpelling = countMisspellings(sentences.map(function (s) { return s.revised || ""; }).join(" "));
   var sourceSpelling = countMisspellings(bodyOnlyOriginal);
   var stiffMaps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
@@ -4545,12 +4590,18 @@ async function ensureValidResult(parsed, originalText, options, env) {
     wordChoice: sourceStiffAll + evidenceClassCounts.wordChoice,
     punctuation: sourcePunctHits + evidenceClassCounts.punctuation,
     capitalization: sourceCapsHits + evidenceClassCounts.capitalization,
-    duplication: hasDuplicateWords ? 1 : 0, register: sourceRegister
+    duplication: sourceDupHits, register: sourceRegister
   };
+  // The revision is re-measured, never assumed clean: a duplicated function word
+  // that reached finalVersion docks the revision (and trips the hard 85 ceiling)
+  // rather than being silently reported as 0.
+  var revisedDupHits = countDoubledFunctionWords(
+    typeof bodyFinalForWords === "string" && bodyFinalForWords ? bodyFinalForWords : finalVersion
+  );
   var revDefects = {
     spelling: remainingSpelling, grammar: revisedGrammarHits,
     wordChoice: revisedStiffAll, punctuation: revisedPunctHits,
-    capitalization: revisedCapsHits, duplication: 0, register: 0
+    capitalization: revisedCapsHits, duplication: revisedDupHits, register: 0
   };
   var sourceDeductRes = applyDeductions(sourceDefects);
   var revDeductRes = applyDeductions(revDefects);
@@ -4669,9 +4720,9 @@ async function ensureValidResult(parsed, originalText, options, env) {
         rulesConsumed: nativizedRuleCount,
       },
       duplicates: {
-        source: hasDuplicateWords ? 1 : 0, remaining: 0,
-        sourceHealth: axisHealth("duplicates", 0, proseSentenceCount, hasDuplicateWords),
-        remainingHealth: 100,
+        source: sourceDupHits, remaining: revisedDupHits,
+        sourceHealth: axisHealth("duplicates", 0, proseSentenceCount, sourceDupHits > 0),
+        remainingHealth: axisHealth("duplicates", 0, proseSentenceCount, revisedDupHits > 0),
       },
     },
     banding: {

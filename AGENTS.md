@@ -253,8 +253,14 @@ Deterministic contract (must never drift):
   spelling + duplicates; revision = the deterministic remainder). **Tier A** =
   the certified editor==meter shapes, now incl. unbalanced `(`/`)` `[`/`]`
   counting (count-only, never auto-fixed — docks BOTH sides when it persists)
-  and the curated `VERB_PREP_CORRECTIONS` (discuss about, emphasize on, mention
-  about, comprise of — write+count). **Tier B** = `classifyRealEdits(after,
+  and the curated `VERB_PREP_CORRECTIONS` (discuss/mention about, emphasise on,
+  comprise of — write+count). All four verb+prep patterns match the FULL
+  inflection set (base / -s / -ed / -ing) and strip ONLY the stranded
+  preposition, preserving the author's verb form (`discussed about` →
+  `discussed`, never de-inflected to `discuss`): past tense is the commonest form
+  in academic prose, and the 2026-10-03 live probe caught the base-only patterns
+  letting `discussed about` / `comprised of` / `emphasised on` reach the shipped
+  text (section 13's fixture only tested the base form, so CI stayed green). **Tier B** = `classifyRealEdits(after,
   before)`: a real Pass-1 sentence change not already caught by Tier A is
   attributed to a class (modal/aux/verb-inflection or preposition swap →
   grammar; content-word swap → word choice; else phrasing) and charged to the
@@ -263,6 +269,21 @@ Deterministic contract (must never drift):
   is always dropped (the atomic spell meter owns it). **Register** docks only a
   suggestDb phrase present in the source the model replaced (never a phrase
   left in place).
+  **Duplication is measured on BOTH sides (2026-10-03)** — it used to be
+  measured on the source only, with the revision's class hardcoded to `0`, so a
+  doubled word that survived to `finalVersion` scored 98/98 while shipping the
+  slip and the hard 85 duplicate ceiling could never fire on a revision. Both
+  sides now run the same `countDoubledFunctionWords`, which is deliberately
+  NARROWER than the historical `/\b(\w+)\s+\1\b/`: it counts only a doubled
+  article / preposition / conjunction / pronoun / auxiliary via a single
+  captured alternation back-referenced (`\1`) — two separate alternations would
+  match any adjacent function-word pair like "it is" / "of the" and charge
+  virtually every sentence — it excludes `had` ("he had had enough"), `that`
+  ("she said that that"), and adverbs ("very very"), and the gap must be
+  horizontal whitespace so a word straddling a line/paragraph break is never
+  charged. It stays **COUNT-ONLY: no write rule**, by explicit user decision
+  (2026-10-03) — the certified layer must not auto-edit doublings, so the
+  revision is simply scored honestly instead.
   Then the BAND snaps the meter onto the display scale —
   **`originalScore` prints 98 ONLY when the source is measured flawless
   (raw >= 98) AND left untouched (parity gate, 2026-09-29); a
@@ -373,8 +394,9 @@ Full verification matrix (required before ANY deploy):
 3. `npm test` (`scripts/test-transform.mjs`, includes heading + added-word-note
    regressions, the DB-only Pass-2 suite, section 11 — the certified
    grammar/punctuation layer fixtures incl. the pinned 89→98 user sample, the
-   parity gate in section 12, and the severity-rubric + Tier-B classifier pins
-   in section 13)
+   parity gate in section 12, the severity-rubric + Tier-B classifier pins
+   in section 13, and section 14 — the revision-side duplication meter + the
+   inflected verb+prep rules; 143 checks total)
 4. `npm run consistency` (`scripts/consistency-check.mjs`): offline determinism ×3 per
    corpus fixture, coverage thresholds per field, Lolita-untouched invariant, re-banded
    reference pins (incl. military 76→98, success-criteria 78→98, grammar 72→98),
@@ -391,3 +413,16 @@ Full verification matrix (required before ANY deploy):
    `business`, `general`, `military`, `grammar`, `success-criteria`, `kingston`);
    driven by the
    CORPUS table at the top of `scripts/consistency-check.mjs`.
+7. **Live end-to-end payload probe** (cheap, anonymous, no usage increment). Steps
+   1–6 CANNOT see two whole classes of defect: anything that only appears when a
+   real provider answers, and anything gated on the client DB payload. On
+   2026-10-03 this probe found both a blind spot in the scoring ledger and a
+   regex whose own fixture tested the wrong inflection — with 120/120 tests and
+   62/62 consistency green. Two gotchas: the worker replies
+   `application/x-ndjson` (progress events terminated by `ev: "final"`), so
+   decode the body as UTF-8 and take the LAST line — PowerShell hands you a
+   `byte[]` here and silently JSON-parses it into an array, which reads as
+   `has <field>: False` for every field; and you MUST send `databases`
+   (`aiDb` / `idiomDb` / `suggestDb` / `lexicalDb`) exactly as `ToolPage` builds
+   it, or the worker silently falls back to its 25-entry `DEFAULT_DATABASES`
+   floor and reports `stiffness: 0` with 0 rules fired.
