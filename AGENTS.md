@@ -32,6 +32,14 @@ The package name is still the legacy `react-example` and worker mame internally
   name `react-example`) and instead publishes a STATIC SPA worker that never runs
   `index.js` — the app would silently keep hitting the last real transform deploy.
 - `npm run clean` — `rm -rf dist`.
+- `npm run profile` — per-fixture warm CPU table (ms/request and ms/1000 words) for the
+  real worker driven offline with the databases the app ships.
+- `npm run profile:mem` — peak RSS + heap for ONE request on the 812-word fixture. This
+  is the number that matters; see "Resource ceilings" below.
+- `npm run profile:cmp` — output-identity gate: runs `index.js` and `$WORKER_SRC`
+  (default: `index.js`) over the whole corpus and asserts `finalVersion`, both scores,
+  `provider`, `diagnostics` and the full `sentences` array are byte-identical. **Any
+  optimization must pass this.**
 
 ### Important routing notes
 
@@ -149,6 +157,56 @@ Keep API keys out of commits.
   `nativewrite-api` worker. Don't confuse `WORKER_URL` (vite proxy) with `VITE_WORKER_URL`.
 - No AGENTS.md existed before this file; git history uses conventional commits
   (`fix: ...`, `Major overhaul: ...`).
+- **`scripts/test-transform.mjs` extracts worker functions by SOURCE TEXT and evals
+  them**, it does not import `index.js` for most sections. So any module-level state a
+  worker function touches (a `WeakMap` cache, a shared table, a constant) must ALSO be
+  added to the `extracted` array in that harness, or every test using it dies with a
+  bare `ReferenceError`. This bit twice: Phase 1 added `__mapsIdentityCache` and the
+  suite was red at HEAD (f7f4a37) until f4f1062. When you add module-level state to a
+  function listed in that array, check the harness in the same commit and run
+  `npm test` — a green `node --check` proves nothing here.
+
+## Resource ceilings — the binding constraint is MEMORY, not CPU
+
+This was misdiagnosed as a CPU problem for a week, so the reasoning is recorded.
+Cloudflare gives Workers Free **10 ms** CPU/request and Paid **30 s**, but BOTH plans
+share a **128 MB per-invocation memory limit**. The original symptom was
+`outcome: exceededCpu` on Free, which reads like a CPU problem; it was not. The real
+failure mode is HTTP 503 `Worker exceeded resource limits`, and it is **payload-shaped**:
+
+| request | outcome |
+|---|---|
+| ~175 words, no `databases` (worker floor) | ~72 MB → succeeds |
+| ~175 words, full DB payload as shipped | ~135 MB → **503** |
+| 812 words, full DB payload | ~183 MB (was) → **503** |
+
+That is why live transforms succeeded **5/5 with no database payload and 0/5 with the
+real one** while every offline suite stayed green: nothing offline measured memory.
+The `$5/mo` Paid upgrade fixed the CPU ceiling and the `exceededCpu` symptom but did
+**nothing** for the 503, because memory is shared.
+
+The cost is RegExp compilation, which allocates in V8's native heap — so
+`--max-old-space-size` and heapUsed do not see it, only RSS does. A compiled RegExp
+costs ~2.4 KB RSS, and the pipeline was holding ~11.2k alive at once.
+
+**Current state (812-word fixture, full DBs): peak RSS 101 MB, 167 ms CPU/request.**
+`npm run consistency` now enforces peak RSS ≤ 115 MB and ≤ 600 ms/1000 words, each in a
+child process, as ordinary counted checks — so a future pipeline or database growth
+fails CI instead of production. The CPU bound alone could NOT have caught this: the
+pre-Phase-2 worker measured 157 MB (fatal) at 481 ms/1000 words (comfortably passing).
+
+Rules that follow from this:
+- **Adding database entries is a memory change, not just a data change.** The reachability
+  index in `_buildNativizationMaps` keeps per-request cost proportional to what a
+  document can actually reach, but the maps themselves are still built eagerly per request.
+- **Never reintroduce an eager "compile every rule" pass.** `scanStiffPhrases` and
+  `applyDatabaseNativization` compile matchers ON DEMAND and cache them on the rule
+  (`phraseMatcherFor`). Restoring the old eager build is what caused the outage.
+- The `first`-token index alone is **not** enough and looks like it works: the databases
+  are full of clause-level entries, so `it` heads 2010 phrases and `this` 1392, leaving
+  74% of the rule base reachable. The `key` token (longest word) is what takes it to 4.7%.
+- Diagnose with `npm run profile:mem` first. If peak RSS is near 128 MB, latency is a
+  red herring.
 
 ## Determinism contract (two-pass rebuild, 2026-09-14)
 
@@ -469,7 +527,10 @@ Full verification matrix (required before ANY deploy):
 4. `npm run consistency` (`scripts/consistency-check.mjs`): offline determinism ×3 per
    corpus fixture, coverage thresholds per field, Lolita-untouched invariant, re-banded
    reference pins (incl. military 76→98, success-criteria 78→98, grammar 72→98),
-   DB-only/dialect/footnote asserts, residual-honesty. Live provider audit is opt-in:
+   DB-only/dialect/footnote asserts, residual-honesty, **and the resource budgets**
+   (peak RSS ≤ 115 MB and ≤ 600 ms/1000 words on the 812-word fixture, run in child
+   processes via `scripts/perf/profile.mjs` and counted as ordinary checks — 64 total).
+   Live provider audit is opt-in:
    `npm run consistency:live` (consumes quota; asserts live scores invariant, bytes
    identical when the same provider answers, and the Live-only grammar fixes land).
 5. Local temp suites (not committed): master-test.cjs (83), auditfix-test.cjs (23),
@@ -495,3 +556,12 @@ Full verification matrix (required before ANY deploy):
    (`aiDb` / `idiomDb` / `suggestDb` / `lexicalDb`) exactly as `ToolPage` builds
    it, or the worker silently falls back to its 25-entry `DEFAULT_DATABASES`
    floor and reports `stiffness: 0` with 0 rules fired.
+8. **Output-identity gate for ANY optimization** (`npm run profile:cmp`). The offline
+   suites assert *contracts*; this asserts the optimization changed nothing at all,
+   by running the committed `index.js` and `$WORKER_SRC` over the whole corpus and
+   diffing `finalVersion`, both scores, `provider`, `diagnostics` and the full
+   `sentences` array. Phase 1 and Phase 2 both reported `ALL IDENTICAL`. Any perf
+   change to the deterministic layer must do the same — a divergence here is a bug,
+   never a tolerance to tune. `scripts/perf/big800.txt` (812 words, the free tier's
+   cap) is pinned there rather than in `scripts/corpus/` because it is a resource
+   fixture, not a scoring one.
