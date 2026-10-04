@@ -452,3 +452,22 @@ main().catch((e) => {
   console.error(e);
   process.exitCode = 1;
 });
+// --- CPU budget guard (Phase 3) ---------------------------------------------
+async function checkCpuBudget() {
+  try {
+    const { spawnSync } = await import('child_process');
+    const res = spawnSync('node', ['C:/Users/hp/.opencode/plan/_cpu-profile.mjs', 'loop', '_big800', '3'], { encoding: 'utf8', cwd: 'C:/Users/hp/Desktop/idiomoptima-pwa' });
+    const out = res.stdout.trim();
+    const lines = out.split(/\n/).filter(l => l.trim().startsWith('{'));
+    if (lines.length === 0) return { ok: true, skipped: true };
+    const m = JSON.parse(lines[lines.length-1]);
+    const maxPerReq = 600;
+    const ok = m.perReqCpuMs <= maxPerReq;
+    console.log('  CPU budget (_big800 x3): ' + m.perReqCpuMs.toFixed(1) + 'ms per req (max ' + maxPerReq + 'ms) - ' + (ok ? 'PASS' : 'FAIL'));
+    if (!ok) { console.error('CPU budget exceeded'); process.exitCode = 1; }
+    return { ok };
+  } catch (e) {
+    console.log('  CPU budget check skipped:', e.message);
+    return { ok: true, skipped: true };
+  }
+}

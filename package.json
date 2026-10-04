@@ -13,7 +13,8 @@
     "consistency": "node scripts/consistency-check.mjs",
     "consistency:live": "node scripts/consistency-check.mjs --live",
     "enrich-databases": "node scripts/enrich-databases.cjs",
-    "deploy": "npm run build && wrangler deploy --config wrangler.toml"
+    "deploy": "npm run build && wrangler deploy --config wrangler.toml",
+    "cpu": "node C:/Users/hp/.opencode/plan/_cpu-profile.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
