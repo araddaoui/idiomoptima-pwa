@@ -134,6 +134,35 @@ function extractVar(src, name) {
   const openIdx = src.indexOf("[", anchor);
   return `var ${name} =` + extractBalanced(src, openIdx, "[");
 }
+// Pull a whole `var NAME = <expr>;` statement (not an array/object literal) so
+// module-level caches survive extraction. Phase 1 memoized
+// buildNativizationMaps behind a module-level `WeakMap`; because this harness
+// re-assembles the worker functions by source text rather than importing the
+// module, that declaration has to travel with them or every call dies with
+// "ReferenceError: __mapsIdentityCache is not defined".
+function extractVarStatement(src, name) {
+  const anchor = src.indexOf(`var ${name} =`);
+  if (anchor === -1) throw new Error(`var ${name} not found in index.js`);
+  let i = anchor + `var ${name} =`.length;
+  let depth = 0;
+  let prev = "=";
+  for (; i < src.length; i++) {
+    const c = src[i];
+    if (c === "(" || c === "[" || c === "{") depth++;
+    else if (c === ")" || c === "]" || c === "}") depth--;
+    else if (c === '"' || c === "'") { i = skipString(src, i, c) - 1; prev = "s"; continue; }
+    else if (c === "`") { i = skipTemplate(src, i) - 1; prev = "s"; continue; }
+    else if (c === "/" && isRegexStart(prev)) { i = skipRegex(src, i) - 1; prev = "s"; continue; }
+    else if (c === ";" && depth === 0) return src.slice(anchor, i + 1);
+    if (c === "(") prev = "(";
+    else if (c === "{") prev = "{";
+    else if (c === "[") prev = "[";
+    else if (c === "," || c === "=" || c === ":") prev = c;
+    else if (isIdentOrDigit(c)) prev = "id";
+    else if (c !== " ") prev = c;
+  }
+  throw new Error(`unterminated var ${name} in index.js`);
+}
 
 function extractVariableDecls(src, startMarker, endMarker) {
   const start = src.indexOf(startMarker);
@@ -161,6 +190,10 @@ const extracted = [
   extractFunction(INDEX_SRC, "tokenDiffTokens"),
   extractFunction(INDEX_SRC, "classifyRealEdits"),
   extractFunction(INDEX_SRC, "applyDeductions"),
+  // The memoizing wrapper delegates to the real builder and caches on a
+  // module-level WeakMap, so both halves must be extracted.
+  extractVarStatement(INDEX_SRC, "__mapsIdentityCache"),
+  extractFunction(INDEX_SRC, "_buildNativizationMaps"),
   extractFunction(INDEX_SRC, "buildNativizationMaps"),
   extractVarObject(INDEX_SRC, "SEMANTIC_FUNCTION_WORDS"),
   extractFunction(INDEX_SRC, "addedContentWords"),
