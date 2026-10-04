@@ -14,7 +14,9 @@
     "consistency:live": "node scripts/consistency-check.mjs --live",
     "enrich-databases": "node scripts/enrich-databases.cjs",
     "deploy": "npm run build && wrangler deploy --config wrangler.toml",
-    "cpu": "node C:/Users/hp/.opencode/plan/_cpu-profile.mjs"
+    "profile": "node scripts/perf/profile.mjs",
+    "profile:mem": "node scripts/perf/profile.mjs mem big800",
+    "profile:cmp": "node scripts/perf/profile.mjs cmp"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

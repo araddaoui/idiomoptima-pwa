@@ -40,6 +40,7 @@
 // Runs of the live mode consume real provider quota; offline mode is free.
 
 import { readFileSync, mkdtempSync, writeFileSync, readdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, dirname, basename } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -432,6 +433,10 @@ async function main() {
     );
   }
 
+  // Resource budgets run BEFORE the tally so a breach is counted as a failed
+  // check rather than a side-channel warning nobody sees in the summary.
+  await checkResourceBudgets();
+
   console.log("");
   console.log(passes + " passed, " + fails + " failed");
   if (fails > 0) {
@@ -448,26 +453,55 @@ async function main() {
   }
 }
 
+// --- Resource budgets (Phase 3) ------------------------------------------------
+// The truncated-stream check catches the SYMPTOM of a resource breach; these catch
+// the CAUSE, so a future addition to the pipeline or the databases fails here
+// instead of in production.
+//
+// MEMORY is the binding constraint, not CPU: Workers Free AND Paid share one
+// 128 MB per-invocation ceiling, and blowing it returns HTTP 503 "exceeded
+// resource limits". That is exactly the failure mode that had live transforms
+// succeeding 5/5 with no database payload and failing 0/5 with the real one, for
+// weeks, while every offline suite stayed green -- because none of them measured
+// memory. So the memory gate is the important one; the CPU gate is the cheap
+// secondary canary.
+//
+// Both run in a CHILD process: peak RSS of this harness would be polluted by the
+// corpus it has already loaded. The child is `scripts/perf/profile.mjs`, in-repo
+// and repo-relative -- an earlier version of this check pointed at a path outside
+// the repository, so it silently reported "skipped" on every machine but one.
+const MEM_BUDGET_MB = 115; // 128 MB hard ceiling, minus headroom for measurement noise
+const CPU_BUDGET_MS_PER_1K_WORDS = 600;
+const PROFILE = join(dirname(fileURLToPath(import.meta.url)), "perf", "profile.mjs");
+
+function runProfiler(args) {
+  const res = spawnSync(process.execPath, [PROFILE, ...args], { encoding: "utf8", cwd: ROOT });
+  if (res.error || res.status !== 0) {
+    const why = res.error ? res.error.message : (res.stderr || "").trim().split("\n").slice(-3).join(" ");
+    throw new Error("profiler failed (" + args.join(" ") + "): " + why);
+  }
+  const line = res.stdout.trim().split("\n").filter((l) => l.trim().startsWith("{")).pop();
+  if (!line) throw new Error("profiler produced no JSON (" + args.join(" ") + ")");
+  return JSON.parse(line);
+}
+
+async function checkResourceBudgets() {
+  console.log("");
+  console.log("== Resource budgets (Workers per-invocation ceilings) ==");
+  // The 812-word fixture is the free tier's 800-word cap: the largest document a
+  // free user can submit, and where the memory ceiling was actually breached.
+  const mem = runProfiler(["mem", "big800"]);
+  check("peak RSS on 812 words under " + MEM_BUDGET_MB + " MB (Workers ceiling 128 MB)",
+    mem.peakRssMB <= MEM_BUDGET_MB,
+    mem.peakRssMB + " MB peak, " + mem.words + " words, " + mem.sentences + " sentences");
+
+  const cpu = runProfiler(["loop", "big800", "3"]);
+  check("CPU under " + CPU_BUDGET_MS_PER_1K_WORDS + " ms/1000 words",
+    cpu.cpuPerKWord <= CPU_BUDGET_MS_PER_1K_WORDS,
+    cpu.perReqCpuMs + " ms/request, " + cpu.cpuPerKWord + " ms/1000 words");
+}
+
 main().catch((e) => {
   console.error(e);
   process.exitCode = 1;
 });
-// --- CPU budget guard (Phase 3) ---------------------------------------------
-async function checkCpuBudget() {
-  try {
-    const { spawnSync } = await import('child_process');
-    const res = spawnSync('node', ['C:/Users/hp/.opencode/plan/_cpu-profile.mjs', 'loop', '_big800', '3'], { encoding: 'utf8', cwd: 'C:/Users/hp/Desktop/idiomoptima-pwa' });
-    const out = res.stdout.trim();
-    const lines = out.split(/\n/).filter(l => l.trim().startsWith('{'));
-    if (lines.length === 0) return { ok: true, skipped: true };
-    const m = JSON.parse(lines[lines.length-1]);
-    const maxPerReq = 600;
-    const ok = m.perReqCpuMs <= maxPerReq;
-    console.log('  CPU budget (_big800 x3): ' + m.perReqCpuMs.toFixed(1) + 'ms per req (max ' + maxPerReq + 'ms) - ' + (ok ? 'PASS' : 'FAIL'));
-    if (!ok) { console.error('CPU budget exceeded'); process.exitCode = 1; }
-    return { ok };
-  } catch (e) {
-    console.log('  CPU budget check skipped:', e.message);
-    return { ok: true, skipped: true };
-  }
-}
