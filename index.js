@@ -2671,7 +2671,7 @@ function boldHeadingSentences(sentences) {
 //     edited, never counted as a defect, never credited in the census.
 // The gates below (stoplists, singletons, collocations, word boundaries) apply
 // to BOTH tiers; the only difference is what happens to a match.
-function buildNativizationMaps(dbs, domain) {
+function _buildNativizationMaps(dbs, domain) {
   var maps = { aiMap: {}, sentenceMap: {}, phraseList: [], suggestList: [] };
   if (!dbs || typeof dbs !== "object") return maps;
 
@@ -2742,6 +2742,31 @@ function buildNativizationMaps(dbs, domain) {
   maps.phraseList.sort(function (a, b) { return b.src.length - a.src.length; });
   maps.suggestList.sort(function (a, b) { return b.src.length - a.src.length; });
   return maps;
+}
+
+// The map build walks every database entry (~7k on a full client payload) and runs
+// ~6 string/regex operations on each, so it is far too expensive to repeat. It has
+// SEVEN call sites (applyDatabaseNativization, droppedContentWords,
+// addedContentWords, findStiffestSentence, hasDealtWithStiffness,
+// humanizeFlaggedSentences, and the scoring census) and all of them run inside a
+// single request, so an un-memoized build costs 7 full rebuilds per transform.
+//
+// The returned object is read-only after construction, and the SAME `databases`
+// object is threaded through every call site of one request, so caching on object
+// identity is behaviour-preserving: same input -> same maps, and the maps are only
+// ever read. A WeakMap keyed on that object keeps the cache scoped to the request
+// so nothing can leak across requests.
+var __mapsIdentityCache = new WeakMap();
+function buildNativizationMaps(dbs, domain) {
+  if (!dbs || typeof dbs !== "object") return _buildNativizationMaps(dbs, domain);
+  var key = String(domain || "general");
+  var byDomain = __mapsIdentityCache.get(dbs);
+  if (!byDomain) {
+    byDomain = Object.create(null);
+    __mapsIdentityCache.set(dbs, byDomain);
+  }
+  if (!byDomain[key]) byDomain[key] = _buildNativizationMaps(dbs, key);
+  return byDomain[key];
 }
 
 // --- Universal grammar layer (certified editor + residual meter) --------------
@@ -3241,16 +3266,34 @@ function applyDatabaseNativization(sentences, dbs, domain, opts) {
 
     // 2) Phrase-level, word-boundary exact, quote-safe replacements.
     if (!/^".*"$/.test(s.revised.trim())) {
-      var phraseRx = [];
-      for (var i = 0; i < maps.phraseList.length; i++) {
-        var p = maps.phraseList[i];
-        phraseRx.push({ src: escapeRegExp(p.src), tgt: p.tgt, cat: p.cat, len: p.src.length });
+      // Compile each phrase regex ONCE per request instead of once per sentence
+      // per quote-free segment. This block used to rebuild the escaped phrase list
+      // and a fresh `new RegExp(...)` inside the per-sentence loop, i.e.
+      // sentences x segments x ~7k compilations per transform -- the single
+      // largest source of the peak-memory blow-up. The regexes are stateless
+      // between scans as long as `lastIndex` is reset, which is done below and is
+      // exactly equivalent to allocating a new object each time.
+      if (!maps.__phraseRx) {
+        var compiled = [];
+        for (var bi = 0; bi < maps.phraseList.length; bi++) {
+          var bp = maps.phraseList[bi];
+          compiled.push({
+            src: escapeRegExp(bp.src),
+            tgt: bp.tgt,
+            cat: bp.cat,
+            len: bp.src.length,
+            re: new RegExp("\\b" + escapeRegExp(bp.src) + "\\b", "gi")
+          });
+        }
+        maps.__phraseRx = compiled;
       }
+      var phraseRx = maps.__phraseRx;
       s.revised = replaceOutsideQuotes(s.revised, function (seg) {
         var out = seg;
         for (var j = 0; j < phraseRx.length; j++) {
           var item = phraseRx[j];
-          var re = new RegExp("\\b" + item.src + "\\b", "gi");
+          var re = item.re;
+          re.lastIndex = 0;
           var res;
           while ((res = re.exec(out)) !== null) {
             // Correlative safety: skip the swap when this phrase's partner (e.g.
@@ -3580,22 +3623,42 @@ function addedContentWords(originalText, finalText, options) {
 function scanStiffPhrases(text, maps) {
   var out = { keys: [], count: 0 };
   if (!text) return out;
-  var aiRules = [];
-  for (var i = 0; i < maps.phraseList.length; i++) {
-    var p = maps.phraseList[i];
-    if (p.cat === "ai" && p.src.length >= 4) aiRules.push(p.src);
+  // The rule list below is a pure function of `maps`, but it used to be rebuilt on
+  // EVERY call: filter all ~7k entries, SORT ~3.5k AI phrases with a comparator
+  // that ran `.split(/\s+/)` twice per comparison (~86k throwaway arrays per
+  // call), then compile ~3.5k fresh RegExps. scanStiffPhrases has six call sites,
+  // two of which sit in per-sentence loops, so one transform did this ~32 times --
+  // roughly 115k RegExp compilations and millions of short-lived arrays. That
+  // churn is what pushed peak isolate memory past the 128 MB ceiling (shared by
+  // Workers Free AND Paid), which surfaced as HTTP 503 "exceeded resource limits".
+  // Building it once per request on the memoized `maps` object fixes both the CPU
+  // and the memory blow-up without changing a single match.
+  if (!maps.__aiScan) {
+    var aiRules = [];
+    for (var i = 0; i < maps.phraseList.length; i++) {
+      var p = maps.phraseList[i];
+      if (p.cat === "ai" && p.src.length >= 4) aiRules.push(p);
+    }
+    // Longest phrase-first, measured in WORDS (not characters) so a 6-word phrase
+    // still outranks a 5-word one; the comparator runs once per build now.
+    aiRules.sort(function (a, b) { return b.src.split(/\s+/).length - a.src.split(/\s+/).length; });
+    for (var j = 0; j < aiRules.length; j++) {
+      var rule = aiRules[j];
+      rule.rx = new RegExp("\\b" + escapeRegExp(rule.src).split(/\s+/).join("\\s+") + "\\b", "i");
+      rule.wlen = (rule.src.match(/[^\s]+/g) || []).length;
+    }
+    maps.__aiScan = aiRules;
   }
-  aiRules.sort(function (a, b) { return b.split(/\s+/).length - a.split(/\s+/).length; });
+  var rules = maps.__aiScan;
   var matched = {};
   var t = " " + String(text).replace(/\s+/g, " ").replace(/[""\u201C\u201D]+/g, " ") + " ";
-  for (var r = 0; r < aiRules.length; r++) {
-    var ph = aiRules[r];
+  for (var r = 0; r < rules.length; r++) {
+    var ph = rules[r].src;
     if (matched[ph]) continue;
-    var re = new RegExp("\\b" + escapeRegExp(ph).split(/\s+/).join("\\s+") + "\\b", "i");
-    if (re.test(t)) {
+    if (rules[r].rx.test(t)) {
       matched[ph] = 1;
       out.keys.push(ph);
-      out.count += (ph.match(/[^\s]+/g) || []).length;
+      out.count += rules[r].wlen;
     }
   }
   return out;
