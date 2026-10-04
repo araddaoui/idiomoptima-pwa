@@ -27,9 +27,9 @@
 // worker returns byte-identical output (finalVersion, both scores, provider,
 // diagnostics and the full sentences array) across the whole corpus.
 
-import { readFileSync, mkdtempSync, writeFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, dirname } from "node:path";
+import { join, dirname, isAbsolute } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -93,7 +93,17 @@ const CORPUS = [
   { file: "big800.txt", dir: PERF_DIR, domain: "academic", tone: "formal", mode: "academic" },
 ].map((c) => ({ ...c, path: () => join(c.dir || CORPUS_DIR, c.file) }));
 
-const find = (name) => CORPUS.find((c) => c.file === name || c.file === name + ".txt") || CORPUS[0];
+// Resolve a fixture by corpus name, or accept any path so an ad-hoc document
+// (e.g. a 3700-word stress case for the long tail pro/enterprise users can
+// submit, since only the free tier is capped at 800 words) can be measured.
+const find = (name) => {
+  if (!name) return CORPUS.find((c) => c.file === "big800.txt");
+  const known = CORPUS.find((c) => c.file === name || c.file === name + ".txt");
+  if (known) return known;
+  const abs = isAbsolute(name) ? name : join(ROOT, name);
+  if (existsSync(abs)) return { file: name, dir: dirname(abs), path: () => abs, domain: "academic", tone: "formal", mode: "academic" };
+  throw new Error("unknown fixture or path: " + name + " (known: " + CORPUS.map((c) => c.file).join(", ") + ")");
+};
 const mode = process.argv[2] || "table";
 
 if (mode === "mem") {
@@ -118,6 +128,13 @@ if (mode === "mem") {
     sentences: r?.sentences?.length ?? 0,
     rssBeforeMB: +(before / 1048576).toFixed(1),
     peakRssMB: +(peakRss / 1048576).toFixed(1),
+    // The number to gate on. peakRssMB is NOT comparable to the Workers 128 MB
+    // ceiling: it carries this process's own baseline (Node itself, the parsed
+    // worker module and the five database JSON files, ~50 MB) which a real
+    // isolate does not pay the same way. peak-minus-baseline isolates what ONE
+    // transform actually costs, which is both the meaningful figure and the one
+    // that stays comparable across machines and Node versions.
+    requestMB: +((peakRss - before) / 1048576).toFixed(1),
     peakHeapMB: +(peakHeap / 1048576).toFixed(1),
     finalHeapMB: +(after.heapUsed / 1048576).toFixed(1),
   }));

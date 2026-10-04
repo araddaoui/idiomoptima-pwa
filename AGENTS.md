@@ -189,11 +189,30 @@ The cost is RegExp compilation, which allocates in V8's native heap — so
 `--max-old-space-size` and heapUsed do not see it, only RSS does. A compiled RegExp
 costs ~2.4 KB RSS, and the pipeline was holding ~11.2k alive at once.
 
-**Current state (812-word fixture, full DBs): peak RSS 101 MB, 167 ms CPU/request.**
-`npm run consistency` now enforces peak RSS ≤ 115 MB and ≤ 600 ms/1000 words, each in a
-child process, as ordinary counted checks — so a future pipeline or database growth
-fails CI instead of production. The CPU bound alone could NOT have caught this: the
-pre-Phase-2 worker measured 157 MB (fatal) at 481 ms/1000 words (comfortably passing).
+**Do not compare `peakRssMB` to 128 MB directly.** The offline proxy runs in Node, so
+its peak carries ~50 MB of baseline that is an artefact of the measurement (Node
+itself, the parsed worker module, five database JSON files) and that a real isolate
+does not pay the same way. The honest, comparable number is `requestMB` = peak minus
+that baseline, i.e. what one transform actually costs. Measured on the 812-word
+fixture with the full DB payload:
+
+| | request-attributable | raw proxy peak | CPU/request |
+|---|---|---|---|
+| before the token-reachability index | **105 MB** | 156 MB | 391 ms |
+| now | **51 MB** | 101 MB | 167 ms |
+
+A live probe against the deployed worker succeeded at both 812 and 3730 words, so the
+0/5 failure above is **not reproducing** — it was either fixed by the earlier phase or
+predates the current deploy. Do not assume the outage is live; measure it
+(`node scripts/perf/live-probe.mjs`). The long tail is still the risk worth watching:
+only the free tier is capped at 800 words, so a pro user's 3700-word manuscript costs
+**127 MB** request-attributable even now, versus 175 MB before.
+
+`npm run consistency` now enforces ≤ 70 MB request-attributable and ≤ 600 ms/1000 words
+on the 812-word fixture, each in a child process, as ordinary counted checks — so a
+future pipeline or database growth fails CI instead of production. The CPU bound alone
+could NOT have caught this class of failure: the pre-index worker was fatal on memory
+while sitting comfortably inside the CPU budget.
 
 Rules that follow from this:
 - **Adding database entries is a memory change, not just a data change.** The reachability
@@ -205,8 +224,13 @@ Rules that follow from this:
 - The `first`-token index alone is **not** enough and looks like it works: the databases
   are full of clause-level entries, so `it` heads 2010 phrases and `this` 1392, leaving
   74% of the rule base reachable. The `key` token (longest word) is what takes it to 4.7%.
-- Diagnose with `npm run profile:mem` first. If peak RSS is near 128 MB, latency is a
-  red herring.
+- Diagnose with `npm run profile:mem` first and read `requestMB`, not `peakRssMB`. If
+  request-attributable memory is climbing toward the ceiling, latency is a red herring.
+- **Probe the long tail before trusting the 812-word fixture.** The memory budget is
+  pinned on the free tier's cap, but pro/enterprise users have no word cap, so cost per
+  request scales with document length. `node scripts/perf/profile.mjs mem <path>` takes
+  any file path, and `scripts/perf/live-probe.mjs` does the same against the deployed
+  worker (`TEXT_FILE=... N=2`).
 
 ## Determinism contract (two-pass rebuild, 2026-09-14)
 
@@ -528,8 +552,9 @@ Full verification matrix (required before ANY deploy):
    corpus fixture, coverage thresholds per field, Lolita-untouched invariant, re-banded
    reference pins (incl. military 76→98, success-criteria 78→98, grammar 72→98),
    DB-only/dialect/footnote asserts, residual-honesty, **and the resource budgets**
-   (peak RSS ≤ 115 MB and ≤ 600 ms/1000 words on the 812-word fixture, run in child
-   processes via `scripts/perf/profile.mjs` and counted as ordinary checks — 64 total).
+   (≤ 70 MB request-attributable memory and ≤ 600 ms/1000 words on the 812-word fixture,
+   run in child processes via `scripts/perf/profile.mjs` and counted as ordinary checks
+   — 64 total).
    Live provider audit is opt-in:
    `npm run consistency:live` (consumes quota; asserts live scores invariant, bytes
    identical when the same provider answers, and the Live-only grammar fixes land).

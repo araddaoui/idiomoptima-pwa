@@ -470,7 +470,13 @@ async function main() {
 // corpus it has already loaded. The child is `scripts/perf/profile.mjs`, in-repo
 // and repo-relative -- an earlier version of this check pointed at a path outside
 // the repository, so it silently reported "skipped" on every machine but one.
-const MEM_BUDGET_MB = 115; // 128 MB hard ceiling, minus headroom for measurement noise
+//
+// The budget is on REQUEST-ATTRIBUTABLE memory (peak minus the child's baseline),
+// not raw peak RSS: raw peak carries ~50 MB of Node/module/database-parse
+// baseline that is an artefact of the measurement and is not comparable to the
+// Workers ceiling. Calibrated on the 812-word fixture (the free tier's 800-word
+// cap): 50 MB now, 105 MB before the token-reachability index.
+const MEM_BUDGET_MB = 70;
 const CPU_BUDGET_MS_PER_1K_WORDS = 600;
 const PROFILE = join(dirname(fileURLToPath(import.meta.url)), "perf", "profile.mjs");
 
@@ -491,9 +497,10 @@ async function checkResourceBudgets() {
   // The 812-word fixture is the free tier's 800-word cap: the largest document a
   // free user can submit, and where the memory ceiling was actually breached.
   const mem = runProfiler(["mem", "big800"]);
-  check("peak RSS on 812 words under " + MEM_BUDGET_MB + " MB (Workers ceiling 128 MB)",
-    mem.peakRssMB <= MEM_BUDGET_MB,
-    mem.peakRssMB + " MB peak, " + mem.words + " words, " + mem.sentences + " sentences");
+  check("memory for one 812-word transform under " + MEM_BUDGET_MB + " MB (Workers ceiling 128 MB)",
+    mem.requestMB <= MEM_BUDGET_MB,
+    mem.requestMB + " MB request-attributable (raw peak " + mem.peakRssMB + " MB incl. ~" +
+    Math.round(mem.rssBeforeMB) + " MB harness baseline), " + mem.words + " words, " + mem.sentences + " sentences");
 
   const cpu = runProfiler(["loop", "big800", "3"]);
   check("CPU under " + CPU_BUDGET_MS_PER_1K_WORDS + " ms/1000 words",
