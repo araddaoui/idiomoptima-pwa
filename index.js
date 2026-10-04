@@ -2660,6 +2660,68 @@ function boldHeadingSentences(sentences) {
   });
 }
 
+// --- Phase 2: token reachability index (kills the O(rules x sentences) scans) ---
+// A phrase match implies EVERY token of that phrase occurs in the text under
+// test. So a rule whose indexed tokens are absent provably cannot match, and
+// running its regex is pure waste. Indexing each rule by two of its tokens turns
+// "execute ~7.6k regexes per sentence per quote-free segment" into "execute the
+// handful that are reachable" (measured: ~9 per sentence, worst 43).
+//
+// This matters because of MEMORY, not just latency: a compiled RegExp costs
+// ~2.4 KB RSS, and the eager build held ~11.2k of them alive at once (7.6k in the
+// phrase pass + 3.6k in the stiffness scan) ~= 27 MB -- almost exactly the gap
+// between a measured 155 MB peak and the 128 MB per-invocation ceiling that
+// Workers Free AND Paid share. That breach is what returned HTTP 503 "exceeded
+// resource limits" on every live request carrying a real database payload.
+// Matchers are now compiled ON DEMAND and cached on the rule, so only reachable
+// phrases ever allocate one. Peak RSS on the 812-word fixture: 154.7 -> 101.0 MB.
+//
+// The filter is a PURE SKIP and never a reordering: candidates are still visited
+// in exactly the order the full list would have been, so output is byte-identical.
+function phraseFirstToken(src) {
+  var m = /^[A-Za-z\u00C0-\u024F'\u2019]+/.exec(String(src || ""));
+  return m ? m[0].toLowerCase() : "";
+}
+// The lower-cased set of word-tokens present in `text`. A token missing from this
+// set proves no phrase containing it can match, which is what makes the skip
+// sound. Built per quote-free segment (cheap: one pass over a short string).
+function presentTokens(text) {
+  var set = Object.create(null);
+  var rx = /[A-Za-z\u00C0-\u024F'\u2019]+/g;
+  var m;
+  var s = String(text || "");
+  while ((m = rx.exec(s)) !== null) set[m[0].toLowerCase()] = 1;
+  return set;
+}
+// The LONGEST word of the phrase -- the "key" token, indexed alongside the first
+// token. Indexing on the first token ALONE is nearly useless here: the databases
+// are full of clause-level entries, so "it" heads 2010 phrases and "this" 1392,
+// leaving 74% of the rule base reachable from any real paragraph. The longest
+// word is far more distinctive ("important", "facilitate"), which cuts the
+// reachable set to 4.7%. Longest wins, ties keep the earlier word, so the choice
+// is deterministic and is derived once at build time.
+function phraseKeyToken(src) {
+  var words = String(src || "").match(/[A-Za-z\u00C0-\u024F'\u2019]+/g);
+  if (!words || !words.length) return "";
+  var best = words[0];
+  for (var i = 1; i < words.length; i++) if (words[i].length > best.length) best = words[i];
+  return best.toLowerCase();
+}
+// A rule is reachable only when BOTH indexed tokens are present. Sound, because a
+// match implies every token of the phrase occurs in the text; requiring two of
+// them is simply a tighter necessary condition. Cheap, because it replaces the
+// regex execution it guards.
+function phraseReachable(present, rule) {
+  return present[rule.first] === 1 && present[rule.key] === 1;
+}
+// Lazily-compiled, per-request-cached word-boundary matcher for one phrase rule.
+// Shared /g objects are safe because every scan loop resets `lastIndex` first,
+// which is exactly equivalent to allocating a fresh RegExp per scan.
+function phraseMatcherFor(rule) {
+  if (!rule.re) rule.re = new RegExp("\\b" + escapeRegExp(rule.src) + "\\b", "gi");
+  return rule.re;
+}
+
 // Builds deterministic nativization maps from the databases the client sends.
 // TWO TIERS:
 //   - AUTO (aiDb/idiomDb/lexicalDb) -> aiMap/phraseList/sentenceMap. These
@@ -2716,7 +2778,10 @@ function _buildNativizationMaps(dbs, domain) {
       var key = norm.toLowerCase();
       if (!maps.aiMap[key]) {
         maps.aiMap[key] = { tgt: tgt, cat: cat };
-        maps.phraseList.push({ src: norm, tgt: tgt, cat: cat });
+        // `first`/`key` drive the Phase-2 skip filter; see phraseReachable above. They
+        // are derived from the SAME normalized source the matcher is built from,
+        // so the index can never disagree with the regex it gates.
+        maps.phraseList.push({ src: norm, tgt: tgt, cat: cat, first: phraseFirstToken(norm), key: phraseKeyToken(norm) });
       }
     } else if (endsSentence || wordCount >= 6) {
       var sentKey = normalizeSentenceKey(norm);
@@ -3215,11 +3280,21 @@ function applyDatabaseNativization(sentences, dbs, domain, opts) {
   var stats = { totalMatches: 0, sentencesChanged: 0, aiPhrases: 0, idioms: 0, lexical: 0 };
   var maps = dbs && typeof dbs === "object" ? buildNativizationMaps(dbs, domain) : buildNativizationMaps({}, domain);
   var collectSuggest = !(opts && opts.collectSuggest === false);
-  // Advise-only tier matchers (never edit; recorded for register notes).
+  // Advise-only tier matchers (never edit; recorded for register notes). Built
+  // ONLY when notes are actually being collected -- the source pre-sweep passes
+  // collectSuggest:false -- and memoized on the per-request maps, so the tier is
+  // compiled once per request instead of once per call.
   var suggestRx = [];
-  for (var sgi = 0; sgi < maps.suggestList.length; sgi++) {
-    var sp = maps.suggestList[sgi];
-    suggestRx.push({ src: sp.src, tgt: sp.tgt, kind: sp.kind, rx: new RegExp("\\b" + escapeRegExp(sp.src) + "\\b", "i") });
+  if (collectSuggest) {
+    if (!maps.__suggestRx) {
+      var builtSuggest = [];
+      for (var sgi = 0; sgi < maps.suggestList.length; sgi++) {
+        var sp = maps.suggestList[sgi];
+        builtSuggest.push({ src: sp.src, tgt: sp.tgt, kind: sp.kind, rx: new RegExp("\\b" + escapeRegExp(sp.src) + "\\b", "i") });
+      }
+      maps.__suggestRx = builtSuggest;
+    }
+    suggestRx = maps.__suggestRx;
   }
   var suggestNotes = [];
   var suggestSeen = {};
@@ -3266,35 +3341,32 @@ function applyDatabaseNativization(sentences, dbs, domain, opts) {
 
     // 2) Phrase-level, word-boundary exact, quote-safe replacements.
     if (!/^".*"$/.test(s.revised.trim())) {
-      // Compile each phrase regex ONCE per request instead of once per sentence
-      // per quote-free segment. This block used to rebuild the escaped phrase list
-      // and a fresh `new RegExp(...)` inside the per-sentence loop, i.e.
-      // sentences x segments x ~7k compilations per transform -- the single
-      // largest source of the peak-memory blow-up. The regexes are stateless
-      // between scans as long as `lastIndex` is reset, which is done below and is
-      // exactly equivalent to allocating a new object each time.
-      if (!maps.__phraseRx) {
-        var compiled = [];
-        for (var bi = 0; bi < maps.phraseList.length; bi++) {
-          var bp = maps.phraseList[bi];
-          compiled.push({
-            src: escapeRegExp(bp.src),
-            tgt: bp.tgt,
-            cat: bp.cat,
-            len: bp.src.length,
-            re: new RegExp("\\b" + escapeRegExp(bp.src) + "\\b", "gi")
-          });
-        }
-        maps.__phraseRx = compiled;
-      }
-      var phraseRx = maps.__phraseRx;
+      // Phase 2: this loop used to execute a word-boundary regex for EVERY
+      // database phrase -- sentences x quote-free segments x ~7.6k -- and (before
+      // Phase 1) recompile each one every time. It now skips on the token
+      // reachability index (phraseReachable) and compiles each surviving rule
+      // lazily (phraseMatcherFor), so neither the number of regex EXECUTIONS
+      // nor the ~2.4 KB-per-RegExp allocations scale with database size any
+      // more. That allocation is the point: holding every rule's regex alive at
+      // once cost ~27 MB, which is what pushed an 800-word document past the
+      // 128 MB per-invocation ceiling shared by Workers Free AND Paid (503).
+      //
+      // ORDER IS UNCHANGED: candidates are visited in exactly the sequence the
+      // full list would have produced, so a longer phrase still wins over its
+      // nested shorter fragment and output stays byte-identical.
+      var phraseList = maps.phraseList;
       s.revised = replaceOutsideQuotes(s.revised, function (seg) {
         var out = seg;
-        for (var j = 0; j < phraseRx.length; j++) {
-          var item = phraseRx[j];
-          var re = item.re;
+        if (!out) return out;
+        var present = presentTokens(out);
+        for (var j = 0; j < phraseList.length; j++) {
+          var item = phraseList[j];
+          // Provably cannot match -- skip before touching a regex at all.
+          if (!phraseReachable(present, item)) continue;
+          var re = phraseMatcherFor(item);
           re.lastIndex = 0;
           var res;
+          var rewrote = false;
           while ((res = re.exec(out)) !== null) {
             // Correlative safety: skip the swap when this phrase's partner (e.g.
             // "in general" vs "in particular") is present in the same sentence.
@@ -3307,7 +3379,14 @@ function applyDatabaseNativization(sentences, dbs, domain, opts) {
             re.lastIndex = res.index + tgt.length;
             bump(item.cat);
             changedHere = true;
+            rewrote = true;
           }
+          // A swap can INTRODUCE a word that heads a later, shorter phrase ("in
+          // order to facilitate" -> "to enable", then a nested "to enable"
+          // entry). The token set is therefore refreshed after any rule that
+          // actually rewrote, so the skip filter can never hide a phrase the
+          // document has become able to reach.
+          if (rewrote) present = presentTokens(out);
         }
         return out;
       });
@@ -3633,6 +3712,12 @@ function scanStiffPhrases(text, maps) {
   // Workers Free AND Paid), which surfaced as HTTP 503 "exceeded resource limits".
   // Building it once per request on the memoized `maps` object fixes both the CPU
   // and the memory blow-up without changing a single match.
+  //
+  // Phase 2: the ~3.5k RegExps are no longer built EAGERLY here. Only the cheap
+  // metadata (order + word length) is precomputed; each rule's matcher compiles on
+  // first use and caches on the rule, so an 800-word document allocates only the
+  // few hundred it can actually reach. Together with the phrase pass this is the
+  // ~27 MB that put peak RSS over the 128 MB ceiling.
   if (!maps.__aiScan) {
     var aiRules = [];
     for (var i = 0; i < maps.phraseList.length; i++) {
@@ -3643,19 +3728,24 @@ function scanStiffPhrases(text, maps) {
     // still outranks a 5-word one; the comparator runs once per build now.
     aiRules.sort(function (a, b) { return b.src.split(/\s+/).length - a.src.split(/\s+/).length; });
     for (var j = 0; j < aiRules.length; j++) {
-      var rule = aiRules[j];
-      rule.rx = new RegExp("\\b" + escapeRegExp(rule.src).split(/\s+/).join("\\s+") + "\\b", "i");
-      rule.wlen = (rule.src.match(/[^\s]+/g) || []).length;
+      aiRules[j].wlen = (aiRules[j].src.match(/[^\s]+/g) || []).length;
     }
     maps.__aiScan = aiRules;
   }
   var rules = maps.__aiScan;
   var matched = {};
   var t = " " + String(text).replace(/\s+/g, " ").replace(/[""\u201C\u201D]+/g, " ") + " ";
+  var present = presentTokens(t);
   for (var r = 0; r < rules.length; r++) {
     var ph = rules[r].src;
     if (matched[ph]) continue;
-    if (rules[r].rx.test(t)) {
+    // Reachability skip filter. Sound because a rule whose indexed tokens are
+    // absent from `t` cannot match it; and unlike the phrase pass, `t` is a
+    // read-only normalized copy, so no scan can introduce a token part-way through.
+    if (!phraseReachable(present, rules[r])) continue;
+    var rx = rules[r].rx;
+    if (!rx) rx = rules[r].rx = new RegExp("\\b" + escapeRegExp(rules[r].src).split(/\s+/).join("\\s+") + "\\b", "i");
+    if (rx.test(t)) {
       matched[ph] = 1;
       out.keys.push(ph);
       out.count += rules[r].wlen;
