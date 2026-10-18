@@ -5154,14 +5154,16 @@ async function ensureValidResult(parsed, originalText, options, env, pushLine) {
 
   var realChangeCount = 0;
   var magnitudeAll = 0;
-  // TIER-B evidence ledger: defect classes the deterministic meter cannot
-  // directly measure (tense consistency, a model-side preposition swap, a
-  // phrasing lift) are attributed to the sentence's REAL Pass-1 change and
-  // charged to the SOURCE only; the revision is credited because the defect is
-  // gone there. Spelling is never re-charged here — the atomic spelling meter
-  // already docks every fixed misspelling exactly once. Per-sentence dedupe
-  // ensures a defect Tier A already caught (grammar/punctuation on the SOURCE
-  // sentence) is never charged a second time.
+  // TIER-B evidence ledger: defect classes beyond the primary Tier-A counts
+  // (a preposition/verb-inflection swap, a content-word swap, a phrasing lift)
+  // that the DETERMINISTIC revision makes are classified and charged to the
+  // SOURCE only; the revision is credited because the defect is gone there.
+  // Tier B classifies the reproducible source -> deterministic-revision delta
+  // (never the model's Pass-1 text), so the source charge is identical on every
+  // run regardless of provider. Spelling is never re-charged here — the atomic
+  // spelling meter already docks every fixed misspelling exactly once.
+  // Per-sentence dedupe ensures a defect Tier A already caught (grammar/
+  // punctuation on the SOURCE sentence) is never charged a second time.
   var evidenceClassCounts = { grammar: 0, wordChoice: 0, punctuation: 0, capitalization: 0 };
   scoreSentences.forEach(function (s, si) {
     // Semantically-flagged sentences must not inflate the score: their edit is
@@ -5459,7 +5461,7 @@ async function ensureValidResult(parsed, originalText, options, env, pushLine) {
   }
   var evidenceTotal = evidenceClassCounts.grammar + evidenceClassCounts.wordChoice + evidenceClassCounts.punctuation + evidenceClassCounts.capitalization;
   if (evidenceTotal > 0) {
-    reviewNotes.push("Note — " + evidenceTotal + " improvement" + (evidenceTotal === 1 ? "" : "s") + " outside the deterministic editor's own scope (e.g. tense consistency, preposition or phrasing changes) — honesty rule docks the source " + (evidenceTotal === 1 ? "once" : "per class") + " for them via the deduction rubric unless a certified edit already covered the sentence.");
+    reviewNotes.push("Note — " + evidenceTotal + " further defect" + (evidenceTotal === 1 ? "" : "s") + " the deterministic editor detected and cleared beyond the primary counts above (grammar, word choice, punctuation or capitalization) — the source is docked " + (evidenceTotal === 1 ? "once" : "per class") + " for them via the deduction rubric so the two scores reflect the defect actually being gone.");
   }
   if (sourceCapsHits > 0 && revisedCapsHits < sourceCapsHits) {
     reviewNotes.push("Note — " + (sourceCapsHits - revisedCapsHits) + " sentence start" + (sourceCapsHits - revisedCapsHits === 1 ? "" : "s") + " raised from a lowercase to a capital letter.");
