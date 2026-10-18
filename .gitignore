@@ -17,6 +17,3 @@ coverage/
 # stray runtime artifacts that must never be committed
 last-response.json
 index.js.bak-*
-api/
-
-.env*

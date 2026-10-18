@@ -61,7 +61,7 @@ export default defineConfig({
         ],
       },
     }),
-    cloudflare(),
+    cloudflare({ configPath: 'wrangler.frontend.jsonc' }),
   ],
   resolve: {
     alias: {

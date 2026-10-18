@@ -6,9 +6,16 @@ on:
   pull_request_review_comment:
     types: [created]
 
+# Only one run per issue/PR so two quick /opencode comments can't race on the branch.
+concurrency:
+  group: opencode-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   opencode:
-    if: contains(github.event.comment.body, '/opencode') || contains(github.event.comment.body, '/oc')
+    # Trigger only for trusted associations — an arbitrary commenter on a public
+    # repo must never be able to run an agent with repository write access.
+    if: ${{ (contains(github.event.comment.body, '/opencode') || contains(github.event.comment.body, '/oc')) && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -20,16 +27,35 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run OpenCode Agent
-        uses: anomalyco/opencode/github@latest
+        # Pinned to the v1.19.0 release commit (was an unpinned @latest).
+        uses: anomalyco/opencode/github@add9b4ba5adfb895934cb1bf46f590342cec68d2
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
-          model: openrouter/anthropic/claude-3.5-sonnet
+          model: openrouter/anthropic/claude-sonnet-5.5
 
-      - name: Push Changes
+      # Never push straight to the default branch: commit to a throwaway branch and
+      # let a human review the pull request. Requires the repo setting
+      # "Allow GitHub Actions to create and approve pull requests".
+      - name: Open a pull request with any changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "OpenCode produced no changes; nothing to open."
+            exit 0
+          fi
+          BRANCH="opencode/fix-${ISSUE_NUMBER:-run}-${{ github.run_id }}"
           git config user.name "opencode-bot"
           git config user.email "bot@opencode.ai"
-          git add .
-          git commit -m "fix: automatic patch via OpenCode" || exit 0
-          git push
+          git switch -c "$BRANCH"
+          git add -A
+          git commit -m "fix: automatic patch via OpenCode (#${ISSUE_NUMBER:-run})"
+          git push --set-upstream origin "$BRANCH"
+          gh pr create \
+            --repo "${{ github.repository }}" \
+            --base "${{ github.event.repository.default_branch }}" \
+            --head "$BRANCH" \
+            --title "fix: automatic patch via OpenCode" \
+            --body "Automated changes produced by the OpenCode agent for #${ISSUE_NUMBER:-a comment}."

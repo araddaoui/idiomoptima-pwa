@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   Crown,
   CreditCard,
+  ShieldAlert,
   X,
 } from "lucide-react";
 import { Document, Packer, Paragraph, TextRun } from "docx";
@@ -168,7 +169,6 @@ export default function ToolPage() {
   const [portalLoading, setPortalLoading] = useState<boolean>(false);
   const [banner, setBanner] = useState<string | null>(null);
 
-  const [selectedSentenceIdx, setSelectedSentenceIdx] = useState<number | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [outputViewMode, setOutputViewMode] = useState<"fulltext" | "diff" | "notes">("fulltext");
   // Hover + editing state for the unified output panel.
@@ -177,9 +177,6 @@ export default function ToolPage() {
   const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [overrides, setOverrides] = useState<Record<number, string>>({});
 
-  const [idiomDatabase, setIdiomDatabase] = useState<any[]>([]);
-  const [aiPhraseMap, setAiPhraseMap] = useState<any[]>([]);
-  const [lexicalDatabases, setLexicalDatabases] = useState<Record<string, any[]>>({});
   const databasesRef = useRef<{ idiomDatabase: any[]; aiPhraseMap: any[]; aiSuggestions: any[]; lexicalDatabases: Record<string, any[]> } | null>(null);
 
   const loadDatabases = useCallback(async () => {
@@ -230,9 +227,6 @@ export default function ToolPage() {
 
     const dbs = { idiomDatabase: idiomDatabaseNext, aiPhraseMap: aiPhraseMapNext, aiSuggestions: aiSuggestionsNext, lexicalDatabases: lexicalDatabasesNext };
     databasesRef.current = dbs;
-    setIdiomDatabase(dbs.idiomDatabase);
-    setAiPhraseMap(dbs.aiPhraseMap);
-    setLexicalDatabases(dbs.lexicalDatabases);
     return dbs;
   }, []);
 
@@ -262,22 +256,7 @@ export default function ToolPage() {
     } catch {}
   }, [getToken]);
 
-  useEffect(() => {
-    void refreshTier();
-    const upgraded = searchParams.get("upgraded");
-    const cancelled = searchParams.get("upgrade_cancelled");
-    if (upgraded === "1") {
-      setBanner("Payment successful — your account is now on Pro. Enjoy unlimited runs!");
-      setTierInfo((t) => (t ? { ...t, tier: "pro", limit: 9999 } : { tier: "pro", usage: 0, limit: 9999 }));
-      setSearchParams({}, { replace: true });
-    } else if (cancelled === "1") {
-      setBanner("Upgrade cancelled — no charges were made. You can upgrade anytime.");
-      setSearchParams({}, { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const startUpgrade = async () => {
+  const startUpgrade = useCallback(async () => {
     if (upgradeLoading) return;
     setUpgradeLoading(true);
     try {
@@ -289,7 +268,27 @@ export default function ToolPage() {
     } finally {
       setUpgradeLoading(false);
     }
-  };
+  }, [upgradeLoading, getToken, user, setError]);
+
+  useEffect(() => {
+    void refreshTier();
+    const upgraded = searchParams.get("upgraded");
+    const cancelled = searchParams.get("upgrade_cancelled");
+    const wantsUpgrade = searchParams.get("upgrade");
+    if (upgraded === "1") {
+      setBanner("Payment successful — your account is now on Pro. Enjoy unlimited runs!");
+      setTierInfo((t) => (t ? { ...t, tier: "pro", limit: 9999 } : { tier: "pro", usage: 0, limit: 9999 }));
+      setSearchParams({}, { replace: true });
+    } else if (cancelled === "1") {
+      setBanner("Upgrade cancelled — no charges were made. You can upgrade anytime.");
+      setSearchParams({}, { replace: true });
+    } else if (wantsUpgrade === "1") {
+      // Landing-page Pro CTA deep-links here with ?upgrade=1 — start checkout.
+      setSearchParams({}, { replace: true });
+      void startUpgrade();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const startManage = async () => {
     if (portalLoading) return;
@@ -346,7 +345,6 @@ export default function ToolPage() {
     setError(null);
     setLanguageNotice(null);
     setResult(null);
-    setSelectedSentenceIdx(null);
     setProgress(0);
     setProgressPhase("Analyzing sentence cadence & register markers...");
     setElapsedSec(0);
@@ -371,7 +369,6 @@ export default function ToolPage() {
         token || undefined
       );
       setResult(response);
-      setSelectedSentenceIdx(0);
       if (response.tier) {
         setTierInfo({
           tier: response.tier as UserTierInfo["tier"],
@@ -410,7 +407,6 @@ export default function ToolPage() {
   const handleClear = () => {
     setInputHtml("<p></p>");
     setResult(null);
-    setSelectedSentenceIdx(null);
     setError(null);
     setLanguageNotice(null);
   };
@@ -421,7 +417,6 @@ export default function ToolPage() {
     setForcedDialect(preset.dialect);
     setTone(preset.tone);
     setResult(null);
-    setSelectedSentenceIdx(null);
     setError(null);
     setLanguageNotice(null);
   };
@@ -835,7 +830,14 @@ export default function ToolPage() {
                     </div>
                     <div className="space-y-0.5">
                       <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Refined</span>
-                      <span className="text-xl font-serif font-bold text-emerald-300">{result.revisedScore}%</span>
+                      <span className="text-xl font-serif font-bold text-emerald-300">
+                        {result.revisedScore}%
+                        {result.certification?.verified && (
+                          <span className="ml-2 inline-flex items-center gap-1 align-middle text-[10px] font-sans font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 rounded-full px-2 py-0.5">
+                            <ShieldCheck className="w-3 h-3" /> Verified clean
+                          </span>
+                        )}
+                      </span>
                     </div>
                     <div className="space-y-0.5">
                       <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Dialect</span>
@@ -1082,6 +1084,37 @@ export default function ToolPage() {
                               : " · flat (model made no edits — deterministic rules only)";
                           })()}
                         </div>
+                      )}
+                      {result.certification && (
+                        (() => {
+                          const c = result.certification;
+                          const skipped = c.skippedReason === "no-api-key";
+                          if (c.verified) {
+                            return (
+                              <div className="p-2 mb-3 border rounded-xl text-[11px] font-mono bg-emerald-500/10 border-emerald-500/30 text-emerald-200 flex items-start gap-2">
+                                <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" />
+                                <span>Verified clean — final certification re-proofread the draft and confirmed no remaining grammar, punctuation, capitalization, structure, style or clarity defects ({c.rounds} round{c.rounds === 1 ? "" : "s"}, {c.repaired} repair{c.repaired === 1 ? "" : "s"}).</span>
+                              </div>
+                            );
+                          }
+                          if (c.residualIssues != null && c.residualIssues > 0) {
+                            return (
+                              <div className="p-2 mb-3 border rounded-xl text-[11px] font-mono bg-rose-950/40 border-rose-500/40 text-rose-200 flex items-start gap-2">
+                                <ShieldAlert className="w-4 h-4 mt-0.5 shrink-0 text-rose-400" />
+                                <span>{c.residualIssues} residual issue{c.residualIssues === 1 ? "" : "s"} the final certification pass could not fully resolve in {c.rounds} round{c.rounds === 1 ? "" : "s"}. These model-only residuals are surfaced for review and are not scored — the published score reflects the reproducible deterministic measurement.</span>
+                              </div>
+                            );
+                          }
+                          if (skipped) {
+                            return (
+                              <div className="p-2 mb-3 border rounded-xl text-[11px] font-mono bg-amber-500/10 border-amber-500/20 text-amber-200 flex items-start gap-2">
+                                <ShieldAlert className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
+                                <span>Service degraded — model verification unavailable (deterministic transformations only). The output reflects every deterministic correction; broad grammar/style certification requires a live model.</span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()
                       )}
                       {!result.rescued && result.providerErrors && result.providerErrors.length > 0 && (
                         <div className="p-2.5 mb-3 border border-amber-500/20 bg-amber-500/5 rounded-xl">

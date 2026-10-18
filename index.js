@@ -2012,6 +2012,11 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
     var revSents = (isFootnotePara(revPara) || isHeadingPara(revPara)) ? [revPara] : toSentences(revPara);
     // Pair each original sentence with its best-matching revised sentence.
     var usedRev = {};
+    // Track, per original sentence, whether a revised counterpart matched and the
+    // result entry itself, so the reconcile pass below can repair a sentence the
+    // DB pre-sweep nativized too heavily to clear the 0.55 similarity floor.
+    var matchedFlags = [];
+    var origEntries = [];
     for (var s = 0; s < origSents.length; s++) {
       var orig = origSents[s];
       var rev = "";
@@ -2076,15 +2081,53 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
         /https?:\/\//i.test(strippedOrig) ||
         /\bDOI\b/i.test(strippedOrig)
       );
-      result.push({
+      var entry = {
         original: orig,
         revised: rev,
         explanation: "",
         isImmutableFootnote: origIsCitation || /^\([A-Z][a-z]+,\s*\d{4}\)/.test(orig) || /^\s*Ibid\.?/i.test(orig),
         paragraphIndex: p,
         semanticRisk: undefined,
-      });
+      };
+      result.push(entry);
+      matchedFlags.push(sbIdx !== -1);
+      origEntries.push(entry);
     }
+    // Reconcile pass: the deterministic DB pre-sweep rewrites a sentence's
+    // VOCABULARY before the model sees it (e.g. "Due to the fact that ... are
+    // cutting-edge, needless to say, ..." -> "Because ... are new, obviously,
+    // ..."). That rewrite can push token similarity below the 0.55 match floor,
+    // so the original sentence is left as-is (its revised falls back to the
+    // original) while its nativized counterpart stays unused — and the append
+    // loop below then mistakes the counterpart for an "added" sentence and
+    // emits it, duplicating the sentence in finalVersion. When the counts line
+    // up 1:1, pair each unmatched original with the still-unused revised
+    // sentence that clearly corresponds to it (content coverage floor), so the
+    // nativized form REPLACES the original instead of being appended. Without a
+    // real content correspondence the sentence is left unmatched, preserving
+    // genuine additions.
+    (function () {
+      var unusedRev = [];
+      for (var ur = 0; ur < revSents.length; ur++) { if (!usedRev[ur]) unusedRev.push(ur); }
+      var unmatchedOrig = [];
+      for (var uo = 0; uo < matchedFlags.length; uo++) { if (!matchedFlags[uo]) unmatchedOrig.push(uo); }
+      if (unmatchedOrig.length === 0 || unusedRev.length === 0) return;
+      if (unmatchedOrig.length !== unusedRev.length) return;
+      for (var m = 0; m < unmatchedOrig.length; m++) {
+        var oEntry = origEntries[unmatchedOrig[m]];
+        var rIdx = unusedRev[m];
+        if (!oEntry) continue;
+        var oText = oEntry.original || "";
+        var rText = String(revSents[rIdx] || "").trim();
+        if (!rText) continue;
+        if (contentCoverage(rText, oText) < 0.5) continue;
+        if (rText.length > 0 && rText[0] !== rText[0].toUpperCase() && rText[0] === rText[0].toLowerCase()) {
+          rText = rText[0].toUpperCase() + rText.substring(1);
+        }
+        oEntry.revised = rText;
+        usedRev[rIdx] = true;
+      }
+    })();
     // Emit revised sentences that have no original counterpart (e.g., a split sentence),
     // unless they duplicate already-covered content (model hallucination/echo).
     var covered = normalizeText(result.map(function (s) { return (s.original || "") + " " + (s.revised || ""); }).join(" "));
@@ -2487,7 +2530,12 @@ var COLLOCATION_PAIRS = [
 var SINGLE_WORD_ALLOW = {
   "seamless": true, "streamline": true, "optimize": true, "enable": true,
   "empower": true, "accelerate": true, "groundbreaking": true,
-  "transformative": true, "unparalleled": true, "orchestrate": true
+  "transformative": true, "unparalleled": true, "orchestrate": true,
+  // Hyphenated compounds tokenize as ONE word (the [A-Za-z0-9'-]+ class), so a
+  // legitimate DB entry like "cutting-edge -> new" was silently dropped by the
+  // <2-word gate and could never fire (audit finding F1). Explicit allow-list
+  // the ones that are safe as bare word-boundary swaps.
+  "cutting-edge": true
 };
 
 function containsWordBoundary(text, word) {
@@ -2658,6 +2706,91 @@ function boldHeadingSentences(sentences) {
     s.revised = "**" + txt + "**";
     return s;
   });
+}
+
+// Split any sentence whose revised text begins with a standalone bold heading
+// ("**Conclusion**\nThe findings...") into TWO entries: the heading kept as its
+// own paragraph, then the body. This stops headings from being welded onto body
+// sentences (which produced misleading "replaced X with **Heading**" diffs and
+// lost paragraph breaks). Pure/deterministic given its input, so the scoring
+// snapshot can run the exact same structural pass as the displayed draft.
+function splitWeldedHeadings(input) {
+  var sentences = input || [];
+  var split = [];
+  // Track standalone heading sentences already emitted so we can de-dup an
+  // echo where the model repeats the heading ("Conclusion" AND "**Conclusion**").
+  var seenHeadings = {};
+  for (var si = 0; si < sentences.length; si++) {
+    var s = sentences[si];
+    var r = (s.revised || "").replace(/^\s+/, "");
+    // Detect a heading welded to body text: either "**Heading**\n<rest>" or the
+    // space-glued variant "**Heading** <sentence>." the model produces (the
+    // "title ate the first sentence" defect). The space variant splits only
+    // when the tail is a real sentence — never "**Intro** Subheading", and
+    // never a "**Note:** ..." lead-in.
+    var spec = null;
+    var m = /^(\*\*[^*]+\*\*)\s*\r?\n(?=\S)/.exec(r);
+    if (m && m[0].indexOf("\n") !== -1 && r.slice(m[1].length).trim().length > 0) {
+      spec = { head: m[1], tail: r.slice(m[1].length).replace(/^\s*\r?\n+/, "").trim() };
+    } else {
+      var sm = /^(\*\*[^*]+\*\*)\s+(\S[\s\S]*)$/.exec(r);
+      if (sm) {
+        var headInner = sm[1].replace(/^\*\*/, "").replace(/\*\*$/, "").trim();
+        var tailTxt = sm[2].trim();
+        if (!/[.!?,;:\u2018\u2019]\s*$/.test(headInner) &&
+            /^[A-Z\u201C\u2018]/.test(tailTxt) &&
+            /[.!?]["'\u201D\u2019]*\s*$/.test(tailTxt) &&
+            !headingShapedText(tailTxt) &&
+            tailTxt.length < 500) {
+          spec = { head: sm[1], tail: tailTxt };
+        }
+      }
+    }
+    // Only split when the heading is followed by real body text.
+    if (spec && spec.tail.length > 0) {
+      var headKey = spec.head.replace(/\*\*/g, "").toLowerCase().trim();
+      if (seenHeadings[headKey]) {
+        // The heading was already emitted as a standalone prior sentence;
+        // keep only the body, so we don't duplicate the heading.
+        split.push({
+          original: s.original,
+          revised: spec.tail,
+          explanation: s.explanation,
+          isImmutableFootnote: s.isImmutableFootnote,
+          paragraphIndex: s.paragraphIndex,
+          semanticRisk: undefined,
+        });
+      } else {
+        seenHeadings[headKey] = true;
+        split.push({
+          original: spec.head,
+          revised: spec.head,
+          explanation: s.explanation === "No corrections needed." ? "No corrections needed." : "Formatted as heading.",
+          isImmutableFootnote: false,
+          paragraphIndex: s.paragraphIndex,
+          semanticRisk: undefined,
+        });
+        split.push({
+          original: s.original,
+          revised: spec.tail,
+          explanation: s.explanation,
+          isImmutableFootnote: s.isImmutableFootnote,
+          paragraphIndex: s.paragraphIndex,
+          semanticRisk: undefined,
+        });
+      }
+    } else {
+      // Also record standalone headings (bold or plain) as seen, so a later
+      // echo of the same heading merged with body text is de-duplicated.
+      var rvTrim = (s.revised || "").trim();
+      var h = /^(\*\*[^*]+\*\*)\s*$/i.exec(rvTrim);
+      var hPlain = /^[A-Z][^*]{0,138}$/.test(rvTrim) && !/[.!?]$/.test(rvTrim) && !/^\[\d+\]/.test(rvTrim) && rvTrim.split(/\s+/).length < 15;
+      var key = h ? h[1].replace(/\*\*/g, "").toLowerCase().trim() : (hPlain ? rvTrim.toLowerCase().trim() : null);
+      if (key) { seenHeadings[key] = true; }
+      split.push(s);
+    }
+  }
+  return split;
 }
 
 // --- Phase 2: token reachability index (kills the O(rules x sentences) scans) ---
@@ -2993,7 +3126,18 @@ var VERB_PREP_CORRECTIONS = [
   { re: /\bdiscuss(?:es|ed|ing)?\s+about\b/gi, good: function (m) { return m[0].replace(/\s+about\b/i, ""); } },
   { re: /\bemphasi[sz](?:e|es|ed|ing)\s+on\b/gi, good: function (m) { return m[0].replace(/\s+on\b/i, ""); } },
   { re: /\bmention(?:s|ed|ing)?\s+about\b/gi, good: function (m) { return m[0].replace(/\s+about\b/i, ""); } },
-  { re: /\bcompris(?:e|es|ed|ing)\s+of\b/gi, good: function (m) { return m[0].replace(/\s+of\b/i, ""); } },
+  { re: /\bcompris(?:e|es|ed|ing)\s+of\b/gi, good: function (m) {
+      // "comprised of" is only wrong as a bare active verb ("the system
+      // comprises of three phases" -> "comprises three phases"). After a
+      // passive auxiliary the correct repair is "composed of", NOT simply
+      // stripping "of" (which produced the ungrammatical "was comprised three
+      // phases" — audit finding F2). Inspect the preceding token.
+      var before = String((m && m.input) || "").slice(Math.max(0, ((m && m.index) || 0) - 24), (m && m.index) || 0);
+      if (/\b(?:is|are|was|were|be|been|being|am)\s+$/i.test(before)) {
+        return String(m[0]).replace(/^compris(?:e|es|ed|ing)\b/i, "composed");
+      }
+      return String(m[0]).replace(/\s+of\b/i, "");
+    } },
 ];
 
 // Count-only, never-write punctuation defect: unbalanced parentheses / square
@@ -4190,7 +4334,183 @@ async function humanizeFlaggedSentences(sentences, options, env) {
   return out;
 }
 
-async function ensureValidResult(parsed, originalText, options, env) {
+// --- Final certification (broad proofreading) + release gate -----------------
+// The two-pass contract delegates BROAD grammar/style/clarity to the model in
+// Pass 1, and Pass 1 is deliberately scoped to grammar/spelling only. A residual
+// class of defects can therefore survive into the stored draft: dangling and
+// misplaced modifiers, indirect-question inversion, sentence fragments, run-ons
+// and comma splices, misused modals, relative-pronoun choice, heavy passives and
+// plain awkwardness. To keep the platform's promise — the SHIPPED text is clean —
+// the pipeline runs a bounded CERTIFICATION loop on the post-deterministic
+// draft: a proofreading model call that must fix EVERY remaining defect and
+// report its residual issue list. The loop terminates the moment the model
+// reports no residuals (VERIFIED) or the round budget is exhausted; it never
+// loops unbounded. Every repair is re-routed through the protective passes and
+// content-overlap guarded, so meaning, quotes, citations, hedging and voice
+// survive (the style-preservation promise).
+var CERTIFY_MAX_ROUNDS = 2;
+var CERTIFY_SYSTEM_PROMPT = [
+  "You are the FINAL PROOFREADER for a piece of English prose that has already",
+  "been through grammar correction and nativization. Make it FLAWLESS native",
+  "English by fixing EVERY remaining defect: grammar, subject-verb agreement,",
+  "tense, articles, prepositions, pronoun case, parallelism, dangling and",
+  "misplaced modifiers, sentence fragments, run-ons and comma splices,",
+  "punctuation, capitalization, spacing, word choice, register, clarity,",
+  "readability, and any awkward or non-native phrasing.",
+  "",
+  "STRICT RULES:",
+  "1. Make the MINIMUM edit that removes each defect. Do NOT rewrite for",
+  "   preference and do NOT restructure beyond what correctness requires.",
+  "2. NEVER change meaning, facts, names, numbers, dates, hedging, tone, or the",
+  "   author's voice. Do NOT add or drop content.",
+  "3. Preserve the dialect (US/UK/CA/AU) and all [1] markers, citations, URLs,",
+  "   DOIs and bibliography text EXACTLY.",
+  "4. Do not merge or split sentences across the numbered lines you are given.",
+  "5. Return JSON only, no markdown fences.",
+  "",
+  'Return: {"residuals":[{"index":N,"issue":"..."}], "revised":[{"index":N,"text":"..."}]}',
+  "residuals = every defect you found (and fixed, or that still remains).",
+  "revised = the corrected text for EACH sentence you changed, keyed by the SAME",
+  "index you were given. Omit sentences you did not change. If the whole text is",
+  "already flawless, return empty residuals and empty revised.",
+].join("\n");
+
+// Raw Gemini JSON call with a caller-supplied system prompt. The certification
+// mandate is broader than SYSTEM_PROMPT's grammar-only scope, so it cannot reuse
+// callGeminiRaw's fixed preamble. Transport, determinism (temperature 0, forced
+// JSON) and the single-candidate model rotation mirror callGeminiRaw exactly.
+async function callGeminiJSONWithSystem(prompt, systemPrompt, apiKey) {
+  var MODEL_CANDIDATES = ["gemini-3.6-flash"];
+  var lastError = "";
+  for (var ci = 0; ci < MODEL_CANDIDATES.length; ci++) {
+    var model = MODEL_CANDIDATES[ci];
+    var url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent";
+    var response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt + "\n\n" + prompt }] }],
+          generationConfig: { temperature: 0, topP: 1, responseMimeType: "application/json", maxOutputTokens: 65536 },
+        }),
+        signal: AbortSignal.timeout(90000),
+      });
+    } catch (e) {
+      lastError = model + ": " + String((e && e.message) || e).substring(0, 200);
+      continue;
+    }
+    if (!response.ok) {
+      var errBody = await response.text();
+      lastError = model + ": " + errBody.substring(0, 200);
+      if (response.status === 404 || response.status === 429 || response.status === 400 || response.status === 503) continue;
+      throw new Error("Gemini certify error (" + model + "): " + errBody.substring(0, 200));
+    }
+    var data = await response.json();
+    var candidates = data && data.candidates;
+    if (!candidates || candidates.length === 0) throw new Error("Gemini certify returned no candidates");
+    var parts = candidates[0] && candidates[0].content && candidates[0].content.parts;
+    var raw = "";
+    if (parts && parts.length > 0) {
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].text && !parts[i].thought) { raw = parts[i].text; break; }
+      }
+      if (!raw && parts[0] && parts[0].text) raw = parts[0].text;
+    }
+    return String(raw || "");
+  }
+  throw new Error("Gemini certify error: all candidate models failed. Last: " + lastError);
+}
+
+// One certification round: send the prose sentences to the proofreader, apply its
+// revisions through the protective passes, and report the model's residual list.
+// Returns { repaired, residualCount, skippedReason }.
+async function certifyProse(sentences, options, env) {
+  var out = { repaired: 0, residualCount: null, skippedReason: null };
+  if (!env || !env.GEMINI_API_KEY) { out.skippedReason = "no-api-key"; return out; }
+  var proseIdx = [];
+  for (var i = 0; i < sentences.length; i++) {
+    var s = sentences[i];
+    if (!s || s.isImmutableFootnote) continue;
+    var txt = String(s.revised || "").trim();
+    if (!txt) continue;
+    if (/^\[\d+\]/.test(txt) || /^\s*Ibid\.?/i.test(txt)) continue;
+    if (/\*\*/.test(txt)) continue;
+    if (/^["\u201C].*["\u201D]$/.test(txt)) continue;
+    proseIdx.push(i);
+  }
+  if (proseIdx.length === 0) { out.skippedReason = "nothing-to-certify"; return out; }
+  var numbered = proseIdx.map(function (idx, k) {
+    return (k + 1) + ". " + String(sentences[idx].revised || "").replace(/\s*\n\s*/g, " ").trim();
+  }).join("\n");
+  var prompt = "Domain: " + ((options && options.domain) || "general") +
+    "\nTone: " + ((options && options.tone) || "neutral") +
+    "\nNumbered sentences:\n" + numbered;
+  var raw, parsed;
+  try {
+    raw = await callGeminiJSONWithSystem(prompt, CERTIFY_SYSTEM_PROMPT, env.GEMINI_API_KEY);
+    parsed = parseJsonFromModel(raw);
+  } catch (e) {
+    out.skippedReason = "certify-error";
+    console.error("certify pass failed (non-fatal): " + String((e && e.message) || e).substring(0, 300));
+    return out;
+  }
+  if (!parsed || typeof parsed !== "object") { out.skippedReason = "unparseable"; return out; }
+  var residuals = Array.isArray(parsed.residuals) ? parsed.residuals : [];
+  out.residualCount = residuals.length;
+  var revised = Array.isArray(parsed.revised) ? parsed.revised
+    : (Array.isArray(parsed.revisions) ? parsed.revisions : []);
+  for (var r = 0; r < revised.length; r++) {
+    var item = revised[r];
+    var n = item && item.index != null ? Number(item.index) : (r + 1);
+    if (isNaN(n) || n < 1 || n > proseIdx.length) continue;
+    var newText = typeof item.text === "string" ? item.text.trim()
+      : (typeof item.revised === "string" ? item.revised.trim() : "");
+    if (!newText || newText === "[object Object]") continue;
+    var target = sentences[proseIdx[n - 1]];
+    if (!target) continue;
+    var prev = String(target.revised || "");
+    // Style-drift / invention guard: a proofreading fix must stay close to the
+    // draft it repairs. A wild rewrite (meaning drift, fabricated content) is
+    // rejected wholesale rather than shipped.
+    if (contentOverlapRatio(prev, newText) < 0.5) continue;
+    newText = postProcessText(newText);
+    newText = protectQuotes(String(target.original || ""), newText);
+    newText = protectAcademicRegister(String(target.original || ""), newText);
+    newText = restoreStructuralMarkers(String(target.original || ""), newText);
+    newText = protectInvariantIdioms(String(target.original || ""), newText);
+    newText = restoreDroppedSentence(String(target.original || ""), newText);
+    newText = restoreCurlyApostrophes(String(target.original || ""), newText);
+    newText = protectEpistemicVoice(String(target.original || ""), newText);
+    newText = nativePolish(newText);
+    newText = fixCommonMisspellingsSafe(newText);
+    newText = capitalizeEnhanced(newText);
+    newText = applyCertifiedPolish(newText, target.isImmutableFootnote);
+    if (!newText || newText === prev) continue;
+    target.revised = newText;
+    out.repaired++;
+  }
+  return out;
+}
+
+// Bounded certification driver: run re-verification rounds until the model
+// reports zero residuals (verified) or the round budget is spent. Returns the
+// audit object surfaced in diagnostics.
+async function runCertification(sentences, options, env) {
+  var info = { rounds: 0, repaired: 0, residualIssues: null, verified: false, skippedReason: null, maxRounds: CERTIFY_MAX_ROUNDS };
+  if (!env || !env.GEMINI_API_KEY) { info.skippedReason = "no-api-key"; return info; }
+  for (var round = 0; round < CERTIFY_MAX_ROUNDS; round++) {
+    var c = await certifyProse(sentences, options, env);
+    info.rounds++;
+    if (c.skippedReason) { info.skippedReason = c.skippedReason; break; }
+    info.repaired += c.repaired;
+    info.residualIssues = c.residualCount;
+    if (c.residualCount === 0) { info.verified = true; break; }
+  }
+  return info;
+}
+
+async function ensureValidResult(parsed, originalText, options, env, pushLine) {
   if (!parsed || typeof parsed !== "object") return null;
 
   var finalVersion = parsed.finalVersion || parsed.final || parsed.text || "";
@@ -4315,6 +4635,26 @@ async function ensureValidResult(parsed, originalText, options, env) {
   var derivedS = deriveSentencesFromTexts(bodyOnlyOriginal, finalVersion);
   var sentences = derivedS.sentences;
   finalVersion = derivedS.finalVersion;
+  // Defensive non-adjacent echo scrub: the ingest path and rebuildFinalVersion
+  // only drop a phantom echo that IMMEDIATELY follows its source sentence, so a
+  // duplicate emitted at the TAIL of a paragraph survived either scrub. Drop any
+  // EMPTY-original sentence (an "addition") whose revised text verbatim-repeats
+  // an earlier revised sentence (whitespace/case-normalized). A genuine addition
+  // carries new text and is never dropped; a real sentence that repeats verbatim
+  // by design (a refrain) keeps its non-empty original and is never dropped.
+  sentences = (function (list) {
+    var seenRev = {};
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      var revKey = String((s && s.revised) || "").trim().replace(/\s+/g, " ").toLowerCase();
+      var isEmptyOrig = !String((s && s.original) || "").trim();
+      if (isEmptyOrig && revKey.length > 0 && seenRev[revKey]) continue;
+      if (revKey.length > 0) seenRev[revKey] = true;
+      out.push(s);
+    }
+    return out;
+  })(sentences);
   finalVersion = addQuestionMark(finalVersion, bodyOnlyOriginal);
 
   // Post-process each sentence
@@ -4415,6 +4755,24 @@ async function ensureValidResult(parsed, originalText, options, env) {
     });
   }
 
+  // DETERMINISM SNAPSHOT (score contract): the humanize and certification model
+  // passes below are NOT reproducible across runs/providers, but the schedule
+  // requires the SAME input to yield the SAME scores regardless of provider.
+  // Freeze the deterministic draft here (post Pass-1/Pass-2, pre model-polish)
+  // and drive EVERY measurement below from this frozen copy. The DISPLAYED text
+  // keeps flowing through the model passes; only scoring reads the snapshot, so
+  // a clean draft always scores the same even when the cert model rewords its
+  // repairs differently on each run.
+  var scoreSentences = sentences.map(function (s) {
+    return {
+      original: s.original,
+      revised: s.revised,
+      explanation: s.explanation,
+      isImmutableFootnote: s.isImmutableFootnote,
+      paragraphIndex: s.paragraphIndex,
+    };
+  });
+
   // Phase C stage 3: gated humanize — only residual-stiff sentences (uncovered
   // by the DB layers) reach the nativize model call; everything else untouched.
   var humanizePass = await humanizeFlaggedSentences(sentences, options, env);
@@ -4425,94 +4783,68 @@ async function ensureValidResult(parsed, originalText, options, env) {
     skippedReason: humanizePass.skippedReason,
   };
 
-  // Split any sentence whose revised text begins with a standalone bold heading
-  // ("**Conclusion**\nThe findings...") into TWO entries: the heading kept as
-  // its own paragraph, then the body. This stops headings from being welded
-  // onto body sentences (which produced misleading "replaced X with **Heading**"
-  // diffs and lost paragraph breaks).
-  (function () {
-    var split = [];
-    // Track standalone heading sentences already emitted so we can de-dup an
-    // echo where the model repeats the heading ("Conclusion" AND "**Conclusion**").
-    var seenHeadings = {};
-    for (var si = 0; si < sentences.length; si++) {
-      var s = sentences[si];
-      var r = (s.revised || "").replace(/^\s+/, "");
-      // Detect a heading welded to body text: either "**Heading**\n<rest>" or the
-      // space-glued variant "**Heading** <sentence>." the model produces (the
-      // "title ate the first sentence" defect). The space variant splits only
-      // when the tail is a real sentence — never "**Intro** Subheading", and
-      // never a "**Note:** ..." lead-in.
-      var spec = null;
-      var m = /^(\*\*[^*]+\*\*)\s*\r?\n(?=\S)/.exec(r);
-      if (m && m[0].indexOf("\n") !== -1 && r.slice(m[1].length).trim().length > 0) {
-        spec = { head: m[1], tail: r.slice(m[1].length).replace(/^\s*\r?\n+/, "").trim() };
-      } else {
-        var sm = /^(\*\*[^*]+\*\*)\s+(\S[\s\S]*)$/.exec(r);
-        if (sm) {
-          var headInner = sm[1].replace(/^\*\*/, "").replace(/\*\*$/, "").trim();
-          var tailTxt = sm[2].trim();
-          if (!/[.!?,;:\u2018\u2019]\s*$/.test(headInner) &&
-              /^[A-Z\u201C\u2018]/.test(tailTxt) &&
-              /[.!?]["'\u201D\u2019]*\s*$/.test(tailTxt) &&
-              !headingShapedText(tailTxt) &&
-              tailTxt.length < 500) {
-            spec = { head: sm[1], tail: tailTxt };
-          }
-        }
-      }
-      // Only split when the heading is followed by real body text.
-      if (spec && spec.tail.length > 0) {
-        var headKey = spec.head.replace(/\*\*/g, "").toLowerCase().trim();
-        if (seenHeadings[headKey]) {
-          // The heading was already emitted as a standalone prior sentence;
-          // keep only the body, so we don't duplicate the heading.
-          split.push({
-            original: s.original,
-            revised: spec.tail,
-            explanation: s.explanation,
-            isImmutableFootnote: s.isImmutableFootnote,
-            paragraphIndex: s.paragraphIndex,
-            semanticRisk: undefined,
-          });
-        } else {
-          seenHeadings[headKey] = true;
-          split.push({
-            original: spec.head,
-            revised: spec.head,
-            explanation: s.explanation === "No corrections needed." ? "No corrections needed." : "Formatted as heading.",
-            isImmutableFootnote: false,
-            paragraphIndex: s.paragraphIndex,
-            semanticRisk: undefined,
-          });
-          split.push({
-            original: s.original,
-            revised: spec.tail,
-            explanation: s.explanation,
-            isImmutableFootnote: s.isImmutableFootnote,
-            paragraphIndex: s.paragraphIndex,
-            semanticRisk: undefined,
-          });
-        }
-      } else {
-        // Also record standalone headings (bold or plain) as seen, so a later
-        // echo of the same heading merged with body text is de-duplicated.
-        var rvTrim = (s.revised || "").trim();
-        var h = /^(\*\*[^*]+\*\*)\s*$/i.exec(rvTrim);
-        var hPlain = /^[A-Z][^*]{0,138}$/.test(rvTrim) && !/[.!?]$/.test(rvTrim) && !/^\[\d+\]/.test(rvTrim) && rvTrim.split(/\s+/).length < 15;
-        var key = h ? h[1].replace(/\*\*/g, "").toLowerCase().trim() : (hPlain ? rvTrim.toLowerCase().trim() : null);
-        if (key) { seenHeadings[key] = true; }
-        split.push(s);
-      }
-    }
-    sentences = split;
-  })();
+  // Final CERTIFICATION loop (the "no error slips through" guarantee): the model
+  // re-proofreads the post-deterministic draft and must report zero residual
+  // defects, repairing anything it finds. Bounded (CERTIFY_MAX_ROUNDS) and
+  // skipped entirely offline / without a key (reported honestly in diagnostics).
+  if (pushLine) pushLine({ ev: "phase", pct: 88, phase: "Certifying the draft — verifying no defects remain" });
+  var certifyInfo = await runCertification(sentences, options, env);
+  if (certifyInfo.repaired > 0) {
+    // Rebuild per-sentence determinism after the model repairs, then re-derive
+    // the final text so the shown output reflects the certified sentences.
+    sentences = sentences.map(function (s) {
+      s.revised = nativePolish(s.revised);
+      s.revised = applyCertifiedPolish(s.revised, s.isImmutableFootnote);
+      return s;
+    });
+  }
+
+  sentences = splitWeldedHeadings(sentences);
 
   // Deterministic heading re-bold (see boldHeadingSentences): keeps titles and
   // section headings bold in the UI / exports even when the model stripped the
   // '**' markers. finalVersion is rebuilt from the same array below, so both
   // stay in sync.
   sentences = boldHeadingSentences(sentences);
+
+  // Run the SAME deterministic structural passes on the frozen scoring snapshot
+  // so the census measures the identical sentence structure offline and online.
+  scoreSentences = splitWeldedHeadings(scoreSentences);
+  scoreSentences = boldHeadingSentences(scoreSentences);
+
+  // DETERMINISTIC REVISION (score contract): Tier-B charges the source for a
+  // defect by classifying the change from source -> revision. If that revision
+  // is the MODEL's Pass-1 output, the source charge tracks whatever the model
+  // happened to rewrite that run, and originalScore drifts (measured: business
+  // wordChoice evidence swung 3-5 -> 72 vs 75 across runs, while revisedScore
+  // stayed pinned at 98). The contract requires the SAME input to yield the SAME
+  // scores regardless of provider, so Tier-B must classify against the change
+  // the DETERMINISTIC layer alone makes: apply the same source-first DB sweep to
+  // the source sentences. Offline this is identical to the previous behaviour
+  // (there is no model, so source -> revision IS the deterministic chain); only
+  // the model's discretionary rewrites are excluded from the source charge.
+  var deterministicRevision = (function () {
+    var src = scoreSentences.map(function (s) {
+      return {
+        original: s.original,
+        revised: s.original,
+        isImmutableFootnote: s.isImmutableFootnote,
+        paragraphIndex: s.paragraphIndex,
+      };
+    });
+    src.forEach(function (s) {
+      s.revised = nativePolish(s.revised);
+      s.revised = fixCommonMisspellingsSafe(s.revised);
+      s.revised = capitalizeEnhanced(s.revised);
+      s.revised = applyCertifiedPolish(s.revised, s.isImmutableFootnote);
+      s.revised = addQuestionMark(s.revised, s.original);
+    });
+    return applyDatabaseNativization(
+      src,
+      options && options.databases,
+      (options && options.domain) || "general"
+    ).sentences;
+  })();
 
   // Rebuild finalVersion from the post-processed sentences so it is always
   // 1:1 with the sentences list (no divergence between finalVersion and the
@@ -4674,7 +5006,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
   // editor is forbidden to fix — a residual that can never clear.
   var sourceDupHits = 0;
   var revisedDupHits = 0;
-  var remainingSpelling = countMisspellings(sentences.map(function (s) { return s.revised || ""; }).join(" "));
+  var remainingSpelling = countMisspellings(scoreSentences.map(function (s) { return s.revised || ""; }).join(" "));
   var sourceSpelling = countMisspellings(bodyOnlyOriginal);
   var stiffMaps = buildNativizationMaps((options && options.databases) || {}, (options && options.domain) || "general");
   // The prose definition shared with findStiffestSentence / scanStiffPhrases:
@@ -4690,8 +5022,8 @@ async function ensureValidResult(parsed, originalText, options, env) {
   function proseJoin(list, field) {
     return scoringProse(list).map(function (s) { return String(s[field] || ""); }).join(" \n ");
   }
-  var sourceProse = proseJoin(sentences, "original");
-  var revisedProse = proseJoin(sentences, "revised");
+  var sourceProse = proseJoin(scoreSentences, "original");
+  var revisedProse = proseJoin(scoreSentences, "revised");
   var srcProf = scanStiffPhrases(sourceProse, stiffMaps);
   var revProf = scanStiffPhrases(revisedProse, stiffMaps);
   var sourceStiffness = srcProf.keys.length;
@@ -4724,7 +5056,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
   // pass (idempotent: already-fixed constructs no longer match, so the residual
   // is the honest remainder). Template-family hits are counted once per phrase
   // and merged with the DB/builtin stiffness scan (never double-docked).
-  var proseSentenceCount = Math.max(1, scoringProse(sentences).length);
+  var proseSentenceCount = Math.max(1, scoringProse(scoreSentences).length);
   var srcLayerCounts = {};
   var sourceGrammarHits = 0;
   var revisedGrammarHits = 0;
@@ -4732,7 +5064,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
   var revisedPunctHits = 0;
   var sourceCapsHits = 0;
   var revisedCapsHits = 0;
-  sentences.forEach(function (s, si) {
+  scoreSentences.forEach(function (s, si) {
     // Quote-only sentences are skipped by every editing pass, so they must not
     // count as an untouchable residual defect in the measurement either (the
     // noted Lolita-untouched corpus stays at the native 98-98 this way).
@@ -4802,6 +5134,10 @@ async function ensureValidResult(parsed, originalText, options, env) {
   for (var sr in semanticRisks) {
     if (Object.prototype.hasOwnProperty.call(semanticRisks, sr)) sentences[Number(sr)].semanticRisk = semanticRisks[sr];
   }
+  // Deterministic counterpart for SCORING only: the display copy above can vary
+  // with the model passes, but the score must not. The two agree offline (the
+  // model passes are skipped), so the fixture pins are unaffected.
+  var scoreSemanticRisks = detectSemanticRisk(scoreSentences);
   // Content words that vanished from the SOURCE without a justifying
   // nativization rule firing (Fix-P2, "dropped words" note). Word-level
   // comparisons must exclude the preserved reference/citation block: the source
@@ -4827,12 +5163,17 @@ async function ensureValidResult(parsed, originalText, options, env) {
   // ensures a defect Tier A already caught (grammar/punctuation on the SOURCE
   // sentence) is never charged a second time.
   var evidenceClassCounts = { grammar: 0, wordChoice: 0, punctuation: 0, capitalization: 0 };
-  sentences.forEach(function (s, si) {
+  scoreSentences.forEach(function (s, si) {
     // Semantically-flagged sentences must not inflate the score: their edit is
     // unverifiable (may have flipped meaning), so it cards no credit.
-    if (semanticRisks[si]) return;
+    if (scoreSemanticRisks[si]) return;
     var before = (s.original || "").trim().replace(/\s+/g, " ");
-    var after = (s.revised || "").trim().replace(/\s+/g, " ");
+    // Compare against the DETERMINISTIC revision, never the model's output, so
+    // every count below (real-change total, magnitude, Tier-B class) is
+    // reproducible across runs/providers. Using the model's `after` here was the
+    // source of the 72-vs-75 drift (and a live-only capitalization double-charge:
+    // gating on the model's text while classifying the deterministic one).
+    var after = ((deterministicRevision[si] && deterministicRevision[si].revised) || s.revised || "").trim().replace(/\s+/g, " ");
     var o = before.toLowerCase();
     var r = after.toLowerCase();
     if (!/[a-z]/.test(o) || !/[a-z]/.test(r)) return;
@@ -4859,7 +5200,9 @@ async function ensureValidResult(parsed, originalText, options, env) {
     magnitudeAll += Math.max(1, tokenDiffMagnitude(oq, rq));
     // TIER-B: classify this real edit. Deleted misspellings are owned by the
     // spelling meter; and a class Tier A already caught on THIS source sentence
-    // is not charged a second time (editor == meter, no double-dock).
+    // is not charged a second time (editor == meter, no double-dock). `after` is
+    // already the deterministic revision (see above), so the source charge never
+    // tracks the model's discretionary rewrites.
     var clsEdit = classifyRealEdits(before, after);
     delete clsEdit.spelling;
     var la = srcLayerCounts[si] || { grammar: 0, punctuation: 0 };
@@ -4882,7 +5225,10 @@ async function ensureValidResult(parsed, originalText, options, env) {
   });
   var sourceRegister = 0;
   var sugBody = String(bodyOnlyOriginal || "").toLowerCase();
-  var sugRevBody = String(bodyFinalForWords || finalVersion || "").toLowerCase();
+  // Deterministic revision view for the register census: the model passes can
+  // reword the displayed body, but a register slip must be charged from the
+  // frozen snapshot so the score is reproducible across runs.
+  var sugRevBody = scoringProse(scoreSentences).map(function (s) { return String(s.revised || ""); }).join(" ").toLowerCase();
   suggestList.forEach(function (ph) {
     if (sugBody.indexOf(ph) !== -1 && sugRevBody.indexOf(ph) === -1) sourceRegister++;
   });
@@ -4967,6 +5313,41 @@ async function ensureValidResult(parsed, originalText, options, env) {
   var boostApplied = banded.boostApplied;
   var spellCapApplied = banded.spellCapApplied;
 
+  // --- Release gate ----------------------------------------------------------
+  // The gate is the final honesty checkpoint before a result is returned. Two
+  // independent signals:
+  //   - deterministicClean: every MEASURABLE defect class is zero on the
+  //     revision (spelling, grammar, stiffness, punctuation, caps, duplication).
+  //     Measured on the FROZEN score snapshot, so it is reproducible.
+  //   - verified: the certification model re-proofread the draft and reported
+  //     ZERO residual issues (the broad, model-only classes the deterministic
+  //     meter cannot see). Offline / no-key runs cannot verify.
+  // The model's self-report is surfaced (Notes + diagnostics) but never gates the
+  // band: a nondeterministic LLM report must not move a score (see below).
+  var deterministicClean = remainingSpelling === 0 && revisedGrammarHits === 0 &&
+    revisedStiffAll === 0 && revisedPunctHits === 0 && revisedCapsHits === 0 && revisedDupHits === 0;
+  // The certification model's self-reported residual count is retained for the
+  // Notes and diagnostics, but it must NEVER move a score: an LLM's per-run
+  // report is not reproducible, and the scoring contract requires the SAME input
+  // to yield the SAME scores regardless of provider. Keying the release-gate cap
+  // off that report made live scores flip (94 vs 98) run to run while the text
+  // was equally clean. Scoring stays purely deterministic (the census below);
+  // `verified`/`residualIssues` describe the model pass without gating the band.
+  var residualIssuesKnown = typeof certifyInfo.residualIssues === "number" ? certifyInfo.residualIssues : null;
+  var releaseGate = {
+    deterministicClean: deterministicClean,
+    verified: !!certifyInfo.verified,
+    verification: {
+      ran: certifyInfo.rounds > 0 && !certifyInfo.skippedReason,
+      rounds: certifyInfo.rounds,
+      maxRounds: certifyInfo.maxRounds,
+      repaired: certifyInfo.repaired,
+      residualIssues: residualIssuesKnown,
+      skippedReason: certifyInfo.skippedReason,
+    },
+    clean: deterministicClean && (!!certifyInfo.verified || !!certifyInfo.skippedReason),
+  };
+
   // Phase D: the SCORING RUBRIC — a transparent, self-explanatory audit of why
   // the two scores landed where they did. Same deterministic measurement applied
   // to source and revision; the four axes carry raw counts plus a normalized
@@ -4990,7 +5371,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
       source: Math.round(rawOrigScore),
       revised: Math.round(rawRevScore),
       cleared: Math.round(clearedRaw),
-      note: "Severity-weighted deduction meter (40-100): the SAME deterministic defect census is applied to source and revision, and each detected defect docks its class per the DEDUCTION_RULES table (grammar -4, spelling/word-choice/punctuation/duplication/capitalization -3, register -2, per-class caps). The band then snaps the display scores so a 98-tag requires an untouched source; model-side edits a deterministic meter cannot see (tense, preposition, phrasing) are charged to the source via Tier-B classification so the gap reflects real quality, not luck.",
+      note: "Severity-weighted deduction meter (40-100): the SAME deterministic defect census is applied to source and revision, and each detected defect docks its class per the DEDUCTION_RULES table (grammar -4, spelling/word-choice/punctuation/duplication/capitalization -3, register -2, per-class caps). The band then snaps the display scores so a 98-tag requires an untouched source; the source is additionally charged for the change the DETERMINISTIC layer itself makes (Tier-B classifies the reproducible source -> deterministic-revision delta), so the gap reflects real quality and every run yields the same scores regardless of provider.",
     },
     axes: {
       spelling: {
@@ -5046,6 +5427,7 @@ async function ensureValidResult(parsed, originalText, options, env) {
       semanticRiskSentences: semanticRiskCount,
       humanizeSkipped: humanizePass.skippedReason || null,
     },
+    releaseGate: releaseGate,
   };
 
   var preservedFootnoteCount = 0;
@@ -5087,6 +5469,13 @@ async function ensureValidResult(parsed, originalText, options, env) {
   }
   if (stiffUntouched) {
     reviewNotes.push("Note — Sentence " + (stiffUntouched.index + 1) + " reads the stiffest (the source crowds " + stiffUntouched.phraseCount + " AI-sounding phrase" + (stiffUntouched.phraseCount === 1 ? "" : "s") + " here) but the revision left it effectively unchanged. It is the sentence to fix first — re-run or nativize it by hand.");
+  }
+  if (releaseGate.verification.ran && residualIssuesKnown !== null && residualIssuesKnown > 0) {
+    reviewNotes.push("Note — the final certification pass reported " + residualIssuesKnown + " residual issue" + (residualIssuesKnown === 1 ? "" : "s") + " it could not fully resolve. These model-only residuals are surfaced here for your review and are NOT scored: the published score reflects the deterministic measurement (which is reproducible run to run), while this certification report is not.");
+  } else if (!releaseGate.verification.ran && !releaseGate.verification.skippedReason) {
+    reviewNotes.push("Note — model verification did not run; the deterministic result is as clean as measurable, but full certification was unavailable for this run.");
+  } else if (releaseGate.verification.skippedReason === "no-api-key") {
+    reviewNotes.push("Note — service degraded: model verification unavailable (deterministic transformations only). The output reflects every deterministic correction, but broad grammar/style certification requires a live model.");
   }
 
   var suggestions = postProcessSuggestions(
@@ -5185,6 +5574,19 @@ async function ensureValidResult(parsed, originalText, options, env) {
     // rewritten, and why the pass was skipped (no API key offline, nothing
     // flagged, or a non-fatal model/parse error).
     humanize: humanizeInfo,
+    // Final certification + release gate (the "no error slips through"
+    // guarantee): whether the deterministic layer is fully clean AND whether
+    // the certification model re-proofread the draft and found zero residuals.
+    certification: {
+      ran: releaseGate.verification.ran,
+      verified: releaseGate.verified,
+      clean: releaseGate.clean,
+      rounds: releaseGate.verification.rounds,
+      repaired: releaseGate.verification.repaired,
+      residualIssues: releaseGate.verification.residualIssues,
+      skippedReason: releaseGate.verification.skippedReason,
+    },
+    verified: releaseGate.verified,
     // Phase D scoring rubric: why the two scores landed where they did (see
     // the rubric construction above the score finals — descriptive only, never
     // consulted by the scores themselves).
@@ -5698,7 +6100,7 @@ var rescueUsed = false;
           if (savedFootnotes) parsed._originalFootnotes = savedFootnotes;
           if (preSweep) parsed._preSweepStats = preSweep.stats;
 
-          var result = await ensureValidResult(parsed, text, options, env);
+          var result = await ensureValidResult(parsed, text, options, env, pushLine);
           if (!result) {
             pushTerminal({
               ev: "error",

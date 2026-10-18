@@ -23,14 +23,19 @@ The package name is still the legacy `react-example` and worker mame internally
   Set `DISABLE_HMR=true` to turn HMR off.
 - `npm run build` — Vite production build (tsc types are checked here indirectly; the
   `cloudflare` vite plugin also builds the Worker).
-- `npm run preview` — build + `wrangler dev`.
+- `npm run preview` — build + `wrangler dev --config dist/wrangler.json` (serves the
+  built SPA locally). The config is named explicitly because `wrangler dev` left bare
+  would now resolve the API worker's `wrangler.toml`.
 - `npm run lint` — `tsc --noEmit` (this is the typecheck command).
-- `npm run deploy` — build + `wrangler deploy --config wrangler.toml`. IMPORTANT: this is
-  the ONLY command that ships `index.js` to the transform worker the app actually calls
-  (`https://nativewrite-api.nativewrite-api.workers.dev`). A bare `wrangler deploy` (no
-  `--config`) resolves the Vite-emitted `dist/wrangler.json` (from `wrangler.jsonc`,
-  name `react-example`) and instead publishes a STATIC SPA worker that never runs
-  `index.js` — the app would silently keep hitting the last real transform deploy.
+- `npm run deploy` — build + `wrangler deploy --config wrangler.toml`. This is the
+  command that ships `index.js` to the transform worker the app actually calls
+  (`https://nativewrite-api.nativewrite-api.workers.dev`). `wrangler.toml` is now the
+  ONLY root config wrangler auto-discovers, so a bare `wrangler deploy` also resolves
+  it. The SPA config is `wrangler.frontend.jsonc` (name `react-example`), wired into the
+  Vite build via `cloudflare({ configPath: 'wrangler.frontend.jsonc' })`; it is never
+  auto-discovered. `npm run build` emits `dist/wrangler.json` plus a
+  `.wrangler/deploy/config.json` redirect that would make a bare deploy target the SPA,
+  so `postbuild` deletes that redirect after every build.
 - `npm run clean` — `rm -rf dist`.
 - `npm run profile` — per-fixture warm CPU table (ms/request and ms/1000 words) for the
   real worker driven offline with the databases the app ships.
@@ -44,8 +49,8 @@ The package name is still the legacy `react-example` and worker mame internally
 ### Important routing notes
 
 - The Worker handles the transform on **`POST /`**, NOT `/api/transform`.
-  `/api/transform` only exists as the dev-proxy fallback in `vite.config.ts` that
-  `geminiService.ts` overrides via `VITE_WORKER_URL`.
+  There is no `/api/transform` route and no Vite dev proxy: `geminiService.ts`
+  calls `VITE_WORKER_URL` directly (falling back to the deployed worker).
 - Worker endpoints: `GET /health`, `POST /stripe-webhook`, `POST /create-checkout`,
   `POST /billing-portal`, `GET /user-tier`, and `POST /` (transform). Everything
   else → 404. `POST /create-checkout` and `POST /billing-portal` require a valid
@@ -71,8 +76,9 @@ The package name is still the legacy `react-example` and worker mame internally
 - `src/services/geminiService.ts` — `detectBestMode()` heuristic; `transformText()`
   POSTs to the Worker then applies client-side replacements (idiom / AI-ese / domain
   lexical databases) to `.revised` and `finalVersion`, tracking `databaseStats`.
-- `src/lib/supabase.ts` — client for `users.subscription_tier`, `usage.request_count`,
-  RPC `increment_usage`.
+- `src/lib/language.ts` — English-only guard (`looksNonEnglish`), mirrored verbatim
+  in `index.js`. There is NO frontend Supabase client: `users`/`usage` are read only
+  by the worker with `SUPABASE_SERVICE_KEY`, so `VITE_SUPABASE_*` is not used.
 - `lib/utils.ts`, `src/index.css` — `cn()` helper; Tailwind v4 `@theme` + shadcn tokens +
   TipTap/output prose styling (Inter + Cormorant Garamond; `--background: #FAF8F5`).
 - `index.js` — the entire Cloudflare Worker (see next section).
@@ -138,10 +144,14 @@ Keep API keys out of commits.
 
 ## Known issues / cautions
 
-- **Two wrangler configs coexist**: `wrangler.toml` (`nativewrite-api`, AI binding,
-  compat 2026-08-19) and `wrangler.jsonc` (`react-example`, compat 2026-06-08,
-  `nodejs_compat`). The build emits a `dist/wrangler.json`. Verify which one is the
-  source of truth before changing Worker config.
+- **Wrangler configs**: `wrangler.toml` (`nativewrite-api`, AI binding, compat
+  2026-08-19, `main = index.js`) is the transform worker and the ONLY root config
+  `wrangler` auto-discovers. The SPA config is `wrangler.frontend.jsonc`
+  (`react-example`, compat 2026-06-08, `nodejs_compat`, assets-only) and is loaded only
+  via `cloudflare({ configPath })` in `vite.config.ts`. The build emits a
+  `dist/wrangler.json` and a `.wrangler/deploy/config.json` redirect; `postbuild`
+  removes the redirect so a bare `wrangler deploy` cannot silently publish the SPA
+  worker. Treat `wrangler.toml` as the source of truth for Worker config.
 - **Stray untracked files** (diagnostic leftovers, safe to delete):
   `index.js.bak-20260828-131457`, `last-response.json`.
 - **Public copy is now aligned with enforcement**: the worker limits authenticated free
@@ -150,8 +160,8 @@ Keep API keys out of commits.
   `about.html`, `faq.html`, `privacy.html`, and the landing-page pricing reflect
   this. Any future change to the limit numbers must update
   `index.js` AND those four files.
-- The repo root contains large data files (nativewrite `*.csv`, `lexical-*.json`,
-  `metadata.json`) that are inputs to the frontend databases, not app source.
+- The repo root contains large data files (nativewrite `*.csv`, `lexical-*.json`)
+  that are inputs to the frontend databases, not app source.
 - `geminiService.ts` declares `process.env.WORKER_URL` reference inside comments/JSON in
   `vite.config.ts`; the Worker URL default in the service is the deployed
   `nativewrite-api` worker. Don't confuse `WORKER_URL` (vite proxy) with `VITE_WORKER_URL`.
@@ -343,12 +353,23 @@ Deterministic contract (must never drift):
   in academic prose, and the 2026-10-03 live probe caught the base-only patterns
   letting `discussed about` / `comprised of` / `emphasised on` reach the shipped
   text (section 13's fixture only tested the base form, so CI stayed green). **Tier B** = `classifyRealEdits(after,
-  before)`: a real Pass-1 sentence change not already caught by Tier A is
+  before)`: a real change not already caught by Tier A is
   attributed to a class (modal/aux/verb-inflection or preposition swap →
   grammar; content-word swap → word choice; else phrasing) and charged to the
   SOURCE only, so the revised side genuinely reflects the defect being gone;
   per-sentence dedupe so one defect never double-charges, and spelling evidence
-  is always dropped (the atomic spell meter owns it). **Register** docks only a
+  is always dropped (the atomic spell meter owns it). **Tier B classifies the
+  DETERMINISTIC revision, not the model's output (2026-10-18)**: `after` is the
+  reproducible `deterministicRevision` (source → `nativePolish` /
+  `fixCommonMisspellingsSafe` / `capitalizeEnhanced` / `applyCertifiedPolish` /
+  `addQuestionMark` → `applyDatabaseNativization`), never `s.revised`. Classifying
+  the model's Pass-1 text made the source charge track whatever the model happened
+  to rewrite that run, so live `originalScore` drifted (business wordChoice
+  evidence swung 3–5 → 72-vs-75 across runs while `revisedScore` stayed 98) and a
+  live-only capitalization double-charge appeared (gating on the model's text
+  while classifying the deterministic one). Offline this is byte-identical (no
+  model ⇒ source → revision IS the deterministic chain); live it makes
+  `originalScore` a pure function of the source. **Register** docks only a
   suggestDb phrase present in the source the model replaced (never a phrase
   left in place).
   **Duplication is BOTH written and measured (2026-10-03)** — it was first added
@@ -405,6 +426,19 @@ Deterministic contract (must never drift):
   scores regardless of provider. The banding decision lives in the pure
   `resolveBandedScores` and the census/deduction math in `applyDeductions` and
   `classifyRealEdits` (unit-asserted, test-transform sections 12 + 13).
+  **Score determinism vs the model passes (2026-10-18)**: the humanize and
+  certification model passes are NOT reproducible run to run — they legitimately
+  reword their repairs on each call — so the scoring census reads a FROZEN
+  snapshot (`scoreSentences`) taken right BEFORE those passes (post Pass-1/Pass-2,
+  structurally split + re-bolded by the same deterministic passes), never the
+  displayed post-model sentences. `originalScore`/`revisedScore` are therefore
+  invariant across runs even though the displayed bytes are not. The release
+  gate's `deterministicClean` comes from that deterministic census; the
+  certification model's self-reported `residualIssues`/`verified` are surfaced in
+  diagnostics + Notes but MUST NEVER move a score (keying a cap off an LLM's
+  per-run report flipped live scores 94↔98 while the text was equally clean).
+  Confirmed live: business `72→98` invariant across 3 runs with cert `repaired`
+  8/9/8; success-criteria `78→98` with `verified` true/false/true.
   Reference profiles (deduction-rubric pins, harness-asserted): military 76→98,
   uae 72→98, academic 72→98, grammar 72→98 (4+ planted defects, all within
   editor scope — a fully-cleaned revision honestly reaches the 98 ceiling),
@@ -556,8 +590,12 @@ Full verification matrix (required before ANY deploy):
    run in child processes via `scripts/perf/profile.mjs` and counted as ordinary checks
    — 64 total).
    Live provider audit is opt-in:
-   `npm run consistency:live` (consumes quota; asserts live scores invariant, bytes
-   identical when the same provider answers, and the Live-only grammar fixes land).
+   `npm run consistency:live` (consumes quota; asserts live scores invariant across runs
+   — the deterministic score contract holds live regardless of what the non-reproducible
+   humanize/certification model passes reworded — plus the Live-only grammar fixes land
+   and no S-V regression is introduced). Byte identity is deliberately NOT asserted live:
+   the approved model passes legitimately produce different bytes run to run, so the
+   offline byte-identity checks (section A) remain the byte contract.
 5. Local temp suites (not committed): master-test.cjs (83), auditfix-test.cjs (23),
    lang-test.mjs (14), audit-goal3.cjs (20), followup-verify.cjs (8). The old
    `e2e-user-text.cjs` probe is retired: its title regex required a literal `*` after
@@ -590,3 +628,11 @@ Full verification matrix (required before ANY deploy):
    never a tolerance to tune. `scripts/perf/big800.txt` (812 words, the free tier's
    cap) is pinned there rather than in `scripts/corpus/` because it is a resource
    fixture, not a scoring one.
+9. **Dense-fixture defect audit** (`scripts/qa/audit.mjs`). Drives the REAL worker on
+   `scripts/qa/dense-fixture.txt` with the FULL client DB payload and audits NDJSON
+   stream integrity, output duplication (incl. duplicate sentences within a paragraph),
+   per-defect catch status against a declared expectations table, false positives
+   (changed spans not claimed by the table), word-level track-changes reconstruction,
+   and the scoring/rubric contract invariants. Runs offline + live by default; use
+   `SKIP_LIVE=1` for the deterministic-only pass. Exits 1 on any HARD failure. This
+   is the harness that caught the duplication regression the corpus suites missed.

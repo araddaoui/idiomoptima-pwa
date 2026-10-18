@@ -56,6 +56,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  if (!CLERK_KEY) {
+    return (
+      <div className="min-h-screen bg-[#0B1120] text-white flex items-center justify-center px-6">
+        <div className="max-w-md text-center">
+          <h1 className="text-2xl font-bold mb-3">Configuration error</h1>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            <code className="text-indigo-300">VITE_CLERK_PUBLISHABLE_KEY</code> is not set, so
+            authentication cannot start. Add it to your environment and rebuild.
+          </p>
+        </div>
+      </div>
+    );
+  }
   return (
     <ClerkProvider publishableKey={CLERK_KEY} afterSignInUrl="/app" afterSignUpUrl="/app">
       <BrowserRouter>

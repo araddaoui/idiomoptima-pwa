@@ -97,7 +97,34 @@ export interface TransformationResult {
       rules: Record<string, { per: number; cap: number; maxInstances: number }>;
     };
     caveats: { coverageUncovered: number; semanticRiskSentences: number; humanizeSkipped?: string | null };
+    // Release gate: whether the deterministic layer is fully clean AND whether
+    // the final certification model re-proofread the draft and found zero
+    // residual defects.
+    releaseGate?: {
+      deterministicClean: boolean;
+      verified: boolean;
+      clean: boolean;
+      verification: {
+        ran: boolean;
+        rounds: number;
+        maxRounds: number;
+        repaired: number;
+        residualIssues: number | null;
+        skippedReason: string | null;
+      };
+    };
   };
+  // Final certification + release gate (top-level mirrors for easy rendering).
+  certification?: {
+    ran: boolean;
+    verified: boolean;
+    clean: boolean;
+    rounds: number;
+    repaired: number;
+    residualIssues: number | null;
+    skippedReason: string | null;
+  };
+  verified?: boolean;
 }
 
 const envAny = (import.meta as any).env || {};

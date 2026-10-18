@@ -1,20 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# IdiomOptima
 
-# Run and deploy your AI Studio app
+Grammar, punctuation and spelling correction plus "nativize prose" — a React 19 +
+Vite SPA backed by a single-file Cloudflare Worker.
 
-This contains everything you need to run your app locally.
+- **Frontend** (`src/`) — React 19, Vite 6, Tailwind v4, TipTap, Clerk auth. Deployed on Vercel.
+- **Backend** (`index.js`) — one Cloudflare Worker that verifies Clerk JWTs, enforces
+  usage tiers, calls LLM providers, and runs the deterministic post-processing pipeline.
+- **Data** — Supabase (`users`, `usage`) and Stripe subscriptions, both touched only by
+  the worker. There is no frontend Supabase client.
 
-View your app in AI Studio: https://ai.studio/apps/9ab60d15-3049-427e-971b-2bef4c7a0e72
+## Run locally
 
-## Run Locally
+1. `npm install`
+2. Copy `.env.example` to `.env` and set `VITE_CLERK_PUBLISHABLE_KEY`
+   (optional: `VITE_WORKER_URL` to point at a local worker).
+3. `npm run dev` — Vite dev server on port 3000.
 
-**Prerequisites:**  Node.js
+The frontend calls the deployed worker by default. To run the worker locally, set the
+secrets in `.dev.vars` and run `npx wrangler dev --config wrangler.toml`, then point
+`VITE_WORKER_URL` at it. Worker secrets are listed in `.env.example`.
 
+## Scripts
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- `npm run build` — Vite production build
+- `npm run lint` — `tsc --noEmit` (the typecheck)
+- `npm test` — worker transform test suite
+- `npm run consistency` — offline determinism + coverage + resource budgets
+- `npm run deploy` — build + `wrangler deploy --config wrangler.toml` (the transform
+  worker). `wrangler.toml` is the only root config wrangler auto-discovers; the Vite
+  SPA config lives at `wrangler.frontend.jsonc` and is referenced explicitly by the
+  Cloudflare Vite plugin, so a bare `wrangler deploy` now targets the transform worker
+- `npm run profile` / `profile:mem` / `profile:cmp` — worker CPU/memory + output-identity
+
+See `AGENTS.md` for the full architecture, behavioral contract, and verification matrix.

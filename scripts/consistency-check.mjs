@@ -32,10 +32,13 @@
 //      deduction to a fully-cleaned revision, so a corpus whose defects are all
 //      inside the editor's scope honestly reaches the 98 ceiling).
 // Live mode (`--live` / LIVE=1) additionally POSTs the corpus to the deployed
-// worker 3x each and asserts: scores identical on every run, output bytes
-// identical whenever the SAME provider answered (provider is always gemini for
-// both tiers; a change would mean an upstream event), and the LIVE-only grammar
-// fixes for the success-criteria fixture actually landed.
+// worker 3x each and asserts the DETERMINISTIC score contract holds live: the
+// same input yields identical originalScore/revisedScore on every run regardless
+// of what the model passes did, plus the LIVE-only grammar fixes for the
+// success-criteria fixture landed and no S-V regression was introduced. Byte
+// identity is NOT asserted live — the approved humanize + certification model
+// passes legitimately reword their repairs run to run, so the same input can
+// produce different bytes while the scores stay pinned.
 //
 // Runs of the live mode consume real provider quota; offline mode is free.
 
@@ -388,13 +391,15 @@ async function main() {
       }
       const scores = runs.map((r) => r.norm.originalScore + "->" + r.norm.revisedScore).join(" | ");
       check(key + " live scores invariant across runs", new Set(scores ? runs.map((r) => r.norm.originalScore + "->" + r.norm.revisedScore) : []).size === 1, scores);
-      const stableProvider = new Set(runs.map((r) => r.provider)).size === 1;
       console.log("      providers: " + runs.map((r) => r.provider).join(", "));
-      if (stableProvider) {
-        const sigs = new Set(runs.map((r) => JSON.stringify(r.norm)));
-        check(key + " live bytes identical (stable provider)", sigs.size === 1);
-      } else {
-        console.log("      WARN provider changed mid-run (upstream outage) — byte identity N/A, scores above still enforced");
+      // Byte identity is NOT asserted live: the (approved) humanize + certification
+      // model passes legitimately reword their repairs run to run, so the same
+      // input can yield different bytes while the DETERMINISTIC score contract
+      // (checked immediately above) holds. Offline byte identity is still enforced
+      // in section A; here the contract is score-invariance, not byte-invariance.
+      const liveSigs = new Set(runs.map((r) => JSON.stringify(r.norm)));
+      if (liveSigs.size > 1) {
+        console.log("      note: live bytes vary across runs (model polish reworded) — scores above still enforced");
       }
       // LIVE-only grammar/spelling asserts: Pass 1 (the model) must actually fix
       // the planted defects — the offline path can't, by contract.
@@ -408,12 +413,15 @@ async function main() {
       // LIVE-only model-honesty assert: Pass 1 must not INTRODUCE grammar
       // regressions (the old multi-provider path turned "has the asset" into
       // "have the asset" and "bring" into "brings"). grammar/spelling-only pass
-      // must leave correct S-V untouched.
+      // must leave correct S-V untouched. Only the REGRESSION (the wrong form) is
+      // asserted: the certification pass may legitimately reword the correct
+      // clause away, so requiring the literal correct form to survive would pin
+      // model wording rather than the contract.
       if (item.liveNoSVR) {
         for (const r of runs) {
           const fv = r.norm.finalVersion || "";
-          check(key + " live: no S-V regression ('has the asset' kept, no 'have the asset')", /has the asset/.test(fv) && !/have the asset/.test(fv), "saw " + fv.slice(0, 300));
-          check(key + " live: no S-V regression ('strongly bring to mind' kept, no 'strongly brings')", /strongly bring to mind/.test(fv) && !/strongly brings/.test(fv), "saw " + fv.slice(0, 300));
+          check(key + " live: no S-V regression (never 'have the asset')", !/have the asset/.test(fv), "saw " + fv.slice(0, 300));
+          check(key + " live: no S-V regression (never 'strongly brings')", !/strongly brings/.test(fv), "saw " + fv.slice(0, 300));
         }
       }
     }
