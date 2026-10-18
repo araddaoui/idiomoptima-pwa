@@ -476,8 +476,14 @@ Deterministic contract (must never drift):
   nativized — this is why `have affinities with each other→share affinities`
   fires inside kingston's Book-Titles sentence.
 - **Nativization rule-sets**: worker `DEFAULT_DATABASES.aiDb` = 25 entries;
-  `public/ai-natural-database.json` = 3581 entries (the 16 documented additions,
-  plus the freeze-safe data entry `robust framework→solid framework`). All 16
+  `public/ai-natural-database.json` = 3582 entries (the 16 documented additions,
+  plus the freeze-safe data entry `robust framework→solid framework`, plus the
+  2026-10-18 quality pass: `has the ability to`/`have the ability to`→`can`
+  promoted from advise-only; `cutting-edge`/`cutting edge`→`advanced` retargeted
+  from the lossy `new`; `needless to say`→`obviously` RETIRED). The `-1500` and
+  `-1000` split files carry the same `cutting-edge`/`cutting edge`→`advanced`
+  retarget (`clunky`/`native` schema) because the client MERGES all three into one
+  `aiDb`. All 16
   documented additions above remain as DATA (their old code-side template
   families are removed; the aiDb rows are the only place they live now). DB
   growth is data-only and freeze-safe; rule SEMANTICS must not change.
@@ -499,7 +505,8 @@ Deterministic contract (must never drift):
   **Advise tier populated (2026-10-03)**: the tier shipped as a ONE-entry stub
   (`some sort of`), identical to the `DEFAULT_DATABASES` floor, which made the whole
   tier unreachable — `registerNotes` could never fire and `DEDUCTION_RULES.register`
-  was dead. `public/ai-suggestions.json` now ships **86 entries**, each tagged
+  was dead. `public/ai-suggestions.json` now ships **84 entries** (86 minus the two
+  `has/have the ability to` entries promoted to the auto tier on 2026-10-18), each tagged
   `kind` (`informal` / `filler` / `cliche` / `formulaic`) so the note names the real
   register issue instead of calling everything "informal", and the note's closing
   register is derived from `options.domain` (academic / business / creative /

@@ -228,10 +228,11 @@ const EXPECT = [
   { id: "C7", cat: "c-aise", tier: "aiDb", planted: "a plethora of", re: /a plethora of/i, requiredOffline: true },
   { id: "C8", cat: "c-aise", tier: "aiDb", planted: "Due to the fact that", re: /due to the fact that/i, requiredOffline: true },
   { id: "C9", cat: "c-aise", tier: "aiDb", planted: "cutting-edge", re: /cutting-edge/, requiredOffline: true },
-  { id: "C10", cat: "c-aise", tier: "aiDb", planted: "needless to say", re: /needless to say/i, requiredOffline: true },
+  { id: "C10", cat: "c-aise", tier: "absent", planted: "needless to say (rule RETIRED 2026-10-18 — no longer deterministically fixed)", re: /needless to say/i },
   { id: "C11", cat: "c-aise", tier: "aiDb", planted: "At the end of the day", re: /at the end of the day/i, requiredOffline: true },
-  // (c) AI-ese — advise-only tier: MUST survive the edit, SHOULD surface as a note
-  { id: "C12", cat: "c-aise", tier: "advise", planted: "has the ability to", re: /has the ability to/i },
+  // (c) AI-ese — promoted from advise-only to the auto tier on 2026-10-18: MUST
+  // now be deterministically cleared. The advise tier is exercised by npm test §17.
+  { id: "C12", cat: "c-aise", tier: "aiDb", planted: "has the ability to", re: /has the ability to/i, requiredOffline: true },
   // (c) AI-ese — structural rhythm, absent from DBs (model-only)
   { id: "C13", cat: "c-aise", tier: "absent", planted: "It is essential. It is urgent. It is unavoidable.", re: /\bit is essential\b/i },
   // legitimate certified writes / guards the audit must see (not false positives)

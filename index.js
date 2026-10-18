@@ -2095,8 +2095,8 @@ function deriveSentencesFromTexts(originalText, finalVersion) {
     }
     // Reconcile pass: the deterministic DB pre-sweep rewrites a sentence's
     // VOCABULARY before the model sees it (e.g. "Due to the fact that ... are
-    // cutting-edge, needless to say, ..." -> "Because ... are new, obviously,
-    // ..."). That rewrite can push token similarity below the 0.55 match floor,
+    // cutting-edge ..." -> "Because ... are advanced ..."). That rewrite can
+    // push token similarity below the 0.55 match floor,
     // so the original sentence is left as-is (its revised falls back to the
     // original) while its nativized counterpart stays unused — and the append
     // loop below then mistakes the counterpart for an "added" sentence and
@@ -2532,7 +2532,7 @@ var SINGLE_WORD_ALLOW = {
   "empower": true, "accelerate": true, "groundbreaking": true,
   "transformative": true, "unparalleled": true, "orchestrate": true,
   // Hyphenated compounds tokenize as ONE word (the [A-Za-z0-9'-]+ class), so a
-  // legitimate DB entry like "cutting-edge -> new" was silently dropped by the
+  // legitimate DB entry like "cutting-edge -> advanced" was silently dropped by the
   // <2-word gate and could never fire (audit finding F1). Explicit allow-list
   // the ones that are safe as bare word-boundary swaps.
   "cutting-edge": true

@@ -1609,7 +1609,7 @@
   },
   {
     "ai": "cutting-edge",
-    "natural": "new"
+    "natural": "advanced"
   },
   {
     "ai": "state-of-the-art",
@@ -1765,7 +1765,15 @@
   },
   {
     "ai": "cutting edge",
-    "natural": "new"
+    "natural": "advanced"
+  },
+  {
+    "ai": "has the ability to",
+    "natural": "can"
+  },
+  {
+    "ai": "have the ability to",
+    "natural": "can"
   },
   {
     "ai": "in today's world",
@@ -14006,10 +14014,6 @@
   {
     "ai": "time and time again",
     "natural": "repeatedly"
-  },
-  {
-    "ai": "needless to say",
-    "natural": "obviously"
   },
   {
     "ai": "last but not least",
