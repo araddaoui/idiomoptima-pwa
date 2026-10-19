@@ -3092,6 +3092,41 @@ var GRAMMAR_RULES = [
       return /(suggest(?:ed)?|recommend(?:s|ed)?|request(?:s|ed)?|demand(?:s|ed)?|insist(?:s|ed)?|propos(?:e|es|ed)?|require(?:s|d)?|important|essential|vital|necessary|adamant)\b[^.!?\n\u2019]{0,60}\bthat\b[^.!?\n\u2019]{0,50}$/i.test(pre);
     },
     repl: function (m) { return (m[1] || "") + m[2] + m[3] + " " + m[4] + "s"; } },
+  // Non-restrictive relative pronoun for a HUMAN antecedent ("the employees,
+  // which signed the petition" -> "who"). CLOSED list of unambiguously human
+  // PLURAL nouns + a required comma, so it can never touch "the research, which
+  // shows..." or "the team, which was founded in 1990" (collectives are
+  // deliberately excluded — an organisation is a thing and "which" is correct).
+  // Add to this list only nouns that denote people and nothing else.
+  { id: "rel-pronoun-person",
+    re: new RegExp("\\b(" + [
+      "employees","workers","participants","attendees","signatories","respondents",
+      "informants","interviewees","applicants","candidates","voters","citizens",
+      "residents","refugees","migrants","soldiers","civilians","victims","survivors",
+      "witnesses","jurors","children","students","pupils","graduates","alumni",
+      "colleagues","patients","nurses","doctors","teachers","researchers","authors",
+      "scholars","officials","delegates","representatives","experts","practitioners",
+      "clinicians","members","people"
+    ].join("|") + ")\\s*,\\s*which\\b", "gi"),
+    repl: function (m) { return m[1] + ", who"; } },
+  // Uncountable nouns wrongly pluralised, ADJACENCY-RESTRICTED. The naive form
+  // of this rule ("evidences" -> "evidence" anywhere) SHIPS A NEW DEFECT: it
+  // turns "The evidences support the claim" into "The evidence support the
+  // claim" and "The feedbacks from users were positive" into "The feedback ...
+  // were positive" — the plural verb is left stranded. So this rule only fires
+  // when the finite verb is IMMEDIATELY AFTER the noun, where it can rewrite
+  // BOTH in one pass and cannot leave disagreement behind. Everything else
+  // ("many informations about ...", "feedbacks from users were ...") is left to
+  // Pass 1, which repairs the whole phrase properly ("many informations" ->
+  // "extensive information"). `researches` is excluded outright: it is also the
+  // third-person singular of the VERB "research" and has no plural misuse.
+  { id: "uncountable-plural",
+    re: /\b(informations|advices|feedbacks|softwares|evidences|knowledges|equipments|trainings)\s+(is|was|has|are|were|have|do|does)\b/gi,
+    repl: function (m) {
+      var noun = m[1].replace(/s$/i, "");
+      var map = { is: "is", was: "was", has: "has", are: "is", were: "was", have: "has", do: "does", does: "does" };
+      return noun + " " + map[String(m[2]).toLowerCase()];
+    } },
 ];
 // Governed-preposition pairs (wrong preposition -> the head verb's true
 // complement). Universal collocations, not per-text patches.
@@ -3803,6 +3838,18 @@ function addedContentWords(originalText, finalText, options) {
   };
   var origTokensSet = {};
   origTokens.forEach(function (t) { origTokensSet[t] = 1; origTokensSet[spellNorm(t)] = 1; });
+  // Inflection-aware stem index (2026-10-18). The prefix tolerance below only
+  // catches one form being a prefix of the other, so "announces" -> "announced"
+  // slipped through: neither is a prefix of the other, yet both are the same
+  // lemma and the change is the certified layer's own tense repair, not invented
+  // detail. Index every source token under its candidate stems (shared helper,
+  // same table the Tier-B grammar classifier uses) so any inflection of the same
+  // lemma is recognised.
+  var origStemSet = {};
+  origTokens.forEach(function (t) {
+    var sk = stemKeys(t);
+    for (var k2 in sk) origStemSet[k2] = 1;
+  });
   var out = [];
   var seen = {};
   String(finalText || "").split(/\s+/).forEach(function (raw) {
@@ -3812,6 +3859,11 @@ function addedContentWords(originalText, finalText, options) {
       if (origTokensSet[k]) return;
       var kn = spellNorm(k);
       if (kn !== k && origTokensSet[kn]) return;
+      // Inflection of a source word is a form of the author's word, not an
+      // invention ("announced" next to source "announces").
+      var stems = stemKeys(k), inflectHit = false;
+      for (var sk2 in stems) { if (origStemSet[sk2]) { inflectHit = true; break; } }
+      if (inflectHit) return;
       // Morphological tolerance: "considerations" next to source "consideration"
       // (added word is a prefix of a source token) or the reverse (prefix of the
       // added word is a source token) is a form of the author's word, not an
@@ -4093,23 +4145,34 @@ function resolveBandedScores(rawOrig, rawRev, opts) {
   };
 }
 
-// Severity-weighted deduction rubric (USER CONTRACT, values approved 2026-09-29).
+// Severity-weighted deduction rubric (USER CONTRACT; values approved 2026-09-29,
+// ceilings re-approved 2026-10-18 — see the note below the table).
 // Single source of truth for BOTH the raw residual meter and the audit UI. The
 // table is harness-pinned so any future value change must be a deliberate edit.
-//   Grammar & usage (sv, tense, article, preposition, doubled subject): -4 (cap -16)
-//   Spelling: -3 (cap -12; hard 80-ceiling separately)
-//   Word choice / AI-ese / phrasing: -3 (cap -12)
-//   Punctuation (incl. unbalanced brackets): -3 (cap -12)
-//   Duplicates / echo: -3 (cap -12; hard 85-ceiling separately)
-//   Capitalization: -3 (cap -12)
+//   Grammar & usage (sv, tense, article, preposition, doubled subject): -4 (cap -32)
+//   Spelling: -3 (cap -24; hard 80-ceiling separately)
+//   Word choice / AI-ese / phrasing: -3 (cap -24)
+//   Punctuation (incl. unbalanced brackets): -3 (cap -24)
+//   Duplicates / echo: -3 (cap -24; hard 85-ceiling separately)
+//   Capitalization: -3 (cap -24)
 //   Register slip (deterministic only): -2 (cap -6)
+// MAX-INSTANCES RE-APPROVAL (2026-10-18): every axis was maxInstances 4, so a
+// source with SEVEN real defects scored identically to one with four. That is a
+// direct contradiction of the user contract "the grade is a function of the
+// overall number of improvements made" — it was reported on the grammar axis
+// (8 grammar defects, flat 84) and then surfaced on word choice the moment the
+// grammar phantom charges were removed (uae/military/kingston each carry 7 real
+// nativization improvements but paid the same 12 as a 4-hit source). All axes
+// are now maxInstances 8. The caps still exist so a pathological source cannot
+// fall through the 40 floor on one axis, and the hard 80/85 ceilings are
+// untouched.
 var DEDUCTION_RULES = {
-  grammar: { per: 4, cap: 16, maxInstances: 4 },
-  spelling: { per: 3, cap: 12, maxInstances: 4 },
-  wordChoice: { per: 3, cap: 12, maxInstances: 4 },
-  punctuation: { per: 3, cap: 12, maxInstances: 4 },
-  duplication: { per: 3, cap: 12, maxInstances: 4 },
-  capitalization: { per: 3, cap: 12, maxInstances: 4 },
+  grammar: { per: 4, cap: 32, maxInstances: 8 },
+  spelling: { per: 3, cap: 24, maxInstances: 8 },
+  wordChoice: { per: 3, cap: 24, maxInstances: 8 },
+  punctuation: { per: 3, cap: 24, maxInstances: 8 },
+  duplication: { per: 3, cap: 24, maxInstances: 8 },
+  capitalization: { per: 3, cap: 24, maxInstances: 8 },
   register: { per: 2, cap: 6, maxInstances: 3 },
 };
 
@@ -4137,20 +4200,71 @@ function tokenDiffTokens(a, b) {
 
 // TIER-B evidence classifier: for a REAL Pass-1 sentence change the deterministic
 // meter cannot see, attribute the edit to the defect class it most plausibly
-// fixes, so the SOURCE is charged and the revision credited. Grammar defect
-// classes (sv/tense/article/preposition) are Tier-A's job and never double-charge
-// here — the callers dedupe per sentence. Pure function (unit-pinned).
-var MODAL_AUX_WORDS = [
-  "can","could","would","should","shall","will","may","might","must","ought","need",
-  "is","are","was","were","be","been","being","am","has","have","had","do","does","did",
-  "go","goes","went","gone","buy","buys","bought","say","says","said","make","makes","made",
-  "see","sees","saw","seen","take","takes","took","given","get","gets","got","gotten",
-  "manifests","manifested","began","begun","hold","held","devise","devises","devised"
-];
+// fixes, so the SOURCE is charged and the revision credited. A class Tier A
+// already caught on the SAME source sentence is deduped by the caller, so a
+// defect is never charged twice. Pure function (unit-pinned).
+// The old MODAL_AUX_WORDS table that used to live here is GONE (2026-10-18): it
+// held `is/are/was/were/has/have/do/does` — the commonest words in English — so
+// any nativization that dropped a copula ("it is a testament to" -> "attests
+// to") was charged to the SOURCE as a GRAMMAR defect. With the grammar cap
+// raised to 32 that mis-attribution became 12 phantom points of debt on a
+// DB-heavy fixture. A grammar correction changes the FORM of a verb; a
+// nativization changes the WORD. The tables below let the classifier tell them
+// apart. Do not reintroduce a flat aux/modal membership test.
 var PREPOSITION_WORDS = [
   "in","on","at","to","for","of","from","by","with","about","into","onto","upon","within",
   "without","among","between","through","over","under","against","toward","towards"
 ];
+var AUX_FAMILIES = [
+  ["is","are","was","were","be","been","being","am"],   // be
+  ["has","have","had","having"],                         // have
+  ["do","does","did","doing","done"]                     // do
+];
+var TRUE_MODALS = ["can","could","would","should","shall","will","may","might","must","ought","need"];
+function inAuxFamily(tok) {
+  for (var f = 0; f < AUX_FAMILIES.length; f++) {
+    if (AUX_FAMILIES[f].indexOf(tok) >= 0) return f;
+  }
+  return -1;
+}
+function isTrueModal(tok) { return TRUE_MODALS.indexOf(tok) >= 0; }
+// Inflection-aware stem keys (2026-10-18). Strips the regular English
+// inflectional suffixes (-s / -es / -ed / -ing) with the silent-e and doubled-
+// consonant repairs and the -i -> -y mapping, so two forms of the same lemma
+// compare equal. ONE table with TWO consumers: the added-word note (so
+// "announces" -> "announced" is recognised as the author's own word rather than
+// invented detail) and the Tier-B grammar classifier (a tense/inflection repair
+// is GRAMMAR, not word choice — "announces" -> "announced" used to fall through
+// to word choice because the old rule only understood plural -s).
+function stemKeys(w) {
+  var s = String(w || "").toLowerCase().replace(/[^a-z]/g, "");
+  var o = {};
+  function put(x) {
+    if (!x || x.length < 3) return;
+    o[x] = 1;
+    if (/i$/.test(x)) o[x.slice(0, -1) + "y"] = 1; // studi -> study
+  }
+  put(s);
+  if (s.length > 5 && /ing$/.test(s)) {
+    var g = s.slice(0, -3);
+    put(g); put(g + "e"); // making -> mak / make
+    if (g.length > 3 && g.slice(-1) === g.slice(-2)) put(g.slice(0, -1)); // running -> run
+  }
+  if (s.length > 4 && /ed$/.test(s)) {
+    var d = s.slice(0, -2);
+    put(d); put(d + "e"); // announced -> announce / walked -> walk
+    if (d.length > 3 && d.slice(-1) === d.slice(-2)) put(d.slice(0, -1)); // stopped -> stop
+  }
+  if (s.length > 4 && /ies$/.test(s)) put(s.slice(0, -3) + "y"); // studies -> study
+  if (s.length > 4 && /es$/.test(s) && /(s|x|z|ch|sh)es$/.test(s)) put(s.slice(0, -2)); // boxes -> box
+  if (s.length > 3 && /s$/.test(s) && !/(ss|us|is)$/.test(s)) put(s.slice(0, -1)); // announces -> announce
+  return o;
+}
+function shareStem(a, b) {
+  var ka = stemKeys(a), kb = stemKeys(b);
+  for (var k in ka) { if (kb[k]) return true; }
+  return false;
+}
 function classifyRealEdits(before, after) {
   var cls = { grammar: 0, spelling: 0, punctuation: 0, capitalization: 0, wordChoice: 0 };
   if (!before || !after) return cls;
@@ -4175,32 +4289,58 @@ function classifyRealEdits(before, after) {
   var contentChanged = srcOnly.some(function (w) { return /[a-z]/.test(w); }) ||
                        revOnly.some(function (w) { return /[a-z]/.test(w); });
   if (!contentChanged) { cls.punctuation = 1; return cls; }
-  // Grammar: modal/auxiliary/verb switch, preposition swap, inflection of a
-  // matched stem (transformation -> transformations).
-  for (i = 0; i < srcOnly.length; i++) {
-    if (MODAL_AUX_WORDS.indexOf(srcOnly[i]) >= 0) { cls.grammar = 1; break; }
-    if (PREPOSITION_WORDS.indexOf(srcOnly[i]) >= 0) { cls.grammar = 1; break; }
+  // --- Grammar attribution (precision-gated) -------------------------------
+  // (1) SAME-FAMILY AUX PAIR: both sides carry a form of the same auxiliary
+  //     (was -> were, has -> have). A genuine agreement/tense repair; a
+  //     nativization never swaps one be-form for another be-form.
+  var famSrc = -1, famRev = -1;
+  for (i = 0; i < srcOnly.length && famSrc < 0; i++) famSrc = inAuxFamily(srcOnly[i]);
+  for (i = 0; i < revOnly.length && famRev < 0; i++) famRev = inAuxFamily(revOnly[i]);
+  if (famSrc >= 0 && famSrc === famRev) { cls.grammar = 1; return cls; }
+  // (2) TRUE MODAL REMOVED + ITS VERB SURVIVES: "we must submit" -> "we submit"
+  //     keeps `submit` alive, so the modal was the defect. The test is the token
+  //     IMMEDIATELY FOLLOWING the modal, not any surviving content word — a
+  //     looser test let "it will be useful to map out the next steps" -> "helps
+  //     to map out the next steps" fire on the surviving noun `steps`.
+  var modalInDiff = srcOnly.some(isTrueModal) || revOnly.some(isTrueModal);
+  if (modalInDiff) {
+    var afterSet = {};
+    String(after).toLowerCase().split(/[^a-z0-9']+/).forEach(function (w) { if (w) afterSet[w] = 1; });
+    var srcWords = String(before).toLowerCase().split(/[^a-z0-9']+/).filter(Boolean);
+    var modalVerbSurvives = srcWords.some(function (w, idx) {
+      if (!isTrueModal(w) || srcOnly.indexOf(w) < 0) return false; // modal must be the REMOVED token
+      var nxt = srcWords[idx + 1];
+      return !!(nxt && afterSet[nxt]);
+    });
+    if (modalVerbSurvives) { cls.grammar = 1; return cls; }
   }
-  if (!cls.grammar) {
-    for (i = 0; i < revOnly.length; i++) {
-      if (MODAL_AUX_WORDS.indexOf(revOnly[i]) >= 0) { cls.grammar = 1; break; }
-      if (PREPOSITION_WORDS.indexOf(revOnly[i]) >= 0) { cls.grammar = 1; break; }
-    }
+  // (3) PREPOSITION SWAP with a SMALL diff: a one-for-one preposition exchange
+  //     ("in the meeting" -> "at the meeting") is a grammar correction. A larger
+  //     diff that merely happens to drop a preposition ("remain intent upon
+  //     spreading" -> "remain determined to spread") is a rephrase -> word choice.
+  if (srcOnly.length + revOnly.length <= 2) {
+    var prepSwap = srcOnly.concat(revOnly).some(function (w) { return PREPOSITION_WORDS.indexOf(w) >= 0; });
+    if (prepSwap) { cls.grammar = 1; return cls; }
   }
-  if (cls.grammar) return cls;
-  // Singular/plural inflection of the SAME stem.
-  for (var r = 0; r < srcOnly.length && !cls.grammar; r++) {
-    for (var a2 = 0; a2 < revOnly.length; a2++) {
-      if (srcOnly[r] + "s" === revOnly[a2] || revOnly[a2] + "s" === srcOnly[r] ||
-          (srcOnly[r].length > 4 && revOnly[a2].length > 4 &&
-           (srcOnly[r].slice(0, -2) === revOnly[a2].slice(0, -1) ||
-            srcOnly[r].slice(0, -1) === revOnly[a2].slice(0, -2)))) {
-        cls.grammar = 1;
-        break;
+  // (4) PURE INFLECTION of the SAME stem: every changed token on BOTH sides pairs
+  //     one-to-one by stem, with no leftover tokens (announces -> announced,
+  //     include+were -> includes+was, transformation -> transformations). A
+  //     grammar repair changes only the FORM of the author's own words; a rephrase
+  //     brings in different words as well, so it fails the one-to-one test and
+  //     stays word choice ("remain intent upon spreading" -> "remain determined to
+  //     spread" must NOT read as grammar just because spreading/spread share a
+  //     stem). The old rule only understood plural -s, so a tense repair fell
+  //     through to word choice and under-charged the source.
+  if (srcOnly.length > 0 && srcOnly.length === revOnly.length) {
+    var usedRev = {}, matched = 0;
+    for (var r = 0; r < srcOnly.length; r++) {
+      for (var a2 = 0; a2 < revOnly.length; a2++) {
+        if (usedRev[a2]) continue;
+        if (shareStem(srcOnly[r], revOnly[a2])) { usedRev[a2] = 1; matched++; break; }
       }
     }
+    if (matched === srcOnly.length) { cls.grammar = 1; return cls; }
   }
-  if (cls.grammar) return cls;
   // Every remaining real edit is, at minimum, a wording/register improvement.
   cls.wordChoice = 1;
   return cls;
@@ -4812,40 +4952,6 @@ async function ensureValidResult(parsed, originalText, options, env, pushLine) {
   scoreSentences = splitWeldedHeadings(scoreSentences);
   scoreSentences = boldHeadingSentences(scoreSentences);
 
-  // DETERMINISTIC REVISION (score contract): Tier-B charges the source for a
-  // defect by classifying the change from source -> revision. If that revision
-  // is the MODEL's Pass-1 output, the source charge tracks whatever the model
-  // happened to rewrite that run, and originalScore drifts (measured: business
-  // wordChoice evidence swung 3-5 -> 72 vs 75 across runs, while revisedScore
-  // stayed pinned at 98). The contract requires the SAME input to yield the SAME
-  // scores regardless of provider, so Tier-B must classify against the change
-  // the DETERMINISTIC layer alone makes: apply the same source-first DB sweep to
-  // the source sentences. Offline this is identical to the previous behaviour
-  // (there is no model, so source -> revision IS the deterministic chain); only
-  // the model's discretionary rewrites are excluded from the source charge.
-  var deterministicRevision = (function () {
-    var src = scoreSentences.map(function (s) {
-      return {
-        original: s.original,
-        revised: s.original,
-        isImmutableFootnote: s.isImmutableFootnote,
-        paragraphIndex: s.paragraphIndex,
-      };
-    });
-    src.forEach(function (s) {
-      s.revised = nativePolish(s.revised);
-      s.revised = fixCommonMisspellingsSafe(s.revised);
-      s.revised = capitalizeEnhanced(s.revised);
-      s.revised = applyCertifiedPolish(s.revised, s.isImmutableFootnote);
-      s.revised = addQuestionMark(s.revised, s.original);
-    });
-    return applyDatabaseNativization(
-      src,
-      options && options.databases,
-      (options && options.domain) || "general"
-    ).sentences;
-  })();
-
   // Rebuild finalVersion from the post-processed sentences so it is always
   // 1:1 with the sentences list (no divergence between finalVersion and the
   // breakdown). Preserve original paragraph breaks via the body-only original.
@@ -5154,28 +5260,42 @@ async function ensureValidResult(parsed, originalText, options, env, pushLine) {
 
   var realChangeCount = 0;
   var magnitudeAll = 0;
-  // TIER-B evidence ledger: defect classes beyond the primary Tier-A counts
-  // (a preposition/verb-inflection swap, a content-word swap, a phrasing lift)
-  // that the DETERMINISTIC revision makes are classified and charged to the
-  // SOURCE only; the revision is credited because the defect is gone there.
-  // Tier B classifies the reproducible source -> deterministic-revision delta
-  // (never the model's Pass-1 text), so the source charge is identical on every
-  // run regardless of provider. Spelling is never re-charged here — the atomic
-  // spelling meter already docks every fixed misspelling exactly once.
-  // Per-sentence dedupe ensures a defect Tier A already caught (grammar/
-  // punctuation on the SOURCE sentence) is never charged a second time.
+  // TIER-B evidence ledger: defect classes beyond the primary Tier-A counts that
+  // the REAL Pass-1 output fixes are classified and charged to the SOURCE only;
+  // the revision is credited because the defect is gone there. Spelling is never
+  // re-charged here — the atomic spelling meter already docks every fixed
+  // misspelling exactly once. Per-sentence dedupe ensures a defect Tier A
+  // already caught (grammar/punctuation on the SOURCE sentence) is never charged
+  // a second time.
+  //
+  // DETERMINISM IS CONTROLLED BY CLASS, NOT BY DISCARDING THE SIGNAL (2026-10-18):
+  // only grammar / punctuation / capitalization are charged. Those are discrete
+  // corrections (a verb inflection, a dropped modal, a moved comma, a raised
+  // sentence start) that a temperature-0 Pass 1 reproduces identically run to
+  // run, so the evidence counts are stable. The `wordChoice` bucket is
+  // deliberately NOT charged: it captured the model's discretionary rephrasing
+  // and was the exact source of the historical business 72-vs-75 drift (evidence
+  // swung 3-5 across runs while revisedScore stayed pinned at 98). Word choice
+  // remains owned by the static DB layer (`sourceStiffAll`), which is
+  // deterministic by construction because it reads a fixed rule set rather than
+  // the model's wording.
   var evidenceClassCounts = { grammar: 0, wordChoice: 0, punctuation: 0, capitalization: 0 };
   scoreSentences.forEach(function (s, si) {
     // Semantically-flagged sentences must not inflate the score: their edit is
     // unverifiable (may have flipped meaning), so it cards no credit.
     if (scoreSemanticRisks[si]) return;
     var before = (s.original || "").trim().replace(/\s+/g, " ");
-    // Compare against the DETERMINISTIC revision, never the model's output, so
-    // every count below (real-change total, magnitude, Tier-B class) is
-    // reproducible across runs/providers. Using the model's `after` here was the
-    // source of the 72-vs-75 drift (and a live-only capitalization double-charge:
-    // gating on the model's text while classifying the deterministic one).
-    var after = ((deterministicRevision[si] && deterministicRevision[si].revised) || s.revised || "").trim().replace(/\s+/g, " ");
+    // Tier B classifies the REAL output (the model's Pass-1 corrections), not a
+    // deterministic stand-in. A 2026-10-18 regression pointed this at a
+    // source-first deterministic sweep so that a grammar-only input — where the
+    // certified layer is inert and the DB matched nothing — reported
+    // realChangeCount 0, anyChange false, and printed "98 -> 98 / the original
+    // text needed no corrections" over a visibly rewritten draft. The meter MUST
+    // see what Pass 1 fixed. Determinism is controlled by CLASS instead (see the
+    // wordChoice exclusion below): grammar/punctuation/capitalization edits are
+    // discrete and temperature-0 reproducible, so the evidence counts are stable
+    // across runs without discarding the signal.
+    var after = (s.revised || "").trim().replace(/\s+/g, " ");
     var o = before.toLowerCase();
     var r = after.toLowerCase();
     if (!/[a-z]/.test(o) || !/[a-z]/.test(r)) return;
@@ -5203,14 +5323,16 @@ async function ensureValidResult(parsed, originalText, options, env, pushLine) {
     // TIER-B: classify this real edit. Deleted misspellings are owned by the
     // spelling meter; and a class Tier A already caught on THIS source sentence
     // is not charged a second time (editor == meter, no double-dock). `after` is
-    // already the deterministic revision (see above), so the source charge never
-    // tracks the model's discretionary rewrites.
+    // the REAL Pass-1 output (see above), so the source charge reflects the
+    // corrections actually made.
     var clsEdit = classifyRealEdits(before, after);
     delete clsEdit.spelling;
     var la = srcLayerCounts[si] || { grammar: 0, punctuation: 0 };
     if (clsEdit.grammar && la.grammar > 0) clsEdit.grammar = 0;
     if (clsEdit.punctuation && la.punctuation > 0) clsEdit.punctuation = 0;
-    ["grammar", "wordChoice", "punctuation", "capitalization"].forEach(function (c) {
+    // wordChoice is computed by the classifier but never accumulated here — see
+    // the determinism-by-class note above the ledger declaration.
+    ["grammar", "punctuation", "capitalization"].forEach(function (c) {
       if (clsEdit[c]) evidenceClassCounts[c] += clsEdit[c];
     });
   });

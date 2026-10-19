@@ -518,6 +518,23 @@ function analyze(label, r, stream) {
   if (!(rS >= 40 && rS <= 98)) out.hard.push(`[${label}] revisedScore out of range: ${rS}`);
   if (rS < oS) out.hard.push(`[${label}] revisedScore ${rS} < originalScore ${oS} (clamp violated)`);
   if (sc.banding && sc.banding.anyChange === false && rS !== oS) out.hard.push(`[${label}] !anyChange but scores differ`);
+  // The regression this audit exists to catch (2026-10-18): the worker printed a
+  // flat 98->98 with "The original text needed no corrections." over a VISIBLY
+  // rewritten draft, because Tier-B evidence was gated on an inert derivation.
+  // The gate is bidirectional: !anyChange must mean the bytes really did not
+  // move, and a "needed no corrections" claim must mean the same thing.
+  {
+    const norm = (x) => String(x || "").replace(/\s+/g, " ").trim().toLowerCase();
+    const differs = (r.sentences || []).filter((s) => (s.original || "") !== (s.revised || ""));
+    if (sc.banding && sc.banding.anyChange === false) {
+      if (differs.length) out.hard.push(`[${label}] !anyChange but ${differs.length} sentence(s) differ`);
+      if (norm(final) !== norm(inputText)) out.hard.push(`[${label}] !anyChange but finalVersion differs from the source`);
+      if (/corrected\s+\d/i.test(r.explanation || "")) out.hard.push(`[${label}] !anyChange but summary claims corrections: "${r.explanation}"`);
+    }
+    if (/needed no corrections/i.test(r.explanation || "") && (differs.length || norm(final) !== norm(inputText))) {
+      out.hard.push(`[${label}] summary claims "needed no corrections" but ${differs.length} sentence(s) differ`);
+    }
+  }
   if (sc.meter && sc.meter.source >= 98 && sc.banding && sc.banding.anyChange && oS !== 95) out.hard.push(`[${label}] parity gate violated (raw>=98+change should print 98->95, got ${oS})`);
   if (r.remainingIssues && r.remainingIssues.spelling > 0 && (oS > 80 || rS > 80)) out.hard.push(`[${label}] residual spelling >0 but scores above 80 cap`);
   if (sc.axes && sc.axes.duplicates && sc.axes.duplicates.remaining > 0 && sc.meter && sc.meter.revised > 85) out.hard.push(`[${label}] residual duplication >0 but revised raw meter ${sc.meter.revised} > 85`);

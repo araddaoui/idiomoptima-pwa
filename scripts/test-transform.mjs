@@ -185,8 +185,21 @@ const extracted = [
   extractFunction(INDEX_SRC, "countMisspellings"),
   extractFunction(INDEX_SRC, "resolveBandedScores"),
   extractVarObject(INDEX_SRC, "DEDUCTION_RULES"),
-  extractVar(INDEX_SRC, "MODAL_AUX_WORDS"),
   extractVar(INDEX_SRC, "PREPOSITION_WORDS"),
+  // classifyRealEdits' precision tables (2026-10-18): module-level state the
+  // function closes over, so the harness must ship them too (AGENTS: adding
+  // module-level state to a function in this array without updating it kills
+  // every test that touches the function with a bare ReferenceError).
+  extractVar(INDEX_SRC, "AUX_FAMILIES"),
+  extractVar(INDEX_SRC, "TRUE_MODALS"),
+  extractFunction(INDEX_SRC, "inAuxFamily"),
+  extractFunction(INDEX_SRC, "isTrueModal"),
+  // Shared inflection table (2026-10-18): closed over by BOTH classifyRealEdits
+  // (tense/inflection repair -> grammar) and addedContentWords (inflection of the
+  // author's word -> not invented detail). Must travel with them or every call
+  // dies with a bare ReferenceError.
+  extractFunction(INDEX_SRC, "stemKeys"),
+  extractFunction(INDEX_SRC, "shareStem"),
   extractFunction(INDEX_SRC, "tokenDiffTokens"),
   extractFunction(INDEX_SRC, "classifyRealEdits"),
   extractFunction(INDEX_SRC, "applyDeductions"),
@@ -610,6 +623,32 @@ section("10. boldHeadingSentences re-bolds titles the model may have stripped");
       "Places the use of power within reach."
     );
     check("non-covered model word 'places' still flagged in added-word notes", got4.includes("places"), true);
+    // Inflection-aware stems (2026-10-18): the prefix tolerance only catches one
+    // form being a prefix of the other, so "announces" -> "announced" slipped
+    // through and surfaced the certified layer's own tense repair as invented
+    // detail. Any inflection of the same lemma must now be silent.
+    const infl = added(
+      "The committee announces a major shift and the board accepts the plan.",
+      "The committee announced a major shift and the board accepted the plan."
+    );
+    check("inflection pair announces->announced not flagged", infl.includes("announced") || infl.includes("accepted"), false);
+    const infl2 = added(
+      "He runs the lab and studies the data.",
+      "He ran the lab and studied the data."
+    );
+    check("inflection pair runs/studies -> ran/studied not flagged", infl2.includes("ran") || infl2.includes("studied"), false);
+    const infl3 = added(
+      "She boxes the samples for the assay.",
+      "She boxed the samples for the assay."
+    );
+    check("sibilant -es pair boxes->boxed not flagged", infl3.includes("boxed"), false);
+    // A genuine invention must STILL be flagged — the stem match is not a
+    // blanket amnesty for new content words.
+    const real = added(
+      "The study examines prior work.",
+      "The study investigates moral considerations in depth."
+    );
+    check("genuine invented detail still flagged", real.includes("moral") && real.includes("considerations"), true);
   }
 
   // Wiring guard: ensureValidResult must apply the pass before rebuild.
@@ -667,10 +706,13 @@ section("11. certified deterministic grammar/punctuation layer (offline worker p
     check("coordinated bare verb fixed ('and manifested in')", has(fv, "and manifested in"), true);
     check("heading bold preserved", /\*\*Background\*\*/.test(fv), true);
     check("DB sweep still runs ('a host of')", has(fv, "a host of"), true);
-    // Severity-weighted deduction rubric (2026-09-29): the source pays per class
-    // (grammar -4, word-choice -3 ×2, punctuation -3 ×2 = -16 -> 84); the clean
-    // revision earns the FULL delta back (full-delta banding) -> 98.
-    check("grading follows the quality gap (original 84)", out.originalScore, 84);
+    // Severity-weighted deduction rubric (2026-09-29; grammar ceiling 2026-10-18):
+    // the source pays per class (grammar -4, word-choice -3, punctuation -3 ×2
+    // = -13 -> 87); the clean revision earns the FULL delta back (full-delta
+    // banding) -> 98. wordChoice is 1 because Tier B no longer charges its
+    // wordChoice bucket (determinism-by-class), so the only word-choice evidence
+    // left is the static DB stiffness axis.
+    check("grading follows the quality gap (original 87)", out.originalScore, 87);
     check("fully-cleaned revision scores 98 (full delta)", out.revisedScore, 98);
     const dd = out.rubric && out.rubric.deductions;
     check("deductions ledger audits the source classes", !!(dd && dd.source && dd.source.grammar && dd.source.wordChoice && dd.source.punctuation), true);
@@ -702,6 +744,42 @@ section("11. certified deterministic grammar/punctuation layer (offline worker p
     await guard("Ferguson wrote in 1967 his classic study of diglossia.", "in 1967 his", true);
     await guard("The budget reached 2,600 in 1967, and 3,400 in 1976.", "2,600", true);
     await guard("The data was collected,but the sample stayed small.", "collected, but", true);
+  }
+  {
+    // Certified additions 2026-10-18. Both write AND count (editor == meter), so
+    // offline == live and the grammar axis sees the defect the source carried.
+    const t = async (sentence, mustContain, mustNotContain) => {
+      const out = await run(sentence);
+      if (mustContain) check("fixed: " + sentence.slice(0, 46) + "... contains '" + mustContain + "'", has(out.finalVersion, mustContain), true);
+      if (mustNotContain) check("fixed: " + sentence.slice(0, 46) + "... dropped '" + mustNotContain + "'", has(out.finalVersion, mustNotContain), false);
+      return out;
+    };
+    const keep = async (sentence, needle) => {
+      const out = await run(sentence);
+      check("kept: '" + needle + "' in '" + sentence.slice(0, 46) + "...'", has(out.finalVersion, needle), true);
+    };
+    // (1) Non-restrictive relative pronoun for a HUMAN antecedent.
+    const rel = await t("The employees, which signed the petition, received no reply.", "The employees, who signed the petition", "which signed the petition");
+    check("rel-pronoun-person counts a grammar hit on the source", (rel.sourceIssues || {}).grammar >= 1, true);
+    await t("The workers, which arrived late, were turned away.", "The workers, who arrived late", "which arrived late");
+    // NEGATIVE guards: a thing, a collective, or a restrictive clause must never
+    // be rewritten — an organisation is not a person.
+    await keep("The research, which shows a clear trend, is conclusive.", "research, which shows");
+    await keep("The team, which was founded in 1990, expanded again.", "team, which was founded");
+    await keep("The board, which includes five members, met on Tuesday.", "board, which includes");
+    // (2) Uncountable plural, ADJACENCY-RESTRICTED: fires only where it can also
+    // repair the stranded plural verb in the same pass.
+    const unc = await t("The informations are available to all staff.", "The information is available", "informations are");
+    check("uncountable-plural counts a grammar hit on the source", (unc.sourceIssues || {}).grammar >= 1, true);
+    await t("The feedbacks were positive and the evidences were clear.",
+      "The feedback was positive and the evidence was clear", "feedbacks were");
+    // NEGATIVE guards: the naive rewrite would have SHIPPED these defects, so
+    // they must be left for Pass 1 (which repairs the whole phrase instead).
+    await keep("The evidences support the claim.", "The evidences support");
+    await keep("The feedbacks from users were positive.", "The feedbacks from users were positive");
+    await keep("The researchers provided many informations about the project.", "many informations");
+    await keep("He researches the market every quarter.", "researches the market");
+    await keep("The committee published several researches on the topic.", "several researches");
   }
 }
 
@@ -765,10 +843,14 @@ section("12. parity gate — identical scores ONLY when no transformation took p
 }
 
 // ==================== 13. SEVERITY-WEIGHTED DEDUCTION RUBRIC (2026-09-29)
-// User-approved values: grammar -4 (cap -16), spelling -3, word-choice -3,
-// punctuation -3, duplication -3, capitalization -3 (each cap -12), register -2
-// (cap -6). Tier-B evidence classification charges a real Pass-1 edit to the
-// SOURCE; full-delta banding hands the whole cleared deduction to the revision.
+// User-approved values: grammar -4 (cap -32), spelling/word-choice/punctuation/
+// duplication/capitalization -3 (each cap -24), register -2 (cap -6). EVERY axis
+// went to maxInstances 8 on 2026-10-18 so the grade scales with the NUMBER of
+// improvements (8 grammar defects had scored identically to 4; then, once the
+// phantom grammar charges were removed, the same cap defect surfaced on word
+// choice — uae carries 7 real nativization hits that paid the old 4-hit cap).
+// Tier-B evidence classification charges a real Pass-1 edit to the SOURCE;
+// full-delta banding hands the whole cleared deduction to the revision.
 section("13. severity-weighted deduction rubric + Tier-B classifier");
 {
   const cls = api.classifyRealEdits;
@@ -786,10 +868,70 @@ section("13. severity-weighted deduction rubric + Tier-B classifier");
     check("misspelling fix -> spelling (owned by spell meter)", cls("This was a challanges.", "This was a challenge.").spelling, 1);
   }
   {
+    // CLASSIFIER PRECISION (2026-10-18): a nativization that happens to drop a
+    // copula/modal must NOT be charged to the source as a GRAMMAR defect. The
+    // old flat MODAL_AUX_WORDS membership test made all three of these read as
+    // grammar, which with the raised grammar cap became 12 phantom points of
+    // debt on the DB-heavy grammar fixture. A grammar correction changes the
+    // FORM of a verb; a nativization changes the WORD.
+    const copula = cls("This book is a testament to her courage.", "This book attests to her courage.");
+    check("nativization dropping a copula is word choice, not grammar", copula.grammar, 0);
+    check("nativization dropping a copula charges word choice", copula.wordChoice, 1);
+    const modalDrop = cls("It will be useful to map out the next steps.", "It helps to map out the next steps.");
+    check("nativization dropping a modal is word choice, not grammar", modalDrop.grammar, 0);
+    check("nativization dropping a modal charges word choice", modalDrop.wordChoice, 1);
+    const prepRephrase = cls("They remain intent upon spreading the message.", "They remain determined to spread the message.");
+    check("rephrase dropping a preposition is word choice, not grammar", prepRephrase.grammar, 0);
+    check("rephrase dropping a preposition charges word choice", prepRephrase.wordChoice, 1);
+    // ...while the genuine grammar shapes must still fire.
+    check("true modal removed with its verb surviving -> grammar",
+      cls("We must submit the report by Friday.", "We submit the report by Friday.").grammar, 1);
+    check("same-family aux pair (was -> were) -> grammar",
+      cls("The decisions in the package was communicated late.", "The decisions in the package were communicated late.").grammar, 1);
+    check("stem inflection (include -> included) -> grammar",
+      cls("The list of items, which include the annexes, is ready.", "The list of items, which included the annexes, is ready.").grammar, 1);
+    // The old rule only understood plural -s, so a TENSE repair fell through to
+    // word choice and the source was under-charged (2026-10-18 live probe: the
+    // user's input read 84 instead of 80). The shared stem table now covers the
+    // full regular inflection set — but ONLY for a pure one-to-one inflection.
+    check("tense inflection (announces -> announced) -> grammar",
+      cls("The CEO entered the room and announces the merger to everyone.", "The CEO entered the room and announced the merger to everyone.").grammar, 1);
+    check("inflection (informations -> information) -> grammar",
+      cls("The file contains errors and informations.", "The file contains errors and information.").grammar, 1);
+    check("inflection (study -> studies) -> grammar",
+      cls("They study the record daily.", "They studies the record daily.").grammar, 1);
+    check("S-V x2 same sentence (include+were -> includes+was) -> grammar",
+      cls("The list of recommendations, which include three new clauses, were rejected by the committee.", "The list of recommendations, which includes three new clauses, was rejected by the committee.").grammar, 1);
+    // ...but a REPHRASE that merely contains an inflected form of one word is not
+    // a grammar repair (one-to-one test fails: other tokens are new words).
+    check("rephrase containing an inflection stays word choice",
+      cls("They remain intent upon spreading the message.", "They remain determined to spread the message.").grammar, 0);
+    check("restructured uncountable plural stays word choice",
+      cls("The researchers provided many informations about the project.", "The researchers provided a great deal of information about the project.").grammar, 0);
+    // ...and a DERIVATIONAL / word swap of the same root is still word choice.
+    check("word swap (utilize -> use) stays word choice",
+      cls("They utilize the tool daily.", "They use the tool daily.").grammar, 0);
+    check("derivation (demonstrate -> demonstration) stays word choice",
+      cls("The results demonstrate a clear trend.", "The results are a demonstration of a clear trend.").grammar, 0);
+  }
+  {
     const d = ded({ grammar: 1, wordChoice: 2, punctuation: 2 });
     check("deduction math: 1x4 + 2x3 + 2x3 = 84", d.score, 84);
     const cap = ded({ grammar: 9 });
-    check("per-class cap: 9 grammar hits capped at -16", cap.score, 84);
+    check("per-class cap: 9 grammar hits capped at -32", cap.score, 68);
+    // The grade must be a function of the NUMBER of improvements: 4 grammar
+    // defects and 8 grammar defects may no longer cost the same (the old cap 16
+    // / maxInstances 4 made them identical, which is the defect the owner
+    // reported on 2026-10-18).
+    check("grammar deduction scales with defect count (4 -> -16)", ded({ grammar: 4 }).score, 84);
+    check("grammar deduction scales with defect count (8 -> -32)", ded({ grammar: 8 }).score, 68);
+    check("more defects never scores higher", ded({ grammar: 8 }).score < ded({ grammar: 4 }).score, true);
+    // The same scaling holds on the other axes — uae/military/academic/kingston
+    // each carry 7 stiffness hits, and under the old maxInstances 4 they paid
+    // the same 12 as a 4-hit source.
+    check("word choice scales with defect count (4 -> -12)", ded({ wordChoice: 4 }).score, 88);
+    check("word choice scales with defect count (7 -> -21)", ded({ wordChoice: 7 }).score, 79);
+    check("word choice cap holds (9 -> -24)", ded({ wordChoice: 9 }).score, 76);
     const floor = ded({ grammar: 255, spelling: 255, wordChoice: 255, punctuation: 255, capitalization: 255, duplication: 255, register: 255 });
     check("floor 40 holds across all capped classes", floor.score, 40);
     const spell = ded({ spelling: 3 });

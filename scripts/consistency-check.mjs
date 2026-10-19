@@ -27,10 +27,11 @@
 //      grammar defects and never grows them (monotone), the success-criteria
 //      fixture proves DB-only Pass 2 still fires on exactly the DB phrases and
 //      preserves UK dialect/footnotes, and the planted grammar corpus lands at
-//      72->98 under the severity-weighted deduction rubric (grammar -4 / others
-//      -3 per DEDUCTION_RULES; full-delta banding returns the entire cleared
-//      deduction to a fully-cleaned revision, so a corpus whose defects are all
-//      inside the editor's scope honestly reaches the 98 ceiling).
+//      59->98 under the severity-weighted deduction rubric (grammar -4 capped
+//      at -32 / others -3 per DEDUCTION_RULES; full-delta banding returns the
+//      entire cleared deduction to a fully-cleaned revision, so a corpus whose
+//      defects are all inside the editor's scope honestly reaches the 98
+//      ceiling).
 // Live mode (`--live` / LIVE=1) additionally POSTs the corpus to the deployed
 // worker 3x each and asserts the DETERMINISTIC score contract holds live: the
 // same input yields identical originalScore/revisedScore on every run regardless
@@ -55,30 +56,49 @@ const REPEATS = 3;
 const WORKER_URL = process.env.WORKER_URL || "https://nativewrite-api.nativewrite-api.workers.dev";
 
 // Each corpus item: { file, domain, tone, mode, minMatched, reference }
+// Pins re-approved 2026-10-18 alongside the axis re-scaling: every deduction
+// axis went to maxInstances 8 (so 7 real defects cost more than 4) and the
+// Tier-B classifier stopped charging DB nativizations as grammar (a word-choice
+// improvement must not appear on the grammar axis). The uae/military/academic/
+// kingston pins therefore moved 72 -> 79 honestly: each carries 7 stiffness
+// hits now charged 21 instead of the old 12 cap, with the phantom grammar debt
+// removed. general moved 80 -> 88 for the same reason (2 phantom units gone).
 const CORPUS = [
-  { file: "uae.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "72->98" },
-  { file: "academic.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "72->98" },
+  { file: "uae.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "79->98" },
+  { file: "academic.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "79->98" },
   { file: "literary.txt", domain: "creative", tone: "reflective", mode: "academic", minMatched: 0, untouched: true },
   { file: "business.txt", domain: "business", tone: "professional", mode: "business", minMatched: 1, reference: "93->98" },
-  { file: "general.txt", domain: "general", tone: "friendly", mode: "general", minMatched: 3, reference: "80->98" },
-  { file: "military.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "76->98" },
+  { file: "general.txt", domain: "general", tone: "friendly", mode: "general", minMatched: 3, reference: "88->98" },
+  { file: "military.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 6, reference: "79->98" },
   // Two-pass contract fixture: DB-only Pass 2 must fire on the planted phrases,
   // preserve UK dialect + footnotes, and the meter must land inside the re-band
   // target. Grammar/spelling correction is the model's job (Pass 1), so those
   // are asserted against the LIVE worker only (liveClean).
-  { file: "success-criteria.txt", domain: "general", tone: "neutral", mode: "general", minMatched: 4, reference: "78->98", dbOnly: true, liveClean: true },
+  { file: "success-criteria.txt", domain: "general", tone: "neutral", mode: "general", minMatched: 4, reference: "80->98", dbOnly: true, liveClean: true },
   // Real-world acceptance input (user-reported): DB-only Pass 2 must swap the
   // 5 covered phrases and leave the 2 census patterns uncovered; the model must
   // NOT restructure ("continuing Maxine Hong Kingston’s aesthetic…") and must
   // NOT introduce S-V regressions ("have the asset", "strongly brings").
-  { file: "kingston.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 5, reference: "72->98", kingston: true, liveNoSVR: true },
+  { file: "kingston.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 5, reference: "79->98", kingston: true, liveNoSVR: true },
   // Residual-honesty suite: the certified deterministic layer DETECTS planted
   // defects in the source and — for unambiguous machine-verifiable shapes
   // (sv-agreement, coordinated bare verbs, comma/spacing) — WRITES the fix, so
-  // offline the planted grammar corpus lands at 72->98 under the severity
-  // rubric (the 79->96 pin predates the deduction table; full-delta banding now
-  // hands the whole cleared deduction to the cleaned revision).
-  { file: "grammar.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 0, reference: "72->98", grammarDetector: true, minGrammar: 4 },
+  // offline the planted grammar corpus lands at 59->98 under the severity
+  // rubric. The pin was 72->98 under the old grammar cap 16 / maxInstances 4,
+  // which charged at most 4 of this fixture's ~9 planted grammar defects and so
+  // scored a defect-dense source the same as a lightly flawed one. Re-approved
+  // 2026-10-18 as cap 32 / maxInstances 8 so the grade scales with the NUMBER
+  // of improvements: 100 - 32 (grammar, capped) - 9 (word choice 3x3) = 59.
+  { file: "grammar.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 0, reference: "59->98", grammarDetector: true, minGrammar: 4 },
+  // LIVE-ONLY regression guard (2026-10-18): a ZERO-DB-HIT, grammar-only input
+  // whose defects only Pass 1 can fix. Offline the certified layer is inert on
+  // these shapes by contract, so output === input and the fixture honestly
+  // scores a flat 98->98 — hence NO `reference` pin (pinning it would freeze a
+  // no-op). Live this is the shape that exposed the regression: the app printed
+  // "98 -> 98 / the original text needed no corrections" over a VISIBLY REWRITTEN
+  // draft, because Tier-B was gated on the deterministic revision instead of the
+  // model's actual corrections. See the liveGap assertion below.
+  { file: "model-only-grammar.txt", domain: "academic", tone: "formal", mode: "academic", minMatched: 0, liveGap: true },
 ];
 
 // --- Result normalization: only the deterministic contract slices compare. ---
@@ -100,6 +120,10 @@ function normalized(r) {
     coverage: r.coverage,
     sourceIssues: r.sourceIssues || {},
     remainingIssues: r.remainingIssues || {},
+    // `explanation` IS the deterministic summary (returned under that name), and
+    // anyChange is the transformation gate the parity banding keys off. Both are
+    // part of the honesty contract, so both belong in the determinism compare.
+    anyChange: !!(r.rubric && r.rubric.banding && r.rubric.banding.anyChange),
   };
 }
 
@@ -381,7 +405,7 @@ async function main() {
   // --- D: live provider audit (opt-in) -----------------------------------------
   if (LIVE) {
     console.log("");
-    console.log("== Live determinism (" + WORKER_URL + ", 3 runs each, provider audited) ==");
+    console.log("== Live audit (" + WORKER_URL + ", 3 runs each, provider audited; source score bounded-drift) ==");
     for (const item of items) {
       const key = basename(item.file, ".txt");
       const runs = [];
@@ -390,13 +414,30 @@ async function main() {
         runs.push({ norm: normalized(result), provider });
       }
       const scores = runs.map((r) => r.norm.originalScore + "->" + r.norm.revisedScore).join(" | ");
-      check(key + " live scores invariant across runs", new Set(scores ? runs.map((r) => r.norm.originalScore + "->" + r.norm.revisedScore) : []).size === 1, scores);
+      // BOUNDED-DRIFT contract (2026-10-18, owner-approved). The source score is
+      // computed from the Pass-1/Pass-2 snapshot, and Gemini at temperature 0 is
+      // NOT bit-stable, so an edit can flip between the grammar and word-choice
+      // buckets run to run. The old exact-invariance assertion was written when
+      // Tier-B classified a deterministic (and inert) derivation; it failed live
+      // on business (73/77/77). A 3-run sample under-counted the swing — measured
+      // across many runs the business grammar census swings 4/5/6, i.e. a TWO-unit
+      // / <=8-point spread (73->98 | 77->98 | 81->98). The revision stays exact;
+      // the source may drift by at most TWO defect units (largest per-defect cost
+      // is 4). Offline scores remain bit-exact and are still enforced exactly in
+      // section A.
+      const origScores = runs.map((r) => r.norm.originalScore);
+      const revScores = runs.map((r) => r.norm.revisedScore);
+      const origSpread = Math.max(...origScores) - Math.min(...origScores);
+      check(key + " live source score drifts by at most two defect units (<=8)",
+        origSpread <= 8, scores);
+      check(key + " live revised score exact across runs",
+        new Set(revScores).size === 1, scores);
       console.log("      providers: " + runs.map((r) => r.provider).join(", "));
       // Byte identity is NOT asserted live: the (approved) humanize + certification
       // model passes legitimately reword their repairs run to run, so the same
-      // input can yield different bytes while the DETERMINISTIC score contract
-      // (checked immediately above) holds. Offline byte identity is still enforced
-      // in section A; here the contract is score-invariance, not byte-invariance.
+      // input can yield different bytes. The revision SCORE stays exact; the source
+      // score is bounded as above. Offline byte identity is still enforced in
+      // section A.
       const liveSigs = new Set(runs.map((r) => JSON.stringify(r.norm)));
       if (liveSigs.size > 1) {
         console.log("      note: live bytes vary across runs (model polish reworded) — scores above still enforced");
@@ -422,6 +463,36 @@ async function main() {
           const fv = r.norm.finalVersion || "";
           check(key + " live: no S-V regression (never 'have the asset')", !/have the asset/.test(fv), "saw " + fv.slice(0, 300));
           check(key + " live: no S-V regression (never 'strongly brings')", !/strongly brings/.test(fv), "saw " + fv.slice(0, 300));
+        }
+      }
+      // LIVE-only TRANSFORMATION-GATE assert (2026-10-18): when Pass 1 genuinely
+      // improves the text, the score MUST move. A zero-DB-hit grammar-only input
+      // is the shape that exposed the regression — the deterministic layer is
+      // inert there, so gating the change signal on it reported "no change" and
+      // printed a flat 98->98 with "the original text needed no corrections"
+      // over a rewritten draft. This is the assertion that would have caught it.
+      if (item.liveGap) {
+        for (const r of runs) {
+          const srcText = (r.norm.sentences || []).map((s) => s.original || "").join(" ").replace(/\s+/g, " ").trim().toLowerCase();
+          const outText = String(r.norm.finalVersion || "").replace(/\s+/g, " ").trim().toLowerCase();
+          const contentChanged = srcText !== outText;
+          check(key + " live: anyChange true whenever the output content changed",
+            !contentChanged || r.norm.anyChange === true, "contentChanged=" + contentChanged + " anyChange=" + r.norm.anyChange);
+          check(key + " live: originalScore never prints a pristine 98 when improved",
+            !contentChanged || (r.norm.originalScore || 0) <= 95, String(r.norm.originalScore));
+          check(key + " live: a real gap opens (revised > original)",
+            !contentChanged || (r.norm.revisedScore || 0) > (r.norm.originalScore || 0),
+            r.norm.originalScore + "->" + r.norm.revisedScore);
+          check(key + " live: summary never claims 'needed no corrections'",
+            !/needed no corrections/i.test(r.norm.explanation || ""), String(r.norm.explanation));
+          // The score must be a function of the improvements, so the source
+          // cannot read as flawless while the meter also reports grammar defects
+          // it cleared. (Offline these two are both 0, which is why the fixture
+          // is unpinned offline.)
+          const si = r.norm.sourceIssues || {};
+          check(key + " live: a docked source agrees with its own defect census",
+            (si.grammar || 0) === 0 || (r.norm.originalScore || 0) < 98,
+            "srcGrammar=" + si.grammar + " originalScore=" + r.norm.originalScore);
         }
       }
     }
