@@ -98,6 +98,9 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          {/* Reviewer access: full tool, no sign-in, no usage/word limits
+              (the worker already bypasses limits for anonymous requests). */}
+          <Route path="/review" element={<ToolPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

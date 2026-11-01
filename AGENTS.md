@@ -56,13 +56,30 @@ The package name is still the legacy `react-example` and worker mame internally
   else → 404. `POST /create-checkout` and `POST /billing-portal` require a valid
   Clerk JWT and both `upsert_user`-guarantee a `users` row (checkout) / read
   `stripe_customer_id` (portal).
-- SPA rewrites live in `vercel.json` (`/app*`, `/sign-in*`, `/sign-up*` → `index.html`;
-  `www.idiomoptima.com` → 301 to bare domain).
+- SPA rewrites live in `vercel.json` (`/app*`, `/review*`, `/sign-in*`, `/sign-up*`
+  → `index.html`; `www.idiomoptima.com` → 301 to bare domain).
+
+## Reviewer access mode (`/review`, added 2026-11-01)
+
+- `https://idiomoptima.com/review` renders the full `ToolPage` with NO Clerk
+  sign-in and no usage limits — the link to hand to reviewers. Frontend-only;
+  the Worker was NOT changed.
+- Mechanism: `isReviewer` (pathname `/review`) in `src/pages/ToolPage.tsx` sets a
+  pseudo-`pro` `tierInfo` locally (keeps every `tier === "free"` gate dormant —
+  upgrade banners, 4-run counter, 800-word preflight), skips `getToken()` so
+  transforms go out ANONYMOUS (the worker already bypasses usage counting and
+  word caps for unauthenticated callers, and never 429s them), guards the
+  anonymous `response.tier`/`limitReached` error shapes from regressing the
+  display, hides the Pro/Upgrade/billing button and `UserButton`, and shows a
+  "Reviewer Access" badge instead.
+- `/app` and all billing/auth flows are unchanged. Rating the change: only
+  touch the `isReviewer` branches when editing `ToolPage`.
 
 ## Project structure
 
 - `src/App.tsx` — ClerkProvider + BrowserRouter. `/` landing, `/sign-in`, `/sign-up`,
-  `/app` (protected → ToolPage).
+  `/app` (protected → ToolPage), `/review` (unprotected ToolPage — reviewer mode,
+  see its section).
 - `src/pages/LandingPage.tsx` — marketing page (hero, features, pricing Free/Pro/Enterprise,
   FAQ accordion, TOS/privacy modal). Props: `onStartFree`, `onGoToApp`.
 - `src/pages/ToolPage.tsx` — the main workspace. Presets + dialect/domain/tone controls,

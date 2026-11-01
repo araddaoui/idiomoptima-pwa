@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { UserButton, useUser, useAuth } from "@clerk/clerk-react";
 import {
   PenTool,
@@ -142,6 +142,12 @@ const PRESETS = [
 export default function ToolPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  // Reviewer mode (/review): unrestricted demo access — no sign-in, no run
+  // limit, no 800-word cap. The pseudo-pro tier keeps every `tier === "free"`
+  // gate (banner, preflight checks, upgrade UI) dormant without touching the
+  // worker; transforms go out anonymously, which the worker never limits.
+  const isReviewer = location.pathname === "/review";
   const { getToken } = useAuth();
   const { user } = useUser();
   const [inputHtml, setInputHtml] = useState<string>(PRESETS[0].html);
@@ -249,12 +255,18 @@ export default function ToolPage() {
   }, []);
 
   const refreshTier = useCallback(async () => {
+    // Anonymous /user-tier answers a blanket "free" shape; in reviewer mode we
+    // are unlimited, so never let that override the pseudo-pro tier.
+    if (isReviewer) {
+      setTierInfo({ tier: "pro", usage: 0, limit: 9999 });
+      return;
+    }
     try {
       const token = await getToken();
       const info = await getUserTier(token || undefined);
       if (info) setTierInfo(info);
     } catch {}
-  }, [getToken]);
+  }, [getToken, isReviewer]);
 
   const startUpgrade = useCallback(async () => {
     if (upgradeLoading) return;
@@ -351,7 +363,9 @@ export default function ToolPage() {
     if (elapsedTimerRef.current) window.clearInterval(elapsedTimerRef.current);
     elapsedTimerRef.current = window.setInterval(() => setElapsedSec((s) => s + 1), 1000);
     try {
-      const token = await getToken();
+      // Reviewer mode sends anonymous requests: the worker bypasses usage
+      // accounting and word caps entirely for unauthenticated callers.
+      const token = isReviewer ? null : await getToken();
       // Never transform with empty DB maps: block on the load so the worker's
       // deterministic nativization layer always receives the phrase rules.
       const dbs = await ensureDatabases();
@@ -369,7 +383,9 @@ export default function ToolPage() {
         token || undefined
       );
       setResult(response);
-      if (response.tier) {
+      // Anonymous worker responses report tier "free"; reviewer mode must not
+      // regress its pseudo-pro display from the transform result.
+      if (response.tier && !isReviewer) {
         setTierInfo({
           tier: response.tier as UserTierInfo["tier"],
           usage: typeof response.usage === "number" ? response.usage : (tierInfo?.usage ?? 0),
@@ -381,13 +397,13 @@ export default function ToolPage() {
         setLimitPanel("runs");
         setError(null);
         if (typeof err.usage === "number") {
-          setTierInfo((t) => ({ tier: "free", usage: err.usage, limit: t?.limit ?? FREE_RUN_LIMIT }));
+          setTierInfo((t) => (!isReviewer ? { tier: "free", usage: err.usage, limit: t?.limit ?? FREE_RUN_LIMIT } : t));
         }
       } else if (err && err.wordLimitReached) {
         setLimitPanel("words");
         setError(null);
         if (typeof err.usage === "number") {
-          setTierInfo((t) => ({ tier: "free", usage: err.usage, limit: t?.limit ?? FREE_RUN_LIMIT }));
+          setTierInfo((t) => (!isReviewer ? { tier: "free", usage: err.usage, limit: t?.limit ?? FREE_RUN_LIMIT } : t));
         }
       } else if (err && err.notEnglish) {
         setLanguageNotice(ENGLISH_ONLY_MESSAGE);
@@ -544,7 +560,17 @@ export default function ToolPage() {
           </div>
 
           <div className="shrink-0 flex items-center justify-end gap-3">
-            {tierInfo && (
+            {isReviewer ? (
+              <span
+                title="Reviewer access — unlimited runs, no word cap, no sign-up required"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] font-bold text-emerald-300 bg-emerald-400/10 border border-emerald-400/40 cursor-default"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Reviewer Access</span>
+                <span className="sm:hidden">Free</span>
+              </span>
+            ) : (
+            tierInfo && (
               tierInfo.tier === "free" ? (
                 <button
                   onClick={startUpgrade}
@@ -568,15 +594,18 @@ export default function ToolPage() {
                   <CreditCard className="w-3 h-3" />
                 </button>
               )
+            )
             )}
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8",
-                },
-              }}
-            />
+            {!isReviewer && (
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8",
+                  },
+                }}
+              />
+            )}
           </div>
         </div>
       </header>
